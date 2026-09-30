@@ -164,3 +164,49 @@
 .ds-asset-tile__capability { flex: none; color: var(--color-success); font-size: 9px; font-weight: 800; letter-spacing: .04em; }
 .ds-asset-tile__badge { position: absolute; top: 4px; left: 4px; padding: 2px 6px; border-radius: var(--radius-full); background: var(--color-content-primary); color: white; font-size: 9px; font-weight: 800; }
 .ds-asset-tile__state { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: var(--color-content-primary); color: white; box-shadow: 0 2px 8px rgba(41,39,34,.18); }
+
+.ds-app-bar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  min-height: calc(60px + env(safe-area-inset-top));
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: end;
+  padding: env(safe-area-inset-top) 12px 8px;
+  background: color-mix(in srgb, var(--color-bg-canvas) 94%, transparent);
+  backdrop-filter: blur(12px);
+}
+.ds-app-bar--transparent { background: transparent; backdrop-filter: none; }
+.ds-app-bar__side { min-width: 44px; display: flex; align-items: center; }
+.ds-app-bar__side--trailing { justify-content: flex-end; }
+.ds-app-bar__title-wrap { min-width: 0; align-self: center; text-align: center; }
+.ds-app-bar__title { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 17px; line-height: 24px; font-weight: 700; letter-spacing: -.01em; }
+.ds-app-bar__subtitle { margin: 0; color: var(--color-content-secondary); font-size: 11px; line-height: 15px; }
+
+.ds-bottom-nav {
+  position: sticky;
+  z-index: 25;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  padding: 7px 8px max(8px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--color-border-subtle);
+  background: color-mix(in srgb, var(--color-surface-base) 96%, transparent);
+  backdrop-filter: blur(14px);
+}
+.ds-bottom-nav__item {
+  min-height: 54px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 3px;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--color-content-tertiary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ds-bottom-nav__item--active { color: var(--color-content-primary); }
+.ds-bottom-nav__icon { display: grid; place-items: center; min-height: 20px; }
