@@ -89,8 +89,18 @@ const STATIC_MESSAGE_RECTS: Rect[] = [
   { x: 84, y: 44, width: 10, height: 12 },
 ]
 
-const DRAFT_SIZE = { width: 20, height: 14 }
-const DYNAMIC_SIZE = { width: 18, height: 13 }
+const objectSizeByType: Record<
+  DeskObjectType,
+  { width: number; height: number }
+> = {
+  memo: { width: 20, height: 14 },
+  letter: { width: 21, height: 13 },
+  'photo-card': { width: 17, height: 20 },
+  'poster-card': { width: 18, height: 22 },
+  charm: { width: 15, height: 19 },
+  ticket: { width: 21, height: 11 },
+  'generic-card': { width: 20, height: 14 },
+}
 
 export function clampPlacement(placement: DeskPlacement): DeskPlacement {
   return {
@@ -105,12 +115,17 @@ export function clampPlacement(placement: DeskPlacement): DeskPlacement {
 export function isPlacementValid(
   placement: DeskPlacement,
   existingObjects: DeskObject[],
+  draftType: DeskObjectType = 'memo',
 ): boolean {
+  const draftSize =
+    objectSizeByType[draftType] ??
+    objectSizeByType.memo
+
   const draftRect = centeredRect(
     placement.x,
     placement.y,
-    DRAFT_SIZE.width * placement.scale,
-    DRAFT_SIZE.height * placement.scale,
+    draftSize.width * placement.scale,
+    draftSize.height * placement.scale,
   )
 
   const occupiedRects = [
@@ -119,11 +134,15 @@ export function isPlacementValid(
     ),
     ...existingObjects.map((object) => {
       const position = resolveObjectPlacement(object)
+      const size =
+        objectSizeByType[object.representationType] ??
+        objectSizeByType.memo
+
       return centeredRect(
         position.x,
         position.y,
-        DYNAMIC_SIZE.width * position.scale,
-        DYNAMIC_SIZE.height * position.scale,
+        size.width * position.scale,
+        size.height * position.scale,
       )
     }),
   ]
