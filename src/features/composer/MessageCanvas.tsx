@@ -3,7 +3,7 @@ import {
   useRef,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
-import { Maximize2, Move } from 'lucide-react'
+import { Check, Maximize2, Move } from 'lucide-react'
 import type {
   MessageDraft,
   PhotoElement,
@@ -19,6 +19,7 @@ type MessageCanvasProps = {
   draft: MessageDraft
   selectedId: string | null
   onSelect: (id: string | null) => void
+  onTextDone: () => void
   onTextChange: (id: string, text: string) => void
   onTextMove: (id: string, x: number, y: number) => void
   onWordArtMove: (
@@ -36,6 +37,7 @@ export function MessageCanvas({
   draft,
   selectedId,
   onSelect,
+  onTextDone,
   onTextChange,
   onTextMove,
   onWordArtMove,
@@ -167,6 +169,7 @@ export function MessageCanvas({
             onSelect={() =>
               onSelect(element.id)
             }
+            onDone={onTextDone}
             onChange={(text) =>
               onTextChange(
                 element.id,
@@ -206,6 +209,7 @@ type CanvasTextElementProps = {
     React.RefObject<HTMLDivElement | null>
   selected: boolean
   onSelect: () => void
+  onDone: () => void
   onChange: (text: string) => void
   onMove: (x: number, y: number) => void
 }
@@ -215,6 +219,7 @@ function CanvasTextElement({
   canvasRef,
   selected,
   onSelect,
+  onDone,
   onChange,
   onMove,
 }: CanvasTextElementProps) {
@@ -302,19 +307,37 @@ function CanvasTextElement({
       />
 
       {selected && (
-        <button
-          type="button"
-          className="canvas-text-element__move"
-          aria-label="글자 위치 옮기기"
-          onPointerDown={
-            handlePointerDown
-          }
-        >
-          <Move
-            size={15}
-            aria-hidden
-          />
-        </button>
+        <>
+          <button
+            type="button"
+            className="canvas-text-element__done"
+            aria-label="텍스트 편집 완료"
+            onPointerDown={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+            }}
+            onClick={(event) => {
+              event.stopPropagation()
+              onDone()
+            }}
+          >
+            <Check size={16} aria-hidden />
+          </button>
+
+          <button
+            type="button"
+            className="canvas-text-element__move"
+            aria-label="글자 위치 옮기기"
+            onPointerDown={
+              handlePointerDown
+            }
+          >
+            <Move
+              size={15}
+              aria-hidden
+            />
+          </button>
+        </>
       )}
     </div>
   )

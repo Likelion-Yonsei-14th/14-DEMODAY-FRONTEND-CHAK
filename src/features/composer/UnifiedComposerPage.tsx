@@ -31,17 +31,22 @@ export function UnifiedComposerPage() {
   const didFocus = useRef(false)
 
   const primaryText = draft.textElements[0]
+  const selectedText = draft.textElements.find(
+    (element) => element.id === selectedLayerId,
+  )
   const selectedPhoto = draft.photoElements.find(
     (photo) => photo.id === selectedLayerId,
   )
 
   const hasContent = useMemo(
     () =>
-      Boolean(primaryText?.text.trim()) ||
+      draft.textElements.some((element) =>
+        Boolean(element.text.trim()),
+      ) ||
       draft.wordArtElements.length > 0 ||
       draft.stickerElements.length > 0 ||
       draft.photoElements.length > 0,
-    [draft, primaryText],
+    [draft],
   )
 
   useEffect(() => {
@@ -69,9 +74,44 @@ export function UnifiedComposerPage() {
     })
   }
 
-  const updatePrimaryText = (patch: Partial<TextElement>) => {
-    if (!primaryText) return
-    updateTextElement(primaryText.id, patch)
+  const updateSelectedText = (patch: Partial<TextElement>) => {
+    if (!selectedText) return
+    updateTextElement(selectedText.id, patch)
+  }
+
+  const addTextElement = () => {
+    const base = selectedText ?? primaryText
+    const index = draft.textElements.length
+    const id = `text-${Date.now().toString(36)}-${index}`
+
+    const nextText: TextElement = {
+      id,
+      text: '',
+      fontId: base?.fontId ?? 'nanum-gim-yui',
+      fontSize: base?.fontSize ?? 23,
+      color: base?.color ?? '#3C3833',
+      x: 50,
+      y: Math.min(72, 38 + index * 11),
+      width: base?.width ?? 76,
+      align: base?.align ?? 'center',
+    }
+
+    setComposerDraft({
+      ...draft,
+      textElements: [...draft.textElements, nextText],
+    })
+    setSelectedLayerId(id)
+    setTool('text')
+  }
+
+  const deleteTextElement = (id: string) => {
+    setComposerDraft({
+      ...draft,
+      textElements: draft.textElements.filter(
+        (element) => element.id !== id,
+      ),
+    })
+    setSelectedLayerId(null)
   }
 
   const updateVisibility = (visibility: MessageVisibility) => {
@@ -243,7 +283,19 @@ export function UnifiedComposerPage() {
           <MessageCanvas
             draft={draft}
             selectedId={selectedLayerId}
-            onSelect={setSelectedLayerId}
+            onSelect={(id) => {
+              setSelectedLayerId(id)
+
+              if (
+                id &&
+                draft.textElements.some(
+                  (element) => element.id === id,
+                )
+              ) {
+                setTool('text')
+              }
+            }}
+            onTextDone={() => setSelectedLayerId(null)}
             onTextChange={(id, text) =>
               updateTextElement(id, { text })
             }
@@ -257,22 +309,29 @@ export function UnifiedComposerPage() {
           <ComposerToolTray
             tool={tool}
             draft={draft}
+            selectedText={selectedText}
             selectedPhoto={selectedPhoto}
             onBackgroundChange={(backgroundAssetId) =>
               setComposerDraft({ ...draft, backgroundAssetId })
             }
+            onTextAdd={addTextElement}
             onTextFontChange={(fontId) =>
-              updatePrimaryText({ fontId })
+              updateSelectedText({ fontId })
             }
             onTextSizeChange={(fontSize) =>
-              updatePrimaryText({ fontSize })
+              updateSelectedText({ fontSize })
             }
             onTextColorChange={(color) =>
-              updatePrimaryText({ color })
+              updateSelectedText({ color })
             }
             onTextAlignChange={(align) =>
-              updatePrimaryText({ align })
+              updateSelectedText({ align })
             }
+            onTextDelete={() => {
+              if (selectedText) {
+                deleteTextElement(selectedText.id)
+              }
+            }}
             onPhotoAdd={addPhoto}
             onPhotoSelect={setSelectedLayerId}
             onPhotoUpdate={(patch) => {

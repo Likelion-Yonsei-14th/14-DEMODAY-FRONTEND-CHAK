@@ -3,6 +3,7 @@ import {
   AlignCenter,
   AlignLeft,
   AlignRight,
+  Plus,
   ImagePlus,
   Images,
   Sparkles,
@@ -13,6 +14,7 @@ import { ChoiceChip } from '@/design-system'
 import type {
   MessageDraft,
   PhotoElement,
+  TextElement,
   PhotoFrame,
 } from '@/types'
 import {
@@ -32,14 +34,17 @@ import {
 type ComposerToolTrayProps = {
   tool: ComposerTool
   draft: MessageDraft
+  selectedText?: TextElement
   selectedPhoto?: PhotoElement
   onBackgroundChange: (backgroundId: string) => void
+  onTextAdd: () => void
   onTextFontChange: (fontId: string) => void
   onTextSizeChange: (fontSize: number) => void
   onTextColorChange: (color: string) => void
   onTextAlignChange: (
     align: 'left' | 'center' | 'right',
   ) => void
+  onTextDelete: () => void
   onPhotoAdd: (
     file: File,
     role: 'floating' | 'background',
@@ -54,18 +59,21 @@ type ComposerToolTrayProps = {
 export function ComposerToolTray({
   tool,
   draft,
+  selectedText,
   selectedPhoto,
   onBackgroundChange,
+  onTextAdd,
   onTextFontChange,
   onTextSizeChange,
   onTextColorChange,
   onTextAlignChange,
+  onTextDelete,
   onPhotoAdd,
   onPhotoSelect,
   onPhotoUpdate,
   onPhotoDelete,
 }: ComposerToolTrayProps) {
-  const primaryText = draft.textElements[0]
+  const activeText = selectedText
   const basicBackgrounds = composerBackgrounds.filter(
     (background) => background.group === 'basic',
   )
@@ -99,193 +107,235 @@ export function ComposerToolTray({
         </>
       )}
 
-      {tool === 'text' && primaryText && (
+      {tool === 'text' && (
         <>
-          <ToolTrayHeader
-            title="글자"
-            description="글씨체와 크기, 색을 따로 골라서 내 말투처럼 만들어보세요."
-          />
-
-          <div className="composer-font-section">
-            <span className="composer-tool-label">폰트</span>
-            <div
-              className="composer-font-list"
-              role="list"
-              aria-label="글씨체 선택"
+          <div className="composer-text-tool-header">
+            <ToolTrayHeader
+              title="글자"
+              description={
+                activeText
+                  ? '선택한 텍스트 박스의 글씨체와 크기, 색을 조정해보세요.'
+                  : '카드의 텍스트를 누르거나 새 텍스트를 추가해보세요.'
+              }
+            />
+            <button
+              type="button"
+              className="composer-text-add"
+              onClick={onTextAdd}
             >
-              {composerFonts.map((font) => {
-                const selected =
-                  resolveTextFontId(primaryText) === font.id
-
-                return (
-                  <button
-                    type="button"
-                    key={font.id}
-                    className={[
-                      'composer-font-card',
-                      selected
-                        ? 'composer-font-card--selected'
-                        : '',
-                    ].filter(Boolean).join(' ')}
-                    aria-pressed={selected}
-                    onClick={() =>
-                      onTextFontChange(font.id)
-                    }
-                  >
-                    <span className="composer-font-card__meta">
-                      <span className="composer-font-card__category">
-                        {font.categoryLabel}
-                      </span>
-                      <strong>{font.label}</strong>
-                    </span>
-                    <span
-                      className="composer-font-card__sample"
-                      style={{
-                        fontFamily: font.family,
-                        fontWeight: font.weight,
-                      }}
-                    >
-                      {font.sample}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
+              <Plus size={15} aria-hidden />
+              텍스트 추가
+            </button>
           </div>
 
-          <div className="composer-chip-section">
-            <div className="composer-size-heading">
-              <span className="composer-tool-label">크기</span>
-              <span className="composer-size-value">
-                {resolveTextFontSize(primaryText)}px
+          <div className="composer-text-layer-row">
+            {draft.textElements.map((element, index) => (
+              <span
+                key={element.id}
+                className={[
+                  'composer-text-layer-chip',
+                  activeText?.id === element.id
+                    ? 'composer-text-layer-chip--active'
+                    : '',
+                ].filter(Boolean).join(' ')}
+              >
+                {element.text.trim()
+                  ? element.text.trim().slice(0, 8)
+                  : `텍스트 ${index + 1}`}
               </span>
-            </div>
-            <div className="composer-chip-row">
-              {composerTextSizes.map((size) => (
-                <ChoiceChip
-                  key={size.id}
-                  selected={
-                    resolveTextFontSize(primaryText) === size.value
-                  }
-                  onClick={() =>
-                    onTextSizeChange(size.value)
-                  }
+            ))}
+          </div>
+
+          {activeText ? (
+            <>
+              <div className="composer-font-section">
+                <span className="composer-tool-label">폰트</span>
+                <div
+                  className="composer-font-list"
+                  role="list"
+                  aria-label="글씨체 선택"
                 >
-                  {size.label}
-                </ChoiceChip>
-              ))}
-            </div>
-            <div className="composer-font-size-slider">
-              <span aria-hidden>가</span>
-              <input
-                type="range"
-                min="14"
-                max="42"
-                step="1"
-                value={resolveTextFontSize(primaryText)}
-                aria-label="글자 크기"
-                aria-valuetext={`${resolveTextFontSize(primaryText)}픽셀`}
-                onChange={(event) =>
-                  onTextSizeChange(Number(event.target.value))
-                }
-              />
-              <span className="composer-font-size-slider__large" aria-hidden>
-                가
-              </span>
-            </div>
-          </div>
+                  {composerFonts.map((font) => {
+                    const selected =
+                      resolveTextFontId(activeText) === font.id
 
-          <div className="composer-chip-section">
-            <span className="composer-tool-label">색상</span>
-            <div
-              className="composer-text-color-row"
-              aria-label="글자 색상"
-            >
-              {composerTextColors.map((color) => {
-                const selected =
-                  resolveTextColor(primaryText).toLowerCase() ===
-                  color.value.toLowerCase()
+                    return (
+                      <button
+                        type="button"
+                        key={font.id}
+                        className={[
+                          'composer-font-card',
+                          selected
+                            ? 'composer-font-card--selected'
+                            : '',
+                        ].filter(Boolean).join(' ')}
+                        aria-pressed={selected}
+                        onClick={() =>
+                          onTextFontChange(font.id)
+                        }
+                      >
+                        <span className="composer-font-card__meta">
+                          <span className="composer-font-card__category">
+                            {font.categoryLabel}
+                          </span>
+                          <strong>{font.label}</strong>
+                        </span>
+                        <span
+                          className="composer-font-card__sample"
+                          style={{
+                            fontFamily: font.family,
+                            fontWeight: font.weight,
+                          }}
+                        >
+                          {font.sample}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
 
-                return (
-                  <button
-                    key={color.id}
-                    type="button"
-                    className={[
-                      'composer-text-color',
-                      selected
-                        ? 'composer-text-color--selected'
-                        : '',
-                    ].filter(Boolean).join(' ')}
-                    aria-label={color.label}
-                    aria-pressed={selected}
-                    title={color.label}
-                    onClick={() =>
-                      onTextColorChange(color.value)
+              <div className="composer-chip-section">
+                <div className="composer-size-heading">
+                  <span className="composer-tool-label">크기</span>
+                  <span className="composer-size-value">
+                    {resolveTextFontSize(activeText)}px
+                  </span>
+                </div>
+                <div className="composer-chip-row">
+                  {composerTextSizes.map((size) => (
+                    <ChoiceChip
+                      key={size.id}
+                      selected={
+                        resolveTextFontSize(activeText) === size.value
+                      }
+                      onClick={() =>
+                        onTextSizeChange(size.value)
+                      }
+                    >
+                      {size.label}
+                    </ChoiceChip>
+                  ))}
+                </div>
+                <div className="composer-font-size-slider">
+                  <span aria-hidden>가</span>
+                  <input
+                    type="range"
+                    min="14"
+                    max="42"
+                    step="1"
+                    value={resolveTextFontSize(activeText)}
+                    aria-label="글자 크기"
+                    aria-valuetext={`${resolveTextFontSize(activeText)}픽셀`}
+                    onChange={(event) =>
+                      onTextSizeChange(Number(event.target.value))
                     }
+                  />
+                  <span
+                    className="composer-font-size-slider__large"
+                    aria-hidden
                   >
-                    <span
-                      style={{
-                        backgroundColor: color.value,
-                      }}
+                    가
+                  </span>
+                </div>
+              </div>
+
+              <div className="composer-chip-section">
+                <span className="composer-tool-label">색상</span>
+                <div
+                  className="composer-text-color-row"
+                  aria-label="글자 색상"
+                >
+                  {composerTextColors.map((color) => {
+                    const selected =
+                      resolveTextColor(activeText).toLowerCase() ===
+                      color.value.toLowerCase()
+
+                    return (
+                      <button
+                        key={color.id}
+                        type="button"
+                        className={[
+                          'composer-text-color',
+                          selected
+                            ? 'composer-text-color--selected'
+                            : '',
+                        ].filter(Boolean).join(' ')}
+                        aria-label={color.label}
+                        aria-pressed={selected}
+                        title={color.label}
+                        onClick={() =>
+                          onTextColorChange(color.value)
+                        }
+                      >
+                        <span
+                          style={{
+                            backgroundColor: color.value,
+                          }}
+                        />
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="composer-text-bottom-row">
+                <div className="composer-chip-section">
+                  <span className="composer-tool-label">정렬</span>
+                  <div className="composer-align-row">
+                    <ToolIconButton
+                      label="왼쪽 정렬"
+                      active={activeText.align === 'left'}
+                      onClick={() =>
+                        onTextAlignChange('left')
+                      }
+                      icon={<AlignLeft size={18} aria-hidden />}
                     />
-                  </button>
-                )
-              })}
-            </div>
-          </div>
+                    <ToolIconButton
+                      label="가운데 정렬"
+                      active={
+                        (activeText.align ?? 'center') === 'center'
+                      }
+                      onClick={() =>
+                        onTextAlignChange('center')
+                      }
+                      icon={<AlignCenter size={18} aria-hidden />}
+                    />
+                    <ToolIconButton
+                      label="오른쪽 정렬"
+                      active={activeText.align === 'right'}
+                      onClick={() =>
+                        onTextAlignChange('right')
+                      }
+                      icon={<AlignRight size={18} aria-hidden />}
+                    />
+                  </div>
+                </div>
 
-          <div className="composer-chip-section">
-            <span className="composer-tool-label">정렬</span>
-            <div className="composer-align-row">
-              <ToolIconButton
-                label="왼쪽 정렬"
-                active={primaryText.align === 'left'}
-                onClick={() =>
-                  onTextAlignChange('left')
-                }
-                icon={
-                  <AlignLeft
-                    size={18}
-                    aria-hidden
-                  />
-                }
-              />
-              <ToolIconButton
-                label="가운데 정렬"
-                active={
-                  (primaryText.align ?? 'center') ===
-                  'center'
-                }
-                onClick={() =>
-                  onTextAlignChange('center')
-                }
-                icon={
-                  <AlignCenter
-                    size={18}
-                    aria-hidden
-                  />
-                }
-              />
-              <ToolIconButton
-                label="오른쪽 정렬"
-                active={primaryText.align === 'right'}
-                onClick={() =>
-                  onTextAlignChange('right')
-                }
-                icon={
-                  <AlignRight
-                    size={18}
-                    aria-hidden
-                  />
-                }
-              />
-            </div>
-          </div>
+                <button
+                  type="button"
+                  className="composer-text-delete"
+                  onClick={onTextDelete}
+                >
+                  <Trash2 size={15} aria-hidden />
+                  텍스트 삭제
+                </button>
+              </div>
 
-          <p className="composer-font-license-note">
-            네이버 나눔손글씨 · 나눔스퀘어 네오와 오픈 라이선스
-            Pretendard를 사용해요.
-          </p>
+              <p className="composer-font-license-note">
+                네이버 나눔손글씨 · 나눔스퀘어 네오와 오픈 라이선스
+                Pretendard를 사용해요.
+              </p>
+            </>
+          ) : (
+            <div className="composer-text-empty-state">
+              <span>편집할 텍스트 박스를 카드에서 선택해 주세요.</span>
+              <button type="button" onClick={onTextAdd}>
+                <Plus size={14} aria-hidden />
+                새 텍스트 추가
+              </button>
+            </div>
+          )}
         </>
       )}
 
