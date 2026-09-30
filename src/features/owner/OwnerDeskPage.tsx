@@ -18,6 +18,7 @@ export function OwnerDeskPage() {
   const { showToast } = useFeedback()
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const storedMessages = usePrototypeStore((state) => state.messages)
+  const readMessageIds = usePrototypeStore((state) => state.readMessageIds)
   const [openingMessageId, setOpeningMessageId] = useState<string | null>(null)
 
   const messages = useMemo(
@@ -28,6 +29,20 @@ export function OwnerDeskPage() {
     () => [...seededDeskObjects, ...currentDesk.objects],
     [currentDesk.objects],
   )
+  const unreadCount = useMemo(() => {
+    const messageById = new Map(
+      messages.map((message) => [message.id, message]),
+    )
+
+    return objects.filter((object) => {
+      const message = messageById.get(object.messageId)
+      return (
+        message &&
+        message.status !== 'read' &&
+        !readMessageIds.includes(object.messageId)
+      )
+    }).length
+  }, [messages, objects, readMessageIds])
 
   const openObject = (messageId: string) => {
     if (openingMessageId) return
@@ -47,7 +62,11 @@ export function OwnerDeskPage() {
       appBar={
         <AppBar
           title="내 책상"
-          subtitle="지수님의 응원 공간"
+          subtitle={
+            unreadCount > 0
+              ? `안 읽은 응원 ${unreadCount}개`
+              : '모든 응원을 확인했어요'
+          }
           transparent
           leading={
             <IconButton
@@ -75,13 +94,20 @@ export function OwnerDeskPage() {
 
         <section className="owner-desk__intro">
           <h2>
-            친구들이 놓고 간 마음을
-            <br />
-            하나씩 열어보세요.
+            {unreadCount > 0 ? (
+              <>
+                아직 열어보지 않은 응원이
+                <br />
+                {unreadCount}개 있어요.
+              </>
+            ) : (
+              <>
+                친구들이 남긴 응원을
+                <br />
+                모두 열어봤어요.
+              </>
+            )}
           </h2>
-          <p>
-            책상 위 물건을 누르면 친구가 꾸민 카드가 그대로 열려요.
-          </p>
         </section>
 
         <div
@@ -96,22 +122,10 @@ export function OwnerDeskPage() {
             messages={messages}
             onObjectClick={openObject}
             openingMessageId={openingMessageId}
+            readMessageIds={readMessageIds}
           />
         </div>
 
-        <section className="owner-desk__summary">
-          <div>
-            <strong>{objects.length}개의 응원이 책상에 놓여 있어요.</strong>
-            <span>찾기 어려울 때는 봉투 보기로 한 번에 모아볼 수 있어요.</span>
-          </div>
-          <button
-            type="button"
-            className="owner-desk__mail-link"
-            onClick={() => navigate('/prototype/my/desk/cards')}
-          >
-            봉투로 모아보기
-          </button>
-        </section>
       </main>
     </AppShell>
   )
