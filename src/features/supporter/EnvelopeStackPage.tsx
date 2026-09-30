@@ -95,9 +95,6 @@ export function EnvelopeStackPage() {
         </section>
         <section className="envelope-page__heading">
           <div>
-            <p className="supporter-flow__eyebrow">
-              {showHistory ? 'ALL MAIL' : 'TODAY'}
-            </p>
             <h2>
               {showHistory
                 ? '지수에게 도착했던 응원들'
@@ -277,7 +274,7 @@ export function EnvelopeStackPage() {
 
                         <span className="message-envelope__meta">
                           <span className="message-envelope__from">
-                            from. {message.senderName}
+                            보낸 이 · {message.senderName}
                           </span>
                           <span className="message-envelope__time">
                             {formatDateTime(message.createdAt)}
@@ -289,7 +286,7 @@ export function EnvelopeStackPage() {
                             className="message-envelope__new"
                             aria-label="아직 열지 않은 응원"
                           >
-                            NEW
+                            새 응원
                           </span>
                         )}
 
