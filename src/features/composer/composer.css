@@ -1539,3 +1539,176 @@
   font-weight: 750;
   cursor: pointer;
 }
+
+
+/* Sticker picker and canvas stickers */
+.composer-sticker-list {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 6px 8px 10px;
+  scroll-padding-inline: 8px;
+  scrollbar-width: none;
+}
+
+.composer-sticker-list::-webkit-scrollbar,
+.composer-sticker-layer-row::-webkit-scrollbar {
+  display: none;
+}
+
+.composer-sticker-asset {
+  flex: 0 0 88px;
+}
+
+.composer-sticker-asset .ds-asset-tile__visual {
+  display: grid;
+  place-items: center;
+}
+
+.composer-sticker-asset .ds-asset-tile__visual img {
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+}
+
+.composer-sticker-layer-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 8px 8px;
+  scroll-padding-inline: 8px;
+  scrollbar-width: none;
+}
+
+.composer-sticker-layer-chip {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: grid;
+  place-items: center;
+  padding: 5px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 12px;
+  background: var(--color-surface-base);
+  cursor: pointer;
+}
+
+.composer-sticker-layer-chip img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.composer-sticker-layer-chip--active {
+  border-color: var(--color-content-primary);
+  box-shadow: 0 0 0 1px var(--color-content-primary);
+}
+
+.composer-sticker-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding-inline: 8px;
+}
+
+.composer-sticker-actions button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 11px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 11px;
+  background: var(--color-surface-base);
+  color: var(--color-content-secondary);
+  font-size: 9px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.composer-sticker-actions .composer-sticker-delete {
+  color: #a85045;
+}
+
+.composer-sticker-stepper {
+  width: fit-content;
+  display: grid;
+  grid-template-columns: 42px 54px 42px;
+  align-items: center;
+  margin: 2px 8px 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border-default);
+  border-radius: 12px;
+  background: var(--color-surface-base);
+}
+
+.composer-sticker-stepper button {
+  width: 42px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-content-primary);
+  cursor: pointer;
+}
+
+.composer-sticker-stepper span {
+  display: grid;
+  place-items: center;
+  min-height: 40px;
+  border-inline: 1px solid var(--color-border-subtle);
+  color: var(--color-content-secondary);
+  font-size: 10px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.canvas-sticker {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  transform-origin: center;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.canvas-sticker:active {
+  cursor: grabbing;
+}
+
+.canvas-sticker > img {
+  width: 100%;
+  height: auto;
+  display: block;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 7px rgba(48, 38, 31, .08));
+}
+
+.canvas-sticker--selected {
+  outline: 1px dashed rgba(66, 58, 51, .5);
+  outline-offset: 6px;
+  border-radius: 8px;
+}
+
+.canvas-sticker__transform-handle {
+  position: absolute;
+  right: -17px;
+  bottom: -17px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(76, 69, 63, .14);
+  border-radius: 50%;
+  background: rgba(255, 253, 248, .98);
+  color: var(--color-content-secondary);
+  box-shadow: 0 5px 14px rgba(55, 43, 34, .14);
+  cursor: nwse-resize;
+  touch-action: none;
+}
