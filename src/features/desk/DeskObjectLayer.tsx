@@ -38,7 +38,8 @@ export function DeskObjectLayer({
       {objects.map((object) => {
         const placement = resolveObjectPlacement(object)
         const message = messageById.get(object.messageId)
-        const previewColor = message?.previewColor ?? '#F4C6BC'
+        const previewColor =
+          object.color ?? message?.previewColor ?? '#F4C6BC'
         const interactive = Boolean(onObjectClick)
         const opening = openingMessageId === object.messageId
         const deemphasized = Boolean(
