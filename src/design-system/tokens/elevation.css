@@ -1,0 +1,6 @@
+:root {
+  --shadow-card: 0 8px 24px rgba(53, 48, 42, 0.08), 0 2px 6px rgba(53, 48, 42, 0.05);
+  --shadow-floating: 0 14px 36px rgba(53, 48, 42, 0.14), 0 4px 10px rgba(53, 48, 42, 0.08);
+  --shadow-sheet: 0 -12px 32px rgba(53, 48, 42, 0.12);
+  --highlight-inset: inset 0 1px 0 rgba(255, 255, 255, 0.66);
+}

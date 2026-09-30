@@ -1,0 +1,58 @@
+:root {
+  /* Neutral surfaces */
+  --color-bg-canvas: #f6f3ec;
+  --color-surface-base: #fffdf8;
+  --color-surface-subtle: #f1ede6;
+  --color-surface-muted: #ebe5dc;
+  --color-surface-raised: #ffffff;
+
+  /* Content */
+  --color-content-primary: #292722;
+  --color-content-secondary: #6f6961;
+  --color-content-tertiary: #928b82;
+  --color-content-disabled: #b4ada4;
+  --color-content-inverse: #fffdf8;
+
+  /* Lines */
+  --color-border-subtle: #e8e2d9;
+  --color-border-default: #d9d1c7;
+  --color-border-strong: #bdb4aa;
+
+  /* Brand */
+  --color-brand: #e88770;
+  --color-brand-pressed: #d8745e;
+  --color-brand-soft: #f6d8cf;
+  --color-brand-on: #fffaf7;
+
+  /* Supporting palette */
+  --color-sage: #a7b39b;
+  --color-sage-soft: #e6eadf;
+  --color-sky: #a9b8c9;
+  --color-sky-soft: #e7edf2;
+  --color-butter: #e9c95b;
+  --color-butter-soft: #f8edbd;
+  --color-pink-soft: #f2ced1;
+  --color-lilac-soft: #ddd5e7;
+
+  /* Feedback */
+  --color-focus: #6e8fd1;
+  --color-success: #4f7f65;
+  --color-success-soft: #e3eee6;
+  --color-warning: #9a7424;
+  --color-warning-soft: #f8edc9;
+  --color-danger: #b6524b;
+  --color-danger-soft: #f6e1de;
+  --color-backdrop: rgba(41, 39, 34, 0.42);
+
+  /* Component semantic aliases */
+  --button-primary-bg: var(--color-content-primary);
+  --button-primary-fg: var(--color-content-inverse);
+  --button-brand-bg: var(--color-brand);
+  --button-brand-fg: var(--color-brand-on);
+  --button-secondary-bg: var(--color-surface-base);
+  --button-secondary-fg: var(--color-content-primary);
+  --button-secondary-border: var(--color-border-default);
+  --field-bg: var(--color-surface-base);
+  --field-border: var(--color-border-default);
+  --field-border-focus: var(--color-focus);
+}
