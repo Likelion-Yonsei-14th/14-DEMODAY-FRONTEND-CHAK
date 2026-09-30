@@ -109,7 +109,7 @@ export function DeskObjectLayer({
   )
 }
 
-function DeskObjectVisual({ type }: { type: DeskObjectType }) {
+export function DeskObjectVisual({ type }: { type: DeskObjectType }) {
   return (
     <span className="desk-object__visual" aria-hidden>
       <span className="desk-object__paper">
