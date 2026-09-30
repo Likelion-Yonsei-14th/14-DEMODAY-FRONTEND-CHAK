@@ -97,6 +97,7 @@
   --envelope-pattern-color: #8c7a6e;
   --envelope-seal-color: #b86a78;
   --envelope-ink-color: #4e453f;
+  --message-card-color: #fffaf4;
   --envelope-y: 124px;
   --envelope-x: 0px;
   --envelope-rotate: 0deg;
@@ -280,20 +281,39 @@
   right: 9%;
   top: 18%;
   height: 74%;
-  display: grid;
-  align-content: start;
-  gap: 10px;
-  padding: 22px;
+  display: block;
+  padding: 0;
   border: 1px solid rgba(102,80,67,.08);
   border-radius: 16px 16px 7px 7px;
   background:
-    linear-gradient(145deg, rgba(255,255,255,.92), rgba(251,247,241,.94));
+    linear-gradient(145deg, rgba(255,255,255,.42), transparent 48%),
+    var(--message-card-color);
   box-shadow: 0 4px 14px rgba(72, 52, 41, .09);
   opacity: 0;
   transform: translateY(56%) scale(.96);
   transition:
     transform 520ms cubic-bezier(.2,.75,.2,1),
     opacity 160ms ease;
+}
+
+.message-envelope__peek-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+  opacity: .96;
+}
+
+.message-envelope__peek-surface {
+  position: absolute;
+  left: 17%;
+  right: 17%;
+  top: 32%;
+  display: grid;
+  gap: 9px;
+  opacity: .42;
 }
 
 .message-envelope__peek-line {

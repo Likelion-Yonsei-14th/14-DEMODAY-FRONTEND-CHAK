@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AppBar, IconButton } from '@/design-system'
+import { getComposerBackground } from '@/features/composer/backgroundAssets'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import type { Message } from '@/types'
@@ -154,6 +155,9 @@ export function EnvelopeStackPage() {
                     message.id,
                     message.previewColor,
                   )
+                  const cardBackground = getComposerBackground(
+                    message.backgroundAssetId,
+                  )
 
                   return (
                     <button
@@ -176,6 +180,7 @@ export function EnvelopeStackPage() {
                         '--envelope-pattern-color': theme.patternColor,
                         '--envelope-seal-color': theme.sealColor,
                         '--envelope-ink-color': theme.inkColor,
+                        '--message-card-color': cardBackground.tone,
                         '--envelope-y': `${position.y}px`,
                         '--envelope-x': `${position.x}px`,
                         '--envelope-rotate': `${position.rotate}deg`,
@@ -191,8 +196,19 @@ export function EnvelopeStackPage() {
                         <span className="message-envelope__back" />
                         <span className="message-envelope__pattern" aria-hidden />
                         <span className="message-envelope__peek" aria-hidden>
-                          <span className="message-envelope__peek-line" />
-                          <span className="message-envelope__peek-line" />
+                          {cardBackground.kind === 'image' &&
+                            cardBackground.source && (
+                              <img
+                                className="message-envelope__peek-art"
+                                src={cardBackground.source}
+                                alt=""
+                                draggable={false}
+                              />
+                            )}
+                          <span className="message-envelope__peek-surface">
+                            <span className="message-envelope__peek-line" />
+                            <span className="message-envelope__peek-line" />
+                          </span>
                         </span>
                         <span className="message-envelope__front" />
                         <span className="message-envelope__flap" />
