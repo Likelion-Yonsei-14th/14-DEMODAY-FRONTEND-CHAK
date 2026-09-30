@@ -31,6 +31,7 @@ export type DeskObject = {
   messageId: string
   representationType: DeskObjectType
   assetId?: string
+  color?: string
   zone: DeskZone
   order: number
   locked?: boolean
