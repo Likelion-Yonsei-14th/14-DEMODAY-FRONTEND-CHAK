@@ -31,14 +31,14 @@ export function VisibilitySheet({
       <div className="supporter-visibility">
         <ChoiceCard
           title="공개"
-          description="지수와 이 책상을 방문한 친구들이 함께 볼 수 있어요."
+          description="지수님과 이 책상을 방문한 친구들이 함께 볼 수 있어요."
           icon={<Eye size={21} aria-hidden />}
           selected={value === 'public'}
           onClick={() => onChange('public')}
         />
         <ChoiceCard
           title="비공개"
-          description="지수만 열어볼 수 있어요."
+          description="지수님만 열어볼 수 있어요."
           icon={<LockKeyhole size={21} aria-hidden />}
           selected={value === 'private'}
           onClick={() => onChange('private')}
