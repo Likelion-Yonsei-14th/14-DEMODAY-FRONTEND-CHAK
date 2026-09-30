@@ -1,2 +1,6 @@
 import type { PropsWithChildren } from 'react'
-export function AppProviders({ children }: PropsWithChildren) { return children }
+import { NotificationProvider } from '@/design-system/overlays'
+
+export function AppProviders({ children }: PropsWithChildren) {
+  return <NotificationProvider>{children}</NotificationProvider>
+}
