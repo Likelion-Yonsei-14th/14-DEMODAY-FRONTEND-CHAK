@@ -3,6 +3,7 @@ import { getComposerBackground } from '@/features/composer/backgroundAssets'
 import { WordArtGraphic } from '@/features/composer/wordArt/wordArtAssets'
 import { getTextAppearance } from '@/features/composer/fonts/fontRegistry'
 import { getFirstCardPage } from '@/features/composer/messagePages'
+import { getStickerAsset } from '@/features/composer/stickerAssets'
 import type { CardPage, Message, PhotoElement } from '@/types'
 import './MessageViewerPage.css'
 
@@ -97,6 +98,32 @@ export function OriginalMessageRenderer({
           />
         </div>
       ))}
+
+      {cardPage.stickerElements.map((element) => {
+        const asset = getStickerAsset(element.assetId)
+        if (!asset) return null
+
+        return (
+          <div
+            key={element.id}
+            className="original-message__sticker"
+            style={{
+              left: `${element.x}%`,
+              top: `${element.y}%`,
+              width: `${asset.baseWidthPercent}%`,
+              zIndex: element.zIndex,
+              transform:
+                `translate(-50%, -50%) rotate(${element.rotation}deg) scale(${element.scale})`,
+            }}
+          >
+            <img
+              src={asset.source}
+              alt=""
+              draggable={false}
+            />
+          </div>
+        )
+      })}
 
       <div
         className={
