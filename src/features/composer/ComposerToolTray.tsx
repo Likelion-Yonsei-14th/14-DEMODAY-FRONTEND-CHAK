@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { ChoiceChip } from '@/design-system'
 import type {
-  MessageDraft,
+  CardPage,
   PhotoElement,
   TextElement,
   PhotoFrame,
@@ -35,7 +35,7 @@ import {
 
 type ComposerToolTrayProps = {
   tool: ComposerTool
-  draft: MessageDraft
+  draft: CardPage
   selectedText?: TextElement
   selectedPhoto?: PhotoElement
   onBackgroundChange: (backgroundId: string) => void
@@ -411,7 +411,7 @@ function PhotoTool({
   onPhotoUpdate,
   onPhotoDelete,
 }: {
-  draft: MessageDraft
+  draft: CardPage
   selectedPhoto?: PhotoElement
   onPhotoAdd: (
     file: File,

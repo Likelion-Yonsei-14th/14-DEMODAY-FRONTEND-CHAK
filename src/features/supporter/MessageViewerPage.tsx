@@ -1,10 +1,11 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft,
   MoreHorizontal,
 } from 'lucide-react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { AppBar, Button, IconButton } from '@/design-system'
+import { getMessagePages } from '@/features/composer/messagePages'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { OriginalMessageRenderer } from './OriginalMessageRenderer'
@@ -21,6 +22,8 @@ export function MessageViewerPage() {
   const { messageId } = useParams()
   const storedMessages = usePrototypeStore((state) => state.messages)
   const markMessageRead = usePrototypeStore((state) => state.markMessageRead)
+  const pageScrollerRef = useRef<HTMLDivElement>(null)
+  const [activePageIndex, setActivePageIndex] = useState(0)
 
   const messages = useMemo(
     () => mergeSupportMessages(storedMessages),
@@ -28,6 +31,7 @@ export function MessageViewerPage() {
   )
   const message = messages.find((item) => item.id === messageId)
   const state = location.state as ReaderLocationState | null
+  const pages = message ? getMessagePages(message) : []
 
   useEffect(() => {
     if (messageId) markMessageRead(messageId)
@@ -102,13 +106,76 @@ export function MessageViewerPage() {
           </span>
         </section>
 
-        <div className="message-viewer__card-wrap">
-          <OriginalMessageRenderer message={message} />
+        <div className="message-viewer__page-meta">
+          <span>친구가 꾸민 모습 그대로</span>
+          {pages.length > 1 && (
+            <strong>
+              {activePageIndex + 1} / {pages.length}
+            </strong>
+          )}
         </div>
 
-        <p className="message-viewer__hint">
-          친구가 꾸민 모습 그대로 보관돼요.
-        </p>
+        <div
+          ref={pageScrollerRef}
+          className="message-viewer__pages"
+          onScroll={(event) => {
+            const width = event.currentTarget.clientWidth
+            if (width <= 0) return
+
+            const nextIndex = Math.min(
+              pages.length - 1,
+              Math.max(
+                0,
+                Math.round(event.currentTarget.scrollLeft / width),
+              ),
+            )
+            setActivePageIndex(nextIndex)
+          }}
+        >
+          {pages.map((page) => (
+            <div
+              key={page.id}
+              className="message-viewer__page-slide"
+            >
+              <OriginalMessageRenderer
+                message={message}
+                page={page}
+              />
+            </div>
+          ))}
+        </div>
+
+        {pages.length > 1 && (
+          <div
+            className="message-viewer__page-dots"
+            role="tablist"
+            aria-label="응원 카드 페이지"
+          >
+            {pages.map((page, index) => (
+              <button
+                type="button"
+                key={page.id}
+                className={[
+                  'message-viewer__page-dot',
+                  activePageIndex === index
+                    ? 'message-viewer__page-dot--active'
+                    : '',
+                ].filter(Boolean).join(' ')}
+                aria-label={`${index + 1}번째 카드 보기`}
+                aria-selected={activePageIndex === index}
+                role="tab"
+                onClick={() => {
+                  const scroller = pageScrollerRef.current
+                  if (!scroller) return
+                  scroller.scrollTo({
+                    left: index * scroller.clientWidth,
+                    behavior: 'smooth',
+                  })
+                }}
+              />
+            ))}
+          </div>
+        )}
       </main>
     </AppShell>
   )

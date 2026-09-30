@@ -316,3 +316,79 @@
 .original-message__text {
   font-synthesis: none;
 }
+
+
+/* Multi-page messages stay one message and swipe horizontally page by page. */
+.message-viewer__page-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--color-content-tertiary);
+  font-size: 10px;
+  line-height: 16px;
+}
+
+.message-viewer__page-meta strong {
+  color: var(--color-content-secondary);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.message-viewer__pages {
+  width: calc(100% + var(--page-gutter) * 2);
+  margin-inline: calc(var(--page-gutter) * -1);
+  display: flex;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  animation: message-viewer-arrive 420ms var(--ease-emphasized) both;
+}
+
+.message-viewer__pages::-webkit-scrollbar {
+  display: none;
+}
+
+.message-viewer__page-slide {
+  width: 100%;
+  min-width: 100%;
+  display: grid;
+  place-items: center;
+  padding: 6px var(--page-gutter) 8px;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+.message-viewer__page-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 18px;
+}
+
+.message-viewer__page-dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-border-default);
+  cursor: pointer;
+  transition:
+    width 150ms ease,
+    background 150ms ease;
+}
+
+.message-viewer__page-dot--active {
+  width: 17px;
+  background: var(--color-content-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .message-viewer__pages {
+    animation: none;
+  }
+}

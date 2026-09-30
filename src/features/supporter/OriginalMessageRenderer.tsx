@@ -2,22 +2,26 @@ import type { CSSProperties } from 'react'
 import { getComposerBackground } from '@/features/composer/backgroundAssets'
 import { WordArtGraphic } from '@/features/composer/wordArt/wordArtAssets'
 import { getTextAppearance } from '@/features/composer/fonts/fontRegistry'
-import type { Message, PhotoElement } from '@/types'
+import { getFirstCardPage } from '@/features/composer/messagePages'
+import type { CardPage, Message, PhotoElement } from '@/types'
 import './MessageViewerPage.css'
 
 export function OriginalMessageRenderer({
   message,
+  page,
 }: {
   message: Message
+  page?: CardPage
 }) {
+  const cardPage = page ?? getFirstCardPage(message)
   const background = getComposerBackground(
-    message.backgroundAssetId,
+    cardPage.backgroundAssetId,
   )
-  const longCard = message.canvasMode === 'long'
-  const backgroundPhoto = message.photoElements.find(
+  const longCard = cardPage.canvasMode === 'long'
+  const backgroundPhoto = cardPage.photoElements.find(
     (photo) => photo.role === 'background',
   )
-  const floatingPhotos = message.photoElements.filter(
+  const floatingPhotos = cardPage.photoElements.filter(
     (photo) => photo.role === 'floating',
   )
 
@@ -75,7 +79,7 @@ export function OriginalMessageRenderer({
         />
       ))}
 
-      {message.wordArtElements.map((element) => (
+      {cardPage.wordArtElements.map((element) => (
         <div
           key={element.id}
           className="original-message__word-art"
@@ -101,7 +105,7 @@ export function OriginalMessageRenderer({
             : undefined
         }
       >
-        {message.textElements.map((element) => {
+        {cardPage.textElements.map((element) => {
           const appearance = getTextAppearance(element)
           const typography: CSSProperties = {
             fontFamily: appearance.fontFamily,

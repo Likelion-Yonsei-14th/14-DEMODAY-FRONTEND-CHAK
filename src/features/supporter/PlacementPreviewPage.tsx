@@ -3,6 +3,7 @@ import { ArrowLeft, Eye, LockKeyhole, Move } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AppBar, Button, IconButton } from '@/design-system'
 import { getComposerBackground } from '@/features/composer/backgroundAssets'
+import { getFirstCardPage } from '@/features/composer/messagePages'
 import { DeskScene } from '@/features/desk/DeskScene'
 import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
 import { AppShell } from '@/layout/AppShell'
@@ -30,7 +31,8 @@ export function PlacementPreviewPage() {
   const [dragging, setDragging] = useState(false)
 
   const objectType = useMemo(() => resolveDeskObjectType(draft), [draft])
-  const previewColor = getComposerBackground(draft.backgroundAssetId).tone
+  const firstPage = getFirstCardPage(draft)
+  const previewColor = getComposerBackground(firstPage.backgroundAssetId).tone
   const initialPlacement = useMemo(
     () => resolveInitialPlacement(currentDesk.objects.length),
     [currentDesk.objects.length],

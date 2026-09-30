@@ -7,6 +7,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { AppBar, IconButton } from '@/design-system'
 import { getComposerBackground } from '@/features/composer/backgroundAssets'
+import { getMessagePages } from '@/features/composer/messagePages'
 import { AppShell } from '@/layout/AppShell'
 import { OwnerViewToggle } from '@/features/owner/OwnerViewToggle'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -149,13 +150,15 @@ export function EnvelopeStackPage() {
                     message.id,
                     message.previewColor,
                   )
+                  const pages = getMessagePages(message)
+                  const firstPage = pages[0]!
                   const cardBackground = getComposerBackground(
-                    message.backgroundAssetId,
+                    firstPage.backgroundAssetId,
                   )
-                  const backgroundPhoto = message.photoElements.find(
+                  const backgroundPhoto = firstPage.photoElements.find(
                     (photo) => photo.role === 'background',
                   )
-                  const floatingPhoto = message.photoElements.find(
+                  const floatingPhoto = firstPage.photoElements.find(
                     (photo) => photo.role === 'floating',
                   )
 
@@ -258,6 +261,11 @@ export function EnvelopeStackPage() {
                             <span className="message-envelope__peek-line" />
                             <span className="message-envelope__peek-line" />
                           </span>
+                          {pages.length > 1 && (
+                            <span className="message-envelope__peek-pages">
+                              {pages.length}장
+                            </span>
+                          )}
                         </span>
 
                         <span className="message-envelope__side-fold message-envelope__side-fold--left" />
