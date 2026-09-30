@@ -10,6 +10,12 @@
   flex-direction: column;
 }
 
+.envelope-page__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px var(--page-gutter) 0;
+}
+
 .envelope-page__heading {
   display: flex;
   align-items: end;

@@ -2,13 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft,
   History,
-  LayoutGrid,
   LockKeyhole,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AppBar, IconButton } from '@/design-system'
 import { getComposerBackground } from '@/features/composer/backgroundAssets'
 import { AppShell } from '@/layout/AppShell'
+import { OwnerViewToggle } from '@/features/owner/OwnerViewToggle'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import type { Message } from '@/types'
 import { createEnvelopeTheme } from './envelopeTheme'
@@ -63,8 +63,8 @@ export function EnvelopeStackPage() {
     setOpeningId(message.id)
 
     window.setTimeout(() => {
-      navigate(`/prototype/support/jisu/message/${message.id}`, {
-        state: { from: 'cards', openedFromEnvelope: true },
+      navigate(`/prototype/my/message/${message.id}`, {
+        state: { from: 'owner-cards', openedFromEnvelope: true },
       })
     }, OPEN_DURATION)
   }
@@ -75,26 +75,23 @@ export function EnvelopeStackPage() {
       contentClassName="envelope-page-shell"
       appBar={
         <AppBar
-          title="도착한 응원"
+          title="내 응원"
           subtitle={showHistory ? '지난 응원까지 보고 있어요' : '오늘 도착한 응원'}
           leading={
             <IconButton
               label="지수의 책상으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate('/prototype/support/jisu')}
+              onClick={() => navigate('/prototype/my/desk')}
             />
           }
-          trailing={
-            <IconButton
-              label="책상 보기로 전환"
-              icon={<LayoutGrid size={20} aria-hidden />}
-              onClick={() => navigate('/prototype/support/jisu')}
-            />
-          }
+
         />
       }
     >
       <main className="envelope-page">
+        <section className="envelope-page__toolbar">
+          <OwnerViewToggle mode="mail" />
+        </section>
         <section className="envelope-page__heading">
           <div>
             <p className="supporter-flow__eyebrow">

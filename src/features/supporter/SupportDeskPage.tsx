@@ -1,6 +1,5 @@
 import {
   ArrowLeft,
-  Layers3,
   MoreHorizontal,
   Share2,
 } from 'lucide-react'
@@ -38,22 +37,15 @@ export function SupportDeskPage() {
             />
           }
           trailing={
-            <div className="support-desk__app-actions">
-              <IconButton
-                label="도착한 응원을 카드 보기로 보기"
-                icon={<Layers3 size={20} aria-hidden />}
-                onClick={() => navigate('/prototype/support/jisu/cards')}
-              />
-              <IconButton
-                label="더보기"
-                icon={<MoreHorizontal size={22} aria-hidden />}
-                onClick={() =>
-                  showToast(
-                    '공유·신고 같은 부수 기능은 이후 단계에서 연결할게요.',
-                  )
-                }
-              />
-            </div>
+            <IconButton
+              label="더보기"
+              icon={<MoreHorizontal size={22} aria-hidden />}
+              onClick={() =>
+                showToast(
+                  '공유·신고 같은 부수 기능은 이후 단계에서 연결할게요.',
+                )
+              }
+            />
           }
         />
       }
@@ -88,11 +80,6 @@ export function SupportDeskPage() {
           <DeskObjectLayer
             objects={currentDesk.objects}
             messages={messages}
-            onObjectClick={(messageId) =>
-              navigate(`/prototype/support/jisu/message/${messageId}`, {
-                state: { from: 'desk' },
-              })
-            }
           />
         </div>
 

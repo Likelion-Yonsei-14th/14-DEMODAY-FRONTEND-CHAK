@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { App } from '@/app/App'
 import { UnifiedComposerPage } from '@/features/composer/UnifiedComposerPage'
+import { OwnerDeskPage } from '@/features/owner/OwnerDeskPage'
 import { EnvelopeStackPage } from '@/features/supporter/EnvelopeStackPage'
 import { MessageViewerPage } from '@/features/supporter/MessageViewerPage'
 import { PlacementPreviewPage } from '@/features/supporter/PlacementPreviewPage'
@@ -11,7 +12,6 @@ import {
   ClaimPage,
   ClassroomPage,
   ComposerPage,
-  DeskPage,
   ReaderPage,
 } from '@/prototype/screens/flowPages'
 import { SystemPage } from '@/system/SystemPage'
@@ -22,12 +22,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/prototype" replace /> },
       { path: '/prototype', element: <PrototypeIndexPage /> },
+
       { path: '/prototype/support/jisu', element: <SupportDeskPage /> },
-      { path: '/prototype/support/jisu/cards', element: <EnvelopeStackPage /> },
-      {
-        path: '/prototype/support/jisu/message/:messageId',
-        element: <MessageViewerPage />,
-      },
       {
         path: '/prototype/support/jisu/compose',
         element: <UnifiedComposerPage />,
@@ -40,7 +36,27 @@ export const router = createBrowserRouter([
         path: '/prototype/support/jisu/complete',
         element: <SupportCompletePage />,
       },
-      { path: '/prototype/desk', element: <DeskPage /> },
+
+      { path: '/prototype/my/desk', element: <OwnerDeskPage /> },
+      { path: '/prototype/my/desk/cards', element: <EnvelopeStackPage /> },
+      {
+        path: '/prototype/my/message/:messageId',
+        element: <MessageViewerPage />,
+      },
+
+      {
+        path: '/prototype/desk',
+        element: <Navigate to="/prototype/my/desk" replace />,
+      },
+      {
+        path: '/prototype/support/jisu/cards',
+        element: <Navigate to="/prototype/my/desk/cards" replace />,
+      },
+      {
+        path: '/prototype/support/jisu/message/:messageId',
+        element: <MessageViewerPage />,
+      },
+
       { path: '/prototype/composer', element: <ComposerPage /> },
       { path: '/prototype/reader', element: <ReaderPage /> },
       { path: '/prototype/claim', element: <ClaimPage /> },

@@ -12,7 +12,7 @@ import { mergeSupportMessages } from './seededMessages'
 import './MessageViewerPage.css'
 
 type ReaderLocationState = {
-  from?: 'desk' | 'cards'
+  from?: 'owner-desk' | 'owner-cards' | 'desk' | 'cards'
 }
 
 export function MessageViewerPage() {
@@ -35,9 +35,9 @@ export function MessageViewerPage() {
 
   const back = () => {
     navigate(
-      state?.from === 'desk'
-        ? '/prototype/support/jisu'
-        : '/prototype/support/jisu/cards',
+      state?.from === 'owner-desk' || state?.from === 'desk'
+        ? '/prototype/my/desk'
+        : '/prototype/my/desk/cards',
     )
   }
 

@@ -8,14 +8,14 @@ const routes = [
   {
     path: '/prototype/support/jisu',
     title: 'Supporter Core',
-    description: '지수의 2.5D Desk 방문 → 응원 놓고 가기 → Unified Composer',
+    description: '친구로 방문 → 응원 만들기 → 책상에 직접 놓고 가기',
     phase: 'Phase 2 · LIVE',
   },
   {
-    path: '/prototype/desk',
+    path: '/prototype/my/desk',
     title: 'Owner Desk',
-    description: '오브젝트 중심 홈 · 누적 · Daily / Time Capsule',
-    phase: 'Phase 4',
+    description: '수험생 본인 · 책상 오브젝트 열람 ↔ 봉투 Stack 전환 · Common Reader',
+    phase: 'Phase 4 · LIVE',
   },
   {
     path: '/prototype/composer',
