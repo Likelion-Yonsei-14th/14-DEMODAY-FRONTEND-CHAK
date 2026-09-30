@@ -26,7 +26,6 @@ export function MessageViewerPage() {
   const markMessageRead = usePrototypeStore((state) => state.markMessageRead)
   const pageScrollerRef = useRef<HTMLDivElement>(null)
   const [activePageIndex, setActivePageIndex] = useState(0)
-  const [hasPaged, setHasPaged] = useState(false)
 
   const messages = useMemo(
     () => mergeSupportMessages(storedMessages),
@@ -43,7 +42,6 @@ export function MessageViewerPage() {
 
   useEffect(() => {
     setActivePageIndex(0)
-    setHasPaged(false)
 
     const scroller = pageScrollerRef.current
     if (!scroller) return
@@ -95,7 +93,6 @@ export function MessageViewerPage() {
         behavior,
       })
       setActivePageIndex(nextIndex)
-      setHasPaged((current) => current || nextIndex > 0)
     },
     [pages.length],
   )
@@ -138,12 +135,6 @@ export function MessageViewerPage() {
 
   const canGoPrevious = activePageIndex > 0
   const canGoNext = activePageIndex < lastPageIndex
-  const pageHint =
-    activePageIndex === lastPageIndex
-      ? '마지막 카드예요.'
-      : activePageIndex === 0 && !hasPaged
-        ? '옆으로 넘기거나 화살표로 다음 카드를 볼 수 있어요.'
-        : '다음 카드가 이어져 있어요.'
 
   return (
     <AppShell
@@ -171,22 +162,6 @@ export function MessageViewerPage() {
       }
     >
       <main className="message-viewer">
-        <section className="message-viewer__meta">
-          <span>from. {message.senderName}</span>
-          <span>
-            {message.visibility === 'private' ? '나만 보는 응원' : '함께 보는 응원'}
-          </span>
-        </section>
-
-        <div className="message-viewer__page-meta">
-          <span>친구가 꾸민 모습 그대로</span>
-          {pages.length > 1 && (
-            <strong aria-live="polite" aria-atomic="true">
-              {activePageIndex + 1} / {pages.length}
-            </strong>
-          )}
-        </div>
-
         <div
           ref={pageScrollerRef}
           className="message-viewer__pages"
@@ -230,7 +205,6 @@ export function MessageViewerPage() {
             )
 
             setActivePageIndex(nextIndex)
-            if (nextIndex > 0) setHasPaged(true)
           }}
         >
           {pages.map((page, index) => (
@@ -301,18 +275,6 @@ export function MessageViewerPage() {
                 <ChevronRight size={18} aria-hidden />
               </button>
             </nav>
-
-            <p
-              className={[
-                'message-viewer__page-hint',
-                activePageIndex === lastPageIndex
-                  ? 'message-viewer__page-hint--complete'
-                  : '',
-              ].filter(Boolean).join(' ')}
-              aria-live="polite"
-            >
-              {pageHint}
-            </p>
           </>
         )}
       </main>
