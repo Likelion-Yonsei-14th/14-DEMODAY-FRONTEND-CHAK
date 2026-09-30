@@ -69,6 +69,8 @@ type ComposerToolTrayProps = {
   onPhotoUpdate: (
     patch: Partial<PhotoElement>,
   ) => void
+  onPhotoSendBackward: () => void
+  onPhotoBringForward: () => void
   onPhotoDelete: () => void
 }
 
@@ -96,6 +98,8 @@ export function ComposerToolTray({
   onPhotoAdd,
   onPhotoSelect,
   onPhotoUpdate,
+  onPhotoSendBackward,
+  onPhotoBringForward,
   onPhotoDelete,
 }: ComposerToolTrayProps) {
   const activeText = selectedText
@@ -339,35 +343,13 @@ export function ComposerToolTray({
                   </div>
                 </div>
 
-                <div className="composer-text-layer-actions">
-                  <span className="composer-tool-label">레이어</span>
-                  <div>
-                    <button
-                      type="button"
-                      onClick={onTextSendBackward}
-                    >
-                      <ArrowDown size={14} aria-hidden />
-                      맨 뒤로
-                    </button>
-                    <button
-                      type="button"
-                      onClick={onTextBringForward}
-                    >
-                      <ArrowUp size={14} aria-hidden />
-                      맨 앞으로
-                    </button>
-                  </div>
-                </div>
               </div>
 
-              <button
-                type="button"
-                className="composer-text-delete"
-                onClick={onTextDelete}
-              >
-                <Trash2 size={15} aria-hidden />
-                텍스트 삭제
-              </button>
+              <LayerActions
+                onSendBackward={onTextSendBackward}
+                onBringForward={onTextBringForward}
+                onDelete={onTextDelete}
+              />
 
               <p className="composer-font-license-note">
                 네이버 나눔손글씨 · 나눔스퀘어 네오와 오픈 라이선스
@@ -415,6 +397,8 @@ export function ComposerToolTray({
           onPhotoAdd={onPhotoAdd}
           onPhotoSelect={onPhotoSelect}
           onPhotoUpdate={onPhotoUpdate}
+          onPhotoSendBackward={onPhotoSendBackward}
+          onPhotoBringForward={onPhotoBringForward}
           onPhotoDelete={onPhotoDelete}
         />
       )}
@@ -498,30 +482,11 @@ function StickerTool({
       )}
 
       {selectedSticker && (
-        <div className="composer-sticker-actions">
-          <button
-            type="button"
-            onClick={onSendBackward}
-          >
-            <ArrowDown size={15} aria-hidden />
-            뒤로
-          </button>
-          <button
-            type="button"
-            onClick={onBringForward}
-          >
-            <ArrowUp size={15} aria-hidden />
-            앞으로
-          </button>
-          <button
-            type="button"
-            className="composer-sticker-delete"
-            onClick={onDelete}
-          >
-            <Trash2 size={15} aria-hidden />
-            삭제
-          </button>
-        </div>
+        <LayerActions
+          onSendBackward={onSendBackward}
+          onBringForward={onBringForward}
+          onDelete={onDelete}
+        />
       )}
 
     </>
@@ -534,6 +499,8 @@ function PhotoTool({
   onPhotoAdd,
   onPhotoSelect,
   onPhotoUpdate,
+  onPhotoSendBackward,
+  onPhotoBringForward,
   onPhotoDelete,
 }: {
   draft: CardPage
@@ -546,6 +513,8 @@ function PhotoTool({
   onPhotoUpdate: (
     patch: Partial<PhotoElement>,
   ) => void
+  onPhotoSendBackward: () => void
+  onPhotoBringForward: () => void
   onPhotoDelete: () => void
 }) {
   const floatingInputRef =
@@ -746,14 +715,12 @@ function PhotoTool({
             </div>
           )}
 
-          <button
-            type="button"
-            className="composer-photo-delete"
-            onClick={onPhotoDelete}
-          >
-            <Trash2 size={15} aria-hidden />
-            사진 삭제
-          </button>
+          <LayerActions
+            onSendBackward={onPhotoSendBackward}
+            onBringForward={onPhotoBringForward}
+            onDelete={onPhotoDelete}
+            canReorder={selectedPhoto.role === 'floating'}
+          />
         </div>
       ) : (
         <div className="composer-photo-empty-hint">
@@ -765,6 +732,53 @@ function PhotoTool({
         </div>
       )}
     </>
+  )
+}
+
+function LayerActions({
+  onSendBackward,
+  onBringForward,
+  onDelete,
+  canReorder = true,
+}: {
+  onSendBackward: () => void
+  onBringForward: () => void
+  onDelete: () => void
+  canReorder?: boolean
+}) {
+  return (
+    <div className="composer-layer-actions">
+      {canReorder && (
+        <>
+          <span className="composer-tool-label">레이어</span>
+          <div className="composer-layer-actions__row">
+            <button
+              type="button"
+              onClick={onSendBackward}
+            >
+              <ArrowDown size={14} aria-hidden />
+              맨 뒤로
+            </button>
+            <button
+              type="button"
+              onClick={onBringForward}
+            >
+              <ArrowUp size={14} aria-hidden />
+              맨 앞으로
+            </button>
+          </div>
+        </>
+      )}
+
+      <button
+        type="button"
+        className="composer-layer-actions__delete"
+        onClick={onDelete}
+      >
+        <Trash2 size={15} aria-hidden />
+        삭제
+      </button>
+    </div>
   )
 }
 
