@@ -99,9 +99,14 @@
     var(--desk-object-color);
 }
 
+.desk-object--memo {
+  width: 66px;
+  height: 66px;
+}
+
 .desk-object--letter {
-  width: 84px;
-  height: 54px;
+  width: 92px;
+  height: 50px;
 }
 
 .desk-object--letter .desk-object__paper {
