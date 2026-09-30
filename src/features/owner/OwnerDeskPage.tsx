@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
-import { ArrowLeft, MoreHorizontal } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { AppBar, IconButton, useFeedback } from '@/design-system'
+import { AppBar, IconButton } from '@/design-system'
 import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
 import { DeskScene } from '@/features/desk/DeskScene'
 import { AppShell } from '@/layout/AppShell'
@@ -15,7 +15,6 @@ import './OwnerDeskPage.css'
 
 export function OwnerDeskPage() {
   const navigate = useNavigate()
-  const { showToast } = useFeedback()
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const storedMessages = usePrototypeStore((state) => state.messages)
   const readMessageIds = usePrototypeStore((state) => state.readMessageIds)
@@ -73,15 +72,6 @@ export function OwnerDeskPage() {
               label="프로토타입 목록으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() => navigate('/prototype')}
-            />
-          }
-          trailing={
-            <IconButton
-              label="내 책상 더보기"
-              icon={<MoreHorizontal size={22} aria-hidden />}
-              onClick={() =>
-                showToast('읽기 설정과 책상 꾸미기는 다음 단계에서 연결할게요.')
-              }
             />
           }
         />
