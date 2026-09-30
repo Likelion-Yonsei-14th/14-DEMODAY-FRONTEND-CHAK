@@ -19,6 +19,13 @@ export type DeskObjectType =
 
 export type DeskZone = 'left' | 'center' | 'right' | 'back' | 'front'
 
+export type DeskPlacement = {
+  x: number
+  y: number
+  rotation: number
+  scale: number
+}
+
 export type DeskObject = {
   id: string
   messageId: string
@@ -27,6 +34,11 @@ export type DeskObject = {
   zone: DeskZone
   order: number
   locked?: boolean
+  x?: number
+  y?: number
+  rotation?: number
+  scale?: number
+  zIndex?: number
 }
 
 export type DeskTheme = {

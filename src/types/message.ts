@@ -30,4 +30,5 @@ export type Message = MessageDraft & {
   status: MessageStatus
   createdAt: string
   readAt?: string
+  previewColor?: string
 }

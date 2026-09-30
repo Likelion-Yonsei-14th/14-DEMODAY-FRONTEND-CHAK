@@ -6,8 +6,21 @@ import {
   mockCurrentUser,
   mockDesk,
 } from '@/prototype/mock/initialState'
-import type { CanvasMode, Classroom, Desk, Message, MessageDraft, PrototypeUser } from '@/types'
-import { resolveDeskObjectType, resolveDeskZone } from '@/features/supporter/supporterFlow'
+import { getComposerBackground } from '@/features/composer/backgroundAssets'
+import {
+  resolveDeskObjectType,
+  resolveDeskZone,
+  resolveInitialPlacement,
+} from '@/features/supporter/supporterFlow'
+import type {
+  CanvasMode,
+  Classroom,
+  Desk,
+  DeskPlacement,
+  Message,
+  MessageDraft,
+  PrototypeUser,
+} from '@/types'
 
 type ClaimState = 'unclaimed' | 'claiming' | 'claimed'
 
@@ -19,12 +32,14 @@ type PrototypeState = {
   composerDraft: MessageDraft
   claimState: ClaimState
   classroom: Classroom
+  readMessageIds: string[]
   setDebugMode: (value: boolean) => void
   setCanvasMode: (mode: CanvasMode) => void
   setComposerDraft: (draft: MessageDraft) => void
   resetComposerDraft: () => void
   addMessage: (message: Message) => void
-  placeComposerMessage: () => void
+  placeComposerMessage: (placement?: DeskPlacement) => void
+  markMessageRead: (messageId: string) => void
   setClaimState: (state: ClaimState) => void
 }
 
@@ -38,6 +53,7 @@ export const usePrototypeStore = create<PrototypeState>()(
       composerDraft: emptyComposerDraft,
       claimState: 'claimed',
       classroom: mockClassroom,
+      readMessageIds: [],
       setDebugMode: (debugMode) => set({ debugMode }),
       setCanvasMode: (canvasMode) =>
         set((state) => ({
@@ -45,22 +61,30 @@ export const usePrototypeStore = create<PrototypeState>()(
         })),
       setComposerDraft: (composerDraft) => set({ composerDraft }),
       resetComposerDraft: () => set({ composerDraft: emptyComposerDraft }),
-      addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
-      placeComposerMessage: () =>
+      addMessage: (message) =>
+        set((state) => ({ messages: [...state.messages, message] })),
+      placeComposerMessage: (placement) =>
         set((state) => {
           const stamp = Date.now().toString(36)
           const messageId = `message-${stamp}`
           const objectId = `desk-object-${stamp}`
           const representationType = resolveDeskObjectType(state.composerDraft)
           const zone = resolveDeskZone(state.currentDesk.objects.length)
+          const finalPlacement =
+            placement ?? resolveInitialPlacement(state.currentDesk.objects.length)
+          const previewColor = getComposerBackground(
+            state.composerDraft.backgroundAssetId,
+          ).tone
 
           const message: Message = {
             ...state.composerDraft,
             id: messageId,
-            senderName: state.composerDraft.senderName.trim() || '익명의 친구',
+            senderName:
+              state.composerDraft.senderName.trim() || '익명의 친구',
             recipientDeskId: state.currentDesk.id,
             status: 'sent',
             createdAt: new Date().toISOString(),
+            previewColor,
           }
 
           return {
@@ -76,10 +100,31 @@ export const usePrototypeStore = create<PrototypeState>()(
                   zone,
                   order: state.currentDesk.objects.length,
                   locked: state.composerDraft.visibility === 'private',
+                  ...finalPlacement,
+                  zIndex: state.currentDesk.objects.length + 10,
                 },
               ],
             },
             composerDraft: emptyComposerDraft,
+          }
+        }),
+      markMessageRead: (messageId) =>
+        set((state) => {
+          const nextIds = state.readMessageIds.includes(messageId)
+            ? state.readMessageIds
+            : [...state.readMessageIds, messageId]
+
+          return {
+            readMessageIds: nextIds,
+            messages: state.messages.map((message) =>
+              message.id === messageId
+                ? {
+                    ...message,
+                    status: 'read',
+                    readAt: message.readAt ?? new Date().toISOString(),
+                  }
+                : message,
+            ),
           }
         }),
       setClaimState: (claimState) => set({ claimState }),
@@ -92,6 +137,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         messages: state.messages,
         composerDraft: state.composerDraft,
         claimState: state.claimState,
+        readMessageIds: state.readMessageIds,
       }),
     },
   ),
