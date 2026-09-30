@@ -12,7 +12,7 @@ import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import './SupportDeskPage.css'
 
-const seededObjectCount = 5
+const seededObjectCount = 6
 
 export function SupportDeskPage() {
   const navigate = useNavigate()
@@ -89,7 +89,9 @@ export function SupportDeskPage() {
             objects={currentDesk.objects}
             messages={messages}
             onObjectClick={(messageId) =>
-              navigate(`/prototype/support/jisu/message/${messageId}`)
+              navigate(`/prototype/support/jisu/message/${messageId}`, {
+                state: { from: 'desk' },
+              })
             }
           />
         </div>

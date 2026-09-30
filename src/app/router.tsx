@@ -1,6 +1,8 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { App } from '@/app/App'
 import { UnifiedComposerPage } from '@/features/composer/UnifiedComposerPage'
+import { EnvelopeStackPage } from '@/features/supporter/EnvelopeStackPage'
+import { MessageViewerPage } from '@/features/supporter/MessageViewerPage'
 import { PlacementPreviewPage } from '@/features/supporter/PlacementPreviewPage'
 import { SupportCompletePage } from '@/features/supporter/SupportCompletePage'
 import { SupportDeskPage } from '@/features/supporter/SupportDeskPage'
@@ -21,9 +23,23 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="/prototype" replace /> },
       { path: '/prototype', element: <PrototypeIndexPage /> },
       { path: '/prototype/support/jisu', element: <SupportDeskPage /> },
-      { path: '/prototype/support/jisu/compose', element: <UnifiedComposerPage /> },
-      { path: '/prototype/support/jisu/placement', element: <PlacementPreviewPage /> },
-      { path: '/prototype/support/jisu/complete', element: <SupportCompletePage /> },
+      { path: '/prototype/support/jisu/cards', element: <EnvelopeStackPage /> },
+      {
+        path: '/prototype/support/jisu/message/:messageId',
+        element: <MessageViewerPage />,
+      },
+      {
+        path: '/prototype/support/jisu/compose',
+        element: <UnifiedComposerPage />,
+      },
+      {
+        path: '/prototype/support/jisu/placement',
+        element: <PlacementPreviewPage />,
+      },
+      {
+        path: '/prototype/support/jisu/complete',
+        element: <SupportCompletePage />,
+      },
       { path: '/prototype/desk', element: <DeskPage /> },
       { path: '/prototype/composer', element: <ComposerPage /> },
       { path: '/prototype/reader', element: <ReaderPage /> },
