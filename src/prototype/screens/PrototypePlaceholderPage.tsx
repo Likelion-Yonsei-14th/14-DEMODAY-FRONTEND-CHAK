@@ -1,6 +1,6 @@
 import { ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { AppBar, IconButton, StatusBadge } from '@/design-system'
+import { AppBar, StatusBadge } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
 
 type PlaceholderPageProps = {
@@ -23,8 +23,8 @@ export function PrototypePlaceholderPage({
         <AppBar
           title={title}
           leading={
-            <Link to="/prototype" aria-label="프로토타입 목록으로 돌아가기">
-              <IconButton label="뒤로" icon={<ArrowLeft size={21} aria-hidden />} tabIndex={-1} />
+            <Link className="prototype-back-link" to="/prototype" aria-label="프로토타입 목록으로 돌아가기">
+              <ArrowLeft size={21} aria-hidden />
             </Link>
           }
           trailing={<StatusBadge>{phase}</StatusBadge>}

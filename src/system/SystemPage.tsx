@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import {
   Image as ImageIcon,
   Palette,
@@ -235,7 +235,7 @@ function SystemSection({
 }: {
   title: string
   description?: string
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <section className="system-section">
