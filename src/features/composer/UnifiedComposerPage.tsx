@@ -7,7 +7,6 @@ import { usePrototypeStore } from '@/store/prototypeStore'
 import type {
   MessageVisibility,
   PhotoElement,
-  PositionedAsset,
   TextElement,
 } from '@/types'
 import { VisibilitySheet } from '@/features/supporter/VisibilitySheet'
@@ -15,7 +14,6 @@ import { ComposerDock, type ComposerTool } from './ComposerDock'
 import { ComposerToolTray } from './ComposerToolTray'
 import { MessageCanvas } from './MessageCanvas'
 import { processPhotoFile } from './photoUtils'
-import { getWordArtDefinition } from './wordArt/wordArtAssets'
 import './composer.css'
 
 const FLOATING_PHOTO_LIMIT = 3
@@ -78,30 +76,6 @@ export function UnifiedComposerPage() {
 
   const updateVisibility = (visibility: MessageVisibility) => {
     setComposerDraft({ ...draft, visibility })
-  }
-
-  const addWordArt = (assetId: string) => {
-    if (draft.wordArtElements.length >= 4) return
-
-    const definition = getWordArtDefinition(assetId)
-    if (!definition) return
-
-    const index = draft.wordArtElements.length
-    const element: PositionedAsset = {
-      id: `word-art-${Date.now().toString(36)}-${index}`,
-      assetId,
-      x: 50,
-      y: 31 + index * 12,
-      scale: definition.defaultScale,
-      rotation: index % 2 === 0 ? -2 : 2,
-      zIndex: 20 + index,
-    }
-
-    setComposerDraft({
-      ...draft,
-      wordArtElements: [...draft.wordArtElements, element],
-    })
-    setSelectedLayerId(element.id)
   }
 
   const moveWordArt = (id: string, x: number, y: number) => {
@@ -282,7 +256,6 @@ export function UnifiedComposerPage() {
             onTextAlignChange={(align) =>
               updatePrimaryText({ align })
             }
-            onWordArtAdd={addWordArt}
             onPhotoAdd={addPhoto}
             onPhotoSelect={setSelectedLayerId}
             onPhotoUpdate={(patch) => {

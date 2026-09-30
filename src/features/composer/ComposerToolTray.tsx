@@ -25,7 +25,6 @@ type ComposerToolTrayProps = {
   onBackgroundChange: (backgroundId: string) => void
   onTextStyleChange: (styleId: string) => void
   onTextAlignChange: (align: 'left' | 'center' | 'right') => void
-  onWordArtAdd: (assetId: string) => void
   onPhotoAdd: (
     file: File,
     role: 'floating' | 'background',
@@ -42,7 +41,6 @@ export function ComposerToolTray({
   onBackgroundChange,
   onTextStyleChange,
   onTextAlignChange,
-  onWordArtAdd: _onWordArtAdd,
   onPhotoAdd,
   onPhotoSelect,
   onPhotoUpdate,
