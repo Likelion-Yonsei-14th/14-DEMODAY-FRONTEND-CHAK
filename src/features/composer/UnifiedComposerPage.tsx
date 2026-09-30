@@ -7,6 +7,7 @@ import { usePrototypeStore } from '@/store/prototypeStore'
 import type {
   MessageVisibility,
   PhotoElement,
+  PositionedAsset,
   TextElement,
 } from '@/types'
 import { VisibilitySheet } from '@/features/supporter/VisibilitySheet'
@@ -50,6 +51,9 @@ export function UnifiedComposerPage() {
   )
   const selectedPhoto = page.photoElements.find(
     (photo) => photo.id === selectedLayerId,
+  )
+  const selectedSticker = page.stickerElements.find(
+    (sticker) => sticker.id === selectedLayerId,
   )
 
   const hasContent = useMemo(
@@ -158,6 +162,66 @@ export function UnifiedComposerPage() {
         element.id === id ? { ...element, x, y } : element,
       ),
     }))
+  }
+
+  const addSticker = (assetId: string) => {
+    const index = page.stickerElements.length
+    const stamp = Date.now().toString(36)
+    const id = `sticker-${stamp}-${index}`
+    const offset = ((index % 3) - 1) * 7
+
+    const sticker: PositionedAsset = {
+      id,
+      assetId,
+      x: 50 + offset,
+      y: 46 + Math.min(index, 2) * 7,
+      scale: 1,
+      rotation: [-6, 5, -2][index % 3] ?? 0,
+      zIndex: Math.min(80, getFrontLayerZ(page) + 1),
+    }
+
+    updatePage((current) => ({
+      ...current,
+      stickerElements: [...current.stickerElements, sticker],
+    }))
+    setSelectedLayerId(id)
+    setTool('sticker')
+  }
+
+  const updateSticker = (
+    id: string,
+    patch: Partial<PositionedAsset>,
+  ) => {
+    updatePage((current) => ({
+      ...current,
+      stickerElements: current.stickerElements.map((sticker) =>
+        sticker.id === id ? { ...sticker, ...patch } : sticker,
+      ),
+    }))
+  }
+
+  const deleteSticker = (id: string) => {
+    updatePage((current) => ({
+      ...current,
+      stickerElements: current.stickerElements.filter(
+        (sticker) => sticker.id !== id,
+      ),
+    }))
+    setSelectedLayerId(null)
+  }
+
+  const sendSelectedStickerBackward = () => {
+    if (!selectedSticker) return
+    updateSticker(selectedSticker.id, {
+      zIndex: Math.max(4, getBackLayerZ(page) - 1),
+    })
+  }
+
+  const bringSelectedStickerForward = () => {
+    if (!selectedSticker) return
+    updateSticker(selectedSticker.id, {
+      zIndex: Math.min(80, getFrontLayerZ(page) + 1),
+    })
   }
 
   const addPhoto = async (
@@ -304,6 +368,13 @@ export function UnifiedComposerPage() {
                   setSelectedLayerId(latestPhoto.id)
                 }
               }
+
+              if (nextTool === 'sticker') {
+                const latestSticker = page.stickerElements.at(-1)
+                if (latestSticker) {
+                  setSelectedLayerId(latestSticker.id)
+                }
+              }
             }}
           />
         }
@@ -322,6 +393,27 @@ export function UnifiedComposerPage() {
                 )
               ) {
                 setTool('text')
+              } else if (
+                id &&
+                page.stickerElements.some(
+                  (element) => element.id === id,
+                )
+              ) {
+                setTool('sticker')
+              } else if (
+                id &&
+                page.photoElements.some(
+                  (element) => element.id === id,
+                )
+              ) {
+                setTool('photo')
+              } else if (
+                id &&
+                page.wordArtElements.some(
+                  (element) => element.id === id,
+                )
+              ) {
+                setTool('phrase')
               }
             }}
             onTextDone={() => setSelectedLayerId(null)}
@@ -335,6 +427,7 @@ export function UnifiedComposerPage() {
               updateTextElement(id, { width, x })
             }
             onWordArtMove={moveWordArt}
+            onStickerChange={updateSticker}
             onPhotoChange={updatePhoto}
             onOverflowChange={setPageOverflow}
           />
@@ -374,6 +467,7 @@ export function UnifiedComposerPage() {
             draft={page}
             selectedText={selectedText}
             selectedPhoto={selectedPhoto}
+            selectedSticker={selectedSticker}
             onBackgroundChange={(backgroundAssetId) =>
               updatePage({ backgroundAssetId })
             }
@@ -399,6 +493,23 @@ export function UnifiedComposerPage() {
             onTextDelete={() => {
               if (selectedText) {
                 deleteTextElement(selectedText.id)
+              }
+            }}
+            onStickerAdd={addSticker}
+            onStickerSelect={(id) => {
+              setSelectedLayerId(id)
+              setTool('sticker')
+            }}
+            onStickerUpdate={(patch) => {
+              if (selectedSticker) {
+                updateSticker(selectedSticker.id, patch)
+              }
+            }}
+            onStickerSendBackward={sendSelectedStickerBackward}
+            onStickerBringForward={bringSelectedStickerForward}
+            onStickerDelete={() => {
+              if (selectedSticker) {
+                deleteSticker(selectedSticker.id)
               }
             }}
             onPhotoAdd={addPhoto}
