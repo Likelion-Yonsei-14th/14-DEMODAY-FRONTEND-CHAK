@@ -182,7 +182,6 @@
   }
 }
 
-
 .original-message__word-art {
   position: absolute;
   width: 58%;
@@ -198,7 +197,6 @@
   overflow: visible;
   filter: drop-shadow(0 4px 5px rgba(55,40,32,.07));
 }
-
 
 .original-message__photo-background {
   position: absolute;
@@ -273,7 +271,6 @@
   z-index: 40;
 }
 
-
 /* Floating photo rendering matches the composer, including transparent cutouts. */
 .original-message__floating-photo {
   background: transparent;
@@ -311,12 +308,10 @@
   box-shadow: 0 12px 22px rgba(63,47,38,.14);
 }
 
-
 /* Typography is now message data rather than a fixed preset class. */
 .original-message__text {
   font-synthesis: none;
 }
-
 
 /* Multi-page messages stay one message and swipe horizontally page by page. */
 .message-viewer__page-meta {
@@ -345,6 +340,12 @@
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   animation: message-viewer-arrive 420ms var(--ease-emphasized) both;
+  outline: none;
+}
+
+.message-viewer__pages:focus-visible {
+  border-radius: 28px;
+  box-shadow: 0 0 0 3px rgba(91, 76, 67, .12);
 }
 
 .message-viewer__pages::-webkit-scrollbar {
@@ -361,34 +362,110 @@
   scroll-snap-stop: always;
 }
 
+.message-viewer__page-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 40px;
+}
+
+.message-viewer__page-nav-button,
+.message-viewer__page-dot {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.message-viewer__page-nav-button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-content-secondary);
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+}
+
+.message-viewer__page-nav-button:hover:not(:disabled) {
+  background: rgba(87, 72, 61, .06);
+  color: var(--color-content-primary);
+}
+
+.message-viewer__page-nav-button:focus-visible,
+.message-viewer__page-dot:focus-visible {
+  outline: 2px solid var(--color-content-primary);
+  outline-offset: 2px;
+}
+
+.message-viewer__page-nav-button:disabled {
+  opacity: .24;
+  cursor: default;
+}
+
 .message-viewer__page-dots {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  min-height: 18px;
+  gap: 0;
 }
 
 .message-viewer__page-dot {
-  width: 6px;
-  height: 6px;
+  position: relative;
+  width: 32px;
+  height: 36px;
   padding: 0;
   border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.message-viewer__page-dot::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
   border-radius: 999px;
   background: var(--color-border-default);
-  cursor: pointer;
+  transform: translate(-50%, -50%);
   transition:
     width 150ms ease,
     background 150ms ease;
 }
 
-.message-viewer__page-dot--active {
+.message-viewer__page-dot--active::before {
   width: 17px;
   background: var(--color-content-primary);
+}
+
+.message-viewer__page-hint {
+  min-height: 17px;
+  margin: -4px 0 0;
+  color: var(--color-content-tertiary);
+  font-size: 10px;
+  line-height: 17px;
+  text-align: center;
+}
+
+.message-viewer__page-hint--complete {
+  color: var(--color-content-secondary);
+  font-weight: 650;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .message-viewer__pages {
     animation: none;
+  }
+
+  .message-viewer__page-nav-button,
+  .message-viewer__page-dot::before {
+    transition: none;
   }
 }
