@@ -1351,3 +1351,107 @@
     flex-direction: column;
   }
 }
+
+
+/* Text selection controls stay reachable even when the text is near the canvas edge. */
+.canvas-text-element__done,
+.canvas-text-element__move,
+.canvas-text-element__resize {
+  z-index: 70;
+  touch-action: none;
+}
+
+.canvas-text-element__resize {
+  position: absolute;
+  right: -15px;
+  top: 50%;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(76,69,63,.14);
+  border-radius: 50%;
+  background: rgba(255,253,248,.97);
+  color: var(--color-content-secondary);
+  box-shadow: 0 5px 14px rgba(55,43,34,.14);
+  cursor: ew-resize;
+  transform: translateY(-50%);
+}
+
+.canvas-text-element--controls-bottom .canvas-text-element__done {
+  top: auto;
+  bottom: -12px;
+}
+
+.canvas-text-element--controls-bottom .canvas-text-element__move {
+  top: auto;
+  bottom: -12px;
+}
+
+.canvas-text-element--controls-bottom .canvas-text-element__resize {
+  top: auto;
+  bottom: -15px;
+  transform: none;
+}
+
+.canvas-text-element--selected {
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.35);
+}
+
+/* Layer ordering controls */
+.composer-text-layer-actions {
+  display: grid;
+  gap: 6px;
+}
+
+.composer-text-layer-actions > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.composer-text-layer-actions button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 11px;
+  background: var(--color-surface-base);
+  color: var(--color-content-secondary);
+  font-size: 9px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.composer-text-layer-actions button:active,
+.composer-text-delete:active {
+  transform: scale(.97);
+}
+
+/* Give every horizontally scrollable control rail enough edge room for focus/selection rings. */
+.composer-font-list,
+.composer-bg-list,
+.composer-photo-strip,
+.composer-word-art-list,
+.composer-text-layer-row {
+  scroll-padding-inline: 10px;
+}
+
+.composer-font-list::before,
+.composer-bg-list::before,
+.composer-photo-strip::before,
+.composer-word-art-list::before {
+  content: '';
+  width: 1px;
+  flex: 0 0 1px;
+}
+
+@media (max-width: 360px) {
+  .composer-text-layer-actions > div {
+    width: 100%;
+  }
+}
