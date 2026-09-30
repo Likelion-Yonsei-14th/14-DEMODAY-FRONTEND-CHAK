@@ -1102,76 +1102,6 @@
   max-height: none;
 }
 
-.composer-size-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.composer-size-value {
-  color: var(--color-content-tertiary);
-  font-size: 10px;
-  line-height: 16px;
-  font-variant-numeric: tabular-nums;
-}
-
-.composer-font-size-slider {
-  display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) 26px;
-  align-items: center;
-  gap: 8px;
-  color: var(--color-content-secondary);
-  font-family: var(--font-ui);
-  font-size: 12px;
-  line-height: 1;
-}
-
-.composer-font-size-slider__large {
-  font-size: 20px;
-  font-weight: 650;
-}
-
-.composer-font-size-slider input[type='range'] {
-  width: 100%;
-  height: 28px;
-  margin: 0;
-  accent-color: var(--color-content-primary);
-  cursor: pointer;
-}
-
-.composer-font-size-slider input[type='range']::-webkit-slider-runnable-track {
-  height: 4px;
-  border-radius: 999px;
-  background: var(--color-border-default);
-}
-
-.composer-font-size-slider input[type='range']::-webkit-slider-thumb {
-  width: 18px;
-  height: 18px;
-  margin-top: -7px;
-  border: 3px solid var(--color-surface-base);
-  border-radius: 50%;
-  background: var(--color-content-primary);
-  box-shadow: 0 2px 7px rgba(55,43,34,.18);
-  -webkit-appearance: none;
-}
-
-.composer-font-size-slider input[type='range']::-moz-range-track {
-  height: 4px;
-  border-radius: 999px;
-  background: var(--color-border-default);
-}
-
-.composer-font-size-slider input[type='range']::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  border: 3px solid var(--color-surface-base);
-  border-radius: 50%;
-  background: var(--color-content-primary);
-  box-shadow: 0 2px 7px rgba(55,43,34,.18);
-}
-
 
 /* Multi-text editing */
 .canvas-text-element__done {
@@ -1467,12 +1397,61 @@
 }
 
 
-.composer-text-gesture-note {
-  margin: -2px 0 0;
-  padding: 8px 10px;
-  border-radius: 10px;
+
+
+/* Compact mobile typography sizing: one-step controls, no persistent instructional copy. */
+.composer-font-size-stepper {
+  width: fit-content;
+  display: grid;
+  grid-template-columns: 44px 54px 44px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--color-border-default);
+  border-radius: 12px;
+  background: var(--color-surface-base);
+}
+
+.composer-font-size-stepper button {
+  width: 44px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-content-primary);
+  cursor: pointer;
+}
+
+.composer-font-size-stepper button:first-child {
+  border-right: 1px solid var(--color-border-subtle);
+}
+
+.composer-font-size-stepper button:last-child {
+  border-left: 1px solid var(--color-border-subtle);
+}
+
+.composer-font-size-stepper button:active:not(:disabled) {
   background: var(--color-surface-subtle);
-  color: var(--color-content-secondary);
-  font-size: 9px;
-  line-height: 15px;
+}
+
+.composer-font-size-stepper button:disabled {
+  color: var(--color-content-tertiary);
+  opacity: .45;
+  cursor: default;
+}
+
+.composer-font-size-stepper__value {
+  display: grid;
+  place-items: center;
+  min-height: 42px;
+  color: var(--color-content-primary);
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.composer-photo-editor__heading {
+  gap: 0;
 }

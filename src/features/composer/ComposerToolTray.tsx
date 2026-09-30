@@ -5,6 +5,7 @@ import {
   AlignRight,
   ArrowDown,
   ArrowUp,
+  Minus,
   Plus,
   ImagePlus,
   Images,
@@ -27,7 +28,6 @@ import type { ComposerTool } from './ComposerDock'
 import {
   composerFonts,
   composerTextColors,
-  composerTextSizes,
   resolveTextColor,
   resolveTextFontId,
   resolveTextFontSize,
@@ -94,10 +94,7 @@ export function ComposerToolTray({
     >
       {tool === 'background' && (
         <>
-          <ToolTrayHeader
-            title="배경"
-            description="기본 컬러부터 손그림 배경까지 골라보세요."
-          />
+          <ToolTrayHeader title="배경" />
           <BackgroundRow
             label="기본"
             backgrounds={basicBackgrounds}
@@ -116,14 +113,7 @@ export function ComposerToolTray({
       {tool === 'text' && (
         <>
           <div className="composer-text-tool-header">
-            <ToolTrayHeader
-              title="글자"
-              description={
-                activeText
-                  ? '선택한 텍스트 박스의 글씨체와 크기, 색을 조정해보세요.'
-                  : '카드의 텍스트를 누르거나 새 텍스트를 추가해보세요.'
-              }
-            />
+            <ToolTrayHeader title="글자" />
             <button
               type="button"
               className="composer-text-add"
@@ -202,47 +192,48 @@ export function ComposerToolTray({
               </div>
 
               <div className="composer-chip-section">
-                <div className="composer-size-heading">
-                  <span className="composer-tool-label">크기</span>
-                  <span className="composer-size-value">
-                    {resolveTextFontSize(activeText)}px
-                  </span>
-                </div>
-                <div className="composer-chip-row">
-                  {composerTextSizes.map((size) => (
-                    <ChoiceChip
-                      key={size.id}
-                      selected={
-                        resolveTextFontSize(activeText) === size.value
-                      }
-                      onClick={() =>
-                        onTextSizeChange(size.value)
-                      }
-                    >
-                      {size.label}
-                    </ChoiceChip>
-                  ))}
-                </div>
-                <div className="composer-font-size-slider">
-                  <span aria-hidden>가</span>
-                  <input
-                    type="range"
-                    min="14"
-                    max="42"
-                    step="1"
-                    value={resolveTextFontSize(activeText)}
-                    aria-label="글자 크기"
-                    aria-valuetext={`${resolveTextFontSize(activeText)}픽셀`}
-                    onChange={(event) =>
-                      onTextSizeChange(Number(event.target.value))
+                <span className="composer-tool-label">크기</span>
+                <div
+                  className="composer-font-size-stepper"
+                  role="group"
+                  aria-label="글자 크기 조절"
+                >
+                  <button
+                    type="button"
+                    aria-label="글자 크기 줄이기"
+                    disabled={resolveTextFontSize(activeText) <= 14}
+                    onClick={() =>
+                      onTextSizeChange(
+                        Math.max(
+                          14,
+                          resolveTextFontSize(activeText) - 1,
+                        ),
+                      )
                     }
-                  />
-                  <span
-                    className="composer-font-size-slider__large"
-                    aria-hidden
                   >
-                    가
-                  </span>
+                    <Minus size={17} aria-hidden />
+                  </button>
+                  <output
+                    className="composer-font-size-stepper__value"
+                    aria-live="polite"
+                  >
+                    {resolveTextFontSize(activeText)}
+                  </output>
+                  <button
+                    type="button"
+                    aria-label="글자 크기 키우기"
+                    disabled={resolveTextFontSize(activeText) >= 42}
+                    onClick={() =>
+                      onTextSizeChange(
+                        Math.min(
+                          42,
+                          resolveTextFontSize(activeText) + 1,
+                        ),
+                      )
+                    }
+                  >
+                    <Plus size={17} aria-hidden />
+                  </button>
                 </div>
               </div>
 
@@ -348,10 +339,6 @@ export function ComposerToolTray({
                 텍스트 삭제
               </button>
 
-              <p className="composer-text-gesture-note">
-                텍스트 박스 위에서 두 손가락을 벌리거나 모으면 박스 너비가 바뀌어요.
-              </p>
-
               <p className="composer-font-license-note">
                 네이버 나눔손글씨 · 나눔스퀘어 네오와 오픈 라이선스
                 Pretendard를 사용해요.
@@ -454,10 +441,7 @@ function PhotoTool({
 
   return (
     <>
-      <ToolTrayHeader
-        title="사진"
-        description="사진을 카드 위에 놓거나, 카드 전체 배경으로 채울 수 있어요."
-      />
+      <ToolTrayHeader title="사진" />
 
       <div className="composer-photo-actions">
         <button
@@ -583,11 +567,6 @@ function PhotoTool({
                 ? '배경 사진 편집'
                 : '사진 편집'}
             </strong>
-            <span>
-              {selectedPhoto.role === 'background'
-                ? '사진을 끌어 위치를 바꾸고, 캔버스 오른쪽 아래 핸들을 끌어 확대·축소하세요.'
-                : '사진을 끌어 이동하고, 오른쪽 아래 핸들을 끌어 크기와 각도를 조절하세요.'}
-            </span>
           </div>
 
           {selectedPhoto.hasTransparency &&
@@ -733,12 +712,12 @@ function ToolTrayHeader({
   description,
 }: {
   title: string
-  description: string
+  description?: string
 }) {
   return (
     <header className="composer-tool-tray__header">
       <strong>{title}</strong>
-      <span>{description}</span>
+      {description && <span>{description}</span>}
     </header>
   )
 }

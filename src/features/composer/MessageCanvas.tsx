@@ -209,11 +209,6 @@ export function MessageCanvas({
         </div>
       </div>
 
-      <p className="message-canvas-viewport__hint">
-        요소를 끌어 이동해요. 사진은{' '}
-        <Maximize2 size={13} aria-hidden /> 핸들로,
-        텍스트 박스는 두 손가락을 벌리거나 모아 크기를 조절할 수 있어요.
-      </p>
     </div>
   )
 }

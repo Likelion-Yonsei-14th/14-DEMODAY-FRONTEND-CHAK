@@ -291,10 +291,6 @@ export function UnifiedComposerPage() {
         }
       >
         <div className="unified-composer">
-          <header className="unified-composer__intro">
-            <p>짧게 적어도, 사진을 넣어도, 마음껏 꾸며도 괜찮아요.</p>
-          </header>
-
           <MessageCanvas
             draft={draft}
             selectedId={selectedLayerId}
