@@ -169,10 +169,12 @@ export function hasDraftContent(draft: MessageDraft) {
 
 
 function pageSnapshot(page: CardPage): Omit<CardPage, 'id'> {
-  const {
-    id: _pageId,
-    ...snapshot
-  } = page
-
-  return snapshot
+  return {
+    canvasMode: page.canvasMode,
+    backgroundAssetId: page.backgroundAssetId,
+    textElements: page.textElements,
+    wordArtElements: page.wordArtElements,
+    stickerElements: page.stickerElements,
+    photoElements: page.photoElements,
+  }
 }
