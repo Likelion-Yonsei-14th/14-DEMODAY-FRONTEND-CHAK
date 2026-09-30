@@ -7,6 +7,14 @@ import type {
   MessageDraft,
 } from '@/types'
 
+export const selectableDeskObjectTypes: DeskObjectType[] = [
+  'memo',
+  'letter',
+  'photo-card',
+  'poster-card',
+  'charm',
+]
+
 export function resolveDeskObjectType(draft: MessageDraft): DeskObjectType {
   const pages = getMessagePages(draft)
 
