@@ -5,16 +5,20 @@ import { AppBar, Button, IconButton } from '@/design-system'
 import { getComposerBackground } from '@/features/composer/backgroundAssets'
 import { getFirstCardPage } from '@/features/composer/messagePages'
 import { DeskScene } from '@/features/desk/DeskScene'
-import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
+import {
+  DeskObjectLayer,
+  DeskObjectVisual,
+} from '@/features/desk/DeskObjectLayer'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
-import type { DeskPlacement } from '@/types'
+import type { DeskObjectType, DeskPlacement } from '@/types'
 import {
   clampPlacement,
   deskObjectLabels,
   isPlacementValid,
   resolveDeskObjectType,
   resolveInitialPlacement,
+  selectableDeskObjectTypes,
 } from './supporterFlow'
 import './supporterFlow.css'
 
@@ -30,7 +34,13 @@ export function PlacementPreviewPage() {
   const [placing, setPlacing] = useState(false)
   const [dragging, setDragging] = useState(false)
 
-  const objectType = useMemo(() => resolveDeskObjectType(draft), [draft])
+  const recommendedObjectType = useMemo(
+    () => resolveDeskObjectType(draft),
+    [draft],
+  )
+  const [objectType, setObjectType] = useState<DeskObjectType>(
+    recommendedObjectType,
+  )
   const firstPage = getFirstCardPage(draft)
   const previewColor = getComposerBackground(firstPage.backgroundAssetId).tone
   const initialPlacement = useMemo(
@@ -41,7 +51,11 @@ export function PlacementPreviewPage() {
   const [lastValidPlacement, setLastValidPlacement] =
     useState<DeskPlacement>(initialPlacement)
 
-  const valid = isPlacementValid(placement, currentDesk.objects)
+  const valid = isPlacementValid(
+    placement,
+    currentDesk.objects,
+    objectType,
+  )
   const visibilityPrivate = draft.visibility === 'private'
 
   const handlePointerDown: React.PointerEventHandler<HTMLButtonElement> = (
@@ -62,7 +76,13 @@ export function PlacementPreviewPage() {
       })
 
       setPlacement(next)
-      if (isPlacementValid(next, currentDesk.objects)) {
+      if (
+        isPlacementValid(
+          next,
+          currentDesk.objects,
+          objectType,
+        )
+      ) {
         setLastValidPlacement(next)
       }
     }
@@ -76,7 +96,11 @@ export function PlacementPreviewPage() {
     const onUp = () => {
       setDragging(false)
       setPlacement((current) =>
-        isPlacementValid(current, currentDesk.objects)
+        isPlacementValid(
+          current,
+          currentDesk.objects,
+          objectType,
+        )
           ? current
           : lastValidPlacement,
       )
@@ -93,7 +117,7 @@ export function PlacementPreviewPage() {
     setPlacing(true)
 
     window.setTimeout(() => {
-      placeComposerMessage(placement)
+      placeComposerMessage(placement, objectType)
       navigate('/prototype/support/jisu/complete', { replace: true })
     }, 520)
   }
@@ -135,6 +159,44 @@ export function PlacementPreviewPage() {
           <p>
             다른 친구의 응원을 거의 다 가리는 자리만 피하면 어디든 괜찮아요.
           </p>
+        </section>
+
+        <section
+          className="placement-object-picker"
+          aria-label="책상에 놓을 형태"
+        >
+          {selectableDeskObjectTypes.map((type) => {
+            const selected = objectType === type
+
+            return (
+              <button
+                type="button"
+                key={type}
+                className={[
+                  'placement-object-option',
+                  selected
+                    ? 'placement-object-option--selected'
+                    : '',
+                ].filter(Boolean).join(' ')}
+                aria-pressed={selected}
+                onClick={() => setObjectType(type)}
+              >
+                <span
+                  className={[
+                    'placement-object-option__preview',
+                    `desk-object--${type}`,
+                  ].join(' ')}
+                  style={{
+                    '--desk-object-color': previewColor,
+                  } as React.CSSProperties}
+                  aria-hidden
+                >
+                  <DeskObjectVisual type={type} />
+                </span>
+                <span>{deskObjectLabels[type]}</span>
+              </button>
+            )
+          })}
         </section>
 
         <div
