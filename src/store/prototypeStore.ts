@@ -7,6 +7,7 @@ import {
   mockDesk,
 } from '@/prototype/mock/initialState'
 import type { CanvasMode, Classroom, Desk, Message, MessageDraft, PrototypeUser } from '@/types'
+import { resolveDeskObjectType, resolveDeskZone } from '@/features/supporter/supporterFlow'
 
 type ClaimState = 'unclaimed' | 'claiming' | 'claimed'
 
@@ -23,6 +24,7 @@ type PrototypeState = {
   setComposerDraft: (draft: MessageDraft) => void
   resetComposerDraft: () => void
   addMessage: (message: Message) => void
+  placeComposerMessage: () => void
   setClaimState: (state: ClaimState) => void
 }
 
@@ -44,6 +46,42 @@ export const usePrototypeStore = create<PrototypeState>()(
       setComposerDraft: (composerDraft) => set({ composerDraft }),
       resetComposerDraft: () => set({ composerDraft: emptyComposerDraft }),
       addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
+      placeComposerMessage: () =>
+        set((state) => {
+          const stamp = Date.now().toString(36)
+          const messageId = `message-${stamp}`
+          const objectId = `desk-object-${stamp}`
+          const representationType = resolveDeskObjectType(state.composerDraft)
+          const zone = resolveDeskZone(state.currentDesk.objects.length)
+
+          const message: Message = {
+            ...state.composerDraft,
+            id: messageId,
+            senderName: state.composerDraft.senderName.trim() || '익명의 친구',
+            recipientDeskId: state.currentDesk.id,
+            status: 'sent',
+            createdAt: new Date().toISOString(),
+          }
+
+          return {
+            messages: [...state.messages, message],
+            currentDesk: {
+              ...state.currentDesk,
+              objects: [
+                ...state.currentDesk.objects,
+                {
+                  id: objectId,
+                  messageId,
+                  representationType,
+                  zone,
+                  order: state.currentDesk.objects.length,
+                  locked: state.composerDraft.visibility === 'private',
+                },
+              ],
+            },
+            composerDraft: emptyComposerDraft,
+          }
+        }),
       setClaimState: (claimState) => set({ claimState }),
     }),
     {

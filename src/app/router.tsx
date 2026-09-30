@@ -1,6 +1,8 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { App } from '@/app/App'
 import { UnifiedComposerPage } from '@/features/composer/UnifiedComposerPage'
+import { PlacementPreviewPage } from '@/features/supporter/PlacementPreviewPage'
+import { SupportCompletePage } from '@/features/supporter/SupportCompletePage'
 import { SupportDeskPage } from '@/features/supporter/SupportDeskPage'
 import { PrototypeIndexPage } from '@/prototype/screens/PrototypeIndexPage'
 import {
@@ -20,6 +22,8 @@ export const router = createBrowserRouter([
       { path: '/prototype', element: <PrototypeIndexPage /> },
       { path: '/prototype/support/jisu', element: <SupportDeskPage /> },
       { path: '/prototype/support/jisu/compose', element: <UnifiedComposerPage /> },
+      { path: '/prototype/support/jisu/placement', element: <PlacementPreviewPage /> },
+      { path: '/prototype/support/jisu/complete', element: <SupportCompletePage /> },
       { path: '/prototype/desk', element: <DeskPage /> },
       { path: '/prototype/composer', element: <ComposerPage /> },
       { path: '/prototype/reader', element: <ReaderPage /> },

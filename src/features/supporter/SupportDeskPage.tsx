@@ -3,11 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { AppBar, Button, IconButton, useFeedback } from '@/design-system'
 import { DeskScene } from '@/features/desk/DeskScene'
 import { AppShell } from '@/layout/AppShell'
+import { usePrototypeStore } from '@/store/prototypeStore'
 import './SupportDeskPage.css'
+
+const seededObjectCount = 5
 
 export function SupportDeskPage() {
   const navigate = useNavigate()
   const { showToast } = useFeedback()
+  const currentDesk = usePrototypeStore((state) => state.currentDesk)
+  const latestObject = currentDesk.objects[currentDesk.objects.length - 1]
+  const objectCount = seededObjectCount + currentDesk.objects.length
 
   return (
     <AppShell
@@ -50,18 +56,21 @@ export function SupportDeskPage() {
         </section>
 
         <div className="support-desk__scene-wrap">
-          <DeskScene ownerName="지수" />
+          <DeskScene
+            ownerName="지수"
+            extraObjectType={latestObject?.representationType}
+          />
         </div>
 
         <div className="support-desk__meta">
           <div>
-            <strong>5개의 응원이 기다리는 중</strong>
+            <strong>{objectCount}개의 응원이 기다리는 중</strong>
             <span>사진, 메모, 편지와 작은 행운들이 쌓이고 있어요.</span>
           </div>
           <button
             type="button"
             className="support-desk__share"
-            onClick={() => showToast('친구에게 공유하는 기능은 Tail Flow와 함께 연결할게요.')}
+            onClick={() => showToast('친구에게 공유하는 기능은 완료 화면에서 먼저 연결했어요.')}
           >
             <Share2 size={16} aria-hidden />
             공유
