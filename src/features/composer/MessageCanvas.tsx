@@ -11,7 +11,7 @@ import {
   Move,
 } from 'lucide-react'
 import type {
-  MessageDraft,
+  CardPage,
   PhotoElement,
   PositionedAsset,
   TextElement,
@@ -22,7 +22,7 @@ import { WordArtGraphic } from './wordArt/wordArtAssets'
 import './composer.css'
 
 type MessageCanvasProps = {
-  draft: MessageDraft
+  draft: CardPage
   selectedId: string | null
   onSelect: (id: string | null) => void
   onTextDone: () => void
@@ -38,6 +38,7 @@ type MessageCanvasProps = {
     id: string,
     patch: Partial<PhotoElement>,
   ) => void
+  onOverflowChange: (overflow: boolean) => void
 }
 
 export function MessageCanvas({
@@ -50,6 +51,7 @@ export function MessageCanvas({
   onTextResize,
   onWordArtMove,
   onPhotoChange,
+  onOverflowChange,
 }: MessageCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null)
   const background = getComposerBackground(
@@ -63,6 +65,48 @@ export function MessageCanvas({
     draft.photoElements.filter(
       (photo) => photo.role === 'floating',
     )
+
+  useLayoutEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const checkOverflow = () => {
+      const canvasRect = canvas.getBoundingClientRect()
+      const textNodes = canvas.querySelectorAll<HTMLElement>(
+        '.canvas-text-element',
+      )
+
+      const overflow = [...textNodes].some((node) => {
+        const rect = node.getBoundingClientRect()
+        return rect.bottom > canvasRect.bottom - 26
+      })
+
+      onOverflowChange(overflow)
+    }
+
+    checkOverflow()
+
+    const observer =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(checkOverflow)
+        : null
+
+    observer?.observe(canvas)
+    canvas
+      .querySelectorAll<HTMLElement>('.canvas-text-element')
+      .forEach((node) => observer?.observe(node))
+
+    window.addEventListener('resize', checkOverflow)
+
+    return () => {
+      observer?.disconnect()
+      window.removeEventListener('resize', checkOverflow)
+    }
+  }, [
+    draft.textElements,
+    draft.id,
+    onOverflowChange,
+  ])
 
   return (
     <div className="message-canvas-viewport">

@@ -11,8 +11,18 @@ import type {
 } from '@/types'
 import { VisibilitySheet } from '@/features/supporter/VisibilitySheet'
 import { ComposerDock, type ComposerTool } from './ComposerDock'
+import { ComposerPageRail } from './ComposerPageRail'
 import { ComposerToolTray } from './ComposerToolTray'
 import { MessageCanvas } from './MessageCanvas'
+import {
+  appendContinuationPage,
+  deleteDraftPage,
+  getActiveCardPage,
+  getMessagePages,
+  hasDraftContent,
+  selectDraftPage,
+  updateDraftPage,
+} from './messagePages'
 import { processPhotoFile } from './photoUtils'
 import './composer.css'
 
@@ -25,27 +35,25 @@ export function UnifiedComposerPage() {
   const setComposerDraft = usePrototypeStore((state) => state.setComposerDraft)
   const [tool, setTool] = useState<ComposerTool>('background')
   const [visibilityOpen, setVisibilityOpen] = useState(false)
+  const page = getActiveCardPage(draft)
+  const pages = getMessagePages(draft)
+  const activePageId = draft.activePageId ?? page.id
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(
-    draft.textElements[0]?.id ?? null,
+    page.textElements[0]?.id ?? null,
   )
+  const [pageOverflow, setPageOverflow] = useState(false)
   const didFocus = useRef(false)
 
-  const primaryText = draft.textElements[0]
-  const selectedText = draft.textElements.find(
+  const primaryText = page.textElements[0]
+  const selectedText = page.textElements.find(
     (element) => element.id === selectedLayerId,
   )
-  const selectedPhoto = draft.photoElements.find(
+  const selectedPhoto = page.photoElements.find(
     (photo) => photo.id === selectedLayerId,
   )
 
   const hasContent = useMemo(
-    () =>
-      draft.textElements.some((element) =>
-        Boolean(element.text.trim()),
-      ) ||
-      draft.wordArtElements.length > 0 ||
-      draft.stickerElements.length > 0 ||
-      draft.photoElements.length > 0,
+    () => hasDraftContent(draft),
     [draft],
   )
 
@@ -62,16 +70,26 @@ export function UnifiedComposerPage() {
     return () => window.clearTimeout(timer)
   }, [])
 
+  const updatePage = (
+    patch:
+      | Partial<typeof page>
+      | ((current: typeof page) => typeof page),
+  ) => {
+    setComposerDraft(
+      updateDraftPage(draft, activePageId, patch),
+    )
+  }
+
   const updateTextElement = (
     id: string,
     patch: Partial<TextElement>,
   ) => {
-    setComposerDraft({
-      ...draft,
-      textElements: draft.textElements.map((element) =>
+    updatePage((current) => ({
+      ...current,
+      textElements: current.textElements.map((element) =>
         element.id === id ? { ...element, ...patch } : element,
       ),
-    })
+    }))
   }
 
   const updateSelectedText = (patch: Partial<TextElement>) => {
@@ -81,7 +99,7 @@ export function UnifiedComposerPage() {
 
   const addTextElement = () => {
     const base = selectedText ?? primaryText
-    const index = draft.textElements.length
+    const index = page.textElements.length
     const id = `text-${Date.now().toString(36)}-${index}`
 
     const nextText: TextElement = {
@@ -93,39 +111,39 @@ export function UnifiedComposerPage() {
       x: 50,
       y: Math.min(72, 38 + index * 11),
       width: base?.width ?? 76,
-      zIndex: getFrontLayerZ(draft) + 1,
+      zIndex: getFrontLayerZ(page) + 1,
       align: base?.align ?? 'center',
     }
 
-    setComposerDraft({
-      ...draft,
-      textElements: [...draft.textElements, nextText],
-    })
+    updatePage((current) => ({
+      ...current,
+      textElements: [...current.textElements, nextText],
+    }))
     setSelectedLayerId(id)
     setTool('text')
   }
 
   const deleteTextElement = (id: string) => {
-    setComposerDraft({
-      ...draft,
-      textElements: draft.textElements.filter(
+    updatePage((current) => ({
+      ...current,
+      textElements: current.textElements.filter(
         (element) => element.id !== id,
       ),
-    })
+    }))
     setSelectedLayerId(null)
   }
 
   const sendSelectedTextBackward = () => {
     if (!selectedText) return
     updateSelectedText({
-      zIndex: Math.max(4, getBackLayerZ(draft) - 1),
+      zIndex: Math.max(4, getBackLayerZ(page) - 1),
     })
   }
 
   const bringSelectedTextForward = () => {
     if (!selectedText) return
     updateSelectedText({
-      zIndex: Math.min(80, getFrontLayerZ(draft) + 1),
+      zIndex: Math.min(80, getFrontLayerZ(page) + 1),
     })
   }
 
@@ -134,19 +152,19 @@ export function UnifiedComposerPage() {
   }
 
   const moveWordArt = (id: string, x: number, y: number) => {
-    setComposerDraft({
-      ...draft,
-      wordArtElements: draft.wordArtElements.map((element) =>
+    updatePage((current) => ({
+      ...current,
+      wordArtElements: current.wordArtElements.map((element) =>
         element.id === id ? { ...element, x, y } : element,
       ),
-    })
+    }))
   }
 
   const addPhoto = async (
     file: File,
     role: 'floating' | 'background',
   ) => {
-    const floatingCount = draft.photoElements.filter(
+    const floatingCount = page.photoElements.filter(
       (photo) => photo.role === 'floating',
     ).length
 
@@ -178,15 +196,15 @@ export function UnifiedComposerPage() {
           alt: '카드 배경 사진',
         }
 
-        setComposerDraft({
-          ...draft,
+        updatePage((current) => ({
+          ...current,
           photoElements: [
-            ...draft.photoElements.filter(
+            ...current.photoElements.filter(
               (photo) => photo.role !== 'background',
             ),
             backgroundPhoto,
           ],
-        })
+        }))
         setSelectedLayerId(backgroundPhoto.id)
         return
       }
@@ -207,10 +225,10 @@ export function UnifiedComposerPage() {
         alt: '응원 카드에 넣은 사진',
       }
 
-      setComposerDraft({
-        ...draft,
-        photoElements: [...draft.photoElements, photo],
-      })
+      updatePage((current) => ({
+        ...current,
+        photoElements: [...current.photoElements, photo],
+      }))
       setSelectedLayerId(photo.id)
 
       if (processed.hasTransparency) {
@@ -229,21 +247,21 @@ export function UnifiedComposerPage() {
     id: string,
     patch: Partial<PhotoElement>,
   ) => {
-    setComposerDraft({
-      ...draft,
-      photoElements: draft.photoElements.map((photo) =>
+    updatePage((current) => ({
+      ...current,
+      photoElements: current.photoElements.map((photo) =>
         photo.id === id ? { ...photo, ...patch } : photo,
       ),
-    })
+    }))
   }
 
   const deletePhoto = (id: string) => {
-    setComposerDraft({
-      ...draft,
-      photoElements: draft.photoElements.filter(
+    updatePage((current) => ({
+      ...current,
+      photoElements: current.photoElements.filter(
         (photo) => photo.id !== id,
       ),
-    })
+    }))
     setSelectedLayerId(null)
   }
 
@@ -281,7 +299,7 @@ export function UnifiedComposerPage() {
               setTool(nextTool)
 
               if (nextTool === 'photo') {
-                const latestPhoto = draft.photoElements.at(-1)
+                const latestPhoto = page.photoElements.at(-1)
                 if (latestPhoto) {
                   setSelectedLayerId(latestPhoto.id)
                 }
@@ -292,14 +310,14 @@ export function UnifiedComposerPage() {
       >
         <div className="unified-composer">
           <MessageCanvas
-            draft={draft}
+            draft={page}
             selectedId={selectedLayerId}
             onSelect={(id) => {
               setSelectedLayerId(id)
 
               if (
                 id &&
-                draft.textElements.some(
+                page.textElements.some(
                   (element) => element.id === id,
                 )
               ) {
@@ -318,15 +336,46 @@ export function UnifiedComposerPage() {
             }
             onWordArtMove={moveWordArt}
             onPhotoChange={updatePhoto}
+            onOverflowChange={setPageOverflow}
+          />
+
+          <ComposerPageRail
+            pages={pages}
+            activePageId={activePageId}
+            overflow={pageOverflow}
+            onSelect={(pageId) => {
+              const nextDraft = selectDraftPage(draft, pageId)
+              const nextPage = getActiveCardPage(nextDraft)
+              setComposerDraft(nextDraft)
+              setSelectedLayerId(nextPage.textElements[0]?.id ?? null)
+              setPageOverflow(false)
+            }}
+            onAdd={() => {
+              const nextDraft = appendContinuationPage(draft)
+              if (nextDraft === draft) return
+
+              const nextPage = getActiveCardPage(nextDraft)
+              setComposerDraft(nextDraft)
+              setSelectedLayerId(nextPage.textElements[0]?.id ?? null)
+              setTool('text')
+              setPageOverflow(false)
+            }}
+            onDelete={() => {
+              const nextDraft = deleteDraftPage(draft, activePageId)
+              const nextPage = getActiveCardPage(nextDraft)
+              setComposerDraft(nextDraft)
+              setSelectedLayerId(nextPage.textElements[0]?.id ?? null)
+              setPageOverflow(false)
+            }}
           />
 
           <ComposerToolTray
             tool={tool}
-            draft={draft}
+            draft={page}
             selectedText={selectedText}
             selectedPhoto={selectedPhoto}
             onBackgroundChange={(backgroundAssetId) =>
-              setComposerDraft({ ...draft, backgroundAssetId })
+              updatePage({ backgroundAssetId })
             }
             onTextAdd={addTextElement}
             onTextSelect={(id) => {
@@ -383,19 +432,19 @@ export function UnifiedComposerPage() {
 }
 
 
-function getLayerZValues(draft: {
+function getLayerZValues(page: {
   textElements: TextElement[]
   photoElements: PhotoElement[]
   wordArtElements: Array<{ zIndex: number }>
   stickerElements: Array<{ zIndex: number }>
 }) {
   return [
-    ...draft.photoElements
+    ...page.photoElements
       .filter((photo) => photo.role === 'floating')
       .map((photo) => photo.zIndex ?? 10),
-    ...draft.wordArtElements.map((element) => element.zIndex),
-    ...draft.stickerElements.map((element) => element.zIndex),
-    ...draft.textElements.map(
+    ...page.wordArtElements.map((element) => element.zIndex),
+    ...page.stickerElements.map((element) => element.zIndex),
+    ...page.textElements.map(
       (element, index) => element.zIndex ?? 30 + index,
     ),
   ]

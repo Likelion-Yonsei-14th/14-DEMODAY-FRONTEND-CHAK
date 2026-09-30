@@ -1474,3 +1474,68 @@
   outline: 2px solid var(--color-content-primary);
   outline-offset: 2px;
 }
+
+/* Multi-page card controls */
+.composer-page-control {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  margin-top: -2px;
+}
+
+.composer-page-rail {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 4px 6px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 999px;
+  background: rgba(255,253,248,.92);
+  box-shadow: 0 4px 12px rgba(64,48,38,.05);
+}
+
+.composer-page-rail button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-content-tertiary);
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.composer-page-rail__page--active {
+  background: var(--color-content-primary) !important;
+  color: var(--color-content-inverse) !important;
+}
+
+.composer-page-rail__add {
+  border: 1px solid var(--color-border-default) !important;
+  color: var(--color-content-primary) !important;
+}
+
+.composer-page-rail__delete {
+  color: #a85045 !important;
+}
+
+.composer-page-overflow-action {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  border: 1px solid rgba(184,95,80,.14);
+  border-radius: 999px;
+  background: #fff8f5;
+  color: #9f5548;
+  font-size: 9px;
+  font-weight: 750;
+  cursor: pointer;
+}
