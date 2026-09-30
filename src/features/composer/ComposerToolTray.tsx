@@ -40,6 +40,7 @@ type ComposerToolTrayProps = {
   selectedPhoto?: PhotoElement
   onBackgroundChange: (backgroundId: string) => void
   onTextAdd: () => void
+  onTextSelect: (id: string) => void
   onTextFontChange: (fontId: string) => void
   onTextSizeChange: (fontSize: number) => void
   onTextColorChange: (color: string) => void
@@ -67,6 +68,7 @@ export function ComposerToolTray({
   selectedPhoto,
   onBackgroundChange,
   onTextAdd,
+  onTextSelect,
   onTextFontChange,
   onTextSizeChange,
   onTextColorChange,
@@ -124,22 +126,33 @@ export function ComposerToolTray({
             </button>
           </div>
 
-          <div className="composer-text-layer-row">
-            {draft.textElements.map((element, index) => (
-              <span
-                key={element.id}
-                className={[
-                  'composer-text-layer-chip',
-                  activeText?.id === element.id
-                    ? 'composer-text-layer-chip--active'
-                    : '',
-                ].filter(Boolean).join(' ')}
-              >
-                {element.text.trim()
-                  ? element.text.trim().slice(0, 8)
-                  : `텍스트 ${index + 1}`}
-              </span>
-            ))}
+          <div
+            className="composer-text-layer-row"
+            role="list"
+            aria-label="텍스트 박스 선택"
+          >
+            {draft.textElements.map((element, index) => {
+              const active = activeText?.id === element.id
+
+              return (
+                <button
+                  type="button"
+                  key={element.id}
+                  className={[
+                    'composer-text-layer-chip',
+                    active
+                      ? 'composer-text-layer-chip--active'
+                      : '',
+                  ].filter(Boolean).join(' ')}
+                  aria-pressed={active}
+                  onClick={() => onTextSelect(element.id)}
+                >
+                  {element.text.trim()
+                    ? element.text.trim().slice(0, 8)
+                    : `텍스트 ${index + 1}`}
+                </button>
+              )
+            })}
           </div>
 
           {activeText ? (

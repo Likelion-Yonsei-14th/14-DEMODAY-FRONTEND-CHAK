@@ -329,6 +329,10 @@ export function UnifiedComposerPage() {
               setComposerDraft({ ...draft, backgroundAssetId })
             }
             onTextAdd={addTextElement}
+            onTextSelect={(id) => {
+              setSelectedLayerId(id)
+              setTool('text')
+            }}
             onTextFontChange={(fontId) =>
               updateSelectedText({ fontId })
             }

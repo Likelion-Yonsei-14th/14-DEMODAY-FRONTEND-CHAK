@@ -1455,3 +1455,22 @@
 .composer-photo-editor__heading {
   gap: 0;
 }
+
+
+/* Text layer chips are direct selectors for the matching canvas text box. */
+.composer-text-layer-chip {
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  text-align: center;
+}
+
+.composer-text-layer-chip:active {
+  transform: scale(.97);
+}
+
+.composer-text-layer-chip:focus-visible {
+  outline: 2px solid var(--color-content-primary);
+  outline-offset: 2px;
+}
