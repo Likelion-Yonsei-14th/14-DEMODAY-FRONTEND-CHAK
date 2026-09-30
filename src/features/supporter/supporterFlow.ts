@@ -1,3 +1,4 @@
+import { getMessagePages } from '@/features/composer/messagePages'
 import type {
   DeskObject,
   DeskObjectType,
@@ -7,13 +8,20 @@ import type {
 } from '@/types'
 
 export function resolveDeskObjectType(draft: MessageDraft): DeskObjectType {
-  if (draft.photoElements.length > 0) return 'photo-card'
+  const pages = getMessagePages(draft)
 
-  const expressiveAssets =
-    draft.wordArtElements.length + draft.stickerElements.length
+  if (pages.some((page) => page.photoElements.length > 0)) {
+    return 'photo-card'
+  }
+
+  const expressiveAssets = pages.reduce(
+    (total, page) =>
+      total + page.wordArtElements.length + page.stickerElements.length,
+    0,
+  )
 
   if (expressiveAssets >= 3) return 'poster-card'
-  if (draft.canvasMode === 'long') return 'letter'
+  if (pages.length > 1) return 'letter'
 
   return 'memo'
 }

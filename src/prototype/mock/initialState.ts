@@ -1,4 +1,4 @@
-import type { Classroom, Desk, MessageDraft, PrototypeUser } from '@/types'
+import type { CardPage, Classroom, Desk, MessageDraft, PrototypeUser } from '@/types'
 
 export const mockCurrentUser: PrototypeUser = {
   id: 'user-owner-01',
@@ -24,8 +24,8 @@ export const mockDesk: Desk = {
   claimStatus: 'claimed',
 }
 
-export const emptyComposerDraft: MessageDraft = {
-  id: 'draft-01',
+const initialCardPage: CardPage = {
+  id: 'draft-01-page-1',
   canvasMode: 'standard',
   backgroundAssetId: 'bg-basic-cream',
   textElements: [
@@ -46,6 +46,13 @@ export const emptyComposerDraft: MessageDraft = {
   wordArtElements: [],
   stickerElements: [],
   photoElements: [],
+}
+
+export const emptyComposerDraft: MessageDraft = {
+  id: 'draft-01',
+  ...initialCardPage,
+  pages: [initialCardPage],
+  activePageId: initialCardPage.id,
   visibility: 'public',
   senderName: '',
 }

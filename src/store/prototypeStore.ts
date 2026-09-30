@@ -7,6 +7,7 @@ import {
   mockDesk,
 } from '@/prototype/mock/initialState'
 import { getComposerBackground } from '@/features/composer/backgroundAssets'
+import { getFirstCardPage, updateDraftPage } from '@/features/composer/messagePages'
 import {
   resolveDeskObjectType,
   resolveDeskZone,
@@ -57,7 +58,13 @@ export const usePrototypeStore = create<PrototypeState>()(
       setDebugMode: (debugMode) => set({ debugMode }),
       setCanvasMode: (canvasMode) =>
         set((state) => ({
-          composerDraft: { ...state.composerDraft, canvasMode },
+          composerDraft: updateDraftPage(
+            state.composerDraft,
+            state.composerDraft.activePageId ??
+              state.composerDraft.pages?.[0]?.id ??
+              `${state.composerDraft.id}-page-1`,
+            { canvasMode },
+          ),
         })),
       setComposerDraft: (composerDraft) => set({ composerDraft }),
       resetComposerDraft: () => set({ composerDraft: emptyComposerDraft }),
@@ -72,8 +79,9 @@ export const usePrototypeStore = create<PrototypeState>()(
           const zone = resolveDeskZone(state.currentDesk.objects.length)
           const finalPlacement =
             placement ?? resolveInitialPlacement(state.currentDesk.objects.length)
+          const firstPage = getFirstCardPage(state.composerDraft)
           const previewColor = getComposerBackground(
-            state.composerDraft.backgroundAssetId,
+            firstPage.backgroundAssetId,
           ).tone
 
           const message: Message = {
