@@ -58,9 +58,6 @@ type ComposerToolTrayProps = {
   onTextDelete: () => void
   onStickerAdd: (assetId: string) => void
   onStickerSelect: (id: string) => void
-  onStickerUpdate: (
-    patch: Partial<PositionedAsset>,
-  ) => void
   onStickerSendBackward: () => void
   onStickerBringForward: () => void
   onStickerDelete: () => void
@@ -93,7 +90,6 @@ export function ComposerToolTray({
   onTextDelete,
   onStickerAdd,
   onStickerSelect,
-  onStickerUpdate,
   onStickerSendBackward,
   onStickerBringForward,
   onStickerDelete,
@@ -406,7 +402,6 @@ export function ComposerToolTray({
           selectedSticker={selectedSticker}
           onAdd={onStickerAdd}
           onSelect={onStickerSelect}
-          onUpdate={onStickerUpdate}
           onSendBackward={onStickerSendBackward}
           onBringForward={onStickerBringForward}
           onDelete={onStickerDelete}
@@ -432,7 +427,6 @@ function StickerTool({
   selectedSticker,
   onAdd,
   onSelect,
-  onUpdate,
   onSendBackward,
   onBringForward,
   onDelete,
@@ -441,7 +435,6 @@ function StickerTool({
   selectedSticker?: PositionedAsset
   onAdd: (assetId: string) => void
   onSelect: (id: string) => void
-  onUpdate: (patch: Partial<PositionedAsset>) => void
   onSendBackward: () => void
   onBringForward: () => void
   onDelete: () => void
@@ -531,39 +524,6 @@ function StickerTool({
         </div>
       )}
 
-      {selectedSticker && (
-        <div className="composer-sticker-stepper" aria-label="스티커 미세 조정">
-          <button
-            type="button"
-            aria-label="스티커 작게"
-            onClick={() =>
-              onUpdate({
-                scale: Math.max(
-                  .35,
-                  Number((selectedSticker.scale - .1).toFixed(2)),
-                ),
-              })
-            }
-          >
-            <Minus size={15} aria-hidden />
-          </button>
-          <span>{Math.round(selectedSticker.scale * 100)}%</span>
-          <button
-            type="button"
-            aria-label="스티커 크게"
-            onClick={() =>
-              onUpdate({
-                scale: Math.min(
-                  2.25,
-                  Number((selectedSticker.scale + .1).toFixed(2)),
-                ),
-              })
-            }
-          >
-            <Plus size={15} aria-hidden />
-          </button>
-        </div>
-      )}
     </>
   )
 }
