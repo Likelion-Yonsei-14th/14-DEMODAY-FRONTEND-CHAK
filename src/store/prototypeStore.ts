@@ -17,6 +17,7 @@ import type {
   CanvasMode,
   Classroom,
   Desk,
+  DeskObjectType,
   DeskPlacement,
   Message,
   MessageDraft,
@@ -39,7 +40,10 @@ type PrototypeState = {
   setComposerDraft: (draft: MessageDraft) => void
   resetComposerDraft: () => void
   addMessage: (message: Message) => void
-  placeComposerMessage: (placement?: DeskPlacement) => void
+  placeComposerMessage: (
+    placement?: DeskPlacement,
+    representationType?: DeskObjectType,
+  ) => void
   markMessageRead: (messageId: string) => void
   setClaimState: (state: ClaimState) => void
 }
@@ -70,12 +74,14 @@ export const usePrototypeStore = create<PrototypeState>()(
       resetComposerDraft: () => set({ composerDraft: emptyComposerDraft }),
       addMessage: (message) =>
         set((state) => ({ messages: [...state.messages, message] })),
-      placeComposerMessage: (placement) =>
+      placeComposerMessage: (placement, selectedRepresentationType) =>
         set((state) => {
           const stamp = Date.now().toString(36)
           const messageId = `message-${stamp}`
           const objectId = `desk-object-${stamp}`
-          const representationType = resolveDeskObjectType(state.composerDraft)
+          const representationType =
+            selectedRepresentationType ??
+            resolveDeskObjectType(state.composerDraft)
           const zone = resolveDeskZone(state.currentDesk.objects.length)
           const finalPlacement =
             placement ?? resolveInitialPlacement(state.currentDesk.objects.length)
