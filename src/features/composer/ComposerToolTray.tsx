@@ -13,10 +13,11 @@ import {
   Trash2,
   Wallpaper,
 } from 'lucide-react'
-import { ChoiceChip } from '@/design-system'
+import { AssetTile, ChoiceChip } from '@/design-system'
 import type {
   CardPage,
   PhotoElement,
+  PositionedAsset,
   TextElement,
   PhotoFrame,
 } from '@/types'
@@ -25,6 +26,10 @@ import {
   type ComposerBackground,
 } from './backgroundAssets'
 import type { ComposerTool } from './ComposerDock'
+import {
+  composerStickers,
+  getStickerAsset,
+} from './stickerAssets'
 import {
   composerFonts,
   composerTextColors,
@@ -38,6 +43,7 @@ type ComposerToolTrayProps = {
   draft: CardPage
   selectedText?: TextElement
   selectedPhoto?: PhotoElement
+  selectedSticker?: PositionedAsset
   onBackgroundChange: (backgroundId: string) => void
   onTextAdd: () => void
   onTextSelect: (id: string) => void
@@ -50,6 +56,14 @@ type ComposerToolTrayProps = {
   onTextSendBackward: () => void
   onTextBringForward: () => void
   onTextDelete: () => void
+  onStickerAdd: (assetId: string) => void
+  onStickerSelect: (id: string) => void
+  onStickerUpdate: (
+    patch: Partial<PositionedAsset>,
+  ) => void
+  onStickerSendBackward: () => void
+  onStickerBringForward: () => void
+  onStickerDelete: () => void
   onPhotoAdd: (
     file: File,
     role: 'floating' | 'background',
@@ -66,6 +80,7 @@ export function ComposerToolTray({
   draft,
   selectedText,
   selectedPhoto,
+  selectedSticker,
   onBackgroundChange,
   onTextAdd,
   onTextSelect,
@@ -76,6 +91,12 @@ export function ComposerToolTray({
   onTextSendBackward,
   onTextBringForward,
   onTextDelete,
+  onStickerAdd,
+  onStickerSelect,
+  onStickerUpdate,
+  onStickerSendBackward,
+  onStickerBringForward,
+  onStickerDelete,
   onPhotoAdd,
   onPhotoSelect,
   onPhotoUpdate,
@@ -380,12 +401,15 @@ export function ComposerToolTray({
       )}
 
       {tool === 'sticker' && (
-        <FutureTool
-          icon={
-            <Sparkles size={19} aria-hidden />
-          }
-          title="스티커"
-          description="하트, 클로버, 별과 시험 소품 벡터 에셋을 연결할 예정이에요."
+        <StickerTool
+          draft={draft}
+          selectedSticker={selectedSticker}
+          onAdd={onStickerAdd}
+          onSelect={onStickerSelect}
+          onUpdate={onStickerUpdate}
+          onSendBackward={onStickerSendBackward}
+          onBringForward={onStickerBringForward}
+          onDelete={onStickerDelete}
         />
       )}
 
@@ -400,6 +424,147 @@ export function ComposerToolTray({
         />
       )}
     </section>
+  )
+}
+
+function StickerTool({
+  draft,
+  selectedSticker,
+  onAdd,
+  onSelect,
+  onUpdate,
+  onSendBackward,
+  onBringForward,
+  onDelete,
+}: {
+  draft: CardPage
+  selectedSticker?: PositionedAsset
+  onAdd: (assetId: string) => void
+  onSelect: (id: string) => void
+  onUpdate: (patch: Partial<PositionedAsset>) => void
+  onSendBackward: () => void
+  onBringForward: () => void
+  onDelete: () => void
+}) {
+  return (
+    <>
+      <ToolTrayHeader title="스티커" />
+
+      <div
+        className="composer-sticker-list"
+        role="list"
+        aria-label="스티커 추가"
+      >
+        {composerStickers.map((asset) => (
+          <AssetTile
+            key={asset.id}
+            name={asset.name}
+            className="composer-sticker-asset"
+            thumbnail={
+              <img
+                src={asset.source}
+                alt=""
+                draggable={false}
+              />
+            }
+            onClick={() => onAdd(asset.id)}
+          />
+        ))}
+      </div>
+
+      {draft.stickerElements.length > 0 && (
+        <div
+          className="composer-sticker-layer-row"
+          role="list"
+          aria-label="추가한 스티커 선택"
+        >
+          {draft.stickerElements.map((sticker, index) => {
+            const asset = getStickerAsset(sticker.assetId)
+            if (!asset) return null
+            const active = selectedSticker?.id === sticker.id
+
+            return (
+              <button
+                type="button"
+                key={sticker.id}
+                className={[
+                  'composer-sticker-layer-chip',
+                  active
+                    ? 'composer-sticker-layer-chip--active'
+                    : '',
+                ].filter(Boolean).join(' ')}
+                aria-label={`${asset.name} ${index + 1}`}
+                aria-pressed={active}
+                onClick={() => onSelect(sticker.id)}
+              >
+                <img src={asset.source} alt="" />
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {selectedSticker && (
+        <div className="composer-sticker-actions">
+          <button
+            type="button"
+            onClick={onSendBackward}
+          >
+            <ArrowDown size={15} aria-hidden />
+            뒤로
+          </button>
+          <button
+            type="button"
+            onClick={onBringForward}
+          >
+            <ArrowUp size={15} aria-hidden />
+            앞으로
+          </button>
+          <button
+            type="button"
+            className="composer-sticker-delete"
+            onClick={onDelete}
+          >
+            <Trash2 size={15} aria-hidden />
+            삭제
+          </button>
+        </div>
+      )}
+
+      {selectedSticker && (
+        <div className="composer-sticker-stepper" aria-label="스티커 미세 조정">
+          <button
+            type="button"
+            aria-label="스티커 작게"
+            onClick={() =>
+              onUpdate({
+                scale: Math.max(
+                  .35,
+                  Number((selectedSticker.scale - .1).toFixed(2)),
+                ),
+              })
+            }
+          >
+            <Minus size={15} aria-hidden />
+          </button>
+          <span>{Math.round(selectedSticker.scale * 100)}%</span>
+          <button
+            type="button"
+            aria-label="스티커 크게"
+            onClick={() =>
+              onUpdate({
+                scale: Math.min(
+                  2.25,
+                  Number((selectedSticker.scale + .1).toFixed(2)),
+                ),
+              })
+            }
+          >
+            <Plus size={15} aria-hidden />
+          </button>
+        </div>
+      )}
+    </>
   )
 }
 
