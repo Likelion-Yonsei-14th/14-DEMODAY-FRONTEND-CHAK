@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button, useFeedback } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import { DeskObjectVisual } from '@/features/desk/DeskObjectLayer'
 import { deskObjectLabels } from './supporterFlow'
 import './supporterFlow.css'
 
@@ -64,12 +65,22 @@ export function SupportCompletePage() {
           </p>
         </section>
 
-        <div className="support-complete__object" aria-hidden>
-          <span className="support-complete__paper">
-            <span />
-            <span />
-            <span />
-          </span>
+        <div
+          className={[
+            'support-complete__object',
+            latestObject
+              ? `desk-object--${latestObject.representationType}`
+              : 'desk-object--memo',
+          ].join(' ')}
+          style={{
+            '--desk-object-color':
+              latestMessage?.previewColor ?? '#F4C6BC',
+          } as React.CSSProperties}
+          aria-hidden
+        >
+          <DeskObjectVisual
+            type={latestObject?.representationType ?? 'memo'}
+          />
           <span className="support-complete__spark support-complete__spark--one">✦</span>
           <span className="support-complete__spark support-complete__spark--two">·</span>
         </div>
