@@ -50,7 +50,12 @@ const initialCardPage: CardPage = {
 
 export const emptyComposerDraft: MessageDraft = {
   id: 'draft-01',
-  ...initialCardPage,
+  canvasMode: initialCardPage.canvasMode,
+  backgroundAssetId: initialCardPage.backgroundAssetId,
+  textElements: initialCardPage.textElements,
+  wordArtElements: initialCardPage.wordArtElements,
+  stickerElements: initialCardPage.stickerElements,
+  photoElements: initialCardPage.photoElements,
   pages: [initialCardPage],
   activePageId: initialCardPage.id,
   visibility: 'public',

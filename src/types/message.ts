@@ -36,7 +36,8 @@ export type CardPage = {
  * compatibility with persisted prototype data and older screens.
  * New multi-page flows use pages + activePageId as the source of truth.
  */
-export type MessageDraft = CardPage & {
+export type MessageDraft = Omit<CardPage, 'id'> & {
+  id: string
   pages?: CardPage[]
   activePageId?: string
   visibility: MessageVisibility
