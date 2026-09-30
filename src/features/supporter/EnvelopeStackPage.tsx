@@ -11,12 +11,17 @@ import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import type { Message } from '@/types'
 import {
+  createEnvelopeTheme,
+  getSealMark,
+} from './envelopeTheme'
+import {
   isToday,
   mergeSupportMessages,
 } from './seededMessages'
 import './EnvelopeStackPage.css'
 
-const SCROLL_STEP = 112
+const SCROLL_STEP = 128
+const OPEN_DURATION = 1040
 
 export function EnvelopeStackPage() {
   const navigate = useNavigate()
@@ -47,6 +52,8 @@ export function EnvelopeStackPage() {
   const activeMessage = messages[activeIndex]
 
   const openMessage = (message: Message, index: number) => {
+    if (openingId) return
+
     if (index !== activeIndex) {
       scrollerRef.current?.scrollTo({
         top: index * SCROLL_STEP,
@@ -55,14 +62,13 @@ export function EnvelopeStackPage() {
       return
     }
 
-    if (openingId) return
     setOpeningId(message.id)
 
     window.setTimeout(() => {
       navigate(`/prototype/support/jisu/message/${message.id}`, {
-        state: { from: 'cards' },
+        state: { from: 'cards', openedFromEnvelope: true },
       })
-    }, 720)
+    }, OPEN_DURATION)
   }
 
   return (
@@ -112,8 +118,13 @@ export function EnvelopeStackPage() {
         {messages.length > 0 ? (
           <div
             ref={scrollerRef}
-            className="envelope-stack__scroller"
+            className={[
+              'envelope-stack__scroller',
+              openingId ? 'envelope-stack__scroller--opening' : '',
+            ].filter(Boolean).join(' ')}
             onScroll={(event) => {
+              if (openingId) return
+
               const next = Math.min(
                 messages.length - 1,
                 Math.max(
@@ -125,14 +136,24 @@ export function EnvelopeStackPage() {
             }}
           >
             <div className="envelope-stack__sticky">
-              <div className="envelope-stack__deck">
+              <div
+                className={[
+                  'envelope-stack__deck',
+                  openingId ? 'envelope-stack__deck--opening' : '',
+                ].filter(Boolean).join(' ')}
+              >
                 {messages.map((message, index) => {
                   const delta = index - activeIndex
                   const isRead =
                     message.status === 'read' ||
                     readMessageIds.includes(message.id)
                   const active = delta === 0
+                  const isOpening = openingId === message.id
                   const position = envelopePosition(index, activeIndex)
+                  const theme = createEnvelopeTheme(
+                    message.id,
+                    message.previewColor,
+                  )
 
                   return (
                     <button
@@ -141,15 +162,23 @@ export function EnvelopeStackPage() {
                       className={[
                         'message-envelope',
                         active ? 'message-envelope--active' : '',
-                        openingId === message.id
-                          ? 'message-envelope--opening'
+                        isOpening ? 'message-envelope--opening' : '',
+                        openingId && !isOpening
+                          ? 'message-envelope--deemphasized'
                           : '',
                         isRead ? 'message-envelope--read' : '',
+                        `message-envelope--pattern-${theme.pattern}`,
                       ].filter(Boolean).join(' ')}
                       style={{
-                        '--envelope-color':
-                          message.previewColor ?? '#F2E5DA',
+                        '--envelope-color': theme.baseColor,
+                        '--envelope-flap-color': theme.flapColor,
+                        '--envelope-pocket-color': theme.pocketColor,
+                        '--envelope-pattern-color': theme.patternColor,
+                        '--envelope-seal-color': theme.sealColor,
+                        '--envelope-ink-color': theme.inkColor,
                         '--envelope-y': `${position.y}px`,
+                        '--envelope-x': `${position.x}px`,
+                        '--envelope-rotate': `${position.rotate}deg`,
                         '--envelope-scale': position.scale,
                         '--envelope-opacity': position.opacity,
                         zIndex: position.zIndex,
@@ -157,9 +186,30 @@ export function EnvelopeStackPage() {
                       onClick={() => openMessage(message, index)}
                       aria-label={`${message.senderName}에게서 온 응원 봉투 열기`}
                     >
+                      <span className="message-envelope__shadow" />
                       <span className="message-envelope__body">
+                        <span className="message-envelope__back" />
+                        <span className="message-envelope__pattern" aria-hidden />
+                        <span className="message-envelope__peek" aria-hidden>
+                          <span className="message-envelope__peek-line" />
+                          <span className="message-envelope__peek-line" />
+                        </span>
+                        <span className="message-envelope__front" />
                         <span className="message-envelope__flap" />
-                        <span className="message-envelope__peek" />
+                        <span
+                          className={[
+                            'message-envelope__seal',
+                            isRead ? 'message-envelope__seal--broken' : '',
+                          ].filter(Boolean).join(' ')}
+                          aria-hidden
+                        >
+                          <span className="message-envelope__seal-half message-envelope__seal-half--left" />
+                          <span className="message-envelope__seal-half message-envelope__seal-half--right" />
+                          <span className="message-envelope__seal-mark">
+                            {getSealMark(theme.seal, message.senderName)}
+                          </span>
+                        </span>
+
                         <span className="message-envelope__meta">
                           <span className="message-envelope__from">
                             from. {message.senderName}
@@ -168,16 +218,14 @@ export function EnvelopeStackPage() {
                             {formatDateTime(message.createdAt)}
                           </span>
                         </span>
+
                         {message.visibility === 'private' && (
-                          <span className="message-envelope__private" aria-label="비공개 응원">
+                          <span
+                            className="message-envelope__private"
+                            aria-label="비공개 응원"
+                          >
                             <LockKeyhole size={13} aria-hidden />
                           </span>
-                        )}
-                        {!isRead && (
-                          <span
-                            className="message-envelope__unread"
-                            aria-label="아직 열지 않은 응원"
-                          />
                         )}
                       </span>
                     </button>
@@ -185,13 +233,17 @@ export function EnvelopeStackPage() {
                 })}
               </div>
             </div>
-            <div
-              className="envelope-stack__track"
-              style={{
-                height: `${Math.max(0, messages.length - 1) * SCROLL_STEP + 80}px`,
-              }}
-              aria-hidden
-            />
+
+            <div className="envelope-stack__track" aria-hidden>
+              {messages.map((message) => (
+                <span
+                  className="envelope-stack__snap"
+                  key={message.id}
+                  style={{ height: `${SCROLL_STEP}px` }}
+                />
+              ))}
+              <span className="envelope-stack__track-tail" />
+            </div>
           </div>
         ) : (
           <div className="envelope-page__empty">
@@ -204,6 +256,7 @@ export function EnvelopeStackPage() {
         <button
           type="button"
           className="envelope-history-toggle"
+          disabled={Boolean(openingId)}
           onClick={() => setShowHistory((value) => !value)}
         >
           <History size={15} aria-hidden />
@@ -218,24 +271,30 @@ function envelopePosition(index: number, activeIndex: number) {
   const delta = index - activeIndex
 
   if (delta < 0) {
+    const distance = Math.min(Math.abs(delta), 5)
     return {
-      y: 18 + index * 24,
-      scale: Math.max(0.88, 0.91 + index * 0.012),
-      opacity: 1,
-      zIndex: 20 + index,
+      y: 30 + (index % 5) * 23,
+      x: ((index % 3) - 1) * 2,
+      rotate: ((index % 3) - 1) * 0.7,
+      scale: Math.max(0.84, 0.94 - distance * 0.018),
+      opacity: distance > 5 ? 0 : 1,
+      zIndex: 30 + index,
     }
   }
 
   if (delta === 0) {
-    return { y: 108, scale: 1, opacity: 1, zIndex: 100 }
+    return { y: 124, x: 0, rotate: 0, scale: 1, opacity: 1, zIndex: 120 }
   }
 
-  const distance = Math.min(delta, 4)
+  const distance = Math.min(delta, 5)
+
   return {
-    y: 134 + distance * 24,
-    scale: Math.max(0.86, 0.97 - distance * 0.025),
-    opacity: delta > 4 ? 0 : 1,
-    zIndex: 90 - distance,
+    y: 152 + distance * 25,
+    x: ((index % 3) - 1) * 2.5,
+    rotate: ((index % 3) - 1) * 0.65,
+    scale: Math.max(0.84, 0.975 - distance * 0.022),
+    opacity: delta > 5 ? 0 : 1,
+    zIndex: 110 - distance,
   }
 }
 
