@@ -275,12 +275,6 @@ export function MessageCanvas({
           />
         ))}
 
-        <div
-          className="message-canvas__signature"
-          aria-hidden
-        >
-          for 지수
-        </div>
       </div>
 
     </div>
