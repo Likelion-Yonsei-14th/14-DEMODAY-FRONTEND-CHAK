@@ -353,7 +353,7 @@ export function UnifiedComposerPage() {
             title="응원 만들기"
             leading={
               <IconButton
-                label="지수의 책상으로 돌아가기"
+                label="지수님의 책상으로 돌아가기"
                 icon={<ArrowLeft size={21} aria-hidden />}
                 onClick={() => navigate('/prototype/support/jisu')}
               />
