@@ -283,7 +283,7 @@ export function UnifiedComposerPage() {
         scale: .86,
         rotation: [-4, 3, -2][index] ?? 0,
         frame: processed.hasTransparency ? 'plain' : 'white',
-        zIndex: 10 + index,
+        zIndex: Math.min(80, getFrontLayerZ(page) + 1),
         aspectRatio: processed.aspectRatio,
         hasTransparency: processed.hasTransparency,
         alt: '응원 카드에 넣은 사진',
@@ -329,6 +329,20 @@ export function UnifiedComposerPage() {
     setSelectedLayerId(null)
   }
 
+  const sendSelectedPhotoBackward = () => {
+    if (!selectedPhoto || selectedPhoto.role !== 'floating') return
+    updatePhoto(selectedPhoto.id, {
+      zIndex: Math.max(4, getBackLayerZ(page) - 1),
+    })
+  }
+
+  const bringSelectedPhotoForward = () => {
+    if (!selectedPhoto || selectedPhoto.role !== 'floating') return
+    updatePhoto(selectedPhoto.id, {
+      zIndex: Math.min(80, getFrontLayerZ(page) + 1),
+    })
+  }
+
   return (
     <>
       <AppShell
@@ -361,20 +375,9 @@ export function UnifiedComposerPage() {
             value={tool}
             onChange={(nextTool) => {
               setTool(nextTool)
-
-              if (nextTool === 'photo') {
-                const latestPhoto = page.photoElements.at(-1)
-                if (latestPhoto) {
-                  setSelectedLayerId(latestPhoto.id)
-                }
-              }
-
-              if (nextTool === 'sticker') {
-                const latestSticker = page.stickerElements.at(-1)
-                if (latestSticker) {
-                  setSelectedLayerId(latestSticker.id)
-                }
-              }
+              setSelectedLayerId(
+                getPreferredLayerId(page, nextTool),
+              )
             }}
           />
         }
@@ -440,7 +443,9 @@ export function UnifiedComposerPage() {
               const nextDraft = selectDraftPage(draft, pageId)
               const nextPage = getActiveCardPage(nextDraft)
               setComposerDraft(nextDraft)
-              setSelectedLayerId(nextPage.textElements[0]?.id ?? null)
+              setSelectedLayerId(
+                getPreferredLayerId(nextPage, tool),
+              )
               setPageOverflow(false)
             }}
             onAdd={() => {
@@ -457,7 +462,9 @@ export function UnifiedComposerPage() {
               const nextDraft = deleteDraftPage(draft, activePageId)
               const nextPage = getActiveCardPage(nextDraft)
               setComposerDraft(nextDraft)
-              setSelectedLayerId(nextPage.textElements[0]?.id ?? null)
+              setSelectedLayerId(
+                getPreferredLayerId(nextPage, tool),
+              )
               setPageOverflow(false)
             }}
           />
@@ -508,7 +515,12 @@ export function UnifiedComposerPage() {
               }
             }}
             onPhotoAdd={addPhoto}
-            onPhotoSelect={setSelectedLayerId}
+            onPhotoSelect={(id) => {
+              setSelectedLayerId(id)
+              setTool('photo')
+            }}
+            onPhotoSendBackward={sendSelectedPhotoBackward}
+            onPhotoBringForward={bringSelectedPhotoForward}
             onPhotoUpdate={(patch) => {
               if (selectedPhoto) {
                 updatePhoto(selectedPhoto.id, patch)
@@ -537,6 +549,34 @@ export function UnifiedComposerPage() {
   )
 }
 
+
+function getPreferredLayerId(
+  page: {
+    textElements: TextElement[]
+    photoElements: PhotoElement[]
+    wordArtElements: PositionedAsset[]
+    stickerElements: PositionedAsset[]
+  },
+  tool: ComposerTool,
+) {
+  if (tool === 'text') {
+    return page.textElements.at(-1)?.id ?? null
+  }
+
+  if (tool === 'photo') {
+    return page.photoElements.at(-1)?.id ?? null
+  }
+
+  if (tool === 'sticker') {
+    return page.stickerElements.at(-1)?.id ?? null
+  }
+
+  if (tool === 'phrase') {
+    return page.wordArtElements.at(-1)?.id ?? null
+  }
+
+  return null
+}
 
 function getLayerZValues(page: {
   textElements: TextElement[]
