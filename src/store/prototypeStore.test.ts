@@ -6,10 +6,11 @@ import {
   getMessagePages,
   updateDraftPage,
 } from '@/features/composer/messagePages'
+import type { MessageDraft } from '@/types'
 import { usePrototypeStore } from './prototypeStore'
 
 function buildThreePageDraft() {
-  let draft = {
+  let draft: MessageDraft = {
     ...emptyComposerDraft,
     textElements: emptyComposerDraft.textElements.map((item) => ({
       ...item,
