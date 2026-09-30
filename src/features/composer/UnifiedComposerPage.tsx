@@ -500,11 +500,6 @@ export function UnifiedComposerPage() {
               setSelectedLayerId(id)
               setTool('sticker')
             }}
-            onStickerUpdate={(patch) => {
-              if (selectedSticker) {
-                updateSticker(selectedSticker.id, patch)
-              }
-            }}
             onStickerSendBackward={sendSelectedStickerBackward}
             onStickerBringForward={bringSelectedStickerForward}
             onStickerDelete={() => {
