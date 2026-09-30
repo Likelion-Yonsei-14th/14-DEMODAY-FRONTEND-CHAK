@@ -24,15 +24,15 @@ export function SupportCompletePage() {
     try {
       if (navigator.share) {
         await navigator.share({
-          title: '지수의 응원 책상',
-          text: '지수의 책상에 응원 하나 놓고 가줘!',
+          title: '지수님의 응원 책상',
+          text: '지수님의 책상에 응원 하나 놓고 가줘!',
           url: shareUrl,
         })
         return
       }
 
       await navigator.clipboard.writeText(shareUrl)
-      showToast('지수의 책상 링크를 복사했어요.')
+      showToast('지수님의 책상 링크를 복사했어요.')
     } catch {
       // 사용자가 공유 시트를 닫은 경우에는 별도 오류 메시지를 띄우지 않습니다.
     }
@@ -48,7 +48,7 @@ export function SupportCompletePage() {
           fullWidth
           onClick={() => navigate('/prototype/support/jisu')}
         >
-          지수의 책상으로 돌아가기
+          지수님의 책상으로 돌아가기
         </Button>
       }
     >
@@ -58,9 +58,9 @@ export function SupportCompletePage() {
         </div>
 
         <section className="support-complete__copy">
-          <h1>응원이 지수의<br />책상에 놓였어요.</h1>
+          <h1>응원이 지수님의<br />책상에 놓였어요.</h1>
           <p>
-            지수가 열어볼 때까지 책상 위에서 조용히 기다리고 있을 거예요.
+            지수님이 열어볼 때까지 책상 위에서 조용히 기다리고 있을 거예요.
           </p>
         </section>
 
@@ -94,7 +94,7 @@ export function SupportCompletePage() {
             </div>
             <div>
               <span>공개 범위</span>
-              <strong>{latestMessage?.visibility === 'private' ? '지수만 보기' : '함께 보기'}</strong>
+              <strong>{latestMessage?.visibility === 'private' ? '지수님만 보기' : '함께 보기'}</strong>
             </div>
           </section>
         )}
