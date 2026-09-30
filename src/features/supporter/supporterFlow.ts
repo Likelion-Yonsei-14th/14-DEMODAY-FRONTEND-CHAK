@@ -15,7 +15,8 @@ export function resolveDeskObjectType(draft: MessageDraft): DeskObjectType {
 const placementOrder: DeskZone[] = ['center', 'left', 'right', 'front', 'back']
 
 export function resolveDeskZone(existingCount: number): DeskZone {
-  return placementOrder[existingCount % placementOrder.length]
+  const index = existingCount % placementOrder.length
+  return placementOrder[index] ?? 'center'
 }
 
 export const deskObjectLabels: Record<DeskObjectType, string> = {
