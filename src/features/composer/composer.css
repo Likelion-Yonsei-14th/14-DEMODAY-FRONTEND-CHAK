@@ -1677,3 +1677,43 @@
   cursor: nwse-resize;
   touch-action: none;
 }
+
+
+/* Shared layer controls keep text, sticker, and photo editing consistent. */
+.composer-layer-actions {
+  display: grid;
+  justify-items: start;
+  gap: 7px;
+}
+
+.composer-layer-actions__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.composer-layer-actions button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 11px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 11px;
+  background: var(--color-surface-base);
+  color: var(--color-content-secondary);
+  font-size: 9px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.composer-layer-actions button:active {
+  transform: scale(.97);
+}
+
+.composer-layer-actions .composer-layer-actions__delete {
+  border-color: rgba(168,80,69,.18);
+  background: rgba(255,249,247,.82);
+  color: #a85045;
+}
