@@ -20,6 +20,14 @@ import { getComposerBackground } from './backgroundAssets'
 import { getTextAppearance } from './fonts/fontRegistry'
 import { WordArtGraphic } from './wordArt/wordArtAssets'
 import { getStickerAsset } from './stickerAssets'
+import {
+  getBackgroundPhotoStyle,
+  getFloatingPhotoStyle,
+  getPhotoObjectFit,
+  getPositionedAssetStyle,
+  getStickerStyle,
+  getTextBoxStyle,
+} from './cardRenderStyles'
 import './composer.css'
 import './cardRenderShared.css'
 
@@ -607,14 +615,7 @@ function CanvasTextElement({
           ? 'canvas-text-element--controls-bottom'
           : '',
       ].filter(Boolean).join(' ')}
-      style={{
-        left: `${element.x ?? 50}%`,
-        top: `${element.y ?? 50}%`,
-        width:
-          `${element.width ?? 76}%`,
-        zIndex:
-          element.zIndex ?? 30,
-      }}
+      style={getTextBoxStyle(element)}
       onPointerDown={(event) => {
         event.stopPropagation()
         handleTouchPointerDown(event)
@@ -826,10 +827,6 @@ function CanvasFloatingPhoto({
 
   const frame =
     photo.frame ?? 'white'
-  const preserveShape =
-    frame === 'plain' ||
-    photo.hasTransparency
-
   return (
     <div
       ref={photoRef}
@@ -846,21 +843,7 @@ function CanvasFloatingPhoto({
           ? 'canvas-photo--selected'
           : '',
       ].filter(Boolean).join(' ')}
-      style={{
-        left: `${photo.x ?? 50}%`,
-        top: `${photo.y ?? 50}%`,
-        zIndex:
-          photo.zIndex ?? 10,
-        aspectRatio:
-          frame === 'polaroid'
-            ? '4 / 3.8'
-            : String(
-                photo.aspectRatio ??
-                  4 / 3,
-              ),
-        transform:
-          `translate(-50%, -50%) rotate(${photo.rotation ?? 0}deg) scale(${photo.scale ?? 1})`,
-      }}
+      style={getFloatingPhotoStyle(photo)}
       aria-label="사진 위치 옮기기"
       onClick={(event) => {
         event.stopPropagation()
@@ -873,10 +856,7 @@ function CanvasFloatingPhoto({
         alt={photo.alt ?? ''}
         draggable={false}
         style={{
-          objectFit:
-            preserveShape
-              ? 'contain'
-              : 'cover',
+          objectFit: getPhotoObjectFit(photo),
         }}
       />
 
@@ -1035,12 +1015,7 @@ function CanvasBackgroundPhoto({
         src={photo.src}
         alt={photo.alt ?? ''}
         draggable={false}
-        style={{
-          objectPosition:
-            `${photo.x ?? 50}% ${photo.y ?? 50}%`,
-          transform:
-            `scale(${photo.scale ?? 1})`,
-        }}
+        style={getBackgroundPhotoStyle(photo)}
       />
 
       {selected && (
@@ -1201,14 +1176,10 @@ function CanvasStickerElement({
         'canvas-sticker',
         selected ? 'canvas-sticker--selected' : '',
       ].filter(Boolean).join(' ')}
-      style={{
-        left: `${element.x}%`,
-        top: `${element.y}%`,
-        width: `${asset.baseWidthPercent}%`,
-        zIndex: element.zIndex,
-        transform:
-          `translate(-50%, -50%) rotate(${element.rotation}deg) scale(${element.scale})`,
-      }}
+      style={getStickerStyle(
+        element,
+        asset.baseWidthPercent,
+      )}
       aria-label={`${asset.name} 스티커`}
       onClick={(event) => {
         event.stopPropagation()
@@ -1275,13 +1246,7 @@ function CanvasWordArtElement({
           ? 'canvas-word-art--selected'
           : '',
       ].filter(Boolean).join(' ')}
-      style={{
-        left: `${element.x}%`,
-        top: `${element.y}%`,
-        zIndex: element.zIndex,
-        transform:
-          `translate(-50%, -50%) rotate(${element.rotation}deg) scale(${element.scale})`,
-      }}
+      style={getPositionedAssetStyle(element)}
       aria-label="그래픽 문구 위치 옮기기"
       onClick={(event) => {
         event.stopPropagation()
