@@ -6,7 +6,14 @@ export type MessageStatus = 'draft' | 'sent' | 'read'
 export type TextElement = {
   id: string
   text: string
-  styleId: string
+  /**
+   * Legacy preset kept so persisted prototype drafts and seeded messages
+   * remain readable after the font system migration.
+   */
+  styleId?: string
+  fontId?: string
+  fontSize?: number
+  color?: string
   x?: number
   y?: number
   width?: number
