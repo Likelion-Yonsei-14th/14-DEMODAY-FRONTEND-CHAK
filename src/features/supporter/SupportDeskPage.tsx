@@ -26,7 +26,7 @@ export function SupportDeskPage() {
       contentClassName="support-desk-shell"
       appBar={
         <AppBar
-          title="지수의 책상"
+          title="지수님의 책상"
           subtitle="수능까지 D-42"
           transparent
           leading={
@@ -66,16 +66,17 @@ export function SupportDeskPage() {
           <h2>
             친구들이 하나씩
             <br />
-            마음을 놓고 갔어요.
+            지수님의 책상을 채우고 있어요.
           </h2>
           <p>
-            책상 위 물건들은 누군가 남긴 응원이에요. 지수에게도 하나 놓고
-            가볼까요?
+            지수님에게 전하고 싶은 마음이 있다면,
+            <br />
+            응원 하나를 남겨보세요.
           </p>
         </section>
 
         <div className="support-desk__scene-wrap">
-          <DeskScene ownerName="지수" />
+          <DeskScene ownerName="지수님" />
           <DeskObjectLayer
             objects={currentDesk.objects}
             messages={messages}
