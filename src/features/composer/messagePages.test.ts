@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { emptyComposerDraft } from '@/prototype/mock/initialState'
+import type { MessageDraft } from '@/types'
 import {
   appendContinuationPage,
   deleteDraftPage,
@@ -9,7 +10,7 @@ import {
   updateDraftPage,
 } from './messagePages'
 
-function freshDraft() {
+function freshDraft(): MessageDraft {
   return {
     ...emptyComposerDraft,
     textElements: emptyComposerDraft.textElements.map((item) => ({
@@ -27,7 +28,7 @@ function freshDraft() {
 
 describe('multi-page card draft', () => {
   it('inherits the previous background and last text style', () => {
-    let draft = freshDraft()
+    let draft: MessageDraft = freshDraft()
     const first = getActiveCardPage(draft)
 
     draft = updateDraftPage(draft, first.id, {
