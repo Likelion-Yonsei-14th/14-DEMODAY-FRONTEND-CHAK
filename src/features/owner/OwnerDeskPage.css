@@ -1,0 +1,97 @@
+.owner-desk-shell {
+  padding-inline: var(--page-gutter);
+  padding-bottom: 42px;
+}
+
+.owner-desk {
+  display: grid;
+  gap: 20px;
+}
+
+.owner-desk__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 10px;
+}
+
+.owner-desk__intro {
+  display: grid;
+  gap: 7px;
+  padding: 3px 2px 0;
+}
+
+.owner-desk__eyebrow {
+  margin: 0;
+  color: var(--color-brand-pressed);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 800;
+  letter-spacing: .09em;
+}
+
+.owner-desk__intro h2 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.28;
+  letter-spacing: -.035em;
+}
+
+.owner-desk__intro > p:last-child {
+  max-width: 330px;
+  margin: 2px 0 0;
+  color: var(--color-content-secondary);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.owner-desk__scene-wrap {
+  position: relative;
+  margin-inline: calc(var(--page-gutter) * -1);
+  overflow: hidden;
+  border-block: 1px solid rgba(205,185,166,.36);
+  background: #f6ecdf;
+  transition: filter 240ms ease;
+}
+
+.owner-desk__scene-wrap--opening .desk-scene {
+  filter: brightness(.94) saturate(.88);
+  transition: filter 240ms ease;
+}
+
+.owner-desk__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 2px;
+}
+
+.owner-desk__summary > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.owner-desk__summary strong {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.owner-desk__summary span {
+  color: var(--color-content-secondary);
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.owner-desk__mail-link {
+  flex: none;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 999px;
+  background: var(--color-surface-base);
+  color: var(--color-content-secondary);
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
