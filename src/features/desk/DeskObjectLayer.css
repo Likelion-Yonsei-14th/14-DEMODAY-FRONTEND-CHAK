@@ -294,7 +294,7 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .desk-object--unread:not(.desk-object--opening) {
+  .desk-object--unread:not(.desk-object--opening):not(.desk-object--deemphasized) {
     animation: desk-object-unread-breathe 2.8s ease-in-out infinite;
   }
 }
