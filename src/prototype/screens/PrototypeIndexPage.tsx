@@ -6,6 +6,12 @@ import './prototype.css'
 
 const routes = [
   {
+    path: '/prototype/support/jisu',
+    title: 'Supporter Core',
+    description: '지수의 2.5D Desk 방문 → 응원 놓고 가기 → Unified Composer',
+    phase: 'Phase 2 · LIVE',
+  },
+  {
     path: '/prototype/desk',
     title: 'Owner Desk',
     description: '오브젝트 중심 홈 · 누적 · Daily / Time Capsule',
@@ -13,7 +19,7 @@ const routes = [
   },
   {
     path: '/prototype/composer',
-    title: 'Unified Composer',
+    title: 'Unified Composer Spec',
     description: '모드 선택 없이 배경 · 글자 · 문구 · 스티커 · 사진을 한 화면에서 편집',
     phase: 'Phase 2–3',
   },
@@ -41,7 +47,7 @@ export function PrototypeIndexPage() {
   return (
     <AppShell
       surface="base"
-      appBar={<AppBar title="Prototype" trailing={<StatusBadge tone="brand">P1</StatusBadge>} />}
+      appBar={<AppBar title="Prototype" trailing={<StatusBadge tone="brand">P2</StatusBadge>} />}
     >
       <div className="prototype-index">
         <section className="prototype-index__hero">
@@ -65,7 +71,7 @@ export function PrototypeIndexPage() {
         <section className="prototype-index__routes" aria-labelledby="prototype-routes-title">
           <header>
             <h3 id="prototype-routes-title">Core flows</h3>
-            <p>각 단계는 이후 Phase에서 실제 인터랙션으로 교체됩니다.</p>
+            <p>Phase 2부터 실제 서비스의 감성과 인터랙션을 입히기 시작합니다.</p>
           </header>
           <div className="prototype-route-list">
             {routes.map((route) => (
@@ -84,8 +90,8 @@ export function PrototypeIndexPage() {
         <aside className="prototype-index__note">
           <strong>현재 원칙</strong>
           <p>
-            Figma의 예전 구조보다 이 프로토타입에서 합의한 최신 플로우를 우선합니다.
-            특히 Composer는 한 줄/사진/꾸미기/편지 모드로 나누지 않습니다.
+            Desk는 정면 시점의 2.5D 일러스트 공간으로 구현합니다. 구조 UI는 차분하게,
+            친구가 남기는 메시지 오브젝트는 더 컬러풀하고 장난스럽게 표현합니다.
           </p>
         </aside>
       </div>

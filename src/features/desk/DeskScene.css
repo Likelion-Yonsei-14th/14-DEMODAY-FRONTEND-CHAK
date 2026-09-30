@@ -1,0 +1,57 @@
+.desk-scene {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #f6ecdf;
+  isolation: isolate;
+}
+
+.desk-scene__svg {
+  width: 100%;
+  height: auto;
+}
+
+.desk-scene__light {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(120deg, rgba(255, 250, 226, .32), transparent 28%),
+    radial-gradient(circle at 82% 12%, rgba(255, 228, 177, .28), transparent 34%);
+  mix-blend-mode: screen;
+}
+
+.desk-scene__wall-messages,
+.desk-scene__environment,
+.desk-scene__message-objects {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.desk-scene__message-objects > g {
+  transition: transform var(--duration-normal) var(--ease-emphasized);
+}
+
+.desk-scene__extra {
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.desk-scene__extra--highlight {
+  animation: desk-object-arrive 520ms var(--ease-emphasized) both;
+}
+
+@keyframes desk-object-arrive {
+  0% {
+    transform: translateY(-18px) scale(1.06) rotate(2deg);
+    opacity: 0;
+  }
+  66% {
+    transform: translateY(2px) scale(.99) rotate(-1deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1) rotate(0);
+    opacity: 1;
+  }
+}
