@@ -61,11 +61,7 @@ export function OwnerDeskPage() {
       appBar={
         <AppBar
           title="내 책상"
-          subtitle={
-            unreadCount > 0
-              ? `안 읽은 응원 ${unreadCount}개`
-              : '모든 응원을 확인했어요'
-          }
+          subtitle="수능까지 D-42"
           transparent
           leading={
             <IconButton
