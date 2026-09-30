@@ -6,6 +6,7 @@ import {
   ImagePlus,
   Images,
   Sparkles,
+  Trash2,
   Wallpaper,
 } from 'lucide-react'
 import { ChoiceChip } from '@/design-system'
@@ -14,9 +15,11 @@ import type {
   PhotoElement,
   PhotoFrame,
 } from '@/types'
-import { composerBackgrounds, type ComposerBackground } from './backgroundAssets'
+import {
+  composerBackgrounds,
+  type ComposerBackground,
+} from './backgroundAssets'
 import type { ComposerTool } from './ComposerDock'
-import { LayerTransformControls } from './LayerTransformControls'
 
 type ComposerToolTrayProps = {
   tool: ComposerTool
@@ -24,13 +27,17 @@ type ComposerToolTrayProps = {
   selectedPhoto?: PhotoElement
   onBackgroundChange: (backgroundId: string) => void
   onTextStyleChange: (styleId: string) => void
-  onTextAlignChange: (align: 'left' | 'center' | 'right') => void
+  onTextAlignChange: (
+    align: 'left' | 'center' | 'right',
+  ) => void
   onPhotoAdd: (
     file: File,
     role: 'floating' | 'background',
   ) => Promise<void>
   onPhotoSelect: (id: string) => void
-  onPhotoUpdate: (patch: Partial<PhotoElement>) => void
+  onPhotoUpdate: (
+    patch: Partial<PhotoElement>,
+  ) => void
   onPhotoDelete: () => void
 }
 
@@ -91,27 +98,37 @@ export function ComposerToolTray({
             <div className="composer-chip-row">
               <ChoiceChip
                 selected={
-                  primaryText.styleId === 'handwriting-default'
+                  primaryText.styleId ===
+                  'handwriting-default'
                 }
                 onClick={() =>
-                  onTextStyleChange('handwriting-default')
+                  onTextStyleChange(
+                    'handwriting-default',
+                  )
                 }
               >
                 손글씨
               </ChoiceChip>
               <ChoiceChip
                 selected={
-                  primaryText.styleId === 'handwriting-large'
+                  primaryText.styleId ===
+                  'handwriting-large'
                 }
                 onClick={() =>
-                  onTextStyleChange('handwriting-large')
+                  onTextStyleChange(
+                    'handwriting-large',
+                  )
                 }
               >
                 크게
               </ChoiceChip>
               <ChoiceChip
-                selected={primaryText.styleId === 'clean'}
-                onClick={() => onTextStyleChange('clean')}
+                selected={
+                  primaryText.styleId === 'clean'
+                }
+                onClick={() =>
+                  onTextStyleChange('clean')
+                }
               >
                 깔끔하게
               </ChoiceChip>
@@ -124,22 +141,44 @@ export function ComposerToolTray({
               <ToolIconButton
                 label="왼쪽 정렬"
                 active={primaryText.align === 'left'}
-                onClick={() => onTextAlignChange('left')}
-                icon={<AlignLeft size={18} aria-hidden />}
+                onClick={() =>
+                  onTextAlignChange('left')
+                }
+                icon={
+                  <AlignLeft
+                    size={18}
+                    aria-hidden
+                  />
+                }
               />
               <ToolIconButton
                 label="가운데 정렬"
                 active={
-                  (primaryText.align ?? 'center') === 'center'
+                  (primaryText.align ?? 'center') ===
+                  'center'
                 }
-                onClick={() => onTextAlignChange('center')}
-                icon={<AlignCenter size={18} aria-hidden />}
+                onClick={() =>
+                  onTextAlignChange('center')
+                }
+                icon={
+                  <AlignCenter
+                    size={18}
+                    aria-hidden
+                  />
+                }
               />
               <ToolIconButton
                 label="오른쪽 정렬"
                 active={primaryText.align === 'right'}
-                onClick={() => onTextAlignChange('right')}
-                icon={<AlignRight size={18} aria-hidden />}
+                onClick={() =>
+                  onTextAlignChange('right')
+                }
+                icon={
+                  <AlignRight
+                    size={18}
+                    aria-hidden
+                  />
+                }
               />
             </div>
           </div>
@@ -148,7 +187,9 @@ export function ComposerToolTray({
 
       {tool === 'phrase' && (
         <FutureTool
-          icon={<Sparkles size={19} aria-hidden />}
+          icon={
+            <Sparkles size={19} aria-hidden />
+          }
           title="그래픽 문구"
           description="Figma에서 만든 벡터 에셋을 연결할 예정이에요."
         />
@@ -156,7 +197,9 @@ export function ComposerToolTray({
 
       {tool === 'sticker' && (
         <FutureTool
-          icon={<Sparkles size={19} aria-hidden />}
+          icon={
+            <Sparkles size={19} aria-hidden />
+          }
           title="스티커"
           description="하트, 클로버, 별과 시험 소품 벡터 에셋을 연결할 예정이에요."
         />
@@ -191,11 +234,15 @@ function PhotoTool({
     role: 'floating' | 'background',
   ) => Promise<void>
   onPhotoSelect: (id: string) => void
-  onPhotoUpdate: (patch: Partial<PhotoElement>) => void
+  onPhotoUpdate: (
+    patch: Partial<PhotoElement>,
+  ) => void
   onPhotoDelete: () => void
 }) {
-  const floatingInputRef = useRef<HTMLInputElement>(null)
-  const backgroundInputRef = useRef<HTMLInputElement>(null)
+  const floatingInputRef =
+    useRef<HTMLInputElement>(null)
+  const backgroundInputRef =
+    useRef<HTMLInputElement>(null)
   const [processing, setProcessing] = useState<
     'floating' | 'background' | null
   >(null)
@@ -233,9 +280,12 @@ function PhotoTool({
           type="button"
           className="composer-photo-action"
           disabled={
-            processing !== null || floatingCount >= 3
+            processing !== null ||
+            floatingCount >= 3
           }
-          onClick={() => floatingInputRef.current?.click()}
+          onClick={() =>
+            floatingInputRef.current?.click()
+          }
         >
           <span className="composer-photo-action__icon">
             <Images size={19} aria-hidden />
@@ -254,7 +304,9 @@ function PhotoTool({
           type="button"
           className="composer-photo-action"
           disabled={processing !== null}
-          onClick={() => backgroundInputRef.current?.click()}
+          onClick={() =>
+            backgroundInputRef.current?.click()
+          }
         >
           <span className="composer-photo-action__icon">
             <Wallpaper size={19} aria-hidden />
@@ -301,7 +353,9 @@ function PhotoTool({
 
       {draft.photoElements.length > 0 && (
         <div className="composer-photo-section">
-          <span className="composer-tool-label">추가한 사진</span>
+          <span className="composer-tool-label">
+            추가한 사진
+          </span>
           <div
             className="composer-photo-strip"
             aria-label="추가한 사진 목록"
@@ -315,14 +369,21 @@ function PhotoTool({
                   selectedPhoto?.id === photo.id
                     ? 'composer-photo-thumb--selected'
                     : '',
+                  photo.hasTransparency
+                    ? 'composer-photo-thumb--transparent'
+                    : '',
                 ].filter(Boolean).join(' ')}
-                onClick={() => onPhotoSelect(photo.id)}
+                onClick={() =>
+                  onPhotoSelect(photo.id)
+                }
               >
                 <img src={photo.src} alt="" />
                 <span>
                   {photo.role === 'background'
                     ? '배경'
-                    : '사진'}
+                    : photo.hasTransparency
+                      ? '누끼'
+                      : '사진'}
                 </span>
               </button>
             ))}
@@ -340,86 +401,66 @@ function PhotoTool({
             </strong>
             <span>
               {selectedPhoto.role === 'background'
-                ? '카드에서 사진을 끌어 보이는 위치를 조정하세요.'
-                : '사진 자체를 끌어서 원하는 곳에 놓을 수 있어요.'}
+                ? '사진을 끌어 위치를 바꾸고, 캔버스 오른쪽 아래 핸들을 끌어 확대·축소하세요.'
+                : '사진을 끌어 이동하고, 오른쪽 아래 핸들을 끌어 크기와 각도를 조절하세요.'}
             </span>
           </div>
 
+          {selectedPhoto.hasTransparency &&
+            selectedPhoto.role === 'floating' &&
+            (selectedPhoto.frame ?? 'plain') ===
+              'plain' && (
+              <div className="composer-photo-alpha-note">
+                투명 배경을 그대로 유지하고 있어요.
+              </div>
+            )}
+
           {selectedPhoto.role === 'floating' && (
             <div className="composer-chip-section">
-              <span className="composer-tool-label">프레임</span>
+              <span className="composer-tool-label">
+                프레임
+              </span>
               <div className="composer-chip-row">
                 {([
                   ['plain', '그대로'],
                   ['white', '화이트'],
                   ['polaroid', '폴라로이드'],
-                ] as Array<[PhotoFrame, string]>).map(
-                  ([frame, label]) => (
-                    <ChoiceChip
-                      key={frame}
-                      selected={
-                        (selectedPhoto.frame ?? 'white') === frame
-                      }
-                      onClick={() => onPhotoUpdate({ frame })}
-                    >
-                      {label}
-                    </ChoiceChip>
-                  ),
-                )}
+                ] as Array<
+                  [PhotoFrame, string]
+                >).map(([frame, label]) => (
+                  <ChoiceChip
+                    key={frame}
+                    selected={
+                      (selectedPhoto.frame ??
+                        'white') === frame
+                    }
+                    onClick={() =>
+                      onPhotoUpdate({ frame })
+                    }
+                  >
+                    {label}
+                  </ChoiceChip>
+                ))}
               </div>
             </div>
           )}
 
-          <LayerTransformControls
-            onScaleDown={() =>
-              onPhotoUpdate({
-                scale: clamp(
-                  (selectedPhoto.scale ?? 1) - .1,
-                  selectedPhoto.role === 'background' ? 1 : .55,
-                  selectedPhoto.role === 'background' ? 1.65 : 1.45,
-                ),
-              })
-            }
-            onScaleUp={() =>
-              onPhotoUpdate({
-                scale: clamp(
-                  (selectedPhoto.scale ?? 1) + .1,
-                  selectedPhoto.role === 'background' ? 1 : .55,
-                  selectedPhoto.role === 'background' ? 1.65 : 1.45,
-                ),
-              })
-            }
-            onRotateLeft={
-              selectedPhoto.role === 'floating'
-                ? () =>
-                    onPhotoUpdate({
-                      rotation: clamp(
-                        (selectedPhoto.rotation ?? 0) - 5,
-                        -18,
-                        18,
-                      ),
-                    })
-                : undefined
-            }
-            onRotateRight={
-              selectedPhoto.role === 'floating'
-                ? () =>
-                    onPhotoUpdate({
-                      rotation: clamp(
-                        (selectedPhoto.rotation ?? 0) + 5,
-                        -18,
-                        18,
-                      ),
-                    })
-                : undefined
-            }
-            onDelete={onPhotoDelete}
-          />
+          <button
+            type="button"
+            className="composer-photo-delete"
+            onClick={onPhotoDelete}
+          >
+            <Trash2 size={15} aria-hidden />
+            사진 삭제
+          </button>
         </div>
       ) : (
         <div className="composer-photo-empty-hint">
           <ImagePlus size={17} aria-hidden />
-          <span>사진을 추가하면 이곳에서 크기와 프레임을 조정할 수 있어요.</span>
+          <span>
+            사진을 추가하면 캔버스에서 직접 이동하고
+            크기를 조절할 수 있어요.
+          </span>
         </div>
       )}
     </>
@@ -439,7 +480,9 @@ function BackgroundRow({
 }) {
   return (
     <div className="composer-background-section">
-      <span className="composer-tool-label">{label}</span>
+      <span className="composer-tool-label">
+        {label}
+      </span>
       <div
         className="composer-bg-list"
         role="list"
@@ -455,15 +498,20 @@ function BackgroundRow({
                 ? 'composer-bg-item--selected'
                 : '',
             ].filter(Boolean).join(' ')}
-            onClick={() => onSelect(background.id)}
-            aria-pressed={selectedId === background.id}
+            onClick={() =>
+              onSelect(background.id)
+            }
+            aria-pressed={
+              selectedId === background.id
+            }
           >
             {background.kind === 'image' &&
             background.source ? (
               <span
                 className="composer-bg composer-bg--image"
                 style={{
-                  backgroundColor: background.tone,
+                  backgroundColor:
+                    background.tone,
                 }}
               >
                 <img
@@ -471,7 +519,9 @@ function BackgroundRow({
                   alt=""
                   draggable={false}
                   style={{
-                    objectFit: background.fit ?? 'contain',
+                    objectFit:
+                      background.fit ??
+                      'contain',
                   }}
                 />
               </span>
@@ -527,7 +577,9 @@ function ToolIconButton({
       aria-pressed={active}
       className={[
         'composer-align-button',
-        active ? 'composer-align-button--active' : '',
+        active
+          ? 'composer-align-button--active'
+          : '',
       ].filter(Boolean).join(' ')}
       onClick={onClick}
     >
@@ -547,15 +599,13 @@ function FutureTool({
 }) {
   return (
     <div className="composer-future-tool">
-      <span className="composer-future-tool__icon">{icon}</span>
+      <span className="composer-future-tool__icon">
+        {icon}
+      </span>
       <span>
         <strong>{title}</strong>
         <small>{description}</small>
       </span>
     </div>
   )
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max)
 }

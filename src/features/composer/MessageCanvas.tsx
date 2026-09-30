@@ -3,7 +3,7 @@ import {
   useRef,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
-import { Move } from 'lucide-react'
+import { Maximize2, Move } from 'lucide-react'
 import type {
   MessageDraft,
   PhotoElement,
@@ -20,8 +20,15 @@ type MessageCanvasProps = {
   onSelect: (id: string | null) => void
   onTextChange: (id: string, text: string) => void
   onTextMove: (id: string, x: number, y: number) => void
-  onWordArtMove: (id: string, x: number, y: number) => void
-  onPhotoMove: (id: string, x: number, y: number) => void
+  onWordArtMove: (
+    id: string,
+    x: number,
+    y: number,
+  ) => void
+  onPhotoChange: (
+    id: string,
+    patch: Partial<PhotoElement>,
+  ) => void
 }
 
 export function MessageCanvas({
@@ -31,18 +38,20 @@ export function MessageCanvas({
   onTextChange,
   onTextMove,
   onWordArtMove,
-  onPhotoMove,
+  onPhotoChange,
 }: MessageCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null)
   const background = getComposerBackground(
     draft.backgroundAssetId,
   )
-  const backgroundPhoto = draft.photoElements.find(
-    (photo) => photo.role === 'background',
-  )
-  const floatingPhotos = draft.photoElements.filter(
-    (photo) => photo.role === 'floating',
-  )
+  const backgroundPhoto =
+    draft.photoElements.find(
+      (photo) => photo.role === 'background',
+    )
+  const floatingPhotos =
+    draft.photoElements.filter(
+      (photo) => photo.role === 'floating',
+    )
 
   return (
     <div className="message-canvas-viewport">
@@ -54,10 +63,14 @@ export function MessageCanvas({
             ? background.className ?? ''
             : 'message-canvas--image',
         ].filter(Boolean).join(' ')}
-        style={{ backgroundColor: background.tone }}
+        style={{
+          backgroundColor: background.tone,
+        }}
         aria-label="응원 카드 편집 캔버스"
         onPointerDown={(event) => {
-          if (event.target === event.currentTarget) {
+          if (
+            event.target === event.currentTarget
+          ) {
             onSelect(null)
           }
         }}
@@ -80,10 +93,17 @@ export function MessageCanvas({
           <CanvasBackgroundPhoto
             photo={backgroundPhoto}
             canvasRef={canvasRef}
-            selected={selectedId === backgroundPhoto.id}
-            onSelect={() => onSelect(backgroundPhoto.id)}
-            onMove={(x, y) =>
-              onPhotoMove(backgroundPhoto.id, x, y)
+            selected={
+              selectedId === backgroundPhoto.id
+            }
+            onSelect={() =>
+              onSelect(backgroundPhoto.id)
+            }
+            onChange={(patch) =>
+              onPhotoChange(
+                backgroundPhoto.id,
+                patch,
+              )
             }
           />
         )}
@@ -91,7 +111,8 @@ export function MessageCanvas({
         <div
           className={[
             'message-canvas__shine',
-            background.kind === 'image' || backgroundPhoto
+            background.kind === 'image' ||
+            backgroundPhoto
               ? 'message-canvas__shine--art'
               : '',
           ].filter(Boolean).join(' ')}
@@ -104,9 +125,11 @@ export function MessageCanvas({
             photo={photo}
             canvasRef={canvasRef}
             selected={selectedId === photo.id}
-            onSelect={() => onSelect(photo.id)}
-            onMove={(x, y) =>
-              onPhotoMove(photo.id, x, y)
+            onSelect={() =>
+              onSelect(photo.id)
+            }
+            onChange={(patch) =>
+              onPhotoChange(photo.id, patch)
             }
           />
         ))}
@@ -116,10 +139,18 @@ export function MessageCanvas({
             key={element.id}
             element={element}
             canvasRef={canvasRef}
-            selected={selectedId === element.id}
-            onSelect={() => onSelect(element.id)}
+            selected={
+              selectedId === element.id
+            }
+            onSelect={() =>
+              onSelect(element.id)
+            }
             onMove={(x, y) =>
-              onWordArtMove(element.id, x, y)
+              onWordArtMove(
+                element.id,
+                x,
+                y,
+              )
             }
           />
         ))}
@@ -129,13 +160,24 @@ export function MessageCanvas({
             key={element.id}
             element={element}
             canvasRef={canvasRef}
-            selected={selectedId === element.id}
-            onSelect={() => onSelect(element.id)}
+            selected={
+              selectedId === element.id
+            }
+            onSelect={() =>
+              onSelect(element.id)
+            }
             onChange={(text) =>
-              onTextChange(element.id, text)
+              onTextChange(
+                element.id,
+                text,
+              )
             }
             onMove={(x, y) =>
-              onTextMove(element.id, x, y)
+              onTextMove(
+                element.id,
+                x,
+                y,
+              )
             }
           />
         ))}
@@ -149,7 +191,9 @@ export function MessageCanvas({
       </div>
 
       <p className="message-canvas-viewport__hint">
-        요소를 눌러 선택하고, <Move size={13} aria-hidden /> 끌어서 위치를 바꿔보세요.
+        요소를 끌어 이동하고, 선택한 사진의{' '}
+        <Maximize2 size={13} aria-hidden /> 핸들을 끌어
+        크기와 각도를 바꿔보세요.
       </p>
     </div>
   )
@@ -157,7 +201,8 @@ export function MessageCanvas({
 
 type CanvasTextElementProps = {
   element: TextElement
-  canvasRef: React.RefObject<HTMLDivElement | null>
+  canvasRef:
+    React.RefObject<HTMLDivElement | null>
   selected: boolean
   onSelect: () => void
   onChange: (text: string) => void
@@ -172,22 +217,31 @@ function CanvasTextElement({
   onChange,
   onMove,
 }: CanvasTextElementProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const textareaRef =
+    useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     if (!textareaRef.current) return
     textareaRef.current.style.height = 'auto'
     textareaRef.current.style.height =
-      `${Math.max(72, textareaRef.current.scrollHeight)}px`
+      `${Math.max(
+        72,
+        textareaRef.current.scrollHeight,
+      )}px`
   }, [element.text])
 
   const handlePointerDown =
-    createMoveHandler(canvasRef, onSelect, onMove, {
-      minX: 8,
-      maxX: 92,
-      minY: 10,
-      maxY: 90,
-    })
+    createMoveHandler(
+      canvasRef,
+      onSelect,
+      onMove,
+      {
+        minX: 8,
+        maxX: 92,
+        minY: 10,
+        maxY: 90,
+      },
+    )
 
   return (
     <div
@@ -201,9 +255,12 @@ function CanvasTextElement({
       style={{
         left: `${element.x ?? 50}%`,
         top: `${element.y ?? 50}%`,
-        width: `${element.width ?? 76}%`,
+        width:
+          `${element.width ?? 76}%`,
       }}
-      onPointerDown={(event) => event.stopPropagation()}
+      onPointerDown={(event) =>
+        event.stopPropagation()
+      }
     >
       <textarea
         ref={textareaRef}
@@ -224,9 +281,14 @@ function CanvasTextElement({
           type="button"
           className="canvas-text-element__move"
           aria-label="글자 위치 옮기기"
-          onPointerDown={handlePointerDown}
+          onPointerDown={
+            handlePointerDown
+          }
         >
-          <Move size={15} aria-hidden />
+          <Move
+            size={15}
+            aria-hidden
+          />
         </button>
       )}
     </div>
@@ -238,34 +300,176 @@ function CanvasFloatingPhoto({
   canvasRef,
   selected,
   onSelect,
-  onMove,
+  onChange,
 }: {
   photo: PhotoElement
-  canvasRef: React.RefObject<HTMLDivElement | null>
+  canvasRef:
+    React.RefObject<HTMLDivElement | null>
   selected: boolean
   onSelect: () => void
-  onMove: (x: number, y: number) => void
+  onChange: (
+    patch: Partial<PhotoElement>,
+  ) => void
 }) {
-  const handlePointerDown =
-    createMoveHandler(canvasRef, onSelect, onMove, {
-      minX: 12,
-      maxX: 88,
-      minY: 12,
-      maxY: 88,
-    })
+  const photoRef =
+    useRef<HTMLDivElement>(null)
+
+  const handleDrag = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    onSelect()
+
+    const canvasRect =
+      canvas.getBoundingClientRect()
+    const pointerStart = {
+      x: event.clientX,
+      y: event.clientY,
+    }
+    const positionStart = {
+      x: photo.x ?? 50,
+      y: photo.y ?? 50,
+    }
+
+    const onPointerMove = (
+      moveEvent: PointerEvent,
+    ) => {
+      const x =
+        positionStart.x +
+        ((moveEvent.clientX -
+          pointerStart.x) /
+          canvasRect.width) *
+          100
+      const y =
+        positionStart.y +
+        ((moveEvent.clientY -
+          pointerStart.y) /
+          canvasRect.height) *
+          100
+
+      onChange({
+        x: clamp(x, 9, 91),
+        y: clamp(y, 9, 91),
+      })
+    }
+
+    bindWindowDrag(onPointerMove)
+  }
+
+  const handleTransform = (
+    event: ReactPointerEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const node = photoRef.current
+    if (!node) return
+
+    onSelect()
+
+    const rect =
+      node.getBoundingClientRect()
+    const center = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    }
+    const startDistance = Math.max(
+      12,
+      distance(
+        center.x,
+        center.y,
+        event.clientX,
+        event.clientY,
+      ),
+    )
+    const startAngle = angle(
+      center.x,
+      center.y,
+      event.clientX,
+      event.clientY,
+    )
+    const scaleStart =
+      photo.scale ?? 1
+    const rotationStart =
+      photo.rotation ?? 0
+
+    const onPointerMove = (
+      moveEvent: PointerEvent,
+    ) => {
+      const currentDistance = distance(
+        center.x,
+        center.y,
+        moveEvent.clientX,
+        moveEvent.clientY,
+      )
+      const currentAngle = angle(
+        center.x,
+        center.y,
+        moveEvent.clientX,
+        moveEvent.clientY,
+      )
+
+      onChange({
+        scale: clamp(
+          scaleStart *
+            (currentDistance /
+              startDistance),
+          .42,
+          1.7,
+        ),
+        rotation: clamp(
+          rotationStart +
+            normalizeAngle(
+              currentAngle -
+                startAngle,
+            ),
+          -28,
+          28,
+        ),
+      })
+    }
+
+    bindWindowDrag(onPointerMove)
+  }
+
+  const frame =
+    photo.frame ?? 'white'
+  const preserveShape =
+    frame === 'plain' ||
+    photo.hasTransparency
 
   return (
-    <button
-      type="button"
+    <div
+      ref={photoRef}
+      role="button"
+      tabIndex={0}
       className={[
         'canvas-photo',
-        `canvas-photo--${photo.frame ?? 'white'}`,
-        selected ? 'canvas-photo--selected' : '',
+        `canvas-photo--${frame}`,
+        photo.hasTransparency
+          ? 'canvas-photo--transparent'
+          : '',
+        selected
+          ? 'canvas-photo--selected'
+          : '',
       ].filter(Boolean).join(' ')}
       style={{
         left: `${photo.x ?? 50}%`,
         top: `${photo.y ?? 50}%`,
-        zIndex: photo.zIndex ?? 10,
+        zIndex:
+          photo.zIndex ?? 10,
+        aspectRatio:
+          frame === 'polaroid'
+            ? '4 / 3.8'
+            : String(
+                photo.aspectRatio ??
+                  4 / 3,
+              ),
         transform:
           `translate(-50%, -50%) rotate(${photo.rotation ?? 0}deg) scale(${photo.scale ?? 1})`,
       }}
@@ -274,10 +478,36 @@ function CanvasFloatingPhoto({
         event.stopPropagation()
         onSelect()
       }}
-      onPointerDown={handlePointerDown}
+      onPointerDown={handleDrag}
     >
-      <img src={photo.src} alt={photo.alt ?? ''} />
-    </button>
+      <img
+        src={photo.src}
+        alt={photo.alt ?? ''}
+        draggable={false}
+        style={{
+          objectFit:
+            preserveShape
+              ? 'contain'
+              : 'cover',
+        }}
+      />
+
+      {selected && (
+        <button
+          type="button"
+          className="canvas-photo__transform-handle"
+          aria-label="사진 크기와 각도 조절"
+          onPointerDown={
+            handleTransform
+          }
+        >
+          <Maximize2
+            size={15}
+            aria-hidden
+          />
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -286,33 +516,127 @@ function CanvasBackgroundPhoto({
   canvasRef,
   selected,
   onSelect,
-  onMove,
+  onChange,
 }: {
   photo: PhotoElement
-  canvasRef: React.RefObject<HTMLDivElement | null>
+  canvasRef:
+    React.RefObject<HTMLDivElement | null>
   selected: boolean
   onSelect: () => void
-  onMove: (x: number, y: number) => void
+  onChange: (
+    patch: Partial<PhotoElement>,
+  ) => void
 }) {
-  const handlePointerDown =
-    createMoveHandler(canvasRef, onSelect, onMove, {
-      minX: 0,
-      maxX: 100,
-      minY: 0,
-      maxY: 100,
-    })
+  const handleDrag = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    onSelect()
+
+    const rect =
+      canvas.getBoundingClientRect()
+    const pointerStart = {
+      x: event.clientX,
+      y: event.clientY,
+    }
+    const positionStart = {
+      x: photo.x ?? 50,
+      y: photo.y ?? 50,
+    }
+
+    const onPointerMove = (
+      moveEvent: PointerEvent,
+    ) => {
+      const x =
+        positionStart.x +
+        ((moveEvent.clientX -
+          pointerStart.x) /
+          rect.width) *
+          100
+      const y =
+        positionStart.y +
+        ((moveEvent.clientY -
+          pointerStart.y) /
+          rect.height) *
+          100
+
+      onChange({
+        x: clamp(x, 0, 100),
+        y: clamp(y, 0, 100),
+      })
+    }
+
+    bindWindowDrag(onPointerMove)
+  }
+
+  const handleScale = (
+    event: ReactPointerEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const rect =
+      canvas.getBoundingClientRect()
+    const center = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    }
+    const startDistance = Math.max(
+      20,
+      distance(
+        center.x,
+        center.y,
+        event.clientX,
+        event.clientY,
+      ),
+    )
+    const scaleStart =
+      photo.scale ?? 1
+
+    const onPointerMove = (
+      moveEvent: PointerEvent,
+    ) => {
+      const currentDistance = distance(
+        center.x,
+        center.y,
+        moveEvent.clientX,
+        moveEvent.clientY,
+      )
+
+      onChange({
+        scale: clamp(
+          scaleStart *
+            (currentDistance /
+              startDistance),
+          1,
+          1.8,
+        ),
+      })
+    }
+
+    bindWindowDrag(onPointerMove)
+  }
 
   return (
-    <button
-      type="button"
+    <div
       className={[
         'canvas-photo-background',
         selected
           ? 'canvas-photo-background--selected'
           : '',
       ].filter(Boolean).join(' ')}
+      role="button"
+      tabIndex={selected ? 0 : -1}
       aria-label="배경 사진 위치 조정"
-      onPointerDown={handlePointerDown}
+      onPointerDown={handleDrag}
       onClick={(event) => {
         event.stopPropagation()
         onSelect()
@@ -325,16 +649,32 @@ function CanvasBackgroundPhoto({
         style={{
           objectPosition:
             `${photo.x ?? 50}% ${photo.y ?? 50}%`,
-          transform: `scale(${photo.scale ?? 1})`,
+          transform:
+            `scale(${photo.scale ?? 1})`,
         }}
       />
-    </button>
+
+      {selected && (
+        <button
+          type="button"
+          className="canvas-photo-background__scale-handle"
+          aria-label="배경 사진 확대 축소"
+          onPointerDown={handleScale}
+        >
+          <Maximize2
+            size={15}
+            aria-hidden
+          />
+        </button>
+      )}
+    </div>
   )
 }
 
 type CanvasWordArtElementProps = {
   element: PositionedAsset
-  canvasRef: React.RefObject<HTMLDivElement | null>
+  canvasRef:
+    React.RefObject<HTMLDivElement | null>
   selected: boolean
   onSelect: () => void
   onMove: (x: number, y: number) => void
@@ -348,19 +688,26 @@ function CanvasWordArtElement({
   onMove,
 }: CanvasWordArtElementProps) {
   const handlePointerDown =
-    createMoveHandler(canvasRef, onSelect, onMove, {
-      minX: 10,
-      maxX: 90,
-      minY: 9,
-      maxY: 91,
-    })
+    createMoveHandler(
+      canvasRef,
+      onSelect,
+      onMove,
+      {
+        minX: 10,
+        maxX: 90,
+        minY: 9,
+        maxY: 91,
+      },
+    )
 
   return (
     <button
       type="button"
       className={[
         'canvas-word-art',
-        selected ? 'canvas-word-art--selected' : '',
+        selected
+          ? 'canvas-word-art--selected'
+          : '',
       ].filter(Boolean).join(' ')}
       style={{
         left: `${element.x}%`,
@@ -374,7 +721,9 @@ function CanvasWordArtElement({
         event.stopPropagation()
         onSelect()
       }}
-      onPointerDown={handlePointerDown}
+      onPointerDown={
+        handlePointerDown
+      }
     >
       <WordArtGraphic
         assetId={element.assetId}
@@ -385,7 +734,8 @@ function CanvasWordArtElement({
 }
 
 function createMoveHandler(
-  canvasRef: React.RefObject<HTMLDivElement | null>,
+  canvasRef:
+    React.RefObject<HTMLDivElement | null>,
   onSelect: () => void,
   onMove: (x: number, y: number) => void,
   bounds: {
@@ -410,47 +760,123 @@ function createMoveHandler(
       clientX: number,
       clientY: number,
     ) => {
-      const rect = canvas.getBoundingClientRect()
+      const rect =
+        canvas.getBoundingClientRect()
       const x =
-        ((clientX - rect.left) / rect.width) * 100
+        ((clientX - rect.left) /
+          rect.width) *
+        100
       const y =
-        ((clientY - rect.top) / rect.height) * 100
+        ((clientY - rect.top) /
+          rect.height) *
+        100
 
       onMove(
-        clamp(x, bounds.minX, bounds.maxX),
-        clamp(y, bounds.minY, bounds.maxY),
+        clamp(
+          x,
+          bounds.minX,
+          bounds.maxX,
+        ),
+        clamp(
+          y,
+          bounds.minY,
+          bounds.maxY,
+        ),
       )
     }
 
-    update(event.clientX, event.clientY)
-
-    const onPointerMove = (moveEvent: PointerEvent) => {
-      update(moveEvent.clientX, moveEvent.clientY)
-    }
-
-    const onPointerUp = () => {
-      window.removeEventListener(
-        'pointermove',
-        onPointerMove,
-      )
-      window.removeEventListener(
-        'pointerup',
-        onPointerUp,
-      )
-    }
-
-    window.addEventListener(
-      'pointermove',
-      onPointerMove,
+    update(
+      event.clientX,
+      event.clientY,
     )
-    window.addEventListener(
-      'pointerup',
-      onPointerUp,
-      { once: true },
-    )
+
+    const onPointerMove = (
+      moveEvent: PointerEvent,
+    ) => {
+      update(
+        moveEvent.clientX,
+        moveEvent.clientY,
+      )
+    }
+
+    bindWindowDrag(onPointerMove)
   }
 }
 
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max)
+function bindWindowDrag(
+  onPointerMove: (
+    event: PointerEvent,
+  ) => void,
+) {
+  const onPointerUp = () => {
+    window.removeEventListener(
+      'pointermove',
+      onPointerMove,
+    )
+    window.removeEventListener(
+      'pointerup',
+      onPointerUp,
+    )
+  }
+
+  window.addEventListener(
+    'pointermove',
+    onPointerMove,
+  )
+  window.addEventListener(
+    'pointerup',
+    onPointerUp,
+    { once: true },
+  )
+}
+
+function distance(
+  centerX: number,
+  centerY: number,
+  x: number,
+  y: number,
+) {
+  return Math.hypot(
+    x - centerX,
+    y - centerY,
+  )
+}
+
+function angle(
+  centerX: number,
+  centerY: number,
+  x: number,
+  y: number,
+) {
+  return (
+    Math.atan2(
+      y - centerY,
+      x - centerX,
+    ) *
+    (180 / Math.PI)
+  )
+}
+
+function normalizeAngle(value: number) {
+  let normalized = value
+
+  while (normalized > 180) {
+    normalized -= 360
+  }
+  while (normalized < -180) {
+    normalized += 360
+  }
+
+  return normalized
+}
+
+function clamp(
+  value: number,
+  min: number,
+  max: number,
+) {
+  return Math.min(
+    Math.max(value, min),
+    max,
+  )
 }

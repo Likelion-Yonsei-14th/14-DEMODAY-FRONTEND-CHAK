@@ -95,7 +95,10 @@ export function UnifiedComposerPage() {
       (photo) => photo.role === 'floating',
     ).length
 
-    if (role === 'floating' && floatingCount >= FLOATING_PHOTO_LIMIT) {
+    if (
+      role === 'floating' &&
+      floatingCount >= FLOATING_PHOTO_LIMIT
+    ) {
       showToast('카드 위 사진은 최대 3장까지 올릴 수 있어요.')
       return
     }
@@ -115,6 +118,8 @@ export function UnifiedComposerPage() {
           rotation: 0,
           frame: 'plain',
           zIndex: 2,
+          aspectRatio: processed.aspectRatio,
+          hasTransparency: processed.hasTransparency,
           alt: '카드 배경 사진',
         }
 
@@ -140,8 +145,10 @@ export function UnifiedComposerPage() {
         y: 43 + index * 7,
         scale: .86,
         rotation: [-4, 3, -2][index] ?? 0,
-        frame: 'white',
+        frame: processed.hasTransparency ? 'plain' : 'white',
         zIndex: 10 + index,
+        aspectRatio: processed.aspectRatio,
+        hasTransparency: processed.hasTransparency,
         alt: '응원 카드에 넣은 사진',
       }
 
@@ -150,6 +157,10 @@ export function UnifiedComposerPage() {
         photoElements: [...draft.photoElements, photo],
       })
       setSelectedLayerId(photo.id)
+
+      if (processed.hasTransparency) {
+        showToast('투명 배경을 유지해서 사진을 추가했어요.')
+      }
     } catch (error) {
       showToast(
         error instanceof Error
@@ -216,7 +227,9 @@ export function UnifiedComposerPage() {
 
               if (nextTool === 'photo') {
                 const latestPhoto = draft.photoElements.at(-1)
-                if (latestPhoto) setSelectedLayerId(latestPhoto.id)
+                if (latestPhoto) {
+                  setSelectedLayerId(latestPhoto.id)
+                }
               }
             }}
           />
@@ -238,9 +251,7 @@ export function UnifiedComposerPage() {
               updateTextElement(id, { x, y })
             }
             onWordArtMove={moveWordArt}
-            onPhotoMove={(id, x, y) =>
-              updatePhoto(id, { x, y })
-            }
+            onPhotoChange={updatePhoto}
           />
 
           <ComposerToolTray
@@ -264,7 +275,9 @@ export function UnifiedComposerPage() {
               }
             }}
             onPhotoDelete={() => {
-              if (selectedPhoto) deletePhoto(selectedPhoto.id)
+              if (selectedPhoto) {
+                deletePhoto(selectedPhoto.id)
+              }
             }}
           />
         </div>
