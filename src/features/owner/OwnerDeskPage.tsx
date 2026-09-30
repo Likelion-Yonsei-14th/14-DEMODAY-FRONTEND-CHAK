@@ -74,7 +74,6 @@ export function OwnerDeskPage() {
         </section>
 
         <section className="owner-desk__intro">
-          <p className="owner-desk__eyebrow">MY DESK</p>
           <h2>
             친구들이 놓고 간 마음을
             <br />
