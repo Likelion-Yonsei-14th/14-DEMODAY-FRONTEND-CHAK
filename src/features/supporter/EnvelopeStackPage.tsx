@@ -11,18 +11,15 @@ import { getComposerBackground } from '@/features/composer/backgroundAssets'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import type { Message } from '@/types'
-import {
-  createEnvelopeTheme,
-  getSealMark,
-} from './envelopeTheme'
+import { createEnvelopeTheme } from './envelopeTheme'
 import {
   isToday,
   mergeSupportMessages,
 } from './seededMessages'
 import './EnvelopeStackPage.css'
 
-const SCROLL_STEP = 128
-const OPEN_DURATION = 1040
+const SCROLL_STEP = 130
+const OPEN_DURATION = 1120
 
 export function EnvelopeStackPage() {
   const navigate = useNavigate()
@@ -177,8 +174,8 @@ export function EnvelopeStackPage() {
                         '--envelope-color': theme.baseColor,
                         '--envelope-flap-color': theme.flapColor,
                         '--envelope-pocket-color': theme.pocketColor,
+                        '--envelope-side-color': theme.sideColor,
                         '--envelope-pattern-color': theme.patternColor,
-                        '--envelope-seal-color': theme.sealColor,
                         '--envelope-ink-color': theme.inkColor,
                         '--message-card-color': cardBackground.tone,
                         '--envelope-y': `${position.y}px`,
@@ -194,8 +191,15 @@ export function EnvelopeStackPage() {
                       <span className="message-envelope__shadow" />
                       <span className="message-envelope__body">
                         <span className="message-envelope__back" />
-                        <span className="message-envelope__pattern" aria-hidden />
-                        <span className="message-envelope__peek" aria-hidden>
+                        <span
+                          className="message-envelope__pattern"
+                          aria-hidden
+                        />
+
+                        <span
+                          className="message-envelope__peek"
+                          aria-hidden
+                        >
                           {cardBackground.kind === 'image' &&
                             cardBackground.source && (
                               <img
@@ -210,20 +214,12 @@ export function EnvelopeStackPage() {
                             <span className="message-envelope__peek-line" />
                           </span>
                         </span>
+
+                        <span className="message-envelope__side-fold message-envelope__side-fold--left" />
+                        <span className="message-envelope__side-fold message-envelope__side-fold--right" />
                         <span className="message-envelope__front" />
-                        <span className="message-envelope__flap" />
-                        <span
-                          className={[
-                            'message-envelope__seal',
-                            isRead ? 'message-envelope__seal--broken' : '',
-                          ].filter(Boolean).join(' ')}
-                          aria-hidden
-                        >
-                          <span className="message-envelope__seal-half message-envelope__seal-half--left" />
-                          <span className="message-envelope__seal-half message-envelope__seal-half--right" />
-                          <span className="message-envelope__seal-mark">
-                            {getSealMark(theme.seal, message.senderName)}
-                          </span>
+                        <span className="message-envelope__flap">
+                          <span className="message-envelope__flap-inner" />
                         </span>
 
                         <span className="message-envelope__meta">
@@ -234,6 +230,15 @@ export function EnvelopeStackPage() {
                             {formatDateTime(message.createdAt)}
                           </span>
                         </span>
+
+                        {!isRead && (
+                          <span
+                            className="message-envelope__new"
+                            aria-label="아직 열지 않은 응원"
+                          >
+                            NEW
+                          </span>
+                        )}
 
                         {message.visibility === 'private' && (
                           <span
@@ -288,29 +293,37 @@ function envelopePosition(index: number, activeIndex: number) {
 
   if (delta < 0) {
     const distance = Math.min(Math.abs(delta), 5)
+
     return {
-      y: 30 + (index % 5) * 23,
-      x: ((index % 3) - 1) * 2,
-      rotate: ((index % 3) - 1) * 0.7,
-      scale: Math.max(0.84, 0.94 - distance * 0.018),
+      y: 38 + (index % 5) * 24,
+      x: ((index % 3) - 1) * 2.4,
+      rotate: ((index % 3) - 1) * 0.75,
+      scale: Math.max(0.84, 0.95 - distance * 0.02),
       opacity: distance > 5 ? 0 : 1,
-      zIndex: 30 + index,
+      zIndex: 32 + index,
     }
   }
 
   if (delta === 0) {
-    return { y: 124, x: 0, rotate: 0, scale: 1, opacity: 1, zIndex: 120 }
+    return {
+      y: 126,
+      x: 0,
+      rotate: 0,
+      scale: 1,
+      opacity: 1,
+      zIndex: 130,
+    }
   }
 
   const distance = Math.min(delta, 5)
 
   return {
-    y: 152 + distance * 25,
-    x: ((index % 3) - 1) * 2.5,
-    rotate: ((index % 3) - 1) * 0.65,
-    scale: Math.max(0.84, 0.975 - distance * 0.022),
+    y: 156 + distance * 27,
+    x: ((index % 3) - 1) * 2.8,
+    rotate: ((index % 3) - 1) * 0.7,
+    scale: Math.max(0.84, 0.98 - distance * 0.025),
     opacity: delta > 5 ? 0 : 1,
-    zIndex: 110 - distance,
+    zIndex: 118 - distance,
   }
 }
 
