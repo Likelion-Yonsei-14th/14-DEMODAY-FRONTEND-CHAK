@@ -167,7 +167,7 @@ export function PlacementPreviewPage() {
     >
       <main className="placement-preview">
         <section className="placement-preview__copy">
-          <h2>지수의 책상에서<br />내 응원의 자리를 골라요.</h2>
+          <h2>지수님의 책상에서<br />내 응원의 자리를 골라요.</h2>
           <p>
             다른 친구의 응원을 거의 다 가리는 자리만 피하면 어디든 괜찮아요.
           </p>
@@ -246,7 +246,7 @@ export function PlacementPreviewPage() {
             dragging ? 'placement-preview__scene--dragging' : '',
           ].filter(Boolean).join(' ')}
         >
-          <DeskScene ownerName="지수" />
+          <DeskScene ownerName="지수님" />
           <DeskObjectLayer
             objects={currentDesk.objects}
             messages={messages}
@@ -295,7 +295,7 @@ export function PlacementPreviewPage() {
               ) : (
                 <Eye size={15} aria-hidden />
               )}
-              {visibilityPrivate ? '지수만 보기' : '함께 보기'}
+              {visibilityPrivate ? '지수님만 보기' : '함께 보기'}
             </strong>
           </div>
         </section>
