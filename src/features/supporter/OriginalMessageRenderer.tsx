@@ -167,9 +167,6 @@ export function OriginalMessageRenderer({
         })}
       </div>
 
-      <span className="original-message__for">
-        for 지수
-      </span>
     </div>
   )
 }
