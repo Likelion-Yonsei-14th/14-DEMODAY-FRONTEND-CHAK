@@ -63,7 +63,6 @@ export function SupportDeskPage() {
     >
       <div className="support-desk">
         <section className="support-desk__intro">
-          <p className="support-desk__eyebrow">JISU'S DESK</p>
           <h2>
             친구들이 하나씩
             <br />
