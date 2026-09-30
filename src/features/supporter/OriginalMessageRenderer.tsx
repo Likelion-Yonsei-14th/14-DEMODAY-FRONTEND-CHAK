@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import { getComposerBackground } from '@/features/composer/backgroundAssets'
+import { WordArtGraphic } from '@/features/composer/wordArt/wordArtAssets'
 import type { Message } from '@/types'
 import './MessageViewerPage.css'
 
@@ -53,6 +54,24 @@ export function OriginalMessageRenderer({ message }: { message: Message }) {
           />
         ),
       )}
+
+      {message.wordArtElements.map((element) => (
+        <div
+          key={element.id}
+          className="original-message__word-art"
+          style={{
+            left: `${element.x}%`,
+            top: `${element.y}%`,
+            zIndex: element.zIndex,
+            transform: `translate(-50%, -50%) rotate(${element.rotation}deg) scale(${element.scale})`,
+          }}
+        >
+          <WordArtGraphic
+            assetId={element.assetId}
+            className="original-message__word-art-graphic"
+          />
+        </div>
+      ))}
 
       <div className={longCard ? 'original-message__flow' : undefined}>
         {message.textElements.map((element) => (

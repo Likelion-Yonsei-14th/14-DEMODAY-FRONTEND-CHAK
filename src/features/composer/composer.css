@@ -424,3 +424,101 @@
   display: grid;
   place-items: center;
 }
+
+
+.canvas-word-art {
+  position: absolute;
+  width: 58%;
+  max-width: 220px;
+  min-width: 120px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  transform-origin: center;
+  cursor: grab;
+  touch-action: none;
+}
+
+.canvas-word-art:active {
+  cursor: grabbing;
+}
+
+.canvas-word-art--selected {
+  border-color: rgba(65, 60, 55, .34);
+  background: rgba(255,255,255,.10);
+  box-shadow: 0 0 0 3px rgba(255,255,255,.34);
+}
+
+.canvas-word-art__graphic {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 4px 5px rgba(55,40,32,.08));
+  pointer-events: none;
+}
+
+.composer-word-art-list {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 128px;
+  gap: 10px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  padding: 2px 0 8px;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+}
+
+.composer-word-art-list::-webkit-scrollbar {
+  display: none;
+}
+
+.composer-word-art-item {
+  min-height: 112px;
+  display: grid;
+  align-content: space-between;
+  gap: 8px;
+  padding: 10px 9px 8px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 16px;
+  background: #fffdfa;
+  color: var(--color-content-secondary);
+  cursor: pointer;
+  scroll-snap-align: start;
+  box-shadow: 0 5px 13px rgba(67,51,39,.05);
+}
+
+.composer-word-art-item:active:not(:disabled) {
+  transform: scale(.98);
+}
+
+.composer-word-art-item:disabled {
+  opacity: .42;
+  cursor: default;
+}
+
+.composer-word-art-item__preview {
+  min-height: 68px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 11px;
+  background:
+    radial-gradient(circle at 24% 12%, rgba(255,255,255,.95), transparent 45%),
+    #f7f3ed;
+}
+
+.composer-word-art-item__graphic {
+  width: 92%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.composer-word-art-item__label {
+  font-size: 10px;
+  font-weight: 750;
+  text-align: center;
+}

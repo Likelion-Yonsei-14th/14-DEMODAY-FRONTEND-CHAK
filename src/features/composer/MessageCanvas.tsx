@@ -5,20 +5,23 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 import { Move } from 'lucide-react'
-import type { MessageDraft, TextElement } from '@/types'
+import type { MessageDraft, PositionedAsset, TextElement } from '@/types'
 import { getComposerBackground } from './backgroundAssets'
+import { WordArtGraphic } from './wordArt/wordArtAssets'
 import './composer.css'
 
 type MessageCanvasProps = {
   draft: MessageDraft
   onTextChange: (id: string, text: string) => void
   onTextMove: (id: string, x: number, y: number) => void
+  onWordArtMove: (id: string, x: number, y: number) => void
 }
 
 export function MessageCanvas({
   draft,
   onTextChange,
   onTextMove,
+  onWordArtMove,
 }: MessageCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null)
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -60,6 +63,17 @@ export function MessageCanvas({
           ].filter(Boolean).join(' ')}
           aria-hidden
         />
+
+        {draft.wordArtElements.map((element) => (
+          <CanvasWordArtElement
+            key={element.id}
+            element={element}
+            canvasRef={canvasRef}
+            selected={selectedId === element.id}
+            onSelect={() => setSelectedId(element.id)}
+            onMove={(x, y) => onWordArtMove(element.id, x, y)}
+          />
+        ))}
 
         {draft.textElements.map((element) => (
           <CanvasTextElement
@@ -172,6 +186,74 @@ function CanvasTextElement({
         </button>
       )}
     </div>
+  )
+}
+
+type CanvasWordArtElementProps = {
+  element: PositionedAsset
+  canvasRef: React.RefObject<HTMLDivElement | null>
+  selected: boolean
+  onSelect: () => void
+  onMove: (x: number, y: number) => void
+}
+
+function CanvasWordArtElement({
+  element,
+  canvasRef,
+  selected,
+  onSelect,
+  onMove,
+}: CanvasWordArtElementProps) {
+  const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    onSelect()
+
+    const onPointerMove = (moveEvent: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect()
+      const x = ((moveEvent.clientX - rect.left) / rect.width) * 100
+      const y = ((moveEvent.clientY - rect.top) / rect.height) * 100
+      onMove(clamp(x, 10, 90), clamp(y, 9, 91))
+    }
+
+    const onPointerUp = () => {
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerUp)
+    }
+
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp, { once: true })
+  }
+
+  return (
+    <button
+      type="button"
+      className={[
+        'canvas-word-art',
+        selected ? 'canvas-word-art--selected' : '',
+      ].filter(Boolean).join(' ')}
+      style={{
+        left: `${element.x}%`,
+        top: `${element.y}%`,
+        zIndex: element.zIndex,
+        transform: `translate(-50%, -50%) rotate(${element.rotation}deg) scale(${element.scale})`,
+      }}
+      aria-label="그래픽 문구 위치 옮기기"
+      onClick={(event) => {
+        event.stopPropagation()
+        onSelect()
+      }}
+      onPointerDown={handlePointerDown}
+    >
+      <WordArtGraphic
+        assetId={element.assetId}
+        className="canvas-word-art__graphic"
+      />
+    </button>
   )
 }
 

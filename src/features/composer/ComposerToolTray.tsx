@@ -3,6 +3,7 @@ import { ChoiceChip } from '@/design-system'
 import type { MessageDraft } from '@/types'
 import { composerBackgrounds, type ComposerBackground } from './backgroundAssets'
 import type { ComposerTool } from './ComposerDock'
+import { WordArtGraphic, wordArtAssets } from './wordArt/wordArtAssets'
 
 type ComposerToolTrayProps = {
   tool: ComposerTool
@@ -10,6 +11,7 @@ type ComposerToolTrayProps = {
   onBackgroundChange: (backgroundId: string) => void
   onTextStyleChange: (styleId: string) => void
   onTextAlignChange: (align: 'left' | 'center' | 'right') => void
+  onWordArtAdd: (assetId: string) => void
 }
 
 export function ComposerToolTray({
@@ -18,6 +20,7 @@ export function ComposerToolTray({
   onBackgroundChange,
   onTextStyleChange,
   onTextAlignChange,
+  onWordArtAdd,
 }: ComposerToolTrayProps) {
   const primaryText = draft.textElements[0]
   const basicBackgrounds = composerBackgrounds.filter((background) => background.group === 'basic')
@@ -99,11 +102,31 @@ export function ComposerToolTray({
       )}
 
       {tool === 'phrase' && (
-        <FutureTool
-          icon={<Sparkles size={19} aria-hidden />}
-          title="그래픽 문구"
-          description="‘잘될거야’, ‘기죽지마라’ 같은 손그림 Word Art 에셋을 이 영역에 연결합니다."
-        />
+        <>
+          <ToolTrayHeader
+            title="그래픽 문구"
+            description="손으로 그린 듯한 문구를 눌러 카드 위에 올려보세요. 최대 4개까지 넣을 수 있어요."
+          />
+          <div className="composer-word-art-list" role="list" aria-label="그래픽 문구">
+            {wordArtAssets.map((asset) => (
+              <button
+                type="button"
+                key={asset.id}
+                className="composer-word-art-item"
+                disabled={draft.wordArtElements.length >= 4}
+                onClick={() => onWordArtAdd(asset.id)}
+              >
+                <span className="composer-word-art-item__preview">
+                  <WordArtGraphic
+                    assetId={asset.id}
+                    className="composer-word-art-item__graphic"
+                  />
+                </span>
+                <span className="composer-word-art-item__label">{asset.label}</span>
+              </button>
+            ))}
+          </div>
+        </>
       )}
 
       {tool === 'sticker' && (

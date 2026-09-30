@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom'
 import { AppBar, Button, IconButton } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
-import type { MessageVisibility, TextElement } from '@/types'
+import type { MessageVisibility, PositionedAsset, TextElement } from '@/types'
 import { VisibilitySheet } from '@/features/supporter/VisibilitySheet'
 import { ComposerDock, type ComposerTool } from './ComposerDock'
 import { ComposerToolTray } from './ComposerToolTray'
 import { MessageCanvas } from './MessageCanvas'
+import { getWordArtDefinition } from './wordArt/wordArtAssets'
 import './composer.css'
 
 export function UnifiedComposerPage() {
@@ -61,6 +62,38 @@ export function UnifiedComposerPage() {
     setComposerDraft({ ...draft, visibility })
   }
 
+  const addWordArt = (assetId: string) => {
+    if (draft.wordArtElements.length >= 4) return
+
+    const definition = getWordArtDefinition(assetId)
+    if (!definition) return
+
+    const index = draft.wordArtElements.length
+    const element: PositionedAsset = {
+      id: `word-art-${Date.now().toString(36)}-${index}`,
+      assetId,
+      x: 50,
+      y: 31 + index * 12,
+      scale: definition.defaultScale,
+      rotation: index % 2 === 0 ? -2 : 2,
+      zIndex: 20 + index,
+    }
+
+    setComposerDraft({
+      ...draft,
+      wordArtElements: [...draft.wordArtElements, element],
+    })
+  }
+
+  const moveWordArt = (id: string, x: number, y: number) => {
+    setComposerDraft({
+      ...draft,
+      wordArtElements: draft.wordArtElements.map((element) =>
+        element.id === id ? { ...element, x, y } : element,
+      ),
+    })
+  }
+
   return (
     <>
       <AppShell
@@ -99,6 +132,7 @@ export function UnifiedComposerPage() {
             draft={draft}
             onTextChange={(id, text) => updateTextElement(id, { text })}
             onTextMove={(id, x, y) => updateTextElement(id, { x, y })}
+            onWordArtMove={moveWordArt}
           />
 
           <ComposerToolTray
@@ -109,6 +143,7 @@ export function UnifiedComposerPage() {
             }
             onTextStyleChange={(styleId) => updatePrimaryText({ styleId })}
             onTextAlignChange={(align) => updatePrimaryText({ align })}
+            onWordArtAdd={addWordArt}
           />
         </div>
       </AppShell>

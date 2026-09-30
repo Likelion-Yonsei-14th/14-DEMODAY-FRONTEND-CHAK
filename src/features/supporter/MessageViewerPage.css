@@ -181,3 +181,20 @@
     animation: none;
   }
 }
+
+
+.original-message__word-art {
+  position: absolute;
+  width: 58%;
+  max-width: 220px;
+  transform-origin: center;
+  pointer-events: none;
+}
+
+.original-message__word-art-graphic {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 4px 5px rgba(55,40,32,.07));
+}
