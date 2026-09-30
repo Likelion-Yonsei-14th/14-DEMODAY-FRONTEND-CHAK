@@ -6,6 +6,7 @@ import { getFirstCardPage } from '@/features/composer/messagePages'
 import { getStickerAsset } from '@/features/composer/stickerAssets'
 import type { CardPage, Message, PhotoElement } from '@/types'
 import './MessageViewerPage.css'
+import '@/features/composer/cardRenderShared.css'
 
 export function OriginalMessageRenderer({
   message,
@@ -69,7 +70,12 @@ export function OriginalMessageRenderer({
       )}
 
       <div
-        className="original-message__shine"
+        className={[
+          'original-message__shine',
+          background.kind === 'image' || backgroundPhoto
+            ? 'original-message__shine--art'
+            : '',
+        ].filter(Boolean).join(' ')}
         aria-hidden
       />
 
