@@ -66,7 +66,7 @@ export function updateDraftPage(
 
   return {
     ...draft,
-    ...activePage,
+    ...pageSnapshot(activePage),
     pages: nextPages,
     activePageId,
   }
@@ -82,7 +82,7 @@ export function selectDraftPage(
 
   return {
     ...draft,
-    ...page,
+    ...pageSnapshot(page),
     pages,
     activePageId: page.id,
   }
@@ -126,7 +126,7 @@ export function appendContinuationPage(
 
   return {
     ...draft,
-    ...nextPage,
+    ...pageSnapshot(nextPage),
     pages: [...pages, nextPage],
     activePageId: pageId,
   }
@@ -151,7 +151,7 @@ export function deleteDraftPage(
 
   return {
     ...draft,
-    ...nextPage,
+    ...pageSnapshot(nextPage),
     pages: nextPages,
     activePageId: nextPage.id,
   }
@@ -165,4 +165,14 @@ export function hasDraftContent(draft: MessageDraft) {
       page.stickerElements.length > 0 ||
       page.photoElements.length > 0,
   )
+}
+
+
+function pageSnapshot(page: CardPage): Omit<CardPage, 'id'> {
+  const {
+    id: _pageId,
+    ...snapshot
+  } = page
+
+  return snapshot
 }
