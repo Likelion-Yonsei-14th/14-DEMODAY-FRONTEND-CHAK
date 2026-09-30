@@ -14,13 +14,14 @@ export type ProcessedPhoto = {
 }
 
 const MAX_SOURCE_BYTES = 20 * 1024 * 1024
-const TARGET_DATA_URL_LENGTH = 900_000
+const TARGET_DATA_URL_LENGTH = 260_000
 
 const attempts = [
-  { maxSide: 1400, quality: .82 },
-  { maxSide: 1200, quality: .76 },
+  { maxSide: 1200, quality: .78 },
   { maxSide: 1000, quality: .7 },
-  { maxSide: 820, quality: .66 },
+  { maxSide: 820, quality: .62 },
+  { maxSide: 720, quality: .56 },
+  { maxSide: 600, quality: .5 },
 ]
 
 export async function processPhotoFile(
@@ -63,6 +64,10 @@ export async function processPhotoFile(
 
     if (!lastResult) {
       throw new Error('사진을 처리하지 못했어요.')
+    }
+
+    if (lastResult.src.length > TARGET_DATA_URL_LENGTH * 1.35) {
+      throw new Error('사진 용량이 커서 저장하기 어려워요. 다른 사진을 선택해 주세요.')
     }
 
     return lastResult
