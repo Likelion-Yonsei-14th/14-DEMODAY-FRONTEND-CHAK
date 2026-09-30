@@ -152,6 +152,12 @@ export function EnvelopeStackPage() {
                   const cardBackground = getComposerBackground(
                     message.backgroundAssetId,
                   )
+                  const backgroundPhoto = message.photoElements.find(
+                    (photo) => photo.role === 'background',
+                  )
+                  const floatingPhoto = message.photoElements.find(
+                    (photo) => photo.role === 'floating',
+                  )
 
                   return (
                     <button
@@ -197,15 +203,46 @@ export function EnvelopeStackPage() {
                           className="message-envelope__peek"
                           aria-hidden
                         >
-                          {cardBackground.kind === 'image' &&
-                            cardBackground.source && (
+                          {backgroundPhoto ? (
+                            <img
+                              className="message-envelope__peek-art message-envelope__peek-art--photo"
+                              src={backgroundPhoto.src}
+                              alt=""
+                              draggable={false}
+                              style={{
+                                objectPosition:
+                                  `${backgroundPhoto.x ?? 50}% ${backgroundPhoto.y ?? 50}%`,
+                                transform:
+                                  `scale(${backgroundPhoto.scale ?? 1})`,
+                              }}
+                            />
+                          ) : cardBackground.kind === 'image' &&
+                            cardBackground.source ? (
+                            <img
+                              className="message-envelope__peek-art"
+                              src={cardBackground.source}
+                              alt=""
+                              draggable={false}
+                            />
+                          ) : null}
+                          {floatingPhoto && (
+                            <span
+                              className={[
+                                'message-envelope__peek-floating',
+                                `message-envelope__peek-floating--${floatingPhoto.frame ?? 'white'}`,
+                              ].join(' ')}
+                              style={{
+                                transform:
+                                  `rotate(${floatingPhoto.rotation ?? -3}deg)`,
+                              }}
+                            >
                               <img
-                                className="message-envelope__peek-art"
-                                src={cardBackground.source}
+                                src={floatingPhoto.src}
                                 alt=""
                                 draggable={false}
                               />
-                            )}
+                            </span>
+                          )}
                           <span className="message-envelope__peek-surface">
                             <span className="message-envelope__peek-line" />
                             <span className="message-envelope__peek-line" />
