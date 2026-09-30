@@ -10,16 +10,18 @@ export type ComposerBackground = {
   supportsLongCard: boolean
 }
 
+const defaultBackground: ComposerBackground = {
+  id: 'bg-basic-cream',
+  name: 'Cream',
+  group: 'basic',
+  kind: 'css',
+  className: 'message-canvas--cream',
+  tone: '#F8F1E7',
+  supportsLongCard: true,
+}
+
 export const composerBackgrounds: ComposerBackground[] = [
-  {
-    id: 'bg-basic-cream',
-    name: 'Cream',
-    group: 'basic',
-    kind: 'css',
-    className: 'message-canvas--cream',
-    tone: '#F8F1E7',
-    supportsLongCard: true,
-  },
+  defaultBackground,
   {
     id: 'bg-soft-coral',
     name: 'Coral',
@@ -158,5 +160,5 @@ export const composerBackgrounds: ComposerBackground[] = [
   },
 ]
 
-export const getComposerBackground = (id: string) =>
-  composerBackgrounds.find((background) => background.id === id) ?? composerBackgrounds[0]
+export const getComposerBackground = (id: string): ComposerBackground =>
+  composerBackgrounds.find((background) => background.id === id) ?? defaultBackground
