@@ -119,6 +119,7 @@ describe('prototype store composer handoff', () => {
         scale: 1,
       },
       'charm',
+      '#C7D8B8',
     )
 
     const state = usePrototypeStore.getState()
@@ -129,6 +130,7 @@ describe('prototype store composer handoff', () => {
     expect(state.currentDesk.objects.at(-1)?.representationType).toBe(
       'charm',
     )
+    expect(state.currentDesk.objects.at(-1)?.color).toBe('#C7D8B8')
     expect(getMessagePages(sent!)).toHaveLength(3)
     expect(getMessagePages(sent!)[0]?.stickerElements[0]).toMatchObject({
       assetId: 'sticker-emphasis',
