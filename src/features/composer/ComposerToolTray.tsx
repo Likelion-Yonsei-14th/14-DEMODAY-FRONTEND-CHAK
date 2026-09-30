@@ -7,7 +7,6 @@ import {
   ArrowUp,
   Minus,
   Plus,
-  ImagePlus,
   Images,
   Sparkles,
   Trash2,
@@ -722,15 +721,7 @@ function PhotoTool({
             canReorder={selectedPhoto.role === 'floating'}
           />
         </div>
-      ) : (
-        <div className="composer-photo-empty-hint">
-          <ImagePlus size={17} aria-hidden />
-          <span>
-            사진을 추가하면 캔버스에서 직접 이동하고
-            크기를 조절할 수 있어요.
-          </span>
-        </div>
-      )}
+      ) : null}
     </>
   )
 }
