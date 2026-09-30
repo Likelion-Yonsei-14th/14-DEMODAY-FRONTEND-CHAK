@@ -2,6 +2,7 @@ export type CanvasMode = 'standard' | 'long'
 
 export type AssetCategory = 'background' | 'word-art' | 'sticker' | 'photo'
 export type BackgroundType = 'scalable' | 'repeatable' | 'fixed' | 'photo'
+export type PhotoFrame = 'plain' | 'white' | 'polaroid'
 
 export type AssetCapability = {
   supportsLongCard: boolean
@@ -40,5 +41,7 @@ export type PhotoElement = {
   y?: number
   scale?: number
   rotation?: number
+  frame?: PhotoFrame
+  zIndex?: number
   alt?: string
 }
