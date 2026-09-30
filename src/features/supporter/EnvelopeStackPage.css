@@ -193,7 +193,7 @@
 
 .message-envelope__pattern {
   position: absolute;
-  z-index: 1;
+  z-index: 5;
   inset: 0;
   overflow: hidden;
   border-radius: 18px;
@@ -267,6 +267,123 @@
     );
   background-size: 36px 32px;
   opacity: .23;
+}
+
+
+.message-envelope--pattern-micro-dot .message-envelope__pattern {
+  background:
+    radial-gradient(circle, currentColor 0 1.6px, transparent 1.9px);
+  background-size: 15px 15px;
+  background-position: 2px 3px;
+  opacity: .34;
+}
+
+.message-envelope--pattern-big-dot .message-envelope__pattern {
+  background:
+    radial-gradient(circle, currentColor 0 8px, transparent 8.5px);
+  background-size: 48px 48px;
+  background-position: 6px 8px;
+  opacity: .28;
+}
+
+.message-envelope--pattern-diagonal-stripe .message-envelope__pattern {
+  background:
+    repeating-linear-gradient(
+      42deg,
+      currentColor 0 8px,
+      transparent 8px 24px
+    );
+  opacity: .28;
+}
+
+.message-envelope--pattern-candy-stripe .message-envelope__pattern {
+  background:
+    repeating-linear-gradient(
+      105deg,
+      currentColor 0 12px,
+      transparent 12px 31px
+    );
+  opacity: .3;
+}
+
+.message-envelope--pattern-plaid .message-envelope__pattern {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 20px,
+      currentColor 20px 24px,
+      transparent 24px 44px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 20px,
+      currentColor 20px 24px,
+      transparent 24px 44px
+    );
+  opacity: .25;
+}
+
+.message-envelope--pattern-star .message-envelope__pattern {
+  background:
+    conic-gradient(
+      from 45deg at 11px 11px,
+      transparent 0 12.5%,
+      currentColor 0 18%,
+      transparent 0 37.5%,
+      currentColor 0 43%,
+      transparent 0 62.5%,
+      currentColor 0 68%,
+      transparent 0 87.5%,
+      currentColor 0 93%,
+      transparent 0
+    );
+  background-size: 36px 36px;
+  opacity: .2;
+}
+
+.message-envelope--pattern-daisy .message-envelope__pattern {
+  background:
+    radial-gradient(circle at 15px 9px, currentColor 0 4px, transparent 4.4px),
+    radial-gradient(circle at 21px 15px, currentColor 0 4px, transparent 4.4px),
+    radial-gradient(circle at 15px 21px, currentColor 0 4px, transparent 4.4px),
+    radial-gradient(circle at 9px 15px, currentColor 0 4px, transparent 4.4px),
+    radial-gradient(circle at 15px 15px, rgba(255,255,255,.72) 0 3px, transparent 3.4px);
+  background-size: 42px 42px;
+  opacity: .23;
+}
+
+.message-envelope--pattern-clover .message-envelope__pattern {
+  background:
+    radial-gradient(circle at 12px 11px, currentColor 0 4px, transparent 4.4px),
+    radial-gradient(circle at 20px 11px, currentColor 0 4px, transparent 4.4px),
+    radial-gradient(circle at 12px 19px, currentColor 0 4px, transparent 4.4px),
+    radial-gradient(circle at 20px 19px, currentColor 0 4px, transparent 4.4px);
+  background-size: 44px 44px;
+  opacity: .2;
+}
+
+.message-envelope--pattern-diamond .message-envelope__pattern {
+  background:
+    linear-gradient(45deg, transparent 45%, currentColor 46% 54%, transparent 55%),
+    linear-gradient(-45deg, transparent 45%, currentColor 46% 54%, transparent 55%);
+  background-size: 28px 28px;
+  opacity: .18;
+}
+
+.message-envelope--pattern-notebook .message-envelope__pattern {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 25px,
+      currentColor 25px 27px
+    ),
+    linear-gradient(
+      90deg,
+      transparent 0 14%,
+      currentColor 14% 15%,
+      transparent 15% 100%
+    );
+  opacity: .19;
 }
 
 .message-envelope--pattern-border .message-envelope__pattern {

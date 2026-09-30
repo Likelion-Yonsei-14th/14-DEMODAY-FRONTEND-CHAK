@@ -1,16 +1,35 @@
 export type EnvelopePattern =
   | 'solid'
   | 'dot'
+  | 'micro-dot'
+  | 'big-dot'
   | 'thin-stripe'
   | 'wide-stripe'
+  | 'diagonal-stripe'
+  | 'candy-stripe'
   | 'check'
+  | 'plaid'
   | 'wave'
   | 'tiny-heart'
+  | 'star'
+  | 'daisy'
+  | 'clover'
+  | 'diamond'
   | 'border'
+  | 'notebook'
+
+export type EnvelopeColorFamily =
+  | 'pink'
+  | 'green'
+  | 'blue'
+  | 'yellow'
+  | 'purple'
+  | 'orange'
+  | 'neutral'
 
 export type EnvelopeTheme = {
   id: string
-  family: 'pink' | 'green' | 'blue' | 'yellow' | 'neutral'
+  family: EnvelopeColorFamily
   baseColor: string
   flapColor: string
   pocketColor: string
@@ -21,226 +40,54 @@ export type EnvelopeTheme = {
 }
 
 const envelopeThemes: EnvelopeTheme[] = [
-  {
-    id: 'cream-coral-dot',
-    family: 'green',
-    baseColor: '#FFF7E9',
-    flapColor: '#FFF9F1',
-    pocketColor: '#F8EDDC',
-    sideColor: '#F3E5D0',
-    patternColor: '#E79A8D',
-    inkColor: '#5B4D45',
-    pattern: 'dot',
-  },
-  {
-    id: 'butter-sage-stripe',
-    family: 'green',
-    baseColor: '#F8E9AE',
-    flapColor: '#FFF3C8',
-    pocketColor: '#F1DFA1',
-    sideColor: '#EAD792',
-    patternColor: '#7E9D77',
-    inkColor: '#4C5848',
-    pattern: 'thin-stripe',
-  },
-  {
-    id: 'blush-forest-check',
-    family: 'green',
-    baseColor: '#F5D8DD',
-    flapColor: '#F9E5E9',
-    pocketColor: '#EFCED5',
-    sideColor: '#E9C4CD',
-    patternColor: '#56755D',
-    inkColor: '#46554A',
-    pattern: 'check',
-  },
-  {
-    id: 'sage-cream-wide',
-    family: 'green',
-    baseColor: '#DCE8D4',
-    flapColor: '#EAF0E4',
-    pocketColor: '#D2DFC9',
-    sideColor: '#CAD9C0',
-    patternColor: '#FFF6E7',
-    inkColor: '#4D5B49',
-    pattern: 'wide-stripe',
-  },
-  {
-    id: 'cream-rose-stripe',
-    family: 'pink',
-    baseColor: '#FFF5E9',
-    flapColor: '#FFF9F1',
-    pocketColor: '#F8E9DA',
-    sideColor: '#F1DFC9',
-    patternColor: '#C97C8B',
-    inkColor: '#59484A',
-    pattern: 'thin-stripe',
-  },
-  {
-    id: 'sky-pink-dot',
-    family: 'pink',
-    baseColor: '#DDEBF5',
-    flapColor: '#EAF3F9',
-    pocketColor: '#D3E4F0',
-    sideColor: '#CADCE9',
-    patternColor: '#E89AAF',
-    inkColor: '#49545B',
-    pattern: 'dot',
-  },
-  {
-    id: 'butter-coral-check',
-    family: 'pink',
-    baseColor: '#F8E8A9',
-    flapColor: '#FFF0C4',
-    pocketColor: '#F1DC99',
-    sideColor: '#E8D18C',
-    patternColor: '#D67B70',
-    inkColor: '#5D4C3F',
-    pattern: 'check',
-  },
-  {
-    id: 'pink-wine-border',
-    family: 'pink',
-    baseColor: '#F1CDD8',
-    flapColor: '#F7DDE4',
-    pocketColor: '#E9C1CE',
-    sideColor: '#E2B8C6',
-    patternColor: '#8A5360',
-    inkColor: '#604B52',
-    pattern: 'border',
-  },
-  {
-    id: 'cream-cobalt-dot',
-    family: 'blue',
-    baseColor: '#FFF7EA',
-    flapColor: '#FFFAF2',
-    pocketColor: '#F6EBDC',
-    sideColor: '#EFE2D0',
-    patternColor: '#6E92C7',
-    inkColor: '#4D5260',
-    pattern: 'dot',
-  },
-  {
-    id: 'butter-sky-stripe',
-    family: 'blue',
-    baseColor: '#F7E8A9',
-    flapColor: '#FFF0C5',
-    pocketColor: '#EFDC99',
-    sideColor: '#E7D18C',
-    patternColor: '#86BFD7',
-    inkColor: '#4E5660',
-    pattern: 'thin-stripe',
-  },
-  {
-    id: 'blush-navy-check',
-    family: 'blue',
-    baseColor: '#F3D6DE',
-    flapColor: '#F8E2E8',
-    pocketColor: '#EAC9D3',
-    sideColor: '#E3C0CB',
-    patternColor: '#65768B',
-    inkColor: '#4B5160',
-    pattern: 'check',
-  },
-  {
-    id: 'sky-red-wide',
-    family: 'blue',
-    baseColor: '#D7EAF4',
-    flapColor: '#E7F2F8',
-    pocketColor: '#CDE2ED',
-    sideColor: '#C3D9E5',
-    patternColor: '#D9867D',
-    inkColor: '#4B5860',
-    pattern: 'wide-stripe',
-  },
-  {
-    id: 'cream-orange-wave',
-    family: 'yellow',
-    baseColor: '#FFF7E8',
-    flapColor: '#FFFAF2',
-    pocketColor: '#F7EAD8',
-    sideColor: '#F0E0CC',
-    patternColor: '#E4A267',
-    inkColor: '#5C5043',
-    pattern: 'wave',
-  },
-  {
-    id: 'butter-coral-heart',
-    family: 'yellow',
-    baseColor: '#F8E8A9',
-    flapColor: '#FFF0C5',
-    pocketColor: '#F0DC99',
-    sideColor: '#E7D08C',
-    patternColor: '#D98279',
-    inkColor: '#5B4D43',
-    pattern: 'tiny-heart',
-  },
-  {
-    id: 'cream-sage-grid',
-    family: 'yellow',
-    baseColor: '#FFF5E7',
-    flapColor: '#FFF9F1',
-    pocketColor: '#F7E8D8',
-    sideColor: '#EEDDC9',
-    patternColor: '#8FA884',
-    inkColor: '#4F574B',
-    pattern: 'check',
-  },
-  {
-    id: 'butter-blue-border',
-    family: 'yellow',
-    baseColor: '#F5E3A0',
-    flapColor: '#FCECB9',
-    pocketColor: '#ECD58D',
-    sideColor: '#E2C97E',
-    patternColor: '#7599B8',
-    inkColor: '#50555A',
-    pattern: 'border',
-  },
-  {
-    id: 'paper-solid',
-    family: 'neutral',
-    baseColor: '#F4EEE3',
-    flapColor: '#FAF6EE',
-    pocketColor: '#EDE4D6',
-    sideColor: '#E6DCCD',
-    patternColor: '#B9A99A',
-    inkColor: '#554C45',
-    pattern: 'solid',
-  },
-  {
-    id: 'paper-blue-stripe',
-    family: 'neutral',
-    baseColor: '#F7F1E8',
-    flapColor: '#FBF7F0',
-    pocketColor: '#EEE5D9',
-    sideColor: '#E7DDD0',
-    patternColor: '#90A9BE',
-    inkColor: '#50555B',
-    pattern: 'thin-stripe',
-  },
-  {
-    id: 'paper-pink-dot',
-    family: 'neutral',
-    baseColor: '#F5EEE4',
-    flapColor: '#FAF5ED',
-    pocketColor: '#EEE4D8',
-    sideColor: '#E7DCCF',
-    patternColor: '#D49AA5',
-    inkColor: '#594D4E',
-    pattern: 'dot',
-  },
-  {
-    id: 'paper-green-wave',
-    family: 'neutral',
-    baseColor: '#F5EFE5',
-    flapColor: '#FAF6EE',
-    pocketColor: '#ECE3D7',
-    sideColor: '#E5DACD',
-    patternColor: '#8FA486',
-    inkColor: '#4E554C',
-    pattern: 'wave',
-  },
+  // Green-card families: keep the envelope complementary rather than all-green.
+  theme('cream-coral-dot', 'green', '#FFF7E9', '#FFF9F1', '#F8EDDC', '#F3E5D0', '#E79A8D', '#5B4D45', 'dot'),
+  theme('butter-sage-stripe', 'green', '#F8E9AE', '#FFF3C8', '#F1DFA1', '#EAD792', '#7E9D77', '#4C5848', 'thin-stripe'),
+  theme('blush-forest-plaid', 'green', '#F5D8DD', '#F9E5E9', '#EFCED5', '#E9C4CD', '#56755D', '#46554A', 'plaid'),
+  theme('mint-cream-diamond', 'green', '#DCEBDD', '#EAF3EA', '#D1E3D4', '#C8DACB', '#FFF4DF', '#4C5A50', 'diamond'),
+  theme('lavender-sage-daisy', 'green', '#E4DDF1', '#EEE8F7', '#DAD1EA', '#D1C7E2', '#78916F', '#514D5C', 'daisy'),
+
+  // Pink-card families.
+  theme('cream-rose-candy', 'pink', '#FFF5E9', '#FFF9F1', '#F8E9DA', '#F1DFC9', '#C97C8B', '#59484A', 'candy-stripe'),
+  theme('sky-pink-big-dot', 'pink', '#DDEBF5', '#EAF3F9', '#D3E4F0', '#CADCE9', '#E89AAF', '#49545B', 'big-dot'),
+  theme('butter-coral-check', 'pink', '#F8E8A9', '#FFF0C4', '#F1DC99', '#E8D18C', '#D67B70', '#5D4C3F', 'check'),
+  theme('pink-wine-border', 'pink', '#F1CDD8', '#F7DDE4', '#E9C1CE', '#E2B8C6', '#8A5360', '#604B52', 'border'),
+  theme('mint-rose-heart', 'pink', '#DDF0E6', '#EAF7F0', '#D2E8DD', '#C9DFD5', '#D88398', '#4F5852', 'tiny-heart'),
+
+  // Blue-card families.
+  theme('cream-cobalt-micro-dot', 'blue', '#FFF7EA', '#FFFAF2', '#F6EBDC', '#EFE2D0', '#6E92C7', '#4D5260', 'micro-dot'),
+  theme('butter-sky-stripe', 'blue', '#F7E8A9', '#FFF0C5', '#EFDC99', '#E7D18C', '#86BFD7', '#4E5660', 'thin-stripe'),
+  theme('blush-navy-plaid', 'blue', '#F3D6DE', '#F8E2E8', '#EAC9D3', '#E3C0CB', '#65768B', '#4B5160', 'plaid'),
+  theme('sky-red-wide', 'blue', '#D7EAF4', '#E7F2F8', '#CDE2ED', '#C3D9E5', '#D9867D', '#4B5860', 'wide-stripe'),
+  theme('lavender-cobalt-star', 'blue', '#E3DDF2', '#EEE9F8', '#D8D1EA', '#CFC6E2', '#6A86BF', '#4E5060', 'star'),
+
+  // Yellow-card families.
+  theme('cream-orange-wave', 'yellow', '#FFF7E8', '#FFFAF2', '#F7EAD8', '#F0E0CC', '#E4A267', '#5C5043', 'wave'),
+  theme('butter-coral-heart', 'yellow', '#F8E8A9', '#FFF0C5', '#F0DC99', '#E7D08C', '#D98279', '#5B4D43', 'tiny-heart'),
+  theme('cream-sage-check', 'yellow', '#FFF5E7', '#FFF9F1', '#F7E8D8', '#EEDDC9', '#8FA884', '#4F574B', 'check'),
+  theme('peach-blue-border', 'yellow', '#F7D8BE', '#FCE5D2', '#EFCDB0', '#E7C3A5', '#7599B8', '#55504C', 'border'),
+  theme('mint-butter-clover', 'yellow', '#DCEEE4', '#EAF6F0', '#D0E5D8', '#C7DDD0', '#D7AD61', '#4D584F', 'clover'),
+
+  // Purple-card families.
+  theme('cream-lilac-dot', 'purple', '#FFF6EA', '#FFFAF2', '#F7E9DA', '#EFDECB', '#A890C8', '#554E5D', 'dot'),
+  theme('blush-violet-diagonal', 'purple', '#F2D7E1', '#F8E3EA', '#EACAD5', '#E2C0CD', '#8C72B3', '#564D5B', 'diagonal-stripe'),
+  theme('butter-lavender-daisy', 'purple', '#F7E7A7', '#FFF0C3', '#EFDB97', '#E6CF88', '#9E86BE', '#56505B', 'daisy'),
+  theme('mint-plum-diamond', 'purple', '#DCEDE5', '#EAF6F0', '#D2E4DA', '#C8DBD1', '#875B78', '#4D5651', 'diamond'),
+  theme('lavender-navy-notebook', 'purple', '#E1D9EF', '#EEE8F6', '#D5CCE6', '#CCC2DD', '#65718C', '#4D4E59', 'notebook'),
+
+  // Orange / peach-card families.
+  theme('cream-tangerine-big-dot', 'orange', '#FFF6E9', '#FFFAF2', '#F7E8D8', '#EFDECB', '#E49B65', '#5A4E46', 'big-dot'),
+  theme('sky-peach-candy', 'orange', '#DCEAF3', '#EAF3F8', '#D1E1EC', '#C8D8E4', '#EAA17F', '#4D565D', 'candy-stripe'),
+  theme('sage-orange-plaid', 'orange', '#DDE8D7', '#EAF1E5', '#D2DFCC', '#C9D7C3', '#D78E55', '#4E584B', 'plaid'),
+  theme('blush-rust-star', 'orange', '#F3D5D8', '#F8E1E4', '#EAC7CC', '#E2BDC3', '#B96F55', '#5B4C4A', 'star'),
+  theme('peach-cobalt-wave', 'orange', '#F5D3BA', '#FBE3D2', '#EBC7AB', '#E2BCA0', '#6F8EB8', '#55505A', 'wave'),
+
+  // Neutral-card families.
+  theme('paper-solid', 'neutral', '#F4EEE3', '#FAF6EE', '#EDE4D6', '#E6DCCD', '#B9A99A', '#554C45', 'solid'),
+  theme('paper-blue-stripe', 'neutral', '#F7F1E8', '#FBF7F0', '#EEE5D9', '#E7DDD0', '#90A9BE', '#50555B', 'thin-stripe'),
+  theme('paper-pink-micro-dot', 'neutral', '#F5EEE4', '#FAF5ED', '#EEE4D8', '#E7DCCF', '#D49AA5', '#594D4E', 'micro-dot'),
+  theme('paper-green-notebook', 'neutral', '#F5EFE5', '#FAF6EE', '#ECE3D7', '#E5DACD', '#8FA486', '#4E554C', 'notebook'),
+  theme('paper-navy-border', 'neutral', '#F3EDE4', '#F9F5EE', '#EBE2D7', '#E4D9CC', '#6E7C8E', '#4F5052', 'border'),
 ]
 
 export function createEnvelopeTheme(
@@ -248,26 +95,50 @@ export function createEnvelopeTheme(
   previewColor = '#F2E5DA',
 ): EnvelopeTheme {
   const family = resolveColorFamily(previewColor)
-  const candidates = envelopeThemes.filter((theme) => theme.family === family)
-  const fallback = envelopeThemes.filter((theme) => theme.family === 'neutral')
+  const candidates = envelopeThemes.filter((item) => item.family === family)
+  const fallback = envelopeThemes.filter((item) => item.family === 'neutral')
   const pool = candidates.length > 0 ? candidates : fallback
   const index = stableHash(messageId) % pool.length
 
   return pool[index] ?? envelopeThemes[0]!
 }
 
-function resolveColorFamily(
-  color: string,
-): EnvelopeTheme['family'] {
+function theme(
+  id: string,
+  family: EnvelopeColorFamily,
+  baseColor: string,
+  flapColor: string,
+  pocketColor: string,
+  sideColor: string,
+  patternColor: string,
+  inkColor: string,
+  pattern: EnvelopePattern,
+): EnvelopeTheme {
+  return {
+    id,
+    family,
+    baseColor,
+    flapColor,
+    pocketColor,
+    sideColor,
+    patternColor,
+    inkColor,
+    pattern,
+  }
+}
+
+function resolveColorFamily(color: string): EnvelopeColorFamily {
   const { h, s } = rgbToHsl(hexToRgb(normalizeHex(color)))
 
   if (s < 0.12) return 'neutral'
-  if (h >= 330 || h < 18) return 'pink'
-  if (h >= 18 && h < 72) return 'yellow'
-  if (h >= 72 && h < 165) return 'green'
-  if (h >= 165 && h < 285) return 'blue'
+  if (h >= 335 || h < 12) return 'pink'
+  if (h >= 12 && h < 42) return 'orange'
+  if (h >= 42 && h < 78) return 'yellow'
+  if (h >= 78 && h < 165) return 'green'
+  if (h >= 165 && h < 260) return 'blue'
+  if (h >= 260 && h < 335) return 'purple'
 
-  return 'pink'
+  return 'neutral'
 }
 
 function stableHash(value: string) {
@@ -315,8 +186,7 @@ function rgbToHsl({ r, g, b }: { r: number; g: number; b: number }) {
     return { h: 0, s: 0, l: lightness }
   }
 
-  const saturation =
-    delta / (1 - Math.abs(2 * lightness - 1))
+  const saturation = delta / (1 - Math.abs(2 * lightness - 1))
 
   let hue = 0
 
