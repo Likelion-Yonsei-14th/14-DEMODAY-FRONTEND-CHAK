@@ -1,9 +1,16 @@
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
+  useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
-import { Check, Maximize2, Move } from 'lucide-react'
+import {
+  Check,
+  Maximize2,
+  Move,
+  MoveHorizontal,
+} from 'lucide-react'
 import type {
   MessageDraft,
   PhotoElement,
@@ -22,6 +29,7 @@ type MessageCanvasProps = {
   onTextDone: () => void
   onTextChange: (id: string, text: string) => void
   onTextMove: (id: string, x: number, y: number) => void
+  onTextResize: (id: string, width: number, x: number) => void
   onWordArtMove: (
     id: string,
     x: number,
@@ -40,6 +48,7 @@ export function MessageCanvas({
   onTextDone,
   onTextChange,
   onTextMove,
+  onTextResize,
   onWordArtMove,
   onPhotoChange,
 }: MessageCanvasProps) {
@@ -183,6 +192,13 @@ export function MessageCanvas({
                 y,
               )
             }
+            onResize={(width, x) =>
+              onTextResize(
+                element.id,
+                width,
+                x,
+              )
+            }
           />
         ))}
 
@@ -212,6 +228,7 @@ type CanvasTextElementProps = {
   onDone: () => void
   onChange: (text: string) => void
   onMove: (x: number, y: number) => void
+  onResize: (width: number, x: number) => void
 }
 
 function CanvasTextElement({
@@ -222,9 +239,14 @@ function CanvasTextElement({
   onDone,
   onChange,
   onMove,
+  onResize,
 }: CanvasTextElementProps) {
+  const wrapperRef =
+    useRef<HTMLDivElement>(null)
   const textareaRef =
     useRef<HTMLTextAreaElement>(null)
+  const [controlsBelow, setControlsBelow] =
+    useState(false)
 
   const appearance = getTextAppearance(element)
 
@@ -250,27 +272,182 @@ function CanvasTextElement({
     element.fontId,
     element.fontSize,
     element.styleId,
+    element.width,
   ])
 
-  const handlePointerDown =
-    createMoveHandler(
-      canvasRef,
-      onSelect,
-      onMove,
-      {
-        minX: 8,
-        maxX: 92,
-        minY: 10,
-        maxY: 90,
-      },
+  useLayoutEffect(() => {
+    if (!selected) return
+
+    const wrapper = wrapperRef.current
+    const canvas = canvasRef.current
+    if (!wrapper || !canvas) return
+
+    const updateControlPlacement = () => {
+      const wrapperRect =
+        wrapper.getBoundingClientRect()
+      const canvasRect =
+        canvas.getBoundingClientRect()
+
+      setControlsBelow(
+        wrapperRect.top <
+          canvasRect.top + 34,
+      )
+    }
+
+    updateControlPlacement()
+
+    const observer =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(
+            updateControlPlacement,
+          )
+        : null
+
+    observer?.observe(wrapper)
+    observer?.observe(canvas)
+    window.addEventListener(
+      'resize',
+      updateControlPlacement,
     )
+
+    return () => {
+      observer?.disconnect()
+      window.removeEventListener(
+        'resize',
+        updateControlPlacement,
+      )
+    }
+  }, [
+    selected,
+    element.x,
+    element.y,
+    element.width,
+    element.text,
+    element.fontSize,
+    element.fontId,
+  ])
+
+  useEffect(() => {
+    if (
+      selected &&
+      !element.text &&
+      textareaRef.current
+    ) {
+      textareaRef.current.focus()
+    }
+  }, [selected, element.text])
+
+  const handleMove = (
+    event: ReactPointerEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const canvasNode = canvasRef.current
+    if (!canvasNode) return
+
+    onSelect()
+
+    const rect =
+      canvasNode.getBoundingClientRect()
+    const pointerStart = {
+      x: event.clientX,
+      y: event.clientY,
+    }
+    const positionStart = {
+      x: element.x ?? 50,
+      y: element.y ?? 50,
+    }
+    const width = element.width ?? 76
+    const halfWidth = width / 2
+    const minX = Math.min(
+      50,
+      halfWidth + 2,
+    )
+    const maxX = Math.max(
+      50,
+      100 - halfWidth - 2,
+    )
+
+    const onPointerMove = (
+      moveEvent: PointerEvent,
+    ) => {
+      const x =
+        positionStart.x +
+        ((moveEvent.clientX -
+          pointerStart.x) /
+          rect.width) *
+          100
+      const y =
+        positionStart.y +
+        ((moveEvent.clientY -
+          pointerStart.y) /
+          rect.height) *
+          100
+
+      onMove(
+        clamp(x, minX, maxX),
+        clamp(y, 6, 94),
+      )
+    }
+
+    bindWindowDrag(onPointerMove)
+  }
+
+  const handleResize = (
+    event: ReactPointerEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const canvasNode = canvasRef.current
+    if (!canvasNode) return
+
+    onSelect()
+
+    const rect =
+      canvasNode.getBoundingClientRect()
+    const startX = event.clientX
+    const startWidth =
+      element.width ?? 76
+    const startCenter =
+      element.x ?? 50
+
+    const onPointerMove = (
+      moveEvent: PointerEvent,
+    ) => {
+      const deltaPercent =
+        ((moveEvent.clientX - startX) /
+          rect.width) *
+        200
+      const width = clamp(
+        startWidth + deltaPercent,
+        28,
+        94,
+      )
+      const halfWidth = width / 2
+      const x = clamp(
+        startCenter,
+        Math.min(50, halfWidth + 2),
+        Math.max(50, 100 - halfWidth - 2),
+      )
+
+      onResize(width, x)
+    }
+
+    bindWindowDrag(onPointerMove)
+  }
 
   return (
     <div
+      ref={wrapperRef}
       className={[
         'canvas-text-element',
         selected
           ? 'canvas-text-element--selected'
+          : '',
+        selected && controlsBelow
+          ? 'canvas-text-element--controls-bottom'
           : '',
       ].filter(Boolean).join(' ')}
       style={{
@@ -278,6 +455,8 @@ function CanvasTextElement({
         top: `${element.y ?? 50}%`,
         width:
           `${element.width ?? 76}%`,
+        zIndex:
+          element.zIndex ?? 30,
       }}
       onPointerDown={(event) =>
         event.stopPropagation()
@@ -328,11 +507,21 @@ function CanvasTextElement({
             type="button"
             className="canvas-text-element__move"
             aria-label="글자 위치 옮기기"
-            onPointerDown={
-              handlePointerDown
-            }
+            onPointerDown={handleMove}
           >
             <Move
+              size={15}
+              aria-hidden
+            />
+          </button>
+
+          <button
+            type="button"
+            className="canvas-text-element__resize"
+            aria-label="텍스트 박스 너비 조절"
+            onPointerDown={handleResize}
+          >
+            <MoveHorizontal
               size={15}
               aria-hidden
             />

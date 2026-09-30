@@ -131,6 +131,8 @@ export function OriginalMessageRenderer({
                         `${element.y ?? 50}%`,
                       width:
                         `${element.width ?? 76}%`,
+                      zIndex:
+                        element.zIndex ?? 30,
                       textAlign:
                         element.align ?? 'center',
                     } as CSSProperties)
