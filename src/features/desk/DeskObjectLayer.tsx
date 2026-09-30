@@ -21,6 +21,7 @@ type DeskObjectLayerProps = {
   messages?: Message[]
   onObjectClick?: (messageId: string) => void
   openingMessageId?: string | null
+  readMessageIds?: string[]
   draftObject?: DraftObject
 }
 
@@ -29,6 +30,7 @@ export function DeskObjectLayer({
   messages = [],
   onObjectClick,
   openingMessageId,
+  readMessageIds = [],
   draftObject,
 }: DeskObjectLayerProps) {
   const messageById = new Map(messages.map((message) => [message.id, message]))
@@ -41,6 +43,9 @@ export function DeskObjectLayer({
         const previewColor =
           object.color ?? message?.previewColor ?? '#F4C6BC'
         const interactive = Boolean(onObjectClick)
+        const read =
+          message?.status === 'read' ||
+          readMessageIds.includes(object.messageId)
         const opening = openingMessageId === object.messageId
         const deemphasized = Boolean(
           openingMessageId && openingMessageId !== object.messageId,
@@ -55,6 +60,7 @@ export function DeskObjectLayer({
               `desk-object--${object.representationType}`,
               object.locked ? 'desk-object--locked' : '',
               !interactive ? 'desk-object--passive' : '',
+              interactive && !read ? 'desk-object--unread' : '',
               opening ? 'desk-object--opening' : '',
               deemphasized ? 'desk-object--deemphasized' : '',
             ].filter(Boolean).join(' ')}
@@ -69,7 +75,7 @@ export function DeskObjectLayer({
             aria-label={
               interactive
                 ? message
-                  ? `${message.senderName}의 응원 열기`
+                  ? `${message.senderName}의 ${read ? '' : '새 '}응원 열기`
                   : '응원 열기'
                 : undefined
             }
@@ -77,6 +83,9 @@ export function DeskObjectLayer({
             onClick={() => onObjectClick?.(object.messageId)}
           >
             <DeskObjectVisual type={object.representationType} />
+            {interactive && !read && (
+              <span className="desk-object__unread-dot" aria-hidden />
+            )}
           </button>
         )
       })}
