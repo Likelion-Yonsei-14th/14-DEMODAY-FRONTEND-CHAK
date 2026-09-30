@@ -9,7 +9,6 @@ import {
   Check,
   Maximize2,
   Move,
-  MoveHorizontal,
 } from 'lucide-react'
 import type {
   MessageDraft,
@@ -211,9 +210,9 @@ export function MessageCanvas({
       </div>
 
       <p className="message-canvas-viewport__hint">
-        요소를 끌어 이동하고, 선택한 사진의{' '}
-        <Maximize2 size={13} aria-hidden /> 핸들을 끌어
-        크기와 각도를 바꿔보세요.
+        요소를 끌어 이동해요. 사진은{' '}
+        <Maximize2 size={13} aria-hidden /> 핸들로,
+        텍스트 박스는 두 손가락을 벌리거나 모아 크기를 조절할 수 있어요.
       </p>
     </div>
   )
@@ -245,6 +244,14 @@ function CanvasTextElement({
     useRef<HTMLDivElement>(null)
   const textareaRef =
     useRef<HTMLTextAreaElement>(null)
+  const touchPointsRef = useRef(
+    new Map<number, { x: number; y: number }>(),
+  )
+  const pinchStartRef = useRef<{
+    distance: number
+    width: number
+    x: number
+  } | null>(null)
   const [controlsBelow, setControlsBelow] =
     useState(false)
 
@@ -394,48 +401,136 @@ function CanvasTextElement({
     bindWindowDrag(onPointerMove)
   }
 
-  const handleResize = (
-    event: ReactPointerEvent<HTMLButtonElement>,
+  const handleTouchPointerDown = (
+    event: ReactPointerEvent<HTMLDivElement>,
   ) => {
+    if (
+      !selected ||
+      event.pointerType !== 'touch' ||
+      (event.target instanceof Element &&
+        event.target.closest('button'))
+    ) {
+      return
+    }
+
+    touchPointsRef.current.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    })
+
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId)
+    } catch {
+      // Some mobile browsers may reject capture during native text editing.
+    }
+
+    if (touchPointsRef.current.size !== 2) return
+
+    const points = [...touchPointsRef.current.values()]
+    const first = points[0]
+    const second = points[1]
+    if (!first || !second) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    textareaRef.current?.blur()
+    onSelect()
+
+    pinchStartRef.current = {
+      distance: Math.max(
+        24,
+        distance(
+          first.x,
+          first.y,
+          second.x,
+          second.y,
+        ),
+      ),
+      width: element.width ?? 76,
+      x: element.x ?? 50,
+    }
+  }
+
+  const handleTouchPointerMove = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (
+      event.pointerType !== 'touch' ||
+      !touchPointsRef.current.has(event.pointerId)
+    ) {
+      return
+    }
+
+    touchPointsRef.current.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    })
+
+    const pinchStart = pinchStartRef.current
+    if (
+      !pinchStart ||
+      touchPointsRef.current.size < 2
+    ) {
+      return
+    }
+
+    const points = [...touchPointsRef.current.values()]
+    const first = points[0]
+    const second = points[1]
+    if (!first || !second) return
+
     event.preventDefault()
     event.stopPropagation()
 
-    const canvasNode = canvasRef.current
-    if (!canvasNode) return
+    const currentDistance = Math.max(
+      24,
+      distance(
+        first.x,
+        first.y,
+        second.x,
+        second.y,
+      ),
+    )
+    const width = clamp(
+      pinchStart.width *
+        (currentDistance / pinchStart.distance),
+      28,
+      94,
+    )
+    const halfWidth = width / 2
+    const x = clamp(
+      pinchStart.x,
+      Math.min(50, halfWidth + 2),
+      Math.max(50, 100 - halfWidth - 2),
+    )
 
-    onSelect()
+    onResize(width, x)
+  }
 
-    const rect =
-      canvasNode.getBoundingClientRect()
-    const startX = event.clientX
-    const startWidth =
-      element.width ?? 76
-    const startCenter =
-      element.x ?? 50
+  const handleTouchPointerEnd = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (event.pointerType !== 'touch') return
 
-    const onPointerMove = (
-      moveEvent: PointerEvent,
-    ) => {
-      const deltaPercent =
-        ((moveEvent.clientX - startX) /
-          rect.width) *
-        200
-      const width = clamp(
-        startWidth + deltaPercent,
-        28,
-        94,
-      )
-      const halfWidth = width / 2
-      const x = clamp(
-        startCenter,
-        Math.min(50, halfWidth + 2),
-        Math.max(50, 100 - halfWidth - 2),
-      )
+    touchPointsRef.current.delete(event.pointerId)
 
-      onResize(width, x)
+    if (touchPointsRef.current.size < 2) {
+      pinchStartRef.current = null
     }
 
-    bindWindowDrag(onPointerMove)
+    try {
+      if (
+        event.currentTarget.hasPointerCapture(
+          event.pointerId,
+        )
+      ) {
+        event.currentTarget.releasePointerCapture(
+          event.pointerId,
+        )
+      }
+    } catch {
+      // Ignore browsers that already released pointer capture.
+    }
   }
 
   return (
@@ -458,9 +553,13 @@ function CanvasTextElement({
         zIndex:
           element.zIndex ?? 30,
       }}
-      onPointerDown={(event) =>
+      onPointerDown={(event) => {
         event.stopPropagation()
-      }
+        handleTouchPointerDown(event)
+      }}
+      onPointerMove={handleTouchPointerMove}
+      onPointerUp={handleTouchPointerEnd}
+      onPointerCancel={handleTouchPointerEnd}
     >
       <textarea
         ref={textareaRef}
@@ -515,17 +614,6 @@ function CanvasTextElement({
             />
           </button>
 
-          <button
-            type="button"
-            className="canvas-text-element__resize"
-            aria-label="텍스트 박스 너비 조절"
-            onPointerDown={handleResize}
-          >
-            <MoveHorizontal
-              size={15}
-              aria-hidden
-            />
-          </button>
         </>
       )}
     </div>

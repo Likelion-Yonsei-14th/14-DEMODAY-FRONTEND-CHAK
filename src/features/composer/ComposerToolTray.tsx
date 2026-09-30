@@ -348,6 +348,10 @@ export function ComposerToolTray({
                 텍스트 삭제
               </button>
 
+              <p className="composer-text-gesture-note">
+                텍스트 박스 위에서 두 손가락을 벌리거나 모으면 박스 너비가 바뀌어요.
+              </p>
+
               <p className="composer-font-license-note">
                 네이버 나눔손글씨 · 나눔스퀘어 네오와 오픈 라이선스
                 Pretendard를 사용해요.

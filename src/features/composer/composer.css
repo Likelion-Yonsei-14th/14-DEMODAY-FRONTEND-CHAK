@@ -1455,3 +1455,24 @@
     width: 100%;
   }
 }
+
+
+/* Text width is adjusted by a two-finger pinch, so no third on-canvas handle is shown. */
+.canvas-text-element--selected {
+  touch-action: none;
+}
+
+.canvas-text-element__resize {
+  display: none !important;
+}
+
+
+.composer-text-gesture-note {
+  margin: -2px 0 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--color-surface-subtle);
+  color: var(--color-content-secondary);
+  font-size: 9px;
+  line-height: 15px;
+}
