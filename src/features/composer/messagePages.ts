@@ -15,18 +15,30 @@ export function getMessagePages(
     | 'photoElements'
   >,
 ): CardPage[] {
-  if (message.pages?.length) return message.pages
+  if (message.pages?.length) {
+    return message.pages.map((page, index) =>
+      normalizeCardPage(
+        page,
+        `${message.id}-page-${index + 1}`,
+        message,
+      ),
+    )
+  }
 
   return [
-    {
-      id: `${message.id}-page-1`,
-      canvasMode: message.canvasMode,
-      backgroundAssetId: message.backgroundAssetId,
-      textElements: message.textElements,
-      wordArtElements: message.wordArtElements,
-      stickerElements: message.stickerElements,
-      photoElements: message.photoElements,
-    },
+    normalizeCardPage(
+      {
+        id: `${message.id}-page-1`,
+        canvasMode: message.canvasMode,
+        backgroundAssetId: message.backgroundAssetId,
+        textElements: message.textElements,
+        wordArtElements: message.wordArtElements,
+        stickerElements: message.stickerElements,
+        photoElements: message.photoElements,
+      },
+      `${message.id}-page-1`,
+      message,
+    ),
   ]
 }
 
@@ -165,6 +177,49 @@ export function hasDraftContent(draft: MessageDraft) {
       page.stickerElements.length > 0 ||
       page.photoElements.length > 0,
   )
+}
+
+
+function normalizeCardPage(
+  page: Partial<CardPage>,
+  fallbackId: string,
+  message: Pick<
+    MessageDraft,
+    | 'canvasMode'
+    | 'backgroundAssetId'
+    | 'textElements'
+    | 'wordArtElements'
+    | 'stickerElements'
+    | 'photoElements'
+  >,
+): CardPage {
+  return {
+    id: page.id ?? fallbackId,
+    canvasMode:
+      page.canvasMode ??
+      message.canvasMode ??
+      'standard',
+    backgroundAssetId:
+      page.backgroundAssetId ??
+      message.backgroundAssetId ??
+      'bg-basic-cream',
+    textElements:
+      page.textElements ??
+      message.textElements ??
+      [],
+    wordArtElements:
+      page.wordArtElements ??
+      message.wordArtElements ??
+      [],
+    stickerElements:
+      page.stickerElements ??
+      message.stickerElements ??
+      [],
+    photoElements:
+      page.photoElements ??
+      message.photoElements ??
+      [],
+  }
 }
 
 
