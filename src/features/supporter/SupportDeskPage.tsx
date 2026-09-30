@@ -1,6 +1,12 @@
-import { ArrowLeft, MoreHorizontal, Share2 } from 'lucide-react'
+import {
+  ArrowLeft,
+  Layers3,
+  MoreHorizontal,
+  Share2,
+} from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AppBar, Button, IconButton, useFeedback } from '@/design-system'
+import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
 import { DeskScene } from '@/features/desk/DeskScene'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -12,7 +18,7 @@ export function SupportDeskPage() {
   const navigate = useNavigate()
   const { showToast } = useFeedback()
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
-  const latestObject = currentDesk.objects[currentDesk.objects.length - 1]
+  const messages = usePrototypeStore((state) => state.messages)
   const objectCount = seededObjectCount + currentDesk.objects.length
 
   return (
@@ -32,17 +38,32 @@ export function SupportDeskPage() {
             />
           }
           trailing={
-            <IconButton
-              label="더보기"
-              icon={<MoreHorizontal size={22} aria-hidden />}
-              onClick={() => showToast('공유·신고 같은 부수 기능은 이후 단계에서 연결할게요.')}
-            />
+            <div className="support-desk__app-actions">
+              <IconButton
+                label="도착한 응원을 카드 보기로 보기"
+                icon={<Layers3 size={20} aria-hidden />}
+                onClick={() => navigate('/prototype/support/jisu/cards')}
+              />
+              <IconButton
+                label="더보기"
+                icon={<MoreHorizontal size={22} aria-hidden />}
+                onClick={() =>
+                  showToast(
+                    '공유·신고 같은 부수 기능은 이후 단계에서 연결할게요.',
+                  )
+                }
+              />
+            </div>
           }
         />
       }
       fixedAction={
         <div className="support-desk__action">
-          <Button variant="brand" fullWidth onClick={() => navigate('/prototype/support/jisu/compose')}>
+          <Button
+            variant="brand"
+            fullWidth
+            onClick={() => navigate('/prototype/support/jisu/compose')}
+          >
             응원 놓고 가기
           </Button>
         </div>
@@ -51,14 +72,25 @@ export function SupportDeskPage() {
       <div className="support-desk">
         <section className="support-desk__intro">
           <p className="support-desk__eyebrow">JISU'S DESK</p>
-          <h2>친구들이 하나씩<br />마음을 놓고 갔어요.</h2>
-          <p>책상 위 물건들은 누군가 남긴 응원이에요. 지수에게도 하나 놓고 가볼까요?</p>
+          <h2>
+            친구들이 하나씩
+            <br />
+            마음을 놓고 갔어요.
+          </h2>
+          <p>
+            책상 위 물건들은 누군가 남긴 응원이에요. 지수에게도 하나 놓고
+            가볼까요?
+          </p>
         </section>
 
         <div className="support-desk__scene-wrap">
-          <DeskScene
-            ownerName="지수"
-            extraObjectType={latestObject?.representationType}
+          <DeskScene ownerName="지수" />
+          <DeskObjectLayer
+            objects={currentDesk.objects}
+            messages={messages}
+            onObjectClick={(messageId) =>
+              navigate(`/prototype/support/jisu/message/${messageId}`)
+            }
           />
         </div>
 
@@ -70,7 +102,11 @@ export function SupportDeskPage() {
           <button
             type="button"
             className="support-desk__share"
-            onClick={() => showToast('친구에게 공유하는 기능은 완료 화면에서 먼저 연결했어요.')}
+            onClick={() =>
+              showToast(
+                '친구에게 공유하는 기능은 완료 화면에서 먼저 연결했어요.',
+              )
+            }
           >
             <Share2 size={16} aria-hidden />
             공유

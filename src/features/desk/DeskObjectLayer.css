@@ -1,0 +1,229 @@
+.desk-object-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.desk-object {
+  --desk-object-color: #f4c6bc;
+  --desk-object-rotation: 0deg;
+  --desk-object-scale: 1;
+  position: absolute;
+  width: 78px;
+  height: 58px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  transform:
+    translate(-50%, -50%)
+    rotate(var(--desk-object-rotation))
+    scale(var(--desk-object-scale));
+  transform-origin: center;
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: none;
+  transition:
+    left 120ms ease-out,
+    top 120ms ease-out,
+    transform 180ms var(--ease-emphasized),
+    filter 180ms ease;
+}
+
+.desk-object__visual {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 6px 7px rgba(73, 48, 35, .18));
+}
+
+.desk-object__paper {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  padding: 12px 13px;
+  border: 1px solid rgba(72, 52, 42, .1);
+  border-radius: 9px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.52), transparent 40%),
+    var(--desk-object-color);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+}
+
+.desk-object__line {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(83, 64, 56, .34);
+}
+
+.desk-object__line:nth-child(2) {
+  width: 74%;
+}
+
+.desk-object__line:nth-child(3) {
+  width: 54%;
+}
+
+.desk-object__seal {
+  position: absolute;
+  right: 8px;
+  bottom: 7px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #e8b84c;
+  box-shadow: 0 1px 0 rgba(255,255,255,.45) inset;
+}
+
+.desk-object--photo-card {
+  width: 68px;
+  height: 76px;
+}
+
+.desk-object--photo-card .desk-object__paper {
+  padding-top: 38px;
+  background: #fffaf5;
+}
+
+.desk-object__photo {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 8px;
+  height: 33px;
+  border-radius: 5px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.35), transparent 45%),
+    var(--desk-object-color);
+}
+
+.desk-object--letter {
+  width: 84px;
+  height: 54px;
+}
+
+.desk-object--letter .desk-object__paper {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.desk-object--letter .desk-object__paper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 0, 50% 58%, 100% 0, 100% 100%, 0 100%);
+  background: rgba(255,255,255,.18);
+  pointer-events: none;
+}
+
+.desk-object--charm {
+  width: 58px;
+  height: 72px;
+}
+
+.desk-object--charm .desk-object__paper {
+  border-radius: 11px 11px 16px 16px;
+}
+
+.desk-object__charm-knot {
+  position: absolute;
+  left: 50%;
+  top: -8px;
+  width: 18px;
+  height: 13px;
+  border: 3px solid #7f6e55;
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  transform: translateX(-50%);
+}
+
+.desk-object--poster-card {
+  width: 72px;
+  height: 88px;
+}
+
+.desk-object--poster-card .desk-object__line:first-child {
+  height: 8px;
+  width: 86%;
+}
+
+.desk-object--ticket {
+  width: 86px;
+  height: 45px;
+}
+
+.desk-object--ticket .desk-object__paper {
+  border-radius: 7px;
+}
+
+.desk-object__ticket-notch {
+  position: absolute;
+  inset: 6px 28px;
+  border-left: 1px dashed rgba(68, 54, 46, .28);
+  border-right: 1px dashed rgba(68, 54, 46, .28);
+}
+
+.desk-object--locked::after {
+  content: '•';
+  position: absolute;
+  right: -2px;
+  top: -3px;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #3f3b36;
+  color: white;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.desk-object--draft {
+  cursor: grab;
+}
+
+.desk-object--draft:active,
+.desk-object--dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+.desk-object--draft .desk-object__visual {
+  filter:
+    drop-shadow(0 10px 12px rgba(73, 48, 35, .22))
+    drop-shadow(0 0 0 rgba(0,0,0,0));
+}
+
+.desk-object--invalid .desk-object__visual {
+  filter:
+    drop-shadow(0 10px 12px rgba(73, 48, 35, .18))
+    drop-shadow(0 0 7px rgba(209, 88, 74, .88));
+}
+
+.desk-object--invalid .desk-object__paper {
+  outline: 2px solid #d15a4a;
+}
+
+.desk-object__drag-hint {
+  position: absolute;
+  left: 50%;
+  bottom: -30px;
+  min-width: 104px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(48, 44, 40, .88);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  box-shadow: 0 5px 16px rgba(40, 32, 26, .16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desk-object {
+    transition: none;
+  }
+}

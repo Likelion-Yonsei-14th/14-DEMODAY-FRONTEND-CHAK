@@ -1,36 +1,99 @@
-import { useMemo, useState } from 'react'
-import { ArrowLeft, Eye, LockKeyhole } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
+import { ArrowLeft, Eye, LockKeyhole, Move } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AppBar, Button, IconButton } from '@/design-system'
+import { getComposerBackground } from '@/features/composer/backgroundAssets'
 import { DeskScene } from '@/features/desk/DeskScene'
+import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import type { DeskPlacement } from '@/types'
 import {
+  clampPlacement,
   deskObjectLabels,
+  isPlacementValid,
   resolveDeskObjectType,
-  resolveDeskZone,
+  resolveInitialPlacement,
 } from './supporterFlow'
 import './supporterFlow.css'
 
 export function PlacementPreviewPage() {
   const navigate = useNavigate()
+  const sceneRef = useRef<HTMLDivElement>(null)
   const draft = usePrototypeStore((state) => state.composerDraft)
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
-  const placeComposerMessage = usePrototypeStore((state) => state.placeComposerMessage)
+  const messages = usePrototypeStore((state) => state.messages)
+  const placeComposerMessage = usePrototypeStore(
+    (state) => state.placeComposerMessage,
+  )
   const [placing, setPlacing] = useState(false)
+  const [dragging, setDragging] = useState(false)
 
   const objectType = useMemo(() => resolveDeskObjectType(draft), [draft])
-  const zone = resolveDeskZone(currentDesk.objects.length)
+  const previewColor = getComposerBackground(draft.backgroundAssetId).tone
+  const initialPlacement = useMemo(
+    () => resolveInitialPlacement(currentDesk.objects.length),
+    [currentDesk.objects.length],
+  )
+  const [placement, setPlacement] = useState<DeskPlacement>(initialPlacement)
+  const [lastValidPlacement, setLastValidPlacement] =
+    useState<DeskPlacement>(initialPlacement)
+
+  const valid = isPlacementValid(placement, currentDesk.objects)
   const visibilityPrivate = draft.visibility === 'private'
 
+  const handlePointerDown: React.PointerEventHandler<HTMLButtonElement> = (
+    event,
+  ) => {
+    event.preventDefault()
+    setDragging(true)
+
+    const updateFromPoint = (clientX: number, clientY: number) => {
+      const scene = sceneRef.current
+      if (!scene) return
+
+      const rect = scene.getBoundingClientRect()
+      const next = clampPlacement({
+        ...placement,
+        x: ((clientX - rect.left) / rect.width) * 100,
+        y: ((clientY - rect.top) / rect.height) * 100,
+      })
+
+      setPlacement(next)
+      if (isPlacementValid(next, currentDesk.objects)) {
+        setLastValidPlacement(next)
+      }
+    }
+
+    updateFromPoint(event.clientX, event.clientY)
+
+    const onMove = (moveEvent: PointerEvent) => {
+      updateFromPoint(moveEvent.clientX, moveEvent.clientY)
+    }
+
+    const onUp = () => {
+      setDragging(false)
+      setPlacement((current) =>
+        isPlacementValid(current, currentDesk.objects)
+          ? current
+          : lastValidPlacement,
+      )
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+    }
+
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp, { once: true })
+  }
+
   const placeMessage = () => {
-    if (placing) return
+    if (placing || !valid) return
     setPlacing(true)
 
     window.setTimeout(() => {
-      placeComposerMessage()
+      placeComposerMessage(placement)
       navigate('/prototype/support/jisu/complete', { replace: true })
-    }, 620)
+    }, 520)
   }
 
   return (
@@ -40,7 +103,7 @@ export function PlacementPreviewPage() {
       appBar={
         <AppBar
           title="책상에 놓기"
-          subtitle="마지막으로 한 번 확인해보세요."
+          subtitle="원하는 자리를 직접 골라보세요."
           transparent
           leading={
             <IconButton
@@ -56,6 +119,7 @@ export function PlacementPreviewPage() {
           variant="brand"
           fullWidth
           loading={placing}
+          disabled={!valid}
           onClick={placeMessage}
         >
           이대로 놓고 가기
@@ -64,19 +128,50 @@ export function PlacementPreviewPage() {
     >
       <main className="placement-preview">
         <section className="placement-preview__copy">
-          <p className="supporter-flow__eyebrow">DESK PREVIEW</p>
-          <h2>내 응원은 이렇게<br />지수의 책상에 놓여요.</h2>
+          <p className="supporter-flow__eyebrow">PLACE IT YOURSELF</p>
+          <h2>지수의 책상에서<br />내 응원의 자리를 골라요.</h2>
           <p>
-            위치는 책상이 자연스럽게 보이도록 자동으로 정리해둘게요.
+            다른 친구의 응원을 거의 다 가리는 자리만 피하면 어디든 괜찮아요.
           </p>
         </section>
 
-        <div className="placement-preview__scene">
-          <DeskScene
-            ownerName="지수"
-            extraObjectType={objectType}
-            highlightExtraObject={placing}
+        <div
+          ref={sceneRef}
+          className={[
+            'placement-preview__scene',
+            dragging ? 'placement-preview__scene--dragging' : '',
+          ].filter(Boolean).join(' ')}
+        >
+          <DeskScene ownerName="지수" />
+          <DeskObjectLayer
+            objects={currentDesk.objects}
+            messages={messages}
+            draftObject={{
+              representationType: objectType,
+              placement,
+              previewColor,
+              invalid: !valid,
+              dragging,
+              onPointerDown: handlePointerDown,
+            }}
           />
+        </div>
+
+        <div
+          className={[
+            'placement-preview__notice',
+            valid
+              ? 'placement-preview__notice--valid'
+              : 'placement-preview__notice--invalid',
+          ].join(' ')}
+          role="status"
+        >
+          <Move size={16} aria-hidden />
+          <span>
+            {valid
+              ? '카드를 끌어서 원하는 위치에 놓아보세요.'
+              : '여기서는 다른 친구의 응원이 너무 많이 가려져요.'}
+          </span>
         </div>
 
         <section className="placement-preview__summary">
@@ -85,8 +180,8 @@ export function PlacementPreviewPage() {
             <strong>{deskObjectLabels[objectType]}</strong>
           </div>
           <div className="placement-preview__summary-row">
-            <span>놓이는 자리</span>
-            <strong>{zoneLabel(zone)}</strong>
+            <span>배치</span>
+            <strong>직접 선택</strong>
           </div>
           <div className="placement-preview__summary-row">
             <span>공개 범위</span>
@@ -103,16 +198,4 @@ export function PlacementPreviewPage() {
       </main>
     </AppShell>
   )
-}
-
-function zoneLabel(zone: ReturnType<typeof resolveDeskZone>) {
-  const labels = {
-    left: '책상 왼쪽',
-    center: '책상 가운데',
-    right: '책상 오른쪽',
-    back: '뒤쪽',
-    front: '앞쪽',
-  }
-
-  return labels[zone]
 }

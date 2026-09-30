@@ -8,6 +8,12 @@
   gap: 22px;
 }
 
+.support-desk__app-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
 .support-desk__intro {
   display: grid;
   gap: 7px;
@@ -39,6 +45,7 @@
 }
 
 .support-desk__scene-wrap {
+  position: relative;
   margin-inline: calc(var(--page-gutter) * -1);
   overflow: hidden;
   border-block: 1px solid rgba(205, 185, 166, .36);

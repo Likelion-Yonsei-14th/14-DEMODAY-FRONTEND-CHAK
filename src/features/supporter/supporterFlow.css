@@ -23,7 +23,7 @@
 
 .placement-preview {
   display: grid;
-  gap: 22px;
+  gap: 18px;
 }
 
 .placement-preview__copy {
@@ -47,9 +47,36 @@
 }
 
 .placement-preview__scene {
+  position: relative;
   margin-inline: calc(var(--page-gutter) * -1);
   overflow: hidden;
   border-block: 1px solid rgba(205, 185, 166, .34);
+  user-select: none;
+}
+
+.placement-preview__scene--dragging {
+  cursor: grabbing;
+}
+
+.placement-preview__notice {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 13px;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.placement-preview__notice--valid {
+  background: #f3efe8;
+  color: var(--color-content-secondary);
+}
+
+.placement-preview__notice--invalid {
+  background: #fff0ec;
+  color: #a84e42;
 }
 
 .placement-preview__summary {
