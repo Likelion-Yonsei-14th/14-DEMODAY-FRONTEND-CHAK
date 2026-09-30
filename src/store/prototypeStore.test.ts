@@ -111,18 +111,24 @@ describe('prototype store composer handoff', () => {
     const draft = buildThreePageDraft()
     usePrototypeStore.setState({ composerDraft: draft })
 
-    usePrototypeStore.getState().placeComposerMessage({
-      x: 52,
-      y: 50,
-      rotation: 0,
-      scale: 1,
-    })
+    usePrototypeStore.getState().placeComposerMessage(
+      {
+        x: 52,
+        y: 50,
+        rotation: 0,
+        scale: 1,
+      },
+      'charm',
+    )
 
     const state = usePrototypeStore.getState()
     const sent = state.messages.at(-1)
 
     expect(sent).toBeDefined()
     expect(sent?.senderName).toBe('다은')
+    expect(state.currentDesk.objects.at(-1)?.representationType).toBe(
+      'charm',
+    )
     expect(getMessagePages(sent!)).toHaveLength(3)
     expect(getMessagePages(sent!)[0]?.stickerElements[0]).toMatchObject({
       assetId: 'sticker-emphasis',
