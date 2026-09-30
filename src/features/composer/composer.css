@@ -1632,41 +1632,6 @@
   color: #a85045;
 }
 
-.composer-sticker-stepper {
-  width: fit-content;
-  display: grid;
-  grid-template-columns: 42px 54px 42px;
-  align-items: center;
-  margin: 2px 8px 0;
-  overflow: hidden;
-  border: 1px solid var(--color-border-default);
-  border-radius: 12px;
-  background: var(--color-surface-base);
-}
-
-.composer-sticker-stepper button {
-  width: 42px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--color-content-primary);
-  cursor: pointer;
-}
-
-.composer-sticker-stepper span {
-  display: grid;
-  place-items: center;
-  min-height: 40px;
-  border-inline: 1px solid var(--color-border-subtle);
-  color: var(--color-content-secondary);
-  font-size: 10px;
-  font-weight: 750;
-  font-variant-numeric: tabular-nums;
-}
-
 .canvas-sticker {
   position: absolute;
   display: grid;
