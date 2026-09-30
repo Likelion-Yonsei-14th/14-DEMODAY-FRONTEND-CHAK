@@ -3,7 +3,6 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
-  MoreHorizontal,
 } from 'lucide-react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { AppBar, Button, IconButton } from '@/design-system'
@@ -146,16 +145,13 @@ export function MessageViewerPage() {
           subtitle={formatReaderDate(message.createdAt)}
           leading={
             <IconButton
-              label="응원 목록으로 돌아가기"
+              label={
+                state?.from === 'owner-desk' || state?.from === 'desk'
+                  ? '내 책상으로 돌아가기'
+                  : '응원 목록으로 돌아가기'
+              }
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={back}
-            />
-          }
-          trailing={
-            <IconButton
-              label="응원 더보기"
-              icon={<MoreHorizontal size={21} aria-hidden />}
-              onClick={() => undefined}
             />
           }
         />
