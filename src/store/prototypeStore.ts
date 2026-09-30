@@ -43,6 +43,7 @@ type PrototypeState = {
   placeComposerMessage: (
     placement?: DeskPlacement,
     representationType?: DeskObjectType,
+    objectColor?: string,
   ) => void
   markMessageRead: (messageId: string) => void
   setClaimState: (state: ClaimState) => void
@@ -74,7 +75,11 @@ export const usePrototypeStore = create<PrototypeState>()(
       resetComposerDraft: () => set({ composerDraft: emptyComposerDraft }),
       addMessage: (message) =>
         set((state) => ({ messages: [...state.messages, message] })),
-      placeComposerMessage: (placement, selectedRepresentationType) =>
+      placeComposerMessage: (
+        placement,
+        selectedRepresentationType,
+        objectColor,
+      ) =>
         set((state) => {
           const stamp = Date.now().toString(36)
           const messageId = `message-${stamp}`
@@ -111,6 +116,7 @@ export const usePrototypeStore = create<PrototypeState>()(
                   id: objectId,
                   messageId,
                   representationType,
+                  color: objectColor,
                   zone,
                   order: state.currentDesk.objects.length,
                   locked: state.composerDraft.visibility === 'private',
