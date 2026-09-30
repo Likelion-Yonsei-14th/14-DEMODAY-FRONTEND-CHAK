@@ -675,15 +675,6 @@ function PhotoTool({
             </strong>
           </div>
 
-          {selectedPhoto.hasTransparency &&
-            selectedPhoto.role === 'floating' &&
-            (selectedPhoto.frame ?? 'plain') ===
-              'plain' && (
-              <div className="composer-photo-alpha-note">
-                투명 배경을 그대로 유지하고 있어요.
-              </div>
-            )}
-
           {selectedPhoto.role === 'floating' && (
             <div className="composer-chip-section">
               <span className="composer-tool-label">
