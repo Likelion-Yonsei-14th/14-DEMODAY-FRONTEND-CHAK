@@ -47,6 +47,17 @@ describe('multi-page card draft', () => {
           align: 'right',
         },
       ],
+      stickerElements: [
+        {
+          id: 'sticker-a',
+          assetId: 'sticker-number-01',
+          x: 52,
+          y: 44,
+          scale: 1.1,
+          rotation: -8,
+          zIndex: 24,
+        },
+      ],
       photoElements: [
         {
           id: 'photo-a',
@@ -63,6 +74,8 @@ describe('multi-page card draft', () => {
     expect(getMessagePages(next)).toHaveLength(2)
     expect(second.backgroundAssetId).toBe('bg-pattern-daisy-sage')
     expect(second.photoElements).toHaveLength(0)
+    expect(second.stickerElements).toHaveLength(0)
+    expect(getMessagePages(next)[0]?.stickerElements).toHaveLength(1)
     expect(second.textElements).toHaveLength(1)
     expect(second.textElements[0]).toMatchObject({
       fontId: 'nanum-hana',
