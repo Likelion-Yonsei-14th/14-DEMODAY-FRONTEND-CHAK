@@ -11,6 +11,7 @@ import type {
   TextElement,
 } from '@/types'
 import { getComposerBackground } from './backgroundAssets'
+import { getTextAppearance } from './fonts/fontRegistry'
 import { WordArtGraphic } from './wordArt/wordArtAssets'
 import './composer.css'
 
@@ -220,6 +221,8 @@ function CanvasTextElement({
   const textareaRef =
     useRef<HTMLTextAreaElement>(null)
 
+  const appearance = getTextAppearance(element)
+
   useEffect(() => {
     if (!textareaRef.current) return
     textareaRef.current.style.height = 'auto'
@@ -228,7 +231,12 @@ function CanvasTextElement({
         72,
         textareaRef.current.scrollHeight,
       )}px`
-  }, [element.text])
+  }, [
+    element.text,
+    element.fontId,
+    element.fontSize,
+    element.styleId,
+  ])
 
   const handlePointerDown =
     createMoveHandler(
@@ -250,8 +258,7 @@ function CanvasTextElement({
         selected
           ? 'canvas-text-element--selected'
           : '',
-        `canvas-text-element--${element.styleId}`,
-      ].join(' ')}
+      ].filter(Boolean).join(' ')}
       style={{
         left: `${element.x ?? 50}%`,
         top: `${element.y ?? 50}%`,
@@ -274,6 +281,15 @@ function CanvasTextElement({
         onChange={(event) =>
           onChange(event.target.value)
         }
+        style={{
+          fontFamily: appearance.fontFamily,
+          fontSize: `${appearance.fontSize}px`,
+          fontWeight: appearance.fontWeight,
+          lineHeight: appearance.lineHeight,
+          letterSpacing: appearance.letterSpacing,
+          color: appearance.color,
+          textAlign: element.align ?? 'center',
+        }}
       />
 
       {selected && (

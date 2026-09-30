@@ -310,3 +310,9 @@
   background: #fffdf9;
   box-shadow: 0 12px 22px rgba(63,47,38,.14);
 }
+
+
+/* Typography is now message data rather than a fixed preset class. */
+.original-message__text {
+  font-synthesis: none;
+}

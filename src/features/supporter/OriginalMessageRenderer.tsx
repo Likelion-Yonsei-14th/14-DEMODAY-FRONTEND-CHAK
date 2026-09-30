@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import { getComposerBackground } from '@/features/composer/backgroundAssets'
 import { WordArtGraphic } from '@/features/composer/wordArt/wordArtAssets'
+import { getTextAppearance } from '@/features/composer/fonts/fontRegistry'
 import type { Message, PhotoElement } from '@/types'
 import './MessageViewerPage.css'
 
@@ -100,34 +101,45 @@ export function OriginalMessageRenderer({
             : undefined
         }
       >
-        {message.textElements.map((element) => (
-          <p
-            key={element.id}
-            className={[
-              'original-message__text',
-              `original-message__text--${element.styleId}`,
-            ].join(' ')}
-            style={
-              longCard
-                ? {
-                    textAlign:
-                      element.align ?? 'left',
-                  }
-                : ({
-                    left:
-                      `${element.x ?? 50}%`,
-                    top:
-                      `${element.y ?? 50}%`,
-                    width:
-                      `${element.width ?? 76}%`,
-                    textAlign:
-                      element.align ?? 'center',
-                  } as CSSProperties)
-            }
-          >
-            {element.text}
-          </p>
-        ))}
+        {message.textElements.map((element) => {
+          const appearance = getTextAppearance(element)
+          const typography: CSSProperties = {
+            fontFamily: appearance.fontFamily,
+            fontSize: `${appearance.fontSize}px`,
+            fontWeight: appearance.fontWeight,
+            lineHeight: appearance.lineHeight,
+            letterSpacing: appearance.letterSpacing,
+            color: appearance.color,
+          }
+
+          return (
+            <p
+              key={element.id}
+              className="original-message__text"
+              style={
+                longCard
+                  ? {
+                      ...typography,
+                      textAlign:
+                        element.align ?? 'left',
+                    }
+                  : ({
+                      ...typography,
+                      left:
+                        `${element.x ?? 50}%`,
+                      top:
+                        `${element.y ?? 50}%`,
+                      width:
+                        `${element.width ?? 76}%`,
+                      textAlign:
+                        element.align ?? 'center',
+                    } as CSSProperties)
+              }
+            >
+              {element.text}
+            </p>
+          )
+        })}
       </div>
 
       <span className="original-message__for">
