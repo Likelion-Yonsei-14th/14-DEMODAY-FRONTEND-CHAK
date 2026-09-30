@@ -93,6 +93,7 @@ export function UnifiedComposerPage() {
       x: 50,
       y: Math.min(72, 38 + index * 11),
       width: base?.width ?? 76,
+      zIndex: getFrontLayerZ(draft) + 1,
       align: base?.align ?? 'center',
     }
 
@@ -112,6 +113,20 @@ export function UnifiedComposerPage() {
       ),
     })
     setSelectedLayerId(null)
+  }
+
+  const sendSelectedTextBackward = () => {
+    if (!selectedText) return
+    updateSelectedText({
+      zIndex: Math.max(4, getBackLayerZ(draft) - 1),
+    })
+  }
+
+  const bringSelectedTextForward = () => {
+    if (!selectedText) return
+    updateSelectedText({
+      zIndex: Math.min(80, getFrontLayerZ(draft) + 1),
+    })
   }
 
   const updateVisibility = (visibility: MessageVisibility) => {
@@ -302,6 +317,9 @@ export function UnifiedComposerPage() {
             onTextMove={(id, x, y) =>
               updateTextElement(id, { x, y })
             }
+            onTextResize={(id, width, x) =>
+              updateTextElement(id, { width, x })
+            }
             onWordArtMove={moveWordArt}
             onPhotoChange={updatePhoto}
           />
@@ -327,6 +345,8 @@ export function UnifiedComposerPage() {
             onTextAlignChange={(align) =>
               updateSelectedText({ align })
             }
+            onTextSendBackward={sendSelectedTextBackward}
+            onTextBringForward={bringSelectedTextForward}
             onTextDelete={() => {
               if (selectedText) {
                 deleteTextElement(selectedText.id)
@@ -360,4 +380,33 @@ export function UnifiedComposerPage() {
       />
     </>
   )
+}
+
+
+function getLayerZValues(draft: {
+  textElements: TextElement[]
+  photoElements: PhotoElement[]
+  wordArtElements: Array<{ zIndex: number }>
+  stickerElements: Array<{ zIndex: number }>
+}) {
+  return [
+    ...draft.photoElements
+      .filter((photo) => photo.role === 'floating')
+      .map((photo) => photo.zIndex ?? 10),
+    ...draft.wordArtElements.map((element) => element.zIndex),
+    ...draft.stickerElements.map((element) => element.zIndex),
+    ...draft.textElements.map(
+      (element, index) => element.zIndex ?? 30 + index,
+    ),
+  ]
+}
+
+function getFrontLayerZ(draft: Parameters<typeof getLayerZValues>[0]) {
+  const values = getLayerZValues(draft)
+  return values.length > 0 ? Math.max(...values) : 30
+}
+
+function getBackLayerZ(draft: Parameters<typeof getLayerZValues>[0]) {
+  const values = getLayerZValues(draft)
+  return values.length > 0 ? Math.min(...values) : 10
 }

@@ -39,6 +39,7 @@ export const emptyComposerDraft: MessageDraft = {
       x: 50,
       y: 50,
       width: 76,
+      zIndex: 30,
       align: 'center',
     },
   ],

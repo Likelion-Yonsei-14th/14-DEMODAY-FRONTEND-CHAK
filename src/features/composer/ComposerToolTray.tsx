@@ -3,6 +3,8 @@ import {
   AlignCenter,
   AlignLeft,
   AlignRight,
+  ArrowDown,
+  ArrowUp,
   Plus,
   ImagePlus,
   Images,
@@ -44,6 +46,8 @@ type ComposerToolTrayProps = {
   onTextAlignChange: (
     align: 'left' | 'center' | 'right',
   ) => void
+  onTextSendBackward: () => void
+  onTextBringForward: () => void
   onTextDelete: () => void
   onPhotoAdd: (
     file: File,
@@ -67,6 +71,8 @@ export function ComposerToolTray({
   onTextSizeChange,
   onTextColorChange,
   onTextAlignChange,
+  onTextSendBackward,
+  onTextBringForward,
   onTextDelete,
   onPhotoAdd,
   onPhotoSelect,
@@ -312,15 +318,35 @@ export function ComposerToolTray({
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  className="composer-text-delete"
-                  onClick={onTextDelete}
-                >
-                  <Trash2 size={15} aria-hidden />
-                  텍스트 삭제
-                </button>
+                <div className="composer-text-layer-actions">
+                  <span className="composer-tool-label">레이어</span>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={onTextSendBackward}
+                    >
+                      <ArrowDown size={14} aria-hidden />
+                      맨 뒤로
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onTextBringForward}
+                    >
+                      <ArrowUp size={14} aria-hidden />
+                      맨 앞으로
+                    </button>
+                  </div>
+                </div>
               </div>
+
+              <button
+                type="button"
+                className="composer-text-delete"
+                onClick={onTextDelete}
+              >
+                <Trash2 size={15} aria-hidden />
+                텍스트 삭제
+              </button>
 
               <p className="composer-font-license-note">
                 네이버 나눔손글씨 · 나눔스퀘어 네오와 오픈 라이선스

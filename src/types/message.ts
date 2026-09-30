@@ -17,6 +17,7 @@ export type TextElement = {
   x?: number
   y?: number
   width?: number
+  zIndex?: number
   align?: 'left' | 'center' | 'right'
 }
 
