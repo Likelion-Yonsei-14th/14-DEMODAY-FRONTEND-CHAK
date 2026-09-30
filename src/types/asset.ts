@@ -43,5 +43,7 @@ export type PhotoElement = {
   rotation?: number
   frame?: PhotoFrame
   zIndex?: number
+  aspectRatio?: number
+  hasTransparency?: boolean
   alt?: string
 }
