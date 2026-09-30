@@ -21,6 +21,7 @@ import { getTextAppearance } from './fonts/fontRegistry'
 import { WordArtGraphic } from './wordArt/wordArtAssets'
 import { getStickerAsset } from './stickerAssets'
 import './composer.css'
+import './cardRenderShared.css'
 
 type MessageCanvasProps = {
   draft: CardPage
