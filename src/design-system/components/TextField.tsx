@@ -1,4 +1,9 @@
-import { forwardRef, type InputHTMLAttributes, type TextareaHTMLAttributes } from 'react'
+import {
+  forwardRef,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type TextareaHTMLAttributes,
+} from 'react'
 
 type FieldFrameProps = {
   id: string
@@ -6,12 +11,13 @@ type FieldFrameProps = {
   helper?: string
   error?: string
   required?: boolean
-  children: React.ReactNode
+  children: ReactNode
 }
 
 function FieldFrame({ id, label, helper, error, required, children }: FieldFrameProps) {
   const message = error ?? helper
   const messageId = message ? `${id}-message` : undefined
+
   return (
     <label className="ds-field" htmlFor={id}>
       {label && (
@@ -21,7 +27,14 @@ function FieldFrame({ id, label, helper, error, required, children }: FieldFrame
         </span>
       )}
       {children}
-      {message && <span id={messageId} className={error ? 'ds-field__message ds-field__message--error' : 'ds-field__message'}>{message}</span>}
+      {message && (
+        <span
+          id={messageId}
+          className={error ? 'ds-field__message ds-field__message--error' : 'ds-field__message'}
+        >
+          {message}
+        </span>
+      )}
     </label>
   )
 }
@@ -43,7 +56,11 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
       <input
         ref={ref}
         id={id}
-        className={['ds-field__control', error ? 'ds-field__control--error' : '', className].filter(Boolean).join(' ')}
+        className={[
+          'ds-field__control',
+          error ? 'ds-field__control--error' : '',
+          className,
+        ].filter(Boolean).join(' ')}
         aria-invalid={Boolean(error)}
         aria-describedby={messageId}
         required={required}
@@ -71,9 +88,12 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
         ref={ref}
         id={id}
         rows={rows}
-        className={['ds-field__control', 'ds-field__textarea', error ? 'ds-field__control--error' : '', className]
-          .filter(Boolean)
-          .join(' ')}
+        className={[
+          'ds-field__control',
+          'ds-field__textarea',
+          error ? 'ds-field__control--error' : '',
+          className,
+        ].filter(Boolean).join(' ')}
         aria-invalid={Boolean(error)}
         aria-describedby={messageId}
         required={required}
