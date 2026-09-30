@@ -20,13 +20,23 @@ import {
   type ComposerBackground,
 } from './backgroundAssets'
 import type { ComposerTool } from './ComposerDock'
+import {
+  composerFonts,
+  composerTextColors,
+  composerTextSizes,
+  resolveTextColor,
+  resolveTextFontId,
+  resolveTextFontSize,
+} from './fonts/fontRegistry'
 
 type ComposerToolTrayProps = {
   tool: ComposerTool
   draft: MessageDraft
   selectedPhoto?: PhotoElement
   onBackgroundChange: (backgroundId: string) => void
-  onTextStyleChange: (styleId: string) => void
+  onTextFontChange: (fontId: string) => void
+  onTextSizeChange: (fontSize: number) => void
+  onTextColorChange: (color: string) => void
   onTextAlignChange: (
     align: 'left' | 'center' | 'right',
   ) => void
@@ -46,7 +56,9 @@ export function ComposerToolTray({
   draft,
   selectedPhoto,
   onBackgroundChange,
-  onTextStyleChange,
+  onTextFontChange,
+  onTextSizeChange,
+  onTextColorChange,
   onTextAlignChange,
   onPhotoAdd,
   onPhotoSelect,
@@ -91,47 +103,111 @@ export function ComposerToolTray({
         <>
           <ToolTrayHeader
             title="글자"
-            description="직접 쓰는 글자는 읽기 편하면서도 살짝 손글씨처럼 보여요."
+            description="글씨체와 크기, 색을 따로 골라서 내 말투처럼 만들어보세요."
           />
+
+          <div className="composer-font-section">
+            <span className="composer-tool-label">폰트</span>
+            <div
+              className="composer-font-list"
+              role="list"
+              aria-label="글씨체 선택"
+            >
+              {composerFonts.map((font) => {
+                const selected =
+                  resolveTextFontId(primaryText) === font.id
+
+                return (
+                  <button
+                    type="button"
+                    key={font.id}
+                    className={[
+                      'composer-font-card',
+                      selected
+                        ? 'composer-font-card--selected'
+                        : '',
+                    ].filter(Boolean).join(' ')}
+                    aria-pressed={selected}
+                    onClick={() =>
+                      onTextFontChange(font.id)
+                    }
+                  >
+                    <span className="composer-font-card__meta">
+                      <span className="composer-font-card__category">
+                        {font.categoryLabel}
+                      </span>
+                      <strong>{font.label}</strong>
+                    </span>
+                    <span
+                      className="composer-font-card__sample"
+                      style={{
+                        fontFamily: font.family,
+                        fontWeight: font.weight,
+                      }}
+                    >
+                      {font.sample}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           <div className="composer-chip-section">
-            <span className="composer-tool-label">스타일</span>
+            <span className="composer-tool-label">크기</span>
             <div className="composer-chip-row">
-              <ChoiceChip
-                selected={
-                  primaryText.styleId ===
-                  'handwriting-default'
-                }
-                onClick={() =>
-                  onTextStyleChange(
-                    'handwriting-default',
-                  )
-                }
-              >
-                손글씨
-              </ChoiceChip>
-              <ChoiceChip
-                selected={
-                  primaryText.styleId ===
-                  'handwriting-large'
-                }
-                onClick={() =>
-                  onTextStyleChange(
-                    'handwriting-large',
-                  )
-                }
-              >
-                크게
-              </ChoiceChip>
-              <ChoiceChip
-                selected={
-                  primaryText.styleId === 'clean'
-                }
-                onClick={() =>
-                  onTextStyleChange('clean')
-                }
-              >
-                깔끔하게
-              </ChoiceChip>
+              {composerTextSizes.map((size) => (
+                <ChoiceChip
+                  key={size.id}
+                  selected={
+                    resolveTextFontSize(primaryText) === size.value
+                  }
+                  onClick={() =>
+                    onTextSizeChange(size.value)
+                  }
+                >
+                  {size.label}
+                </ChoiceChip>
+              ))}
+            </div>
+          </div>
+
+          <div className="composer-chip-section">
+            <span className="composer-tool-label">색상</span>
+            <div
+              className="composer-text-color-row"
+              aria-label="글자 색상"
+            >
+              {composerTextColors.map((color) => {
+                const selected =
+                  resolveTextColor(primaryText).toLowerCase() ===
+                  color.value.toLowerCase()
+
+                return (
+                  <button
+                    key={color.id}
+                    type="button"
+                    className={[
+                      'composer-text-color',
+                      selected
+                        ? 'composer-text-color--selected'
+                        : '',
+                    ].filter(Boolean).join(' ')}
+                    aria-label={color.label}
+                    aria-pressed={selected}
+                    title={color.label}
+                    onClick={() =>
+                      onTextColorChange(color.value)
+                    }
+                  >
+                    <span
+                      style={{
+                        backgroundColor: color.value,
+                      }}
+                    />
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -182,6 +258,11 @@ export function ComposerToolTray({
               />
             </div>
           </div>
+
+          <p className="composer-font-license-note">
+            네이버 나눔손글씨 · 나눔스퀘어 네오와 오픈 라이선스
+            Pretendard를 사용해요.
+          </p>
         </>
       )}
 

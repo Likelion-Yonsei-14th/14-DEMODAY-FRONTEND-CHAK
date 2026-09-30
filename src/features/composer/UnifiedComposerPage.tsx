@@ -261,8 +261,14 @@ export function UnifiedComposerPage() {
             onBackgroundChange={(backgroundAssetId) =>
               setComposerDraft({ ...draft, backgroundAssetId })
             }
-            onTextStyleChange={(styleId) =>
-              updatePrimaryText({ styleId })
+            onTextFontChange={(fontId) =>
+              updatePrimaryText({ fontId })
+            }
+            onTextSizeChange={(fontSize) =>
+              updatePrimaryText({ fontSize })
+            }
+            onTextColorChange={(color) =>
+              updatePrimaryText({ color })
             }
             onTextAlignChange={(align) =>
               updatePrimaryText({ align })
