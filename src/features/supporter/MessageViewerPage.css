@@ -272,3 +272,41 @@
 .original-message__for {
   z-index: 40;
 }
+
+
+/* Floating photo rendering matches the composer, including transparent cutouts. */
+.original-message__floating-photo {
+  background: transparent;
+  box-shadow: none;
+}
+
+.original-message__floating-photo--plain {
+  overflow: visible;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.original-message__floating-photo--plain img {
+  border-radius: 0;
+}
+
+.original-message__floating-photo--transparent.original-message__floating-photo--plain img {
+  filter: drop-shadow(0 7px 8px rgba(48,38,31,.11));
+}
+
+.original-message__floating-photo--white {
+  overflow: visible;
+  padding: 7px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.95);
+  box-shadow: 0 10px 20px rgba(63,47,38,.13);
+}
+
+.original-message__floating-photo--polaroid {
+  overflow: visible;
+  padding: 7px 7px 24px;
+  border-radius: 5px;
+  background: #fffdf9;
+  box-shadow: 0 12px 22px rgba(63,47,38,.14);
+}

@@ -232,6 +232,10 @@ export function EnvelopeStackPage() {
                                 `message-envelope__peek-floating--${floatingPhoto.frame ?? 'white'}`,
                               ].join(' ')}
                               style={{
+                                aspectRatio:
+                                  (floatingPhoto.frame ?? 'white') === 'polaroid'
+                                    ? '4 / 3.8'
+                                    : String(floatingPhoto.aspectRatio ?? 4 / 3),
                                 transform:
                                   `rotate(${floatingPhoto.rotation ?? -3}deg)`,
                               }}
@@ -240,6 +244,13 @@ export function EnvelopeStackPage() {
                                 src={floatingPhoto.src}
                                 alt=""
                                 draggable={false}
+                                style={{
+                                  objectFit:
+                                    floatingPhoto.hasTransparency ||
+                                    (floatingPhoto.frame ?? 'white') === 'plain'
+                                      ? 'contain'
+                                      : 'cover',
+                                }}
                               />
                             </span>
                           )}

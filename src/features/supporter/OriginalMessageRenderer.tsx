@@ -147,11 +147,18 @@ function RenderedFloatingPhoto({
       className={[
         'original-message__floating-photo',
         `original-message__floating-photo--${photo.frame ?? 'white'}`,
-      ].join(' ')}
+        photo.hasTransparency
+          ? 'original-message__floating-photo--transparent'
+          : '',
+      ].filter(Boolean).join(' ')}
       style={{
         left: `${photo.x ?? 50}%`,
         top: `${photo.y ?? 50}%`,
         zIndex: photo.zIndex ?? 10,
+        aspectRatio:
+          (photo.frame ?? 'white') === 'polaroid'
+            ? '4 / 3.8'
+            : String(photo.aspectRatio ?? 4 / 3),
         transform:
           `translate(-50%, -50%) rotate(${photo.rotation ?? 0}deg) scale(${photo.scale ?? 1})`,
       }}
@@ -159,6 +166,13 @@ function RenderedFloatingPhoto({
       <img
         src={photo.src}
         alt={photo.alt ?? ''}
+        style={{
+          objectFit:
+            photo.hasTransparency ||
+            (photo.frame ?? 'white') === 'plain'
+              ? 'contain'
+              : 'cover',
+        }}
       />
     </div>
   )

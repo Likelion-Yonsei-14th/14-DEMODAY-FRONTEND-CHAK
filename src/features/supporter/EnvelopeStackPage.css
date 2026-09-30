@@ -896,3 +896,18 @@
 .message-envelope__peek-surface {
   z-index: 4;
 }
+
+
+.message-envelope__peek-floating {
+  background: transparent;
+}
+
+.message-envelope__peek-floating--white {
+  padding: 4px;
+  background: rgba(255,255,255,.95);
+}
+
+.message-envelope__peek-floating--polaroid {
+  padding: 4px 4px 12px;
+  background: #fffdf9;
+}
