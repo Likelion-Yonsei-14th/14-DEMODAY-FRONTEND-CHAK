@@ -15,6 +15,14 @@ export const selectableDeskObjectTypes: DeskObjectType[] = [
   'charm',
 ]
 
+export const deskObjectToneOptions = [
+  { id: 'coral', label: '코랄', color: '#F4C6BC' },
+  { id: 'butter', label: '버터', color: '#F4D98A' },
+  { id: 'sage', label: '세이지', color: '#C7D8B8' },
+  { id: 'sky', label: '스카이', color: '#BFD8E8' },
+  { id: 'lilac', label: '라일락', color: '#D7C6E8' },
+] as const
+
 export function resolveDeskObjectType(draft: MessageDraft): DeskObjectType {
   const pages = getMessagePages(draft)
 
