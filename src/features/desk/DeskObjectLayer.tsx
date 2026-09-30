@@ -20,6 +20,7 @@ type DeskObjectLayerProps = {
   objects?: DeskObject[]
   messages?: Message[]
   onObjectClick?: (messageId: string) => void
+  openingMessageId?: string | null
   draftObject?: DraftObject
 }
 
@@ -27,6 +28,7 @@ export function DeskObjectLayer({
   objects = [],
   messages = [],
   onObjectClick,
+  openingMessageId,
   draftObject,
 }: DeskObjectLayerProps) {
   const messageById = new Map(messages.map((message) => [message.id, message]))
@@ -37,6 +39,11 @@ export function DeskObjectLayer({
         const placement = resolveObjectPlacement(object)
         const message = messageById.get(object.messageId)
         const previewColor = message?.previewColor ?? '#F4C6BC'
+        const interactive = Boolean(onObjectClick)
+        const opening = openingMessageId === object.messageId
+        const deemphasized = Boolean(
+          openingMessageId && openingMessageId !== object.messageId,
+        )
 
         return (
           <button
@@ -46,6 +53,9 @@ export function DeskObjectLayer({
               'desk-object',
               `desk-object--${object.representationType}`,
               object.locked ? 'desk-object--locked' : '',
+              !interactive ? 'desk-object--passive' : '',
+              opening ? 'desk-object--opening' : '',
+              deemphasized ? 'desk-object--deemphasized' : '',
             ].filter(Boolean).join(' ')}
             style={{
               left: `${placement.x}%`,
@@ -55,7 +65,14 @@ export function DeskObjectLayer({
               '--desk-object-rotation': `${placement.rotation}deg`,
               '--desk-object-scale': placement.scale,
             } as React.CSSProperties}
-            aria-label={message ? `${message.senderName}의 응원 열기` : '응원 열기'}
+            aria-label={
+              interactive
+                ? message
+                  ? `${message.senderName}의 응원 열기`
+                  : '응원 열기'
+                : undefined
+            }
+            tabIndex={interactive ? 0 : -1}
             onClick={() => onObjectClick?.(object.messageId)}
           >
             <DeskObjectVisual type={object.representationType} />

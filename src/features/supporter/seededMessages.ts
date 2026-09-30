@@ -1,4 +1,4 @@
-import type { Message } from '@/types'
+import type { DeskObject, Message } from '@/types'
 
 function localIso(daysAgo: number, hour: number, minute: number) {
   const date = new Date()
@@ -182,3 +182,80 @@ export function isToday(createdAt: string) {
     target.getDate() === today.getDate()
   )
 }
+
+
+export const seededDeskObjects: DeskObject[] = [
+  {
+    id: 'seed-object-minji',
+    messageId: 'seed-message-minji',
+    representationType: 'memo',
+    zone: 'left',
+    order: 0,
+    x: 24,
+    y: 51,
+    rotation: -4,
+    scale: .96,
+    zIndex: 20,
+  },
+  {
+    id: 'seed-object-soobin',
+    messageId: 'seed-message-soobin',
+    representationType: 'poster-card',
+    zone: 'center',
+    order: 1,
+    x: 42,
+    y: 47,
+    rotation: 3,
+    scale: .9,
+    zIndex: 22,
+  },
+  {
+    id: 'seed-object-hyunwoo',
+    messageId: 'seed-message-hyunwoo',
+    representationType: 'photo-card',
+    zone: 'right',
+    order: 2,
+    x: 67,
+    y: 49,
+    rotation: -3,
+    scale: .9,
+    zIndex: 21,
+  },
+  {
+    id: 'seed-object-yuna',
+    messageId: 'seed-message-yuna',
+    representationType: 'charm',
+    zone: 'right',
+    order: 3,
+    locked: true,
+    x: 82,
+    y: 44,
+    rotation: 3,
+    scale: .88,
+    zIndex: 19,
+  },
+  {
+    id: 'seed-object-jun',
+    messageId: 'seed-message-jun',
+    representationType: 'letter',
+    zone: 'front',
+    order: 4,
+    x: 55,
+    y: 56,
+    rotation: 2,
+    scale: .94,
+    zIndex: 24,
+  },
+  {
+    id: 'seed-object-seoyeon',
+    messageId: 'seed-message-seoyeon',
+    representationType: 'ticket',
+    zone: 'front',
+    order: 5,
+    x: 31,
+    y: 57,
+    rotation: -2,
+    scale: .92,
+    zIndex: 23,
+  },
+]
