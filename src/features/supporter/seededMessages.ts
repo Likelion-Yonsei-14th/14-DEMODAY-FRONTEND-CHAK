@@ -43,7 +43,17 @@ export const seededSupportMessages: Message[] = [
           },
         ],
         wordArtElements: [],
-        stickerElements: [],
+        stickerElements: [
+          {
+            id: 'seed-demo-sticker-1',
+            assetId: 'sticker-number-01',
+            x: 77,
+            y: 24,
+            scale: .72,
+            rotation: 8,
+            zIndex: 22,
+          },
+        ],
         photoElements: [],
       },
       {
@@ -62,7 +72,17 @@ export const seededSupportMessages: Message[] = [
           },
         ],
         wordArtElements: [],
-        stickerElements: [],
+        stickerElements: [
+          {
+            id: 'seed-demo-sticker-2',
+            assetId: 'sticker-number-02',
+            x: 23,
+            y: 72,
+            scale: .68,
+            rotation: -9,
+            zIndex: 22,
+          },
+        ],
         photoElements: [],
       },
       {
@@ -81,7 +101,17 @@ export const seededSupportMessages: Message[] = [
           },
         ],
         wordArtElements: [],
-        stickerElements: [],
+        stickerElements: [
+          {
+            id: 'seed-demo-sticker-3',
+            assetId: 'sticker-number-03',
+            x: 76,
+            y: 73,
+            scale: .72,
+            rotation: 7,
+            zIndex: 22,
+          },
+        ],
         photoElements: [],
       },
     ],
