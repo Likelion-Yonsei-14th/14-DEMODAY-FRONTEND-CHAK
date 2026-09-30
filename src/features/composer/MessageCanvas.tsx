@@ -129,8 +129,10 @@ export function MessageCanvas({
         }}
         aria-label="응원 카드 편집 캔버스"
         onPointerDown={(event) => {
+          const target = event.target
           if (
-            event.target === event.currentTarget
+            target instanceof Element &&
+            !target.closest('[data-canvas-layer]')
           ) {
             onSelect(null)
           }
@@ -594,6 +596,7 @@ function CanvasTextElement({
   return (
     <div
       ref={wrapperRef}
+      data-canvas-layer
       className={[
         'canvas-text-element',
         selected
@@ -829,6 +832,7 @@ function CanvasFloatingPhoto({
   return (
     <div
       ref={photoRef}
+      data-canvas-layer
       role="button"
       tabIndex={0}
       className={[
@@ -1010,6 +1014,7 @@ function CanvasBackgroundPhoto({
 
   return (
     <div
+      data-canvas-layer
       className={[
         'canvas-photo-background',
         selected
@@ -1188,6 +1193,7 @@ function CanvasStickerElement({
   return (
     <div
       ref={stickerRef}
+      data-canvas-layer
       role="button"
       tabIndex={0}
       className={[
@@ -1261,6 +1267,7 @@ function CanvasWordArtElement({
   return (
     <button
       type="button"
+      data-canvas-layer
       className={[
         'canvas-word-art',
         selected
