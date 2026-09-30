@@ -58,7 +58,6 @@ export function SupportCompletePage() {
         </div>
 
         <section className="support-complete__copy">
-          <p className="supporter-flow__eyebrow">DELIVERED</p>
           <h1>응원이 지수의<br />책상에 놓였어요.</h1>
           <p>
             지수가 열어볼 때까지 책상 위에서 조용히 기다리고 있을 거예요.
@@ -74,7 +73,9 @@ export function SupportCompletePage() {
           ].join(' ')}
           style={{
             '--desk-object-color':
-              latestMessage?.previewColor ?? '#F4C6BC',
+              latestObject?.color ??
+              latestMessage?.previewColor ??
+              '#F4C6BC',
           } as React.CSSProperties}
           aria-hidden
         >
