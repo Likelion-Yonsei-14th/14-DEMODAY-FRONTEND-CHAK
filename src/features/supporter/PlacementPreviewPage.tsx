@@ -15,6 +15,7 @@ import type { DeskObjectType, DeskPlacement } from '@/types'
 import {
   clampPlacement,
   deskObjectLabels,
+  deskObjectToneOptions,
   isPlacementValid,
   resolveDeskObjectType,
   resolveInitialPlacement,
@@ -42,7 +43,19 @@ export function PlacementPreviewPage() {
     recommendedObjectType,
   )
   const firstPage = getFirstCardPage(draft)
-  const previewColor = getComposerBackground(firstPage.backgroundAssetId).tone
+  const cardPreviewColor =
+    getComposerBackground(firstPage.backgroundAssetId).tone
+  const [objectColor, setObjectColor] = useState(cardPreviewColor)
+  const toneChoices = [
+    {
+      id: 'card',
+      label: '카드 색',
+      color: cardPreviewColor,
+    },
+    ...deskObjectToneOptions.filter(
+      (tone) => tone.color !== cardPreviewColor,
+    ),
+  ]
   const initialPlacement = useMemo(
     () => resolveInitialPlacement(currentDesk.objects.length),
     [currentDesk.objects.length],
@@ -117,7 +130,7 @@ export function PlacementPreviewPage() {
     setPlacing(true)
 
     window.setTimeout(() => {
-      placeComposerMessage(placement, objectType)
+      placeComposerMessage(placement, objectType, objectColor)
       navigate('/prototype/support/jisu/complete', { replace: true })
     }, 520)
   }
@@ -154,7 +167,6 @@ export function PlacementPreviewPage() {
     >
       <main className="placement-preview">
         <section className="placement-preview__copy">
-          <p className="supporter-flow__eyebrow">PLACE IT YOURSELF</p>
           <h2>지수의 책상에서<br />내 응원의 자리를 골라요.</h2>
           <p>
             다른 친구의 응원을 거의 다 가리는 자리만 피하면 어디든 괜찮아요.
@@ -187,7 +199,7 @@ export function PlacementPreviewPage() {
                     `desk-object--${type}`,
                   ].join(' ')}
                   style={{
-                    '--desk-object-color': previewColor,
+                    '--desk-object-color': objectColor,
                   } as React.CSSProperties}
                   aria-hidden
                 >
@@ -197,6 +209,34 @@ export function PlacementPreviewPage() {
               </button>
             )
           })}
+        </section>
+
+        <section className="placement-object-tone-picker" aria-label="오브젝트 색상">
+          <span className="placement-object-tone-picker__label">색상</span>
+          <div className="placement-object-tone-picker__options">
+            {toneChoices.map((tone) => {
+              const selected = objectColor === tone.color
+
+              return (
+                <button
+                  type="button"
+                  key={tone.id}
+                  className={[
+                    'placement-object-tone',
+                    selected
+                      ? 'placement-object-tone--selected'
+                      : '',
+                  ].filter(Boolean).join(' ')}
+                  style={{
+                    '--object-tone': tone.color,
+                  } as React.CSSProperties}
+                  aria-label={tone.label}
+                  aria-pressed={selected}
+                  onClick={() => setObjectColor(tone.color)}
+                />
+              )
+            })}
+          </div>
         </section>
 
         <div
@@ -213,7 +253,7 @@ export function PlacementPreviewPage() {
             draftObject={{
               representationType: objectType,
               placement,
-              previewColor,
+              previewColor: objectColor,
               invalid: !valid,
               dragging,
               onPointerDown: handlePointerDown,
