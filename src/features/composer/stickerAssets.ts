@@ -30,6 +30,13 @@ export const composerStickers: StickerAsset[] = [
     baseWidthPercent: 25,
     tags: ['숫자', '응원'],
   },
+  {
+    id: 'sticker-emphasis',
+    name: '강조 효과',
+    source: `${STICKER_ASSET_PATH}/sticker-emphasis.svg`,
+    baseWidthPercent: 18,
+    tags: ['강조', '효과', '응원'],
+  },
 ]
 
 const stickerAssetMap = new Map(
