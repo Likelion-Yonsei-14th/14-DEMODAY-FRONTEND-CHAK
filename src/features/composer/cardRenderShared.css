@@ -84,6 +84,17 @@
   overflow-wrap: anywhere;
 }
 
+.original-message__text {
+  min-height: 74px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+}
+
+.original-message__word-art {
+  border: 1px solid transparent;
+  border-radius: 14px;
+}
+
 .canvas-word-art,
 .original-message__word-art {
   width: 58%;
