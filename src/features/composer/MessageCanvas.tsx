@@ -6,20 +6,13 @@ import {
 } from 'react'
 import { Move } from 'lucide-react'
 import type { MessageDraft, TextElement } from '@/types'
+import { getComposerBackground } from './backgroundAssets'
 import './composer.css'
 
 type MessageCanvasProps = {
   draft: MessageDraft
   onTextChange: (id: string, text: string) => void
   onTextMove: (id: string, x: number, y: number) => void
-}
-
-const backgroundClassMap: Record<string, string> = {
-  'bg-basic-cream': 'message-canvas--cream',
-  'bg-soft-coral': 'message-canvas--coral',
-  'bg-sage': 'message-canvas--sage',
-  'bg-sky': 'message-canvas--sky',
-  'bg-butter': 'message-canvas--butter',
 }
 
 export function MessageCanvas({
@@ -31,6 +24,7 @@ export function MessageCanvas({
   const [selectedId, setSelectedId] = useState<string | null>(
     draft.textElements[0]?.id ?? null,
   )
+  const background = getComposerBackground(draft.backgroundAssetId)
 
   return (
     <div className="message-canvas-viewport">
@@ -38,14 +32,34 @@ export function MessageCanvas({
         ref={canvasRef}
         className={[
           'message-canvas',
-          backgroundClassMap[draft.backgroundAssetId] ?? 'message-canvas--cream',
-        ].join(' ')}
+          background.kind === 'css' ? background.className ?? '' : 'message-canvas--image',
+        ].filter(Boolean).join(' ')}
+        style={{ backgroundColor: background.tone }}
         aria-label="응원 카드 편집 캔버스"
         onPointerDown={(event) => {
           if (event.target === event.currentTarget) setSelectedId(null)
         }}
       >
-        <div className="message-canvas__shine" aria-hidden />
+        {background.kind === 'image' && background.source && (
+          <img
+            className={[
+              'message-canvas__art-background',
+              `message-canvas__art-background--${background.fit ?? 'contain'}`,
+            ].join(' ')}
+            src={background.source}
+            alt=""
+            aria-hidden
+            draggable={false}
+          />
+        )}
+
+        <div
+          className={[
+            'message-canvas__shine',
+            background.kind === 'image' ? 'message-canvas__shine--art' : '',
+          ].filter(Boolean).join(' ')}
+          aria-hidden
+        />
 
         {draft.textElements.map((element) => (
           <CanvasTextElement

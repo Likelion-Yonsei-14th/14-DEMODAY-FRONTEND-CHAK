@@ -1,6 +1,7 @@
 import { AlignCenter, AlignLeft, AlignRight, ImagePlus, Sparkles } from 'lucide-react'
 import { ChoiceChip } from '@/design-system'
 import type { MessageDraft } from '@/types'
+import { composerBackgrounds, type ComposerBackground } from './backgroundAssets'
 import type { ComposerTool } from './ComposerDock'
 
 type ComposerToolTrayProps = {
@@ -11,14 +12,6 @@ type ComposerToolTrayProps = {
   onTextAlignChange: (align: 'left' | 'center' | 'right') => void
 }
 
-const backgrounds = [
-  { id: 'bg-basic-cream', name: 'Cream', className: 'composer-bg composer-bg--cream' },
-  { id: 'bg-soft-coral', name: 'Coral', className: 'composer-bg composer-bg--coral' },
-  { id: 'bg-sage', name: 'Sage', className: 'composer-bg composer-bg--sage' },
-  { id: 'bg-sky', name: 'Sky', className: 'composer-bg composer-bg--sky' },
-  { id: 'bg-butter', name: 'Butter', className: 'composer-bg composer-bg--butter' },
-]
-
 export function ComposerToolTray({
   tool,
   draft,
@@ -27,28 +20,29 @@ export function ComposerToolTray({
   onTextAlignChange,
 }: ComposerToolTrayProps) {
   const primaryText = draft.textElements[0]
+  const basicBackgrounds = composerBackgrounds.filter((background) => background.group === 'basic')
+  const graphicBackgrounds = composerBackgrounds.filter((background) => background.group === 'graphic')
 
   return (
     <section className="composer-tool-tray" aria-label="꾸미기 옵션">
       {tool === 'background' && (
         <>
-          <ToolTrayHeader title="배경" description="기본 카드는 Long Card까지 이어질 수 있는 배경이에요." />
-          <div className="composer-bg-list">
-            {backgrounds.map((background) => (
-              <button
-                type="button"
-                key={background.id}
-                className={[
-                  'composer-bg-item',
-                  draft.backgroundAssetId === background.id ? 'composer-bg-item--selected' : '',
-                ].filter(Boolean).join(' ')}
-                onClick={() => onBackgroundChange(background.id)}
-              >
-                <span className={background.className} />
-                <span>{background.name}</span>
-              </button>
-            ))}
-          </div>
+          <ToolTrayHeader
+            title="배경"
+            description="기본 컬러부터 손그림 배경까지 골라보세요."
+          />
+          <BackgroundRow
+            label="기본"
+            backgrounds={basicBackgrounds}
+            selectedId={draft.backgroundAssetId}
+            onSelect={onBackgroundChange}
+          />
+          <BackgroundRow
+            label="그래픽"
+            backgrounds={graphicBackgrounds}
+            selectedId={draft.backgroundAssetId}
+            onSelect={onBackgroundChange}
+          />
         </>
       )}
 
@@ -128,6 +122,55 @@ export function ComposerToolTray({
         />
       )}
     </section>
+  )
+}
+
+function BackgroundRow({
+  label,
+  backgrounds,
+  selectedId,
+  onSelect,
+}: {
+  label: string
+  backgrounds: ComposerBackground[]
+  selectedId: string
+  onSelect: (id: string) => void
+}) {
+  return (
+    <div className="composer-background-section">
+      <span className="composer-tool-label">{label}</span>
+      <div className="composer-bg-list" role="list" aria-label={`${label} 배경`}>
+        {backgrounds.map((background) => (
+          <button
+            type="button"
+            key={background.id}
+            className={[
+              'composer-bg-item',
+              selectedId === background.id ? 'composer-bg-item--selected' : '',
+            ].filter(Boolean).join(' ')}
+            onClick={() => onSelect(background.id)}
+            aria-pressed={selectedId === background.id}
+          >
+            {background.kind === 'image' && background.source ? (
+              <span
+                className="composer-bg composer-bg--image"
+                style={{ backgroundColor: background.tone }}
+              >
+                <img
+                  src={background.source}
+                  alt=""
+                  draggable={false}
+                  style={{ objectFit: background.fit ?? 'contain' }}
+                />
+              </span>
+            ) : (
+              <span className={['composer-bg', background.className?.replace('message-canvas', 'composer-bg')].filter(Boolean).join(' ')} />
+            )}
+            <span>{background.name}</span>
+          </button>
+        ))}
+      </div>
+    </div>
   )
 }
 

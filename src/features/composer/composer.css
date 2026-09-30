@@ -63,8 +63,31 @@
   background: linear-gradient(145deg, #fffaf0 0%, #f8ecc3 58%, #edd99a 100%);
 }
 
+.message-canvas--image {
+  background-image: none;
+}
+
+.message-canvas__art-background {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  pointer-events: none;
+}
+
+.message-canvas__art-background--cover {
+  object-fit: cover;
+}
+
+.message-canvas__art-background--contain {
+  object-fit: contain;
+}
+
 .message-canvas__shine {
   position: absolute;
+  z-index: 1;
   inset: 0;
   pointer-events: none;
   background:
@@ -72,8 +95,13 @@
     linear-gradient(150deg, rgba(255,255,255,.28), transparent 42%);
 }
 
+.message-canvas__shine--art {
+  opacity: .16;
+}
+
 .message-canvas__signature {
   position: absolute;
+  z-index: 5;
   right: 17px;
   bottom: 14px;
   color: rgba(74, 65, 57, .34);
@@ -181,7 +209,7 @@
   min-height: 152px;
   display: grid;
   align-content: start;
-  gap: 14px;
+  gap: 16px;
   padding: 17px var(--page-gutter) 22px;
   border-top: 1px solid var(--color-border-subtle);
   background: color-mix(in srgb, var(--color-surface-base) 95%, transparent);
@@ -203,10 +231,26 @@
   line-height: 17px;
 }
 
+.composer-background-section {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
 .composer-bg-list {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: 70px;
   gap: 8px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  padding: 2px 0 7px;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+}
+
+.composer-bg-list::-webkit-scrollbar {
+  display: none;
 }
 
 .composer-bg-item {
@@ -219,20 +263,47 @@
   background: transparent;
   color: var(--color-content-secondary);
   font-size: 10px;
+  line-height: 14px;
   font-weight: 700;
   cursor: pointer;
+  scroll-snap-align: start;
+}
+
+.composer-bg-item > span:last-child {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
 }
 
 .composer-bg {
-  width: 48px;
+  width: 56px;
   aspect-ratio: 4 / 5;
+  overflow: hidden;
   border: 2px solid transparent;
-  border-radius: 9px;
+  border-radius: 10px;
+  background-clip: padding-box;
   box-shadow: 0 5px 12px rgba(64, 50, 39, .09);
+}
+
+.composer-bg--image {
+  display: grid;
+  place-items: center;
+}
+
+.composer-bg--image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  user-select: none;
 }
 
 .composer-bg-item--selected .composer-bg {
   border-color: var(--color-content-primary);
+  box-shadow:
+    0 0 0 2px var(--color-surface-base),
+    0 0 0 4px var(--color-content-primary);
 }
 
 .composer-bg-item--selected {
