@@ -19,6 +19,7 @@ import type {
 import { getComposerBackground } from './backgroundAssets'
 import { getTextAppearance } from './fonts/fontRegistry'
 import { WordArtGraphic } from './wordArt/wordArtAssets'
+import { getStickerAsset } from './stickerAssets'
 import './composer.css'
 
 type MessageCanvasProps = {
@@ -33,6 +34,10 @@ type MessageCanvasProps = {
     id: string,
     x: number,
     y: number,
+  ) => void
+  onStickerChange: (
+    id: string,
+    patch: Partial<PositionedAsset>,
   ) => void
   onPhotoChange: (
     id: string,
@@ -50,6 +55,7 @@ export function MessageCanvas({
   onTextMove,
   onTextResize,
   onWordArtMove,
+  onStickerChange,
   onPhotoChange,
   onOverflowChange,
 }: MessageCanvasProps) {
@@ -206,6 +212,19 @@ export function MessageCanvas({
                 x,
                 y,
               )
+            }
+          />
+        ))}
+
+        {draft.stickerElements.map((element) => (
+          <CanvasStickerElement
+            key={element.id}
+            element={element}
+            canvasRef={canvasRef}
+            selected={selectedId === element.id}
+            onSelect={() => onSelect(element.id)}
+            onChange={(patch) =>
+              onStickerChange(element.id, patch)
             }
           />
         ))}
@@ -1029,6 +1048,181 @@ function CanvasBackgroundPhoto({
             size={15}
             aria-hidden
           />
+        </button>
+      )}
+    </div>
+  )
+}
+
+function CanvasStickerElement({
+  element,
+  canvasRef,
+  selected,
+  onSelect,
+  onChange,
+}: {
+  element: PositionedAsset
+  canvasRef: React.RefObject<HTMLDivElement | null>
+  selected: boolean
+  onSelect: () => void
+  onChange: (patch: Partial<PositionedAsset>) => void
+}) {
+  const stickerRef = useRef<HTMLDivElement>(null)
+  const asset = getStickerAsset(element.assetId)
+  if (!asset) return null
+
+  const handleDrag = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (
+      event.target instanceof Element &&
+      event.target.closest('button')
+    ) {
+      return
+    }
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    onSelect()
+
+    const rect = canvas.getBoundingClientRect()
+    const pointerStart = {
+      x: event.clientX,
+      y: event.clientY,
+    }
+    const positionStart = {
+      x: element.x,
+      y: element.y,
+    }
+
+    const onPointerMove = (moveEvent: PointerEvent) => {
+      const x =
+        positionStart.x +
+        ((moveEvent.clientX - pointerStart.x) /
+          rect.width) *
+          100
+      const y =
+        positionStart.y +
+        ((moveEvent.clientY - pointerStart.y) /
+          rect.height) *
+          100
+
+      onChange({
+        x: clamp(x, 7, 93),
+        y: clamp(y, 7, 93),
+      })
+    }
+
+    bindWindowDrag(onPointerMove)
+  }
+
+  const handleTransform = (
+    event: ReactPointerEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const node = stickerRef.current
+    if (!node) return
+
+    onSelect()
+
+    const rect = node.getBoundingClientRect()
+    const center = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    }
+    const startDistance = Math.max(
+      12,
+      distance(
+        center.x,
+        center.y,
+        event.clientX,
+        event.clientY,
+      ),
+    )
+    const startAngle = angle(
+      center.x,
+      center.y,
+      event.clientX,
+      event.clientY,
+    )
+    const scaleStart = element.scale
+    const rotationStart = element.rotation
+
+    const onPointerMove = (moveEvent: PointerEvent) => {
+      const currentDistance = distance(
+        center.x,
+        center.y,
+        moveEvent.clientX,
+        moveEvent.clientY,
+      )
+      const currentAngle = angle(
+        center.x,
+        center.y,
+        moveEvent.clientX,
+        moveEvent.clientY,
+      )
+
+      onChange({
+        scale: clamp(
+          scaleStart *
+            (currentDistance / startDistance),
+          .35,
+          2.25,
+        ),
+        rotation: normalizeAngle(
+          rotationStart +
+            normalizeAngle(currentAngle - startAngle),
+        ),
+      })
+    }
+
+    bindWindowDrag(onPointerMove)
+  }
+
+  return (
+    <div
+      ref={stickerRef}
+      role="button"
+      tabIndex={0}
+      className={[
+        'canvas-sticker',
+        selected ? 'canvas-sticker--selected' : '',
+      ].filter(Boolean).join(' ')}
+      style={{
+        left: `${element.x}%`,
+        top: `${element.y}%`,
+        width: `${asset.baseWidthPercent}%`,
+        zIndex: element.zIndex,
+        transform:
+          `translate(-50%, -50%) rotate(${element.rotation}deg) scale(${element.scale})`,
+      }}
+      aria-label={`${asset.name} 스티커`}
+      onClick={(event) => {
+        event.stopPropagation()
+        onSelect()
+      }}
+      onPointerDown={handleDrag}
+    >
+      <img
+        src={asset.source}
+        alt=""
+        draggable={false}
+      />
+
+      {selected && (
+        <button
+          type="button"
+          className="canvas-sticker__transform-handle"
+          aria-label="스티커 크기와 각도 조절"
+          onPointerDown={handleTransform}
+        >
+          <Maximize2 size={15} aria-hidden />
         </button>
       )}
     </div>
