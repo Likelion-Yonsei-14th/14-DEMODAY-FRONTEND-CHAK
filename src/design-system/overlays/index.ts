@@ -1,4 +1,5 @@
 export * from './BottomSheet'
 export * from './Dialog'
+export * from './FeedbackContext'
 export * from './NotificationProvider'
 import './overlays.css'

@@ -1,37 +1,17 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
   type PropsWithChildren,
-  type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
-
-type ToastTone = 'neutral' | 'success' | 'warning' | 'danger'
-
-type ToastInput = {
-  message: string
-  tone?: ToastTone
-  duration?: number
-}
-
-type SnackbarInput = {
-  message: string
-  actionLabel?: string
-  onAction?: () => void
-  duration?: number
-}
-
-type FeedbackApi = {
-  showToast: (input: string | ToastInput) => void
-  showSnackbar: (input: SnackbarInput) => void
-}
-
-const FeedbackContext = createContext<FeedbackApi | null>(null)
+import {
+  FeedbackContext,
+  type SnackbarInput,
+  type ToastInput,
+} from './FeedbackContext'
 
 type VisibleToast = ToastInput & { id: number }
 type VisibleSnackbar = SnackbarInput & { id: number }
@@ -98,14 +78,4 @@ export function NotificationProvider({ children }: PropsWithChildren) {
         )}
     </FeedbackContext.Provider>
   )
-}
-
-export function useFeedback() {
-  const context = useContext(FeedbackContext)
-  if (!context) throw new Error('useFeedback must be used inside NotificationProvider')
-  return context
-}
-
-export function FeedbackDemo({ children }: { children?: ReactNode }) {
-  return <>{children}</>
 }
