@@ -140,8 +140,7 @@
 .canvas-text-element__input {
   width: 100%;
   min-height: 72px;
-  max-height: 190px;
-  overflow: auto;
+  overflow: hidden;
   resize: none;
   padding: 9px 12px;
   border: 0;
@@ -1094,4 +1093,81 @@
   transition:
     color 140ms ease,
     font-size 140ms ease;
+}
+
+
+/* Text now grows with its content instead of becoming an invisible inner scroll area. */
+.canvas-text-element__input {
+  height: auto;
+  max-height: none;
+}
+
+.composer-size-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.composer-size-value {
+  color: var(--color-content-tertiary);
+  font-size: 10px;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.composer-font-size-slider {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 26px;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-content-secondary);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.composer-font-size-slider__large {
+  font-size: 20px;
+  font-weight: 650;
+}
+
+.composer-font-size-slider input[type='range'] {
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  accent-color: var(--color-content-primary);
+  cursor: pointer;
+}
+
+.composer-font-size-slider input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-border-default);
+}
+
+.composer-font-size-slider input[type='range']::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+  margin-top: -7px;
+  border: 3px solid var(--color-surface-base);
+  border-radius: 50%;
+  background: var(--color-content-primary);
+  box-shadow: 0 2px 7px rgba(55,43,34,.18);
+  -webkit-appearance: none;
+}
+
+.composer-font-size-slider input[type='range']::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-border-default);
+}
+
+.composer-font-size-slider input[type='range']::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 3px solid var(--color-surface-base);
+  border-radius: 50%;
+  background: var(--color-content-primary);
+  box-shadow: 0 2px 7px rgba(55,43,34,.18);
 }

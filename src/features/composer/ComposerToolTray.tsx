@@ -154,7 +154,12 @@ export function ComposerToolTray({
           </div>
 
           <div className="composer-chip-section">
-            <span className="composer-tool-label">크기</span>
+            <div className="composer-size-heading">
+              <span className="composer-tool-label">크기</span>
+              <span className="composer-size-value">
+                {resolveTextFontSize(primaryText)}px
+              </span>
+            </div>
             <div className="composer-chip-row">
               {composerTextSizes.map((size) => (
                 <ChoiceChip
@@ -169,6 +174,24 @@ export function ComposerToolTray({
                   {size.label}
                 </ChoiceChip>
               ))}
+            </div>
+            <div className="composer-font-size-slider">
+              <span aria-hidden>가</span>
+              <input
+                type="range"
+                min="14"
+                max="42"
+                step="1"
+                value={resolveTextFontSize(primaryText)}
+                aria-label="글자 크기"
+                aria-valuetext={`${resolveTextFontSize(primaryText)}픽셀`}
+                onChange={(event) =>
+                  onTextSizeChange(Number(event.target.value))
+                }
+              />
+              <span className="composer-font-size-slider__large" aria-hidden>
+                가
+              </span>
             </div>
           </div>
 

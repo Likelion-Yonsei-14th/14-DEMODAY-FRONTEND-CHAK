@@ -224,13 +224,22 @@ function CanvasTextElement({
   const appearance = getTextAppearance(element)
 
   useEffect(() => {
-    if (!textareaRef.current) return
-    textareaRef.current.style.height = 'auto'
-    textareaRef.current.style.height =
-      `${Math.max(
-        72,
-        textareaRef.current.scrollHeight,
-      )}px`
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    const resizeToContent = () => {
+      textarea.style.height = 'auto'
+      textarea.style.height =
+        `${Math.max(72, textarea.scrollHeight)}px`
+    }
+
+    resizeToContent()
+
+    void document.fonts?.ready.then(() => {
+      if (textareaRef.current === textarea) {
+        resizeToContent()
+      }
+    })
   }, [
     element.text,
     element.fontId,
