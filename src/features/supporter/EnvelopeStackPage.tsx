@@ -80,7 +80,7 @@ export function EnvelopeStackPage() {
           subtitle={showHistory ? '지난 응원까지 보고 있어요' : '오늘 도착한 응원'}
           leading={
             <IconButton
-              label="지수의 책상으로 돌아가기"
+              label="내 책상으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() => navigate('/prototype/my/desk')}
             />
@@ -97,7 +97,7 @@ export function EnvelopeStackPage() {
           <div>
             <h2>
               {showHistory
-                ? '지수에게 도착했던 응원들'
+                ? '내게 도착했던 응원들'
                 : `오늘 ${messages.length}개의 응원이 도착했어요.`}
             </h2>
           </div>
