@@ -27,6 +27,39 @@ function freshDraft(): MessageDraft {
 }
 
 describe('multi-page card draft', () => {
+  it('normalizes older persisted pages with missing asset arrays', () => {
+    const legacy = {
+      ...freshDraft(),
+      pages: [
+        {
+          id: 'legacy-page',
+          canvasMode: 'standard',
+          backgroundAssetId: 'bg-basic-cream',
+          textElements: [
+            {
+              id: 'legacy-text',
+              text: '이전 저장본',
+              x: 50,
+              y: 50,
+              width: 76,
+            },
+          ],
+        },
+      ],
+      activePageId: 'legacy-page',
+    } as unknown as MessageDraft
+
+    const [page] = getMessagePages(legacy)
+
+    expect(page).toMatchObject({
+      id: 'legacy-page',
+      stickerElements: [],
+      photoElements: [],
+      wordArtElements: [],
+    })
+    expect(page?.textElements[0]?.text).toBe('이전 저장본')
+  })
+
   it('inherits the previous background and last text style', () => {
     let draft: MessageDraft = freshDraft()
     const first = getActiveCardPage(draft)
