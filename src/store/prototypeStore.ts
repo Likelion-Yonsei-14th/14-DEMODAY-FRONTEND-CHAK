@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import {
   emptyComposerDraft,
+  emptyDeskCreationDraft,
   mockClassroom,
   mockCurrentUser,
   mockDesk,
@@ -17,6 +18,7 @@ import type {
   CanvasMode,
   Classroom,
   Desk,
+  DeskCreationDraft,
   DeskObjectType,
   DeskPlacement,
   Message,
@@ -32,6 +34,7 @@ type PrototypeState = {
   currentDesk: Desk
   messages: Message[]
   composerDraft: MessageDraft
+  deskCreationDraft: DeskCreationDraft
   claimState: ClaimState
   classroom: Classroom
   readMessageIds: string[]
@@ -39,6 +42,9 @@ type PrototypeState = {
   setCanvasMode: (mode: CanvasMode) => void
   setComposerDraft: (draft: MessageDraft) => void
   resetComposerDraft: () => void
+  setDeskCreationDraft: (patch: Partial<DeskCreationDraft>) => void
+  resetDeskCreationDraft: () => void
+  createDeskFromDraft: () => void
   addMessage: (message: Message) => void
   placeComposerMessage: (
     placement?: DeskPlacement,
@@ -57,6 +63,7 @@ export const usePrototypeStore = create<PrototypeState>()(
       currentDesk: mockDesk,
       messages: [],
       composerDraft: emptyComposerDraft,
+      deskCreationDraft: emptyDeskCreationDraft,
       claimState: 'claimed',
       classroom: mockClassroom,
       readMessageIds: [],
@@ -73,6 +80,42 @@ export const usePrototypeStore = create<PrototypeState>()(
         })),
       setComposerDraft: (composerDraft) => set({ composerDraft }),
       resetComposerDraft: () => set({ composerDraft: emptyComposerDraft }),
+      setDeskCreationDraft: (patch) =>
+        set((state) => ({
+          deskCreationDraft: {
+            ...state.deskCreationDraft,
+            ...patch,
+          },
+        })),
+      resetDeskCreationDraft: () =>
+        set({ deskCreationDraft: emptyDeskCreationDraft }),
+      createDeskFromDraft: () =>
+        set((state) => {
+          const createdFor =
+            state.deskCreationDraft.createdFor ?? 'self'
+          const displayName =
+            createdFor === 'self'
+              ? state.currentUser.displayName
+              : state.deskCreationDraft.recipientDisplayName.trim() || '친구'
+          const claimStatus =
+            createdFor === 'self' ? 'claimed' : 'unclaimed'
+
+          return {
+            currentDesk: {
+              ...state.currentDesk,
+              ownerId:
+                createdFor === 'self'
+                  ? state.currentUser.id
+                  : undefined,
+              creatorId: state.currentUser.id,
+              displayName,
+              createdFor,
+              readMode: state.deskCreationDraft.readMode,
+              claimStatus,
+            },
+            claimState: claimStatus,
+          }
+        }),
       addMessage: (message) =>
         set((state) => ({ messages: [...state.messages, message] })),
       placeComposerMessage: (
@@ -156,6 +199,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         currentDesk: state.currentDesk,
         messages: state.messages,
         composerDraft: state.composerDraft,
+        deskCreationDraft: state.deskCreationDraft,
         claimState: state.claimState,
         readMessageIds: state.readMessageIds,
       }),
