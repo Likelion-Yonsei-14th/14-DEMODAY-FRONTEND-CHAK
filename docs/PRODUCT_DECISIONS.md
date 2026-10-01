@@ -144,6 +144,22 @@ Internal modes:
   - the locker owner reads incoming encouragements on Daily mode only
 - Locker Object → Common Reader reuses the same card renderer and reader behavior as Personal Desk.
 
+## Post-exam Wrapped / benefits
+
+- After the exam, the owner can move through:
+  - completion home (“정말 수고했어요”)
+  - intro summary
+  - AI-reconstructed encouragement themes / emotions / repeated expressions / representative sentence
+  - nickname reveal for supporters who consented to be shown
+  - full personal record across messages, friends, photos, and participation days
+  - share image that uses aggregate statistics and does not expose original message text
+- Wrapped is non-competitive. It should never rank users by how many messages or friends they had.
+- The final Wrapped screen can lead into student benefits.
+- Benefits prototype currently includes:
+  - category-based benefit list
+  - benefit detail with partner, period, condition, and use CTA
+- The exact third benefits step (O03) is intentionally not invented until its role is reconfirmed.
+
 ## Design principle
 
 > UI는 깨끗하게, 콘텐츠는 살아있게.

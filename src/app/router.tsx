@@ -34,6 +34,16 @@ import {
   EndRoomPage,
 } from '@/features/management/DeskManagementPages'
 import {
+  OfferDetailPage,
+  OffersPage,
+  WrappedFriendsPage,
+  WrappedHomePage,
+  WrappedInsightPage,
+  WrappedIntroPage,
+  WrappedRecordsPage,
+  WrappedSharePage,
+} from '@/features/wrapped/WrappedPages'
+import {
   ClassroomCreateCompletePage,
   ClassroomCreatePage,
   ClassroomEntryRedirect,

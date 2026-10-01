@@ -71,6 +71,12 @@ const routes = [
     description: '교실 맵 탐색 · 함께 쓰는 칠판 · 학생별 사물함 · Daily 열람',
     phase: 'LIVE',
   },
+  {
+    path: '/prototype/wrapped',
+    title: 'Post-exam Wrapped',
+    description: '수능 종료 → AI 응원 기록 → 친구 Reveal → 전체 기록 → 공유 → 혜택',
+    phase: 'LIVE',
+  },
 ]
 
 const qaStates = [
