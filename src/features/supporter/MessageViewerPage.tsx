@@ -71,17 +71,25 @@ export function MessageViewerPage() {
   const lastPageIndex = Math.max(0, pages.length - 1)
 
   useEffect(() => {
+    const reachedReadPoint =
+      pages.length <= 1 ||
+      activePageIndex === lastPageIndex
+
     if (
       !supporterView &&
       messageId &&
-      availability?.available
+      availability?.available &&
+      reachedReadPoint
     ) {
       markMessageRead(messageId)
     }
   }, [
+    activePageIndex,
     availability?.available,
+    lastPageIndex,
     markMessageRead,
     messageId,
+    pages.length,
     supporterView,
   ])
 

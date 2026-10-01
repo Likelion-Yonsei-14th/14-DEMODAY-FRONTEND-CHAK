@@ -76,7 +76,7 @@ export function PrototypeIndexPage() {
   return (
     <AppShell
       surface="base"
-      appBar={<AppBar title="Prototype" trailing={<StatusBadge tone="brand">P2</StatusBadge>} />}
+      appBar={<AppBar title="Prototype" trailing={<StatusBadge tone="brand">QA</StatusBadge>} />}
     >
       <div className="prototype-index">
         <section className="prototype-index__hero">
@@ -100,7 +100,7 @@ export function PrototypeIndexPage() {
         <section className="prototype-index__routes" aria-labelledby="prototype-routes-title">
           <header>
             <h3 id="prototype-routes-title">Core flows</h3>
-            <p>Phase 2부터 실제 서비스의 감성과 인터랙션을 입히기 시작합니다.</p>
+            <p>실제 사용자 흐름과 주요 상태를 바로 확인합니다.</p>
           </header>
           <div className="prototype-route-list">
             {routes.map((route) => (
