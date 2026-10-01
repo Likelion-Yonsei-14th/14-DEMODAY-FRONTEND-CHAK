@@ -50,8 +50,15 @@ export function ClassroomLockerScene({
     >
       <div className="locker-scene__case">
         <div className="locker-scene__interior">
+          <span className="locker-scene__back-panel" aria-hidden />
+          <span className="locker-scene__side locker-scene__side--left" aria-hidden />
+          <span className="locker-scene__side locker-scene__side--right" aria-hidden />
+          <span className="locker-scene__ceiling" aria-hidden />
+          <span className="locker-scene__floor-panel" aria-hidden />
+
           <div className="locker-scene__shelf locker-scene__shelf--top" />
           <div className="locker-scene__shelf locker-scene__shelf--bottom" />
+
           <span className="locker-scene__hook" aria-hidden />
           <span className="locker-scene__book locker-scene__book--one" aria-hidden />
           <span className="locker-scene__book locker-scene__book--two" aria-hidden />
@@ -69,18 +76,33 @@ export function ClassroomLockerScene({
           />
         </div>
 
+        <span className="locker-scene__hinge locker-scene__hinge--top" aria-hidden />
+        <span className="locker-scene__hinge locker-scene__hinge--bottom" aria-hidden />
+
         <button
           type="button"
           className="locker-scene__door"
           aria-label={open ? '사물함 닫기' : '사물함 열기'}
           onClick={onToggle}
         >
-          <span className="locker-scene__nameplate">
-            {locker.studentName}
+          <span className="locker-scene__door-face locker-scene__door-face--front">
+            <span className="locker-scene__nameplate">
+              {locker.studentName}
+            </span>
+            <span className="locker-scene__vents locker-scene__vents--top" aria-hidden />
+            <span className="locker-scene__handle" aria-hidden />
+            <span className="locker-scene__vents locker-scene__vents--bottom" aria-hidden />
           </span>
-          <span className="locker-scene__vents locker-scene__vents--top" aria-hidden />
-          <span className="locker-scene__handle" aria-hidden />
-          <span className="locker-scene__vents locker-scene__vents--bottom" aria-hidden />
+
+          <span
+            className="locker-scene__door-face locker-scene__door-face--back"
+            aria-hidden
+          >
+            <span className="locker-scene__door-back-rib locker-scene__door-back-rib--left" />
+            <span className="locker-scene__door-back-rib locker-scene__door-back-rib--right" />
+            <span className="locker-scene__door-back-pocket" />
+            <span className="locker-scene__door-back-latch" />
+          </span>
         </button>
       </div>
     </div>
