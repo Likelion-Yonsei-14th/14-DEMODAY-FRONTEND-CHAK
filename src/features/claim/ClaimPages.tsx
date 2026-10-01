@@ -101,7 +101,6 @@ export function ClaimIntroPage() {
 
 export function ClaimReadModePage() {
   const navigate = useNavigate()
-  const desk = usePrototypeStore((state) => state.currentDesk)
   const readMode = usePrototypeStore((state) => state.claimReadMode)
   const setReadMode = usePrototypeStore((state) => state.setClaimReadMode)
   const completeClaim = usePrototypeStore((state) => state.completeClaim)
