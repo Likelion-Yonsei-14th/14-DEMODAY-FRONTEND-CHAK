@@ -4,18 +4,19 @@ import { getDefaultCapsuleUnlockAt } from '@/features/csat/csatSchedule'
 export const DEFAULT_CAPSULE_UNLOCK_AT = getDefaultCapsuleUnlockAt()
 
 export function splitDateTime(value: string) {
-  const [fallbackDate, fallbackTime] =
-    DEFAULT_CAPSULE_UNLOCK_AT.split('T')
-  const [date = fallbackDate, time = fallbackTime] = value.split('T')
+  const fallbackDate = DEFAULT_CAPSULE_UNLOCK_AT.slice(0, 10)
+  const fallbackTime = DEFAULT_CAPSULE_UNLOCK_AT.slice(11, 16)
+  const [date, time] = value.split('T')
+
   return {
-    date,
-    time: time.slice(0, 5),
+    date: date || fallbackDate,
+    time: (time || fallbackTime).slice(0, 5),
   }
 }
 
 export function joinDateTime(date: string, time: string) {
-  const [fallbackDate, fallbackTime] =
-    DEFAULT_CAPSULE_UNLOCK_AT.split('T')
+  const fallbackDate = DEFAULT_CAPSULE_UNLOCK_AT.slice(0, 10)
+  const fallbackTime = DEFAULT_CAPSULE_UNLOCK_AT.slice(11, 16)
 
   return `${date || fallbackDate}T${time || fallbackTime}`
 }
