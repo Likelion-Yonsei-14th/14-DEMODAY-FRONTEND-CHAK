@@ -117,10 +117,6 @@ export function ClassroomMapPage() {
                   />
                 ))}
               </div>
-              <div className="classroom-map__avatar" aria-hidden>
-                <span>{member.displayName.slice(0, 1)}</span>
-                <small>{member.displayName}</small>
-              </div>
             </div>
 
             <div className="classroom-map__zone classroom-map__zone--lockers">
