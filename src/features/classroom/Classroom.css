@@ -1184,3 +1184,160 @@
     transition-duration: 1ms;
   }
 }
+
+
+/* Locker inner-door structure: intentionally different from the exterior face */
+.locker-scene--open .locker-scene__door {
+  transform: rotateY(138deg);
+  filter: drop-shadow(18px 14px 12px rgba(65, 31, 28, .16));
+}
+
+.locker-scene__door-face--front {
+  transform: translateZ(1px);
+}
+
+.locker-scene__door-face--back {
+  transform: rotateY(180deg) translateZ(1px);
+  overflow: visible;
+  border-color: #a54642;
+  background: #bb514d;
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.035),
+    inset 0 0 18px rgba(68,19,18,.16);
+}
+
+.locker-scene__door-back-frame {
+  position: absolute;
+  inset: 5.5% 6% 5.5%;
+  border: 7px solid #973c39;
+  border-radius: 5px;
+  background: #ad4844;
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.045),
+    0 2px 0 rgba(255,255,255,.04);
+}
+
+.locker-scene__door-back-panel {
+  position: absolute;
+  inset: 8px;
+  overflow: hidden;
+  border: 2px solid rgba(101, 33, 31, .34);
+  border-radius: 2px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.055),
+      transparent 26% 78%,
+      rgba(60,16,15,.06)
+    ),
+    #c55b55;
+  box-shadow:
+    inset 13px 0 18px rgba(73, 22, 21, .06),
+    inset -8px 0 14px rgba(255,255,255,.025);
+}
+
+.locker-scene__door-back-brace {
+  position: absolute;
+  left: 9%;
+  right: 9%;
+  height: 11px;
+  border-radius: 2px;
+  background:
+    linear-gradient(#ac4743, #8d3633);
+  box-shadow:
+    inset 0 2px rgba(255,255,255,.045),
+    0 4px 7px rgba(69,19,18,.11);
+}
+
+.locker-scene__door-back-brace--top {
+  top: 13%;
+}
+
+.locker-scene__door-back-brace--bottom {
+  bottom: 13%;
+}
+
+.locker-scene__door-back-hinge-rail {
+  position: absolute;
+  top: 4%;
+  right: 2.6%;
+  bottom: 4%;
+  width: 15px;
+  border-radius: 3px;
+  background:
+    linear-gradient(
+      90deg,
+      #8c3532,
+      #c45a54 48%,
+      #86302e
+    );
+  box-shadow:
+    inset 1px 0 rgba(255,255,255,.07),
+    -2px 0 6px rgba(58,17,16,.1);
+}
+
+.locker-scene__door-back-latch {
+  position: absolute;
+  left: 8.5%;
+  top: 45.5%;
+  width: 38px;
+  height: 58px;
+  border: 5px solid #77726d;
+  border-radius: 7px;
+  background:
+    linear-gradient(#4e4c4a, #373634);
+  box-shadow:
+    inset 0 0 0 3px #908a83,
+    0 4px 7px rgba(52,22,20,.12);
+}
+
+.locker-scene__door-back-latch::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  width: 13px;
+  height: 13px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: #bbb4ac;
+  box-shadow: inset 0 0 0 4px #5f5b57;
+}
+
+.locker-scene__door-back-latch-arm {
+  position: absolute;
+  left: 28px;
+  top: 21px;
+  width: 34px;
+  height: 8px;
+  border-radius: 2px;
+  background: linear-gradient(#aaa39c, #77716b);
+  box-shadow: 0 2px 3px rgba(45,23,21,.12);
+}
+
+.locker-scene__door-back-screw {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #8d8780;
+  box-shadow:
+    inset 0 0 0 2px #5f5b57,
+    0 1px 1px rgba(45,23,21,.12);
+}
+
+.locker-scene__door-back-screw--one {
+  left: 14%;
+  top: 12%;
+}
+
+.locker-scene__door-back-screw--two {
+  left: 14%;
+  bottom: 12%;
+}
+
+/* Legacy back-face details are superseded by the inset inner-door structure. */
+.locker-scene__door-back-rib,
+.locker-scene__door-back-pocket {
+  display: none;
+}
