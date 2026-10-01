@@ -62,6 +62,38 @@ export function resolveInitialPlacement(existingCount: number): DeskPlacement {
   return placementPresets[index] ?? placementPresets[0]!
 }
 
+export function resolveAvailablePlacement(
+  existingObjects: DeskObject[],
+  draftType: DeskObjectType = 'memo',
+): DeskPlacement {
+  const startIndex = existingObjects.length % placementPresets.length
+
+  for (let offset = 0; offset < placementPresets.length; offset += 1) {
+    const index = (startIndex + offset) % placementPresets.length
+    const candidate = placementPresets[index]
+
+    if (
+      candidate &&
+      isPlacementValid(candidate, existingObjects, draftType)
+    ) {
+      return candidate
+    }
+  }
+
+  const fallbackCandidates: DeskPlacement[] = [
+    { x: 50, y: 70, rotation: -1, scale: .96 },
+    { x: 20, y: 68, rotation: 2, scale: .94 },
+    { x: 80, y: 68, rotation: -2, scale: .94 },
+  ]
+
+  return (
+    fallbackCandidates.find((candidate) =>
+      isPlacementValid(candidate, existingObjects, draftType),
+    ) ??
+    fallbackCandidates[0]!
+  )
+}
+
 export function resolveObjectPlacement(object: DeskObject): DeskPlacement {
   if (typeof object.x === 'number' && typeof object.y === 'number') {
     return {
