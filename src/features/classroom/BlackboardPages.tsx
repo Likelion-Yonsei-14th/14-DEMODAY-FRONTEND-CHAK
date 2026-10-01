@@ -133,7 +133,7 @@ export function BlackboardWritePage() {
   const drawingRef = useRef(false)
   const lastPointRef = useRef<{ x: number; y: number } | null>(null)
   const [text, setText] = useState('')
-  const [color, setColor] = useState(chalkColors[0].value)
+  const [color, setColor] = useState<string>(chalkColors[0].value)
   const [hasDrawing, setHasDrawing] = useState(false)
 
   useEffect(() => {
