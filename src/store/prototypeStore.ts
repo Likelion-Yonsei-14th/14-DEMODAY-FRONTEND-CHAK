@@ -24,6 +24,7 @@ import type {
   Message,
   MessageDraft,
   PrototypeUser,
+  ReadMode,
 } from '@/types'
 
 type ClaimState = 'unclaimed' | 'claiming' | 'claimed'
@@ -35,6 +36,7 @@ type PrototypeState = {
   messages: Message[]
   composerDraft: MessageDraft
   deskCreationDraft: DeskCreationDraft
+  claimReadMode: ReadMode
   claimState: ClaimState
   classroom: Classroom
   readMessageIds: string[]
@@ -45,6 +47,9 @@ type PrototypeState = {
   setDeskCreationDraft: (patch: Partial<DeskCreationDraft>) => void
   resetDeskCreationDraft: () => void
   createDeskFromDraft: () => void
+  beginClaim: () => void
+  setClaimReadMode: (readMode: ReadMode) => void
+  completeClaim: () => void
   addMessage: (message: Message) => void
   placeComposerMessage: (
     placement?: DeskPlacement,
@@ -64,6 +69,7 @@ export const usePrototypeStore = create<PrototypeState>()(
       messages: [],
       composerDraft: emptyComposerDraft,
       deskCreationDraft: emptyDeskCreationDraft,
+      claimReadMode: mockDesk.readMode,
       claimState: 'claimed',
       classroom: mockClassroom,
       readMessageIds: [],
@@ -113,9 +119,32 @@ export const usePrototypeStore = create<PrototypeState>()(
               readMode: state.deskCreationDraft.readMode,
               claimStatus,
             },
+            claimReadMode: state.deskCreationDraft.readMode,
             claimState: claimStatus,
           }
         }),
+      beginClaim: () =>
+        set((state) => ({
+          claimReadMode: state.currentDesk.readMode,
+          claimState:
+            state.currentDesk.claimStatus === 'claimed'
+              ? 'claimed'
+              : 'claiming',
+        })),
+      setClaimReadMode: (claimReadMode) => set({ claimReadMode }),
+      completeClaim: () =>
+        set((state) => ({
+          currentDesk: {
+            ...state.currentDesk,
+            ownerId:
+              state.currentDesk.createdFor === 'other'
+                ? 'user-claimed-recipient-01'
+                : state.currentUser.id,
+            readMode: state.claimReadMode,
+            claimStatus: 'claimed',
+          },
+          claimState: 'claimed',
+        })),
       addMessage: (message) =>
         set((state) => ({ messages: [...state.messages, message] })),
       placeComposerMessage: (
@@ -200,6 +229,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         messages: state.messages,
         composerDraft: state.composerDraft,
         deskCreationDraft: state.deskCreationDraft,
+        claimReadMode: state.claimReadMode,
         claimState: state.claimState,
         readMessageIds: state.readMessageIds,
       }),
