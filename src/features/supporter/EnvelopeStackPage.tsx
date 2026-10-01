@@ -14,6 +14,7 @@ import { usePrototypeStore } from '@/store/prototypeStore'
 import {
   formatUnlockAt,
   getMessageAvailability,
+  resolvePreviewReadMode,
 } from '@/features/desk/dailyAvailability'
 import { useReadModeNow } from '@/features/desk/useReadModeNow'
 import type { Message } from '@/types'
@@ -43,8 +44,16 @@ export function EnvelopeStackPage() {
     () => mergeSupportMessages(storedMessages),
     [storedMessages],
   )
+  const readMode = useMemo(
+    () =>
+      resolvePreviewReadMode(
+        currentDesk.readMode,
+        location.search,
+      ),
+    [currentDesk.readMode, location.search],
+  )
   const now = useReadModeNow(
-    currentDesk.readMode,
+    readMode,
     location.search,
   )
   const availabilityById = useMemo(
@@ -53,26 +62,31 @@ export function EnvelopeStackPage() {
         allMessages.map((message) => [
           message.id,
           getMessageAvailability(
-            currentDesk.readMode,
+            readMode,
             message.createdAt,
             now,
           ),
         ]),
       ),
-    [allMessages, currentDesk.readMode, now],
+    [allMessages, now, readMode],
   )
   const messages = useMemo(
-    () =>
-      showHistory
+    () => {
+      if (readMode.type === 'time-capsule') {
+        return allMessages
+      }
+
+      return showHistory
         ? allMessages
-        : allMessages.filter((message) => isToday(message.createdAt)),
-    [allMessages, showHistory],
+        : allMessages.filter((message) => isToday(message.createdAt))
+    },
+    [allMessages, readMode.type, showHistory],
   )
 
   useEffect(() => {
     setActiveIndex(0)
     scrollerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [showHistory])
+  }, [readMode.type, showHistory])
 
   const activeMessage = messages[activeIndex]
 
@@ -116,7 +130,13 @@ export function EnvelopeStackPage() {
       appBar={
         <AppBar
           title="내 응원"
-          subtitle={showHistory ? '지난 응원까지 보고 있어요' : '오늘 도착한 응원'}
+          subtitle={
+            readMode.type === 'time-capsule'
+              ? '모아둔 응원'
+              : showHistory
+                ? '지난 응원까지 보고 있어요'
+                : '오늘 도착한 응원'
+          }
           leading={
             <IconButton
               label="내 책상으로 돌아가기"
@@ -135,9 +155,11 @@ export function EnvelopeStackPage() {
         <section className="envelope-page__heading">
           <div>
             <h2>
-              {showHistory
-                ? '내게 도착했던 응원들'
-                : `오늘 ${messages.length}개의 응원이 도착했어요.`}
+              {readMode.type === 'time-capsule'
+                ? `모아둔 응원 ${messages.length}개`
+                : showHistory
+                  ? '내게 도착했던 응원들'
+                  : `오늘 ${messages.length}개의 응원이 도착했어요.`}
             </h2>
           </div>
           {activeMessage && (
@@ -382,15 +404,17 @@ export function EnvelopeStackPage() {
           </div>
         )}
 
-        <button
-          type="button"
-          className="envelope-history-toggle"
-          disabled={Boolean(openingId)}
-          onClick={() => setShowHistory((value) => !value)}
-        >
-          <History size={15} aria-hidden />
-          {showHistory ? '오늘 온 응원만 보기' : '지난 응원도 보기'}
-        </button>
+        {readMode.type === 'daily' && (
+          <button
+            type="button"
+            className="envelope-history-toggle"
+            disabled={Boolean(openingId)}
+            onClick={() => setShowHistory((value) => !value)}
+          >
+            <History size={15} aria-hidden />
+            {showHistory ? '오늘 온 응원만 보기' : '지난 응원도 보기'}
+          </button>
+        )}
       </main>
     </AppShell>
   )

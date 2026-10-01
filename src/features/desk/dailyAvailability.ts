@@ -1,9 +1,27 @@
 import type { ReadMode } from '@/types'
-import { formatTime } from './readModeUtils'
+import { DEFAULT_CAPSULE_UNLOCK_AT, formatTime } from './readModeUtils'
 
 export type MessageAvailability = {
   available: boolean
   unlockAt: Date | null
+}
+
+export function resolvePreviewReadMode(
+  mode: ReadMode,
+  search: string,
+): ReadMode {
+  const params = new URLSearchParams(search)
+
+  if (params.has('capsule')) {
+    return mode.type === 'time-capsule'
+      ? mode
+      : {
+          type: 'time-capsule',
+          unlockAt: DEFAULT_CAPSULE_UNLOCK_AT,
+        }
+  }
+
+  return mode
 }
 
 export function resolveReadModeNow(
@@ -11,15 +29,29 @@ export function resolveReadModeNow(
   search: string,
   baseNow = new Date(),
 ) {
-  if (mode.type !== 'daily') return baseNow
+  const params = new URLSearchParams(search)
 
-  const preview = new URLSearchParams(search).get('daily')
-  if (preview !== 'before' && preview !== 'after') return baseNow
+  if (mode.type === 'daily') {
+    const preview = params.get('daily')
+    if (preview !== 'before' && preview !== 'after') {
+      return baseNow
+    }
 
-  const cutoff = dateAtTime(baseNow, mode.unlockTime)
+    const cutoff = dateAtTime(baseNow, mode.unlockTime)
+    const offset = preview === 'before' ? -60_000 : 60_000
+
+    return new Date(cutoff.getTime() + offset)
+  }
+
+  const preview = params.get('capsule')
+  if (preview !== 'before' && preview !== 'after') {
+    return baseNow
+  }
+
+  const unlockAt = new Date(mode.unlockAt)
   const offset = preview === 'before' ? -60_000 : 60_000
 
-  return new Date(cutoff.getTime() + offset)
+  return new Date(unlockAt.getTime() + offset)
 }
 
 export function getMessageAvailability(
@@ -27,10 +59,12 @@ export function getMessageAvailability(
   createdAt: string,
   now = new Date(),
 ): MessageAvailability {
-  if (mode.type !== 'daily') {
+  if (mode.type === 'time-capsule') {
+    const unlockAt = new Date(mode.unlockAt)
+
     return {
-      available: true,
-      unlockAt: null,
+      available: now.getTime() >= unlockAt.getTime(),
+      unlockAt,
     }
   }
 

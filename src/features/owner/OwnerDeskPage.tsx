@@ -9,6 +9,7 @@ import { usePrototypeStore } from '@/store/prototypeStore'
 import {
   formatUnlockAt,
   getMessageAvailability,
+  resolvePreviewReadMode,
 } from '@/features/desk/dailyAvailability'
 import { useReadModeNow } from '@/features/desk/useReadModeNow'
 import {
@@ -35,8 +36,16 @@ export function OwnerDeskPage() {
     () => [...seededDeskObjects, ...currentDesk.objects],
     [currentDesk.objects],
   )
+  const readMode = useMemo(
+    () =>
+      resolvePreviewReadMode(
+        currentDesk.readMode,
+        location.search,
+      ),
+    [currentDesk.readMode, location.search],
+  )
   const now = useReadModeNow(
-    currentDesk.readMode,
+    readMode,
     location.search,
   )
   const availabilityById = useMemo(
@@ -45,13 +54,13 @@ export function OwnerDeskPage() {
         messages.map((message) => [
           message.id,
           getMessageAvailability(
-            currentDesk.readMode,
+            readMode,
             message.createdAt,
             now,
           ),
         ]),
       ),
-    [currentDesk.readMode, messages, now],
+    [messages, now, readMode],
   )
   const lockedMessageIds = useMemo(
     () =>
@@ -163,7 +172,13 @@ export function OwnerDeskPage() {
                 {unreadCount}개 있어요.
               </>
             ) : nextUnlockLabel ? (
-              nextUnlockLabel.startsWith('오늘 ') ? (
+              readMode.type === 'time-capsule' ? (
+                <>
+                  모아둔 응원은
+                  <br />
+                  {nextUnlockLabel}에 열려요.
+                </>
+              ) : nextUnlockLabel.startsWith('오늘 ') ? (
                 <>
                   오늘의 응원은
                   <br />

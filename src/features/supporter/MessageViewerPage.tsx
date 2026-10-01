@@ -13,6 +13,7 @@ import { usePrototypeStore } from '@/store/prototypeStore'
 import {
   formatUnlockAt,
   getMessageAvailability,
+  resolvePreviewReadMode,
 } from '@/features/desk/dailyAvailability'
 import { useReadModeNow } from '@/features/desk/useReadModeNow'
 import { OriginalMessageRenderer } from './OriginalMessageRenderer'
@@ -39,13 +40,21 @@ export function MessageViewerPage() {
   )
   const message = messages.find((item) => item.id === messageId)
   const state = location.state as ReaderLocationState | null
+  const readMode = useMemo(
+    () =>
+      resolvePreviewReadMode(
+        currentDesk.readMode,
+        location.search,
+      ),
+    [currentDesk.readMode, location.search],
+  )
   const now = useReadModeNow(
-    currentDesk.readMode,
+    readMode,
     location.search,
   )
   const availability = message
     ? getMessageAvailability(
-        currentDesk.readMode,
+        readMode,
         message.createdAt,
         now,
       )
