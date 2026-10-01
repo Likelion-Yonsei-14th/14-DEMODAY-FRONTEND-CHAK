@@ -1,6 +1,11 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { App } from '@/app/App'
 import { UnifiedComposerPage } from '@/features/composer/UnifiedComposerPage'
+import {
+  ClaimCompletePage,
+  ClaimIntroPage,
+  ClaimReadModePage,
+} from '@/features/claim/ClaimPages'
 import { OwnerDeskPage } from '@/features/owner/OwnerDeskPage'
 import {
   DeskCreateCompletePage,
@@ -15,7 +20,6 @@ import { SupportCompletePage } from '@/features/supporter/SupportCompletePage'
 import { SupportDeskPage } from '@/features/supporter/SupportDeskPage'
 import { PrototypeIndexPage } from '@/prototype/screens/PrototypeIndexPage'
 import {
-  ClaimPage,
   ClassroomPage,
   ComposerPage,
   ReaderPage,
@@ -79,7 +83,15 @@ export const router = createBrowserRouter([
 
       { path: '/prototype/composer', element: <ComposerPage /> },
       { path: '/prototype/reader', element: <ReaderPage /> },
-      { path: '/prototype/claim', element: <ClaimPage /> },
+      { path: '/prototype/claim', element: <ClaimIntroPage /> },
+      {
+        path: '/prototype/claim/read-mode',
+        element: <ClaimReadModePage />,
+      },
+      {
+        path: '/prototype/claim/complete',
+        element: <ClaimCompletePage />,
+      },
       { path: '/prototype/classroom', element: <ClassroomPage /> },
       { path: '/system', element: <SystemPage /> },
       { path: '*', element: <Navigate to="/prototype" replace /> },
