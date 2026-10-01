@@ -6,6 +6,12 @@ import './prototype.css'
 
 const routes = [
   {
+    path: '/prototype/create',
+    title: 'Desk Creation',
+    description: '본인/주변인 선택 → 읽기 방식 설정 → 응원 책상 생성',
+    phase: 'Phase 5 · LIVE',
+  },
+  {
     path: '/prototype/support/jisu',
     title: 'Supporter Core',
     description: '친구로 방문 → 응원 만들기 → 책상에 직접 놓고 가기',
