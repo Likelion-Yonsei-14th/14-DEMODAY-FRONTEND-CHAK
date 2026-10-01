@@ -78,6 +78,12 @@ const routes = [
     phase: 'LIVE',
   },
   {
+    path: '/prototype/classroom/classroom-3-2/wrapped',
+    title: 'Class Wrapped',
+    description: '반 전체 응원 총량 · 자주 남은 말/이모지 · 비경쟁 공동 기록 · 공유',
+    phase: 'LIVE',
+  },
+  {
     path: '/prototype/wrapped',
     title: 'Post-exam Wrapped',
     description: '수능 종료 → AI 응원 기록 → 친구 Reveal → 전체 기록 → 공유 → 혜택·쿠폰',

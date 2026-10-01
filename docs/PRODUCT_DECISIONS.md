@@ -170,6 +170,13 @@ Internal modes:
   - private encouragements can only be opened by the locker owner
   - the locker owner reads incoming encouragements on Daily mode only
 - Locker Object → Common Reader reuses the same card renderer and reader behavior as Personal Desk.
+- After the exam, Class Wrapped summarizes the **group record**, not individual performance:
+  - total encouragement volume
+  - blackboard activity
+  - frequent words and emoji from public content
+  - shareable aggregate card
+- Class Wrapped never ranks members or identifies who received the most support.
+- Private locker message content is excluded from Class Wrapped analysis and sharing.
 
 ## Post-exam Wrapped / benefits
 

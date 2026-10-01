@@ -56,6 +56,10 @@ import {
 } from '@/features/classroom/ClassroomCreationPages'
 import { ClassroomMapPage } from '@/features/classroom/ClassroomMapPage'
 import {
+  ClassWrappedPage,
+  ClassWrappedSharePage,
+} from '@/features/classroom/ClassWrappedPages'
+import {
   BlackboardPage,
   BlackboardWritePage,
 } from '@/features/classroom/BlackboardPages'
@@ -187,6 +191,14 @@ export const router = createBrowserRouter([
       {
         path: '/prototype/classroom/:classroomId/map',
         element: <ClassroomMapPage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/wrapped',
+        element: <ClassWrappedPage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/wrapped/share',
+        element: <ClassWrappedSharePage />,
       },
       {
         path: '/prototype/classroom/:classroomId/blackboard',

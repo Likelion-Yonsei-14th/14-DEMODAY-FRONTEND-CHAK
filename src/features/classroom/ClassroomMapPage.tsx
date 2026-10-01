@@ -4,9 +4,11 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageCircleMore,
+  Sparkles,
 } from 'lucide-react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { AppBar, IconButton } from '@/design-system'
+import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { LockerMiniDoor } from './LockerScene'
@@ -20,6 +22,8 @@ export function ClassroomMapPage() {
   const classroom = usePrototypeStore((state) => state.classroom)
   const member = usePrototypeStore((state) => state.classroomMember)
   const [camera, setCamera] = useState(1)
+  const wrappedAvailable =
+    getCsatDdayLabel() === '수능이 끝났어요'
 
   if (!member) {
     return (
@@ -47,6 +51,19 @@ export function ClassroomMapPage() {
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() => navigate('/start')}
             />
+          }
+          trailing={
+            wrappedAvailable ? (
+              <IconButton
+                label="우리의 수능 기록"
+                icon={<Sparkles size={20} aria-hidden />}
+                onClick={() =>
+                  navigate(
+                    `/prototype/classroom/${id}/wrapped`,
+                  )
+                }
+              />
+            ) : undefined
           }
         />
       }
