@@ -74,7 +74,7 @@ const routes = [
   {
     path: '/prototype/wrapped',
     title: 'Post-exam Wrapped',
-    description: '수능 종료 → AI 응원 기록 → 친구 Reveal → 전체 기록 → 공유 → 혜택',
+    description: '수능 종료 → AI 응원 기록 → 친구 Reveal → 전체 기록 → 공유 → 혜택·쿠폰',
     phase: 'LIVE',
   },
 ]
