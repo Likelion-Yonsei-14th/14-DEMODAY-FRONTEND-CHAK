@@ -434,3 +434,37 @@
   display: block;
   filter: drop-shadow(0 6px 7px rgba(48, 38, 31, .08));
 }
+
+
+.message-viewer__locked {
+  min-height: 430px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 16px;
+  padding: 36px 20px;
+  text-align: center;
+}
+
+.message-viewer__locked-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-surface-subtle);
+  color: var(--color-content-secondary);
+  box-shadow: var(--highlight-inset);
+}
+
+.message-viewer__locked h2 {
+  max-width: 280px;
+  margin: 0;
+  font-size: var(--type-h3-size);
+  line-height: var(--type-h3-line);
+  letter-spacing: -.02em;
+}
+
+.message-viewer__locked .ds-button {
+  width: min(100%, 260px);
+}

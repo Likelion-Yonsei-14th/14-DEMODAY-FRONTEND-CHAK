@@ -1,11 +1,16 @@
 import { useMemo, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { AppBar, IconButton } from '@/design-system'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { AppBar, IconButton, useFeedback } from '@/design-system'
 import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
 import { DeskScene } from '@/features/desk/DeskScene'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import {
+  formatUnlockAt,
+  getMessageAvailability,
+} from '@/features/desk/dailyAvailability'
+import { useReadModeNow } from '@/features/desk/useReadModeNow'
 import {
   mergeSupportMessages,
   seededDeskObjects,
@@ -15,6 +20,8 @@ import './OwnerDeskPage.css'
 
 export function OwnerDeskPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { showToast } = useFeedback()
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const storedMessages = usePrototypeStore((state) => state.messages)
   const readMessageIds = usePrototypeStore((state) => state.readMessageIds)
@@ -28,6 +35,55 @@ export function OwnerDeskPage() {
     () => [...seededDeskObjects, ...currentDesk.objects],
     [currentDesk.objects],
   )
+  const now = useReadModeNow(
+    currentDesk.readMode,
+    location.search,
+  )
+  const availabilityById = useMemo(
+    () =>
+      new Map(
+        messages.map((message) => [
+          message.id,
+          getMessageAvailability(
+            currentDesk.readMode,
+            message.createdAt,
+            now,
+          ),
+        ]),
+      ),
+    [currentDesk.readMode, messages, now],
+  )
+  const lockedMessageIds = useMemo(
+    () =>
+      messages
+        .filter(
+          (message) =>
+            !availabilityById.get(message.id)?.available,
+        )
+        .map((message) => message.id),
+    [availabilityById, messages],
+  )
+  const lockedMessageIdSet = useMemo(
+    () => new Set(lockedMessageIds),
+    [lockedMessageIds],
+  )
+  const nextUnlockAt = useMemo(
+    () =>
+      messages
+        .map(
+          (message) =>
+            availabilityById.get(message.id)?.unlockAt ?? null,
+        )
+        .filter(
+          (unlockAt): unlockAt is Date =>
+            Boolean(unlockAt && unlockAt.getTime() > now.getTime()),
+        )
+        .sort((a, b) => a.getTime() - b.getTime())[0] ?? null,
+    [availabilityById, messages, now],
+  )
+  const nextUnlockLabel = nextUnlockAt
+    ? formatUnlockAt(nextUnlockAt, now)
+    : null
   const unreadCount = useMemo(() => {
     const messageById = new Map(
       messages.map((message) => [message.id, message]),
@@ -37,20 +93,40 @@ export function OwnerDeskPage() {
       const message = messageById.get(object.messageId)
       return (
         message &&
+        !lockedMessageIdSet.has(object.messageId) &&
         message.status !== 'read' &&
         !readMessageIds.includes(object.messageId)
       )
     }).length
-  }, [messages, objects, readMessageIds])
+  }, [
+    lockedMessageIdSet,
+    messages,
+    objects,
+    readMessageIds,
+  ])
 
   const openObject = (messageId: string) => {
     if (openingMessageId) return
+
+    const availability = availabilityById.get(messageId)
+    if (availability && !availability.available) {
+      if (availability.unlockAt) {
+        showToast(
+          `${formatUnlockAt(availability.unlockAt, now)}에 열 수 있어요.`,
+        )
+      }
+      return
+    }
+
     setOpeningMessageId(messageId)
 
     window.setTimeout(() => {
-      navigate(`/prototype/my/message/${messageId}`, {
-        state: { from: 'owner-desk' },
-      })
+      navigate(
+        `/prototype/my/message/${messageId}${location.search}`,
+        {
+          state: { from: 'owner-desk' },
+        },
+      )
     }, 360)
   }
 
@@ -86,6 +162,20 @@ export function OwnerDeskPage() {
                 <br />
                 {unreadCount}개 있어요.
               </>
+            ) : nextUnlockLabel ? (
+              nextUnlockLabel.startsWith('오늘 ') ? (
+                <>
+                  오늘의 응원은
+                  <br />
+                  {nextUnlockLabel.replace('오늘 ', '')}에 열려요.
+                </>
+              ) : (
+                <>
+                  다음 응원은
+                  <br />
+                  {nextUnlockLabel}에 열려요.
+                </>
+              )
             ) : (
               <>
                 친구들이 남긴 응원을
@@ -109,6 +199,8 @@ export function OwnerDeskPage() {
             onObjectClick={openObject}
             openingMessageId={openingMessageId}
             readMessageIds={readMessageIds}
+            lockedMessageIds={lockedMessageIds}
+            respectObjectLocks={false}
           />
         </div>
 

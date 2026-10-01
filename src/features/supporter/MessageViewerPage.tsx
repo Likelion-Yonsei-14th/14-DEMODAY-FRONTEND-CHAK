@@ -3,12 +3,18 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
+  LockKeyhole,
 } from 'lucide-react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { AppBar, Button, IconButton } from '@/design-system'
 import { getMessagePages } from '@/features/composer/messagePages'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import {
+  formatUnlockAt,
+  getMessageAvailability,
+} from '@/features/desk/dailyAvailability'
+import { useReadModeNow } from '@/features/desk/useReadModeNow'
 import { OriginalMessageRenderer } from './OriginalMessageRenderer'
 import { mergeSupportMessages } from './seededMessages'
 import './MessageViewerPage.css'
@@ -21,6 +27,7 @@ export function MessageViewerPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { messageId } = useParams()
+  const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const storedMessages = usePrototypeStore((state) => state.messages)
   const markMessageRead = usePrototypeStore((state) => state.markMessageRead)
   const pageScrollerRef = useRef<HTMLDivElement>(null)
@@ -32,12 +39,29 @@ export function MessageViewerPage() {
   )
   const message = messages.find((item) => item.id === messageId)
   const state = location.state as ReaderLocationState | null
+  const now = useReadModeNow(
+    currentDesk.readMode,
+    location.search,
+  )
+  const availability = message
+    ? getMessageAvailability(
+        currentDesk.readMode,
+        message.createdAt,
+        now,
+      )
+    : null
   const pages = message ? getMessagePages(message) : []
   const lastPageIndex = Math.max(0, pages.length - 1)
 
   useEffect(() => {
-    if (messageId) markMessageRead(messageId)
-  }, [markMessageRead, messageId])
+    if (messageId && availability?.available) {
+      markMessageRead(messageId)
+    }
+  }, [
+    availability?.available,
+    markMessageRead,
+    messageId,
+  ])
 
   useEffect(() => {
     setActivePageIndex(0)
@@ -97,11 +121,12 @@ export function MessageViewerPage() {
   )
 
   const back = () => {
-    navigate(
+    const path =
       state?.from === 'owner-desk' || state?.from === 'desk'
         ? '/prototype/my/desk'
-        : '/prototype/my/desk/cards',
-    )
+        : '/prototype/my/desk/cards'
+
+    navigate(`${path}${location.search}`)
   }
 
   if (!message) {
@@ -128,6 +153,45 @@ export function MessageViewerPage() {
             돌아가기
           </Button>
         </div>
+      </AppShell>
+    )
+  }
+
+  if (availability && !availability.available) {
+    const unlockLabel = availability.unlockAt
+      ? formatUnlockAt(availability.unlockAt, now)
+      : null
+
+    return (
+      <AppShell
+        surface="base"
+        contentClassName="message-viewer-shell"
+        appBar={
+          <AppBar
+            title="응원 열기"
+            leading={
+              <IconButton
+                label="내 책상으로 돌아가기"
+                icon={<ArrowLeft size={21} aria-hidden />}
+                onClick={back}
+              />
+            }
+          />
+        }
+      >
+        <main className="message-viewer__locked">
+          <span className="message-viewer__locked-icon" aria-hidden>
+            <LockKeyhole size={23} />
+          </span>
+          <h2>
+            {unlockLabel
+              ? `${unlockLabel}에 열 수 있어요.`
+              : '아직 열 수 없는 응원이에요.'}
+          </h2>
+          <Button variant="secondary" onClick={back}>
+            내 책상으로 돌아가기
+          </Button>
+        </main>
       </AppShell>
     )
   }

@@ -1,3 +1,4 @@
+import { LockKeyhole } from 'lucide-react'
 import type {
   DeskObject,
   DeskObjectType,
@@ -22,6 +23,8 @@ type DeskObjectLayerProps = {
   onObjectClick?: (messageId: string) => void
   openingMessageId?: string | null
   readMessageIds?: string[]
+  lockedMessageIds?: string[]
+  respectObjectLocks?: boolean
   draftObject?: DraftObject
 }
 
@@ -31,6 +34,8 @@ export function DeskObjectLayer({
   onObjectClick,
   openingMessageId,
   readMessageIds = [],
+  lockedMessageIds = [],
+  respectObjectLocks = true,
   draftObject,
 }: DeskObjectLayerProps) {
   const messageById = new Map(messages.map((message) => [message.id, message]))
@@ -46,6 +51,9 @@ export function DeskObjectLayer({
         const read =
           message?.status === 'read' ||
           readMessageIds.includes(object.messageId)
+        const locked =
+          lockedMessageIds.includes(object.messageId) ||
+          (respectObjectLocks && Boolean(object.locked))
         const opening = openingMessageId === object.messageId
         const deemphasized = Boolean(
           openingMessageId && openingMessageId !== object.messageId,
@@ -58,9 +66,9 @@ export function DeskObjectLayer({
             className={[
               'desk-object',
               `desk-object--${object.representationType}`,
-              object.locked ? 'desk-object--locked' : '',
+              locked ? 'desk-object--locked' : '',
               !interactive ? 'desk-object--passive' : '',
-              interactive && !read ? 'desk-object--unread' : '',
+              interactive && !read && !locked ? 'desk-object--unread' : '',
               opening ? 'desk-object--opening' : '',
               deemphasized ? 'desk-object--deemphasized' : '',
             ].filter(Boolean).join(' ')}
@@ -75,7 +83,9 @@ export function DeskObjectLayer({
             aria-label={
               interactive
                 ? message
-                  ? `${message.senderName}의 ${read ? '' : '새 '}응원 열기`
+                  ? locked
+                    ? `${message.senderName}의 응원은 아직 잠겨 있음`
+                    : `${message.senderName}의 ${read ? '' : '새 '}응원 열기`
                   : '응원 열기'
                 : undefined
             }
@@ -83,7 +93,12 @@ export function DeskObjectLayer({
             onClick={() => onObjectClick?.(object.messageId)}
           >
             <DeskObjectVisual type={object.representationType} />
-            {interactive && !read && (
+            {locked && (
+              <span className="desk-object__lock" aria-hidden>
+                <LockKeyhole size={11} />
+              </span>
+            )}
+            {interactive && !read && !locked && (
               <span className="desk-object__unread-dot" aria-hidden />
             )}
           </button>

@@ -4,13 +4,18 @@ import {
   History,
   LockKeyhole,
 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { AppBar, IconButton } from '@/design-system'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { AppBar, IconButton, useFeedback } from '@/design-system'
 import { getComposerBackground } from '@/features/composer/backgroundAssets'
 import { getMessagePages } from '@/features/composer/messagePages'
 import { AppShell } from '@/layout/AppShell'
 import { OwnerViewToggle } from '@/features/owner/OwnerViewToggle'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import {
+  formatUnlockAt,
+  getMessageAvailability,
+} from '@/features/desk/dailyAvailability'
+import { useReadModeNow } from '@/features/desk/useReadModeNow'
 import type { Message } from '@/types'
 import { createEnvelopeTheme } from './envelopeTheme'
 import {
@@ -24,7 +29,10 @@ const OPEN_DURATION = 1120
 
 export function EnvelopeStackPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { showToast } = useFeedback()
   const scrollerRef = useRef<HTMLDivElement>(null)
+  const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const storedMessages = usePrototypeStore((state) => state.messages)
   const readMessageIds = usePrototypeStore((state) => state.readMessageIds)
   const [showHistory, setShowHistory] = useState(false)
@@ -34,6 +42,24 @@ export function EnvelopeStackPage() {
   const allMessages = useMemo(
     () => mergeSupportMessages(storedMessages),
     [storedMessages],
+  )
+  const now = useReadModeNow(
+    currentDesk.readMode,
+    location.search,
+  )
+  const availabilityById = useMemo(
+    () =>
+      new Map(
+        allMessages.map((message) => [
+          message.id,
+          getMessageAvailability(
+            currentDesk.readMode,
+            message.createdAt,
+            now,
+          ),
+        ]),
+      ),
+    [allMessages, currentDesk.readMode, now],
   )
   const messages = useMemo(
     () =>
@@ -61,12 +87,25 @@ export function EnvelopeStackPage() {
       return
     }
 
+    const availability = availabilityById.get(message.id)
+    if (availability && !availability.available) {
+      if (availability.unlockAt) {
+        showToast(
+          `${formatUnlockAt(availability.unlockAt, now)}에 열 수 있어요.`,
+        )
+      }
+      return
+    }
+
     setOpeningId(message.id)
 
     window.setTimeout(() => {
-      navigate(`/prototype/my/message/${message.id}`, {
-        state: { from: 'owner-cards', openedFromEnvelope: true },
-      })
+      navigate(
+        `/prototype/my/message/${message.id}${location.search}`,
+        {
+          state: { from: 'owner-cards', openedFromEnvelope: true },
+        },
+      )
     }, OPEN_DURATION)
   }
 
@@ -82,7 +121,7 @@ export function EnvelopeStackPage() {
             <IconButton
               label="내 책상으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate('/prototype/my/desk')}
+              onClick={() => navigate(`/prototype/my/desk${location.search}`)}
             />
           }
 
@@ -140,6 +179,10 @@ export function EnvelopeStackPage() {
                   const isRead =
                     message.status === 'read' ||
                     readMessageIds.includes(message.id)
+                  const availability = availabilityById.get(message.id)
+                  const locked = Boolean(
+                    availability && !availability.available,
+                  )
                   const active = delta === 0
                   const isOpening = openingId === message.id
                   const position = envelopePosition(index, activeIndex)
@@ -171,6 +214,7 @@ export function EnvelopeStackPage() {
                           ? 'message-envelope--deemphasized'
                           : '',
                         isRead ? 'message-envelope--read' : '',
+                        locked ? 'message-envelope--locked' : '',
                         `message-envelope--pattern-${theme.pattern}`,
                       ].filter(Boolean).join(' ')}
                       style={{
@@ -189,7 +233,11 @@ export function EnvelopeStackPage() {
                         zIndex: position.zIndex,
                       } as React.CSSProperties}
                       onClick={() => openMessage(message, index)}
-                      aria-label={`${message.senderName}에게서 온 응원 봉투 열기`}
+                      aria-label={
+                        locked
+                          ? `${message.senderName}에게서 온 응원 봉투는 아직 잠겨 있음`
+                          : `${message.senderName}에게서 온 응원 봉투 열기`
+                      }
                     >
                       <span className="message-envelope__shadow" />
                       <span className="message-envelope__body">
@@ -281,12 +329,22 @@ export function EnvelopeStackPage() {
                           </span>
                         </span>
 
-                        {!isRead && (
+                        {!isRead && !locked && (
                           <span
                             className="message-envelope__new"
                             aria-label="아직 열지 않은 응원"
                           >
                             새 응원
+                          </span>
+                        )}
+
+                        {locked && (
+                          <span
+                            className="message-envelope__locked"
+                            aria-label="아직 열 수 없는 응원"
+                          >
+                            <LockKeyhole size={11} aria-hidden />
+                            아직 잠김
                           </span>
                         )}
 
