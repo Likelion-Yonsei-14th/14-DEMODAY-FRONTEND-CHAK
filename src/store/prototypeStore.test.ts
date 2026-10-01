@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { emptyComposerDraft, mockDesk } from '@/prototype/mock/initialState'
+import {
+  emptyComposerDraft,
+  emptyDeskCreationDraft,
+  mockDesk,
+} from '@/prototype/mock/initialState'
 import {
   appendContinuationPage,
   getActiveCardPage,
@@ -91,6 +95,9 @@ describe('prototype store composer handoff', () => {
         ...mockDesk,
         objects: [],
       },
+      deskCreationDraft: {
+        ...emptyDeskCreationDraft,
+      },
       composerDraft: {
         ...emptyComposerDraft,
         textElements: emptyComposerDraft.textElements.map((item) => ({
@@ -146,5 +153,65 @@ describe('prototype store composer handoff', () => {
     expect(
       getActiveCardPage(state.composerDraft).textElements[0]?.text,
     ).toBe('')
+  })
+
+  it('creates a self-owned desk as claimed with the chosen read mode', () => {
+    const currentUser = usePrototypeStore.getState().currentUser
+
+    usePrototypeStore.setState({
+      deskCreationDraft: {
+        createdFor: 'self',
+        recipientDisplayName: currentUser.displayName,
+        readMode: {
+          type: 'daily',
+          unlockTime: '21:30',
+        },
+      },
+    })
+
+    usePrototypeStore.getState().createDeskFromDraft()
+
+    const state = usePrototypeStore.getState()
+    expect(state.currentDesk).toMatchObject({
+      displayName: currentUser.displayName,
+      createdFor: 'self',
+      ownerId: currentUser.id,
+      creatorId: currentUser.id,
+      claimStatus: 'claimed',
+      readMode: {
+        type: 'daily',
+        unlockTime: '21:30',
+      },
+    })
+    expect(state.claimState).toBe('claimed')
+  })
+
+  it('creates a desk for someone else as unclaimed', () => {
+    usePrototypeStore.setState({
+      deskCreationDraft: {
+        createdFor: 'other',
+        recipientDisplayName: '민지',
+        readMode: {
+          type: 'time-capsule',
+          unlockAt: '2026-11-12T20:00',
+        },
+      },
+    })
+
+    usePrototypeStore.getState().createDeskFromDraft()
+
+    const state = usePrototypeStore.getState()
+    expect(state.currentDesk).toMatchObject({
+      displayName: '민지',
+      createdFor: 'other',
+      creatorId: state.currentUser.id,
+      claimStatus: 'unclaimed',
+      readMode: {
+        type: 'time-capsule',
+        unlockAt: '2026-11-12T20:00',
+      },
+    })
+    expect(state.currentDesk.ownerId).toBeUndefined()
+    expect(state.claimState).toBe('unclaimed')
   })
 })
