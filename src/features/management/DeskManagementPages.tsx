@@ -7,7 +7,6 @@ import {
   Link2,
   LogOut,
   Share2,
-  SlidersHorizontal,
   UsersRound,
 } from 'lucide-react'
 import {
