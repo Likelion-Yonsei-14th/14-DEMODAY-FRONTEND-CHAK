@@ -1,0 +1,125 @@
+.desk-create-shell {
+  padding-inline: var(--page-gutter);
+  padding-bottom: 40px;
+}
+
+.desk-create {
+  display: grid;
+  gap: 28px;
+  padding-top: 24px;
+}
+
+.desk-create__heading {
+  display: grid;
+  gap: 8px;
+}
+
+.desk-create__heading h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.24;
+  letter-spacing: -.04em;
+}
+
+.desk-create__choices,
+.desk-create__mode-list {
+  display: grid;
+  gap: 12px;
+}
+
+.desk-create__mode-list {
+  gap: 14px;
+}
+
+.desk-create__mode-setting {
+  display: grid;
+  gap: 8px;
+  margin-top: -4px;
+  padding: 4px 4px 10px;
+}
+
+.desk-create__mode-setting--split {
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, .9fr);
+  gap: 10px;
+}
+
+.desk-create__field {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.desk-create__field-label {
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 750;
+}
+
+.desk-create__native-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 14px;
+  background: var(--color-surface-raised);
+  color: var(--color-content-primary);
+  font: inherit;
+  font-size: 16px;
+  outline: none;
+}
+
+.desk-create__native-input:focus {
+  border-color: var(--color-content-primary);
+  box-shadow: 0 0 0 2px rgba(76, 66, 59, .08);
+}
+
+.desk-create--complete {
+  justify-items: stretch;
+  padding-top: 48px;
+}
+
+.desk-create__complete-mark {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-brand-soft);
+  color: var(--color-brand-pressed);
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.desk-create__summary {
+  display: grid;
+  gap: 5px;
+  padding: 18px 19px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 18px;
+  background: var(--color-surface-raised);
+}
+
+.desk-create__summary span {
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.desk-create__summary strong {
+  font-size: 16px;
+  line-height: 23px;
+}
+
+.desk-create__complete-actions {
+  display: grid;
+  gap: 10px;
+}
+
+@media (max-width: 350px) {
+  .desk-create__mode-setting--split {
+    grid-template-columns: 1fr;
+  }
+}
