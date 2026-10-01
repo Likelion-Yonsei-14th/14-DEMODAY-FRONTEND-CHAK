@@ -142,10 +142,14 @@ export function DeskCreateReadModePage() {
   const createDesk = usePrototypeStore((state) => state.createDeskFromDraft)
 
   const daily = draft.readMode.type === 'daily'
-  const dailyTime = daily ? draft.readMode.unlockTime : '22:00'
-  const capsule = daily
-    ? splitDateTime(defaultCapsuleUnlockAt)
-    : splitDateTime(draft.readMode.unlockAt)
+  const dailyTime =
+    draft.readMode.type === 'daily'
+      ? draft.readMode.unlockTime
+      : '22:00'
+  const capsule =
+    draft.readMode.type === 'time-capsule'
+      ? splitDateTime(draft.readMode.unlockAt)
+      : splitDateTime(defaultCapsuleUnlockAt)
 
   const setMode = (type: ReadMode['type']) => {
     if (type === 'daily') {
