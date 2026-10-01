@@ -33,6 +33,7 @@ export function UnifiedComposerPage() {
   const navigate = useNavigate()
   const { showToast } = useFeedback()
   const draft = usePrototypeStore((state) => state.composerDraft)
+  const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const setComposerDraft = usePrototypeStore((state) => state.setComposerDraft)
   const [tool, setTool] = useState<ComposerTool>('background')
   const [visibilityOpen, setVisibilityOpen] = useState(false)
@@ -353,7 +354,7 @@ export function UnifiedComposerPage() {
             title="응원 만들기"
             leading={
               <IconButton
-                label="지수님의 책상으로 돌아가기"
+                label={`${currentDesk.displayName}님의 책상으로 돌아가기`}
                 icon={<ArrowLeft size={21} aria-hidden />}
                 onClick={() => navigate('/prototype/support/jisu')}
               />
@@ -538,6 +539,7 @@ export function UnifiedComposerPage() {
       <VisibilitySheet
         open={visibilityOpen}
         value={draft.visibility}
+        recipientName={currentDesk.displayName}
         onChange={updateVisibility}
         onClose={() => setVisibilityOpen(false)}
         onContinue={() => {
