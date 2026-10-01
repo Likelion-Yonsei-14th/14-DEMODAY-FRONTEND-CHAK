@@ -141,7 +141,6 @@
 }
 .ds-tab__icon { min-height: 18px; display: grid; place-items: center; }
 .ds-tab--active { color: var(--color-content-primary); background: var(--color-surface-subtle); }
-.ds-tab--restricted { color: var(--color-content-disabled); }
 
 .ds-asset-tile {
   position: relative;
@@ -157,11 +156,9 @@
   cursor: pointer;
 }
 .ds-asset-tile--selected { border-color: var(--color-content-primary); background: var(--color-surface-base); }
-.ds-asset-tile--restricted { opacity: .48; }
 .ds-asset-tile__visual { aspect-ratio: 1; display: grid; place-items: center; overflow: hidden; border-radius: 12px; background: var(--color-surface-subtle); }
 .ds-asset-tile__meta { min-width: 0; display: flex; align-items: center; gap: 5px; }
 .ds-asset-tile__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 600; }
-.ds-asset-tile__capability { flex: none; color: var(--color-success); font-size: 9px; font-weight: 800; letter-spacing: .04em; }
 .ds-asset-tile__badge { position: absolute; top: 4px; left: 4px; padding: 2px 6px; border-radius: var(--radius-full); background: var(--color-content-primary); color: white; font-size: 9px; font-weight: 800; }
 .ds-asset-tile__state { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: var(--color-content-primary); color: white; box-shadow: 0 2px 8px rgba(41,39,34,.18); }
 

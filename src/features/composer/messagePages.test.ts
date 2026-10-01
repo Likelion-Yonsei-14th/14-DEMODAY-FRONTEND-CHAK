@@ -33,7 +33,6 @@ describe('multi-page card draft', () => {
       pages: [
         {
           id: 'legacy-page',
-          canvasMode: 'standard',
           backgroundAssetId: 'bg-basic-cream',
           textElements: [
             {

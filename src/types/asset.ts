@@ -1,11 +1,8 @@
-export type CanvasMode = 'standard' | 'long'
-
 export type AssetCategory = 'background' | 'word-art' | 'sticker' | 'photo'
 export type BackgroundType = 'scalable' | 'repeatable' | 'fixed' | 'photo'
 export type PhotoFrame = 'plain' | 'white' | 'polaroid'
 
 export type AssetCapability = {
-  supportsLongCard: boolean
   movable: boolean
   scalable: boolean
   rotatable: boolean

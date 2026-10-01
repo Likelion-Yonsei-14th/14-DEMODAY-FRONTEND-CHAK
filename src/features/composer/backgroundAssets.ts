@@ -7,7 +7,6 @@ export type ComposerBackground = {
   source?: string
   tone: string
   fit?: 'cover' | 'contain'
-  supportsLongCard: boolean
 }
 
 const defaultBackground: ComposerBackground = {
@@ -17,7 +16,6 @@ const defaultBackground: ComposerBackground = {
   kind: 'css',
   className: 'message-canvas--cream',
   tone: '#F8F1E7',
-  supportsLongCard: true,
 }
 
 export const composerBackgrounds: ComposerBackground[] = [
@@ -29,7 +27,6 @@ export const composerBackgrounds: ComposerBackground[] = [
     kind: 'css',
     className: 'message-canvas--coral',
     tone: '#F7D8CF',
-    supportsLongCard: true,
   },
   {
     id: 'bg-sage',
@@ -38,7 +35,6 @@ export const composerBackgrounds: ComposerBackground[] = [
     kind: 'css',
     className: 'message-canvas--sage',
     tone: '#DFE8D7',
-    supportsLongCard: true,
   },
   {
     id: 'bg-sky',
@@ -47,7 +43,6 @@ export const composerBackgrounds: ComposerBackground[] = [
     kind: 'css',
     className: 'message-canvas--sky',
     tone: '#DCE7EF',
-    supportsLongCard: true,
   },
   {
     id: 'bg-butter',
@@ -56,7 +51,6 @@ export const composerBackgrounds: ComposerBackground[] = [
     kind: 'css',
     className: 'message-canvas--butter',
     tone: '#F8ECC3',
-    supportsLongCard: true,
   },
   {
     id: 'bg-art-heart-crown-pink',
@@ -66,7 +60,6 @@ export const composerBackgrounds: ComposerBackground[] = [
     source: '/assets/backgrounds/bg_art_heart_crown_pink.webp',
     tone: '#F7CBD5',
     fit: 'cover',
-    supportsLongCard: false,
   },
   {
     id: 'bg-art-rainbow-cloud-blue',
@@ -76,7 +69,6 @@ export const composerBackgrounds: ComposerBackground[] = [
     source: '/assets/backgrounds/bg_art_rainbow_cloud_blue.webp',
     tone: '#BFE8F8',
     fit: 'cover',
-    supportsLongCard: false,
   },
   {
     id: 'bg-pattern-daisy-sage',
@@ -86,7 +78,6 @@ export const composerBackgrounds: ComposerBackground[] = [
     source: '/assets/backgrounds/bg_pattern_daisy_sage.webp',
     tone: '#D9F0D5',
     fit: 'contain',
-    supportsLongCard: false,
   },
   {
     id: 'bg-pattern-stars-butter',
@@ -96,7 +87,6 @@ export const composerBackgrounds: ComposerBackground[] = [
     source: '/assets/backgrounds/bg_pattern_stars_butter.webp',
     tone: '#FFF3B7',
     fit: 'contain',
-    supportsLongCard: false,
   },
   {
     id: 'bg-frame-ribbon-pink',
@@ -106,7 +96,6 @@ export const composerBackgrounds: ComposerBackground[] = [
     source: '/assets/backgrounds/bg_frame_ribbon_pink.webp',
     tone: '#F6CED8',
     fit: 'contain',
-    supportsLongCard: false,
   },
   {
     id: 'bg-frame-ribbon-butter',
@@ -116,7 +105,6 @@ export const composerBackgrounds: ComposerBackground[] = [
     source: '/assets/backgrounds/bg_frame_ribbon_butter.webp',
     tone: '#FFF3B8',
     fit: 'contain',
-    supportsLongCard: false,
   },
   {
     id: 'bg-frame-clover-orange',
@@ -126,7 +114,6 @@ export const composerBackgrounds: ComposerBackground[] = [
     source: '/assets/backgrounds/bg_frame_clover_orange.webp',
     tone: '#FFF6E3',
     fit: 'contain',
-    supportsLongCard: false,
   },
   {
     id: 'bg-frame-hearts-pink',
@@ -136,7 +123,6 @@ export const composerBackgrounds: ComposerBackground[] = [
     source: '/assets/backgrounds/bg_frame_hearts_pink.webp',
     tone: '#F7CED9',
     fit: 'contain',
-    supportsLongCard: false,
   },
   {
     id: 'bg-frame-hearts-minimal-pink',
@@ -146,7 +132,6 @@ export const composerBackgrounds: ComposerBackground[] = [
     source: '/assets/backgrounds/bg_frame_hearts_minimal_pink.webp',
     tone: '#F5CBD7',
     fit: 'contain',
-    supportsLongCard: false,
   },
   {
     id: 'bg-art-torn-clover-butter',
@@ -156,7 +141,6 @@ export const composerBackgrounds: ComposerBackground[] = [
     source: '/assets/backgrounds/bg_art_torn_clover_butter.webp',
     tone: '#FFF2B7',
     fit: 'contain',
-    supportsLongCard: false,
   },
 ]
 

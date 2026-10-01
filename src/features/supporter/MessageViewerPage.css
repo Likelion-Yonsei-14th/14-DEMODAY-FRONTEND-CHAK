@@ -33,10 +33,6 @@
   aspect-ratio: 4 / 5;
 }
 
-.original-message--long {
-  min-height: 640px;
-}
-
 .original-message__background {
   position: absolute;
   z-index: 0;
@@ -71,17 +67,9 @@
   overflow-wrap: anywhere;
 }
 
-.original-message--standard .original-message__text {
+.original-message__text {
   position: absolute;
   transform: translate(-50%, -50%);
-}
-
-.original-message--long .original-message__flow {
-  position: relative;
-  z-index: 4;
-  display: grid;
-  gap: 18px;
-  padding: 74px 32px 90px;
 }
 
 .original-message__text--handwriting-default {

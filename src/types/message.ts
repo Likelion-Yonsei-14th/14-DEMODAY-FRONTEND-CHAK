@@ -1,4 +1,4 @@
-import type { CanvasMode, PhotoElement, PositionedAsset } from '@/types/asset'
+import type { PhotoElement, PositionedAsset } from '@/types/asset'
 
 export type MessageVisibility = 'public' | 'private'
 export type MessageStatus = 'draft' | 'sent' | 'read'
@@ -23,7 +23,6 @@ export type TextElement = {
 
 export type CardPage = {
   id: string
-  canvasMode: CanvasMode
   backgroundAssetId: string
   textElements: TextElement[]
   wordArtElements: PositionedAsset[]

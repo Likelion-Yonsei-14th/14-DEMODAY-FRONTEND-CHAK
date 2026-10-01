@@ -12,10 +12,10 @@ This document tracks the latest decisions that the code prototype must prioritiz
 
 - The home experience is the user’s study desk, not a card feed.
 - Messages appear as physical-looking desk objects.
-- 1–8 message objects are shown individually.
-- From 9+ objects, some can be clustered/stacked and an "전체 응원 보기" secondary view can be offered.
 - Primary reading path: Desk Object → Common Reader.
-- Card/Grid lists are secondary navigation only.
+- Card/envelope lists are secondary navigation only.
+- Unread messages are visually discoverable on the desk.
+- Daily / Time Capsule availability will be expressed through the object state rather than a separate content feed.
 
 ## Unified Composer
 
@@ -31,31 +31,36 @@ One editor provides:
 
 A supporter can start typing immediately and add only the elements they need.
 
-## Canvas
+## Card pages
 
-### Standard Card
+- All message cards use the standard 4:5 canvas.
+- A single message can contain **up to 3 card pages**.
+- The add-card entry point stays visible; overflow is not the only way to create another page.
+- Text is never split automatically across pages.
+- No page reorder is required for the current MVP.
+- A newly added page inherits:
+  - the current page background
+  - the last text element’s style
+- A newly added page does **not** inherit:
+  - actual text content
+  - stickers
+  - Word Art
+  - photos
+- Each page stores its own background, text, stickers, Word Art, and photos.
+- Composer and Recipient Reader must share rendering geometry/styles so authored output is preserved.
 
-- Default aspect ratio: 4:5.
+## Canvas interaction
+
 - Body text can be freely positioned.
 - Word Art, stickers, and floating photos can be moved/scaled/rotated within product limits.
-- Fixed PNG backgrounds and user photo backgrounds are allowed.
-
-### Long Card
-
-- Triggered when content becomes too long for the Standard Card and the user accepts the transition.
-- Body uses automatic vertical flow.
-- Header/Footer retain limited decoration freedom.
-- The editor keeps the same five tabs.
-- Unsupported assets stay visible as Restricted; they are not hidden or treated as inert disabled controls.
-- Tapping a Restricted asset explains why it is unavailable.
-- The default service background must support Long Card.
-- Fixed artwork PNGs and full-photo backgrounds may be 4:5-only.
+- Background images and user photo backgrounds are allowed.
+- Floating layers share one z-order model.
+- The selected object type controls which editing tool is active.
 
 ## Asset model
 
-Asset capability is explicit data:
+Asset capability data may describe interaction behavior such as:
 
-- supportsLongCard
 - movable
 - scalable
 - rotatable
@@ -66,6 +71,26 @@ Background types:
 - repeatable
 - fixed
 - photo
+
+Long Card is not part of the current product model.
+
+## Desk creation / ownership
+
+- A desk can be created by the test-taker or by another supporter.
+- Self-created desks begin as claimed.
+- Supporter-created desks begin as unclaimed.
+- The recipient can claim the desk later.
+- Before completing claim, the recipient can confirm or change the read mode.
+- After claim, the original creator should have the same control level as an ordinary supporter.
+
+## Read modes
+
+User-facing copy describes the outcome rather than exposing internal mode names.
+
+Internal modes:
+
+- `daily`: open the day’s messages at a configured daily time.
+- `time-capsule`: keep messages locked until a configured date/time.
 
 ## Class mode
 

@@ -164,12 +164,14 @@ Source: `src/design-system/tokens/typography.css`
 
 ## 3.1 UI font stack
 
+확정된 기본 UI 폰트는 **Pretendard**입니다.
+
 현재 코드:
 
 ```css
 --font-ui:
-  'Wanted Sans',
-  'Pretendard',
+  'Pretendard Variable',
+  Pretendard,
   'Noto Sans KR',
   -apple-system,
   BlinkMacSystemFont,
@@ -177,18 +179,7 @@ Source: `src/design-system/tokens/typography.css`
   sans-serif;
 ```
 
-### ⚠ Pending product confirmation
-
-현재 `fonts.css`에서는 **Pretendard Variable은 로드하지만 Wanted Sans는 별도 로드하지 않습니다.**
-
-따라서 실제 브라우저 렌더링은 환경에 따라 Pretendard fallback이 될 수 있습니다.
-
-Production에서 아래 중 하나를 확정해야 합니다.
-
-- Wanted Sans를 실제 기본 UI font로 사용하고 정식 로딩
-- Pretendard를 canonical UI font로 변경
-
-확정 전에는 코드의 font stack을 유지합니다.
+Prototype에서는 CDN으로 Pretendard Variable을 로드합니다. Production에서는 성능과 안정성을 고려해 self-hosting 여부를 검토할 수 있지만, UI typography의 canonical family는 Pretendard로 유지합니다.
 
 ## 3.2 Type scale
 
@@ -342,16 +333,14 @@ contentClassName?: string
 - fixed CTA는 sticky bottom
 - 520px 이상에서는 중앙에 430px shell + rounded outer frame
 
-### ⚠ Pending product confirmation
+### Production responsive policy
 
-현재 430px 제한은 **프로토타입의 모바일 앱 같은 경험을 보여주기 위한 구조**입니다.
+Production은 **mobile-first responsive web**으로 구현합니다.
 
-Production에서 다음 중 무엇을 canonical로 볼지 확정 필요:
-
-1. 모바일 중심 430px fixed shell 유지
-2. 모바일 우선이지만 tablet / desktop에서 responsive width 확장
-
-확정 전에는 현재 AppShell을 prototype reference로 간주합니다.
+- 모바일에서 현재 prototype의 정보 밀도와 interaction을 기준으로 합니다.
+- Tablet / desktop에서는 사용 가능한 폭에 맞춰 layout이 확장되어야 합니다.
+- 현재 `max-width: 430px` AppShell은 prototype reference이며 production의 고정 최대 폭 규칙이 아닙니다.
+- 구체적인 desktop max-width, breakpoint, multi-column 전환 시점은 별도 responsive 화면 설계에서 확정합니다. 임의의 breakpoint 값을 디자인시스템 규칙으로 간주하지 않습니다.
 
 ---
 
@@ -458,9 +447,8 @@ Selected state에서는 dark ink background + inverse text를 사용합니다.
 
 - icon
 - active
-- restricted
 
-Restricted item은 숨기지 않고 `onRestricted`로 이유를 설명할 수 있습니다.
+현재 제품에서 사용하지 않는 mode-specific restriction은 Tabs API에 두지 않습니다.
 
 ## AssetTile
 
@@ -469,12 +457,9 @@ Restricted item은 숨기지 않고 `onRestricted`로 이유를 설명할 수 �
 지원:
 
 - selected
-- restricted
 - badge
-- supportsLongCard (legacy capability field)
 
-> `supportsLongCard`는 과거 Long Card 탐색에서 만들어진 필드입니다.
-> 현재 multi-card 정책과의 관계는 아래 Pending 섹션 참고.
+AssetTile은 배경·스티커 등 선택 가능한 에셋을 동일한 패턴으로 보여줄 때 사용합니다.
 
 ## StatusBadge
 
@@ -713,7 +698,6 @@ type ComposerBackground = {
   source?: string
   tone: string
   fit?: 'cover' | 'contain'
-  supportsLongCard: boolean
 }
 ```
 
@@ -862,7 +846,7 @@ Production 전환 시 별도로 검토할 항목:
 - server persistence
 - URL room routing
 - font self-hosting
-- responsive layout 확정
+- responsive breakpoint / desktop layout 상세 확정
 - full accessibility QA
 - design token TypeScript/Figma token sync 여부
 
@@ -870,30 +854,15 @@ Production 전환 시 별도로 검토할 항목:
 
 ---
 
-# 18. Pending confirmations
+# 18. Confirmed product-level design decisions
 
-아래는 현재 코드만으로 제품 규칙을 확정할 수 없는 항목입니다.
+- **UI font:** Pretendard
+- **Responsive:** mobile-first; tablet/desktop expands responsively
+- **Card model:** 4:5 standard cards, maximum 3 pages per message
+- **multi-page card:** removed from the product model
+- **Prototype 430px AppShell:** visual reference only, not a production max-width contract
 
-## P1. UI 기본 폰트
-
-현재 token: Wanted Sans → Pretendard fallback  
-현재 실제 webfont loading: Pretendard
-
-**확인 필요:** Wanted Sans / Pretendard 중 production canonical UI font
-
-## P2. Desktop responsive policy
-
-현재 prototype: max-width 430px mobile shell
-
-**확인 필요:** production도 430px 중심으로 유지할지, tablet/desktop responsive layout으로 확장할지
-
-## P3. Long Card legacy cleanup
-
-예전 `SystemPage`, `PRODUCT_DECISIONS.md`, 일부 asset capability에는 Long Card가 남아 있습니다.
-
-현재 활성 제품 방향은 **표준 카드 최대 3장**을 사용하는 multi-card 방식입니다.
-
-**확인 필요:** Long Card 관련 설명/데모/asset capability를 legacy로 선언하고 제거·정리할지
+Responsive breakpoint numbers and desktop composition are intentionally left unspecified until the corresponding layouts are designed.
 
 ---
 
@@ -933,4 +902,3 @@ Live gallery:
 - `/system`
 - `src/system/SystemPage.tsx`
 
-> Note: `/system`의 일부 Long Card 예시는 최신 multi-card 결정 이전의 legacy exploration입니다.

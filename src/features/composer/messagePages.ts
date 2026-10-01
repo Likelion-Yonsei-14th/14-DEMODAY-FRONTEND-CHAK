@@ -7,7 +7,6 @@ export function getMessagePages(
     MessageDraft,
     | 'id'
     | 'pages'
-    | 'canvasMode'
     | 'backgroundAssetId'
     | 'textElements'
     | 'wordArtElements'
@@ -29,7 +28,6 @@ export function getMessagePages(
     normalizeCardPage(
       {
         id: `${message.id}-page-1`,
-        canvasMode: message.canvasMode,
         backgroundAssetId: message.backgroundAssetId,
         textElements: message.textElements,
         wordArtElements: message.wordArtElements,
@@ -128,7 +126,6 @@ export function appendContinuationPage(
 
   const nextPage: CardPage = {
     id: pageId,
-    canvasMode: 'standard',
     backgroundAssetId: source.backgroundAssetId,
     textElements: [continuationText],
     wordArtElements: [],
@@ -185,7 +182,6 @@ function normalizeCardPage(
   fallbackId: string,
   message: Pick<
     MessageDraft,
-    | 'canvasMode'
     | 'backgroundAssetId'
     | 'textElements'
     | 'wordArtElements'
@@ -195,10 +191,6 @@ function normalizeCardPage(
 ): CardPage {
   return {
     id: page.id ?? fallbackId,
-    canvasMode:
-      page.canvasMode ??
-      message.canvasMode ??
-      'standard',
     backgroundAssetId:
       page.backgroundAssetId ??
       message.backgroundAssetId ??
@@ -225,7 +217,6 @@ function normalizeCardPage(
 
 function pageSnapshot(page: CardPage): Omit<CardPage, 'id'> {
   return {
-    canvasMode: page.canvasMode,
     backgroundAssetId: page.backgroundAssetId,
     textElements: page.textElements,
     wordArtElements: page.wordArtElements,

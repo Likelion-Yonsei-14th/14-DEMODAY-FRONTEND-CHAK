@@ -43,7 +43,6 @@ export const emptyDeskCreationDraft: DeskCreationDraft = {
 
 const initialCardPage: CardPage = {
   id: 'draft-01-page-1',
-  canvasMode: 'standard',
   backgroundAssetId: 'bg-basic-cream',
   textElements: [
     {
@@ -67,7 +66,6 @@ const initialCardPage: CardPage = {
 
 export const emptyComposerDraft: MessageDraft = {
   id: 'draft-01',
-  canvasMode: initialCardPage.canvasMode,
   backgroundAssetId: initialCardPage.backgroundAssetId,
   textElements: initialCardPage.textElements,
   wordArtElements: initialCardPage.wordArtElements,

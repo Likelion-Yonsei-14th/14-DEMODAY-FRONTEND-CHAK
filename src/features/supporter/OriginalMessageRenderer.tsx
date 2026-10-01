@@ -27,7 +27,6 @@ export function OriginalMessageRenderer({
   const background = getComposerBackground(
     cardPage.backgroundAssetId,
   )
-  const longCard = cardPage.canvasMode === 'long'
   const backgroundPhoto = cardPage.photoElements.find(
     (photo) => photo.role === 'background',
   )
@@ -39,9 +38,7 @@ export function OriginalMessageRenderer({
     <div
       className={[
         'original-message',
-        longCard
-          ? 'original-message--long'
-          : 'original-message--standard',
+        'original-message--standard',
         background.kind === 'css'
           ? background.className ?? ''
           : '',
@@ -124,13 +121,7 @@ export function OriginalMessageRenderer({
         )
       })}
 
-      <div
-        className={
-          longCard
-            ? 'original-message__flow'
-            : undefined
-        }
-      >
+      <div>
         {cardPage.textElements.map((element) => {
           const appearance = getTextAppearance(element)
           const typography: CSSProperties = {
@@ -146,20 +137,11 @@ export function OriginalMessageRenderer({
             <p
               key={element.id}
               className="original-message__text"
-              style={
-                longCard
-                  ? {
-                      ...typography,
-                      textAlign:
-                        element.align ?? 'left',
-                    }
-                  : ({
-                      ...typography,
-                      ...getTextBoxStyle(element),
-                      textAlign:
-                        element.align ?? 'center',
-                    } as CSSProperties)
-              }
+              style={{
+                ...typography,
+                ...getTextBoxStyle(element),
+                textAlign: element.align ?? 'center',
+              } as CSSProperties}
             >
               {element.text}
             </p>

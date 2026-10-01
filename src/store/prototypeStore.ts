@@ -8,14 +8,13 @@ import {
   mockDesk,
 } from '@/prototype/mock/initialState'
 import { getComposerBackground } from '@/features/composer/backgroundAssets'
-import { getFirstCardPage, updateDraftPage } from '@/features/composer/messagePages'
+import { getFirstCardPage } from '@/features/composer/messagePages'
 import {
   resolveDeskObjectType,
   resolveDeskZone,
   resolveInitialPlacement,
 } from '@/features/supporter/supporterFlow'
 import type {
-  CanvasMode,
   Classroom,
   Desk,
   DeskCreationDraft,
@@ -41,7 +40,6 @@ type PrototypeState = {
   classroom: Classroom
   readMessageIds: string[]
   setDebugMode: (value: boolean) => void
-  setCanvasMode: (mode: CanvasMode) => void
   setComposerDraft: (draft: MessageDraft) => void
   resetComposerDraft: () => void
   setDeskCreationDraft: (patch: Partial<DeskCreationDraft>) => void
@@ -74,16 +72,6 @@ export const usePrototypeStore = create<PrototypeState>()(
       classroom: mockClassroom,
       readMessageIds: [],
       setDebugMode: (debugMode) => set({ debugMode }),
-      setCanvasMode: (canvasMode) =>
-        set((state) => ({
-          composerDraft: updateDraftPage(
-            state.composerDraft,
-            state.composerDraft.activePageId ??
-              state.composerDraft.pages?.[0]?.id ??
-              `${state.composerDraft.id}-page-1`,
-            { canvasMode },
-          ),
-        })),
       setComposerDraft: (composerDraft) => set({ composerDraft }),
       resetComposerDraft: () => set({ composerDraft: emptyComposerDraft }),
       setDeskCreationDraft: (patch) =>

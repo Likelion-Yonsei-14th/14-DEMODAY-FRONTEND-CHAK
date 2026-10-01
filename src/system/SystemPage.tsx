@@ -118,57 +118,54 @@ export function SystemPage() {
           </div>
           <div className="system-choice-stack">
             <ChoiceCard
-              title="기본 카드"
-              description="4:5 · 자유 배치"
+              title="하루를 마무리하며"
+              description="매일 정해진 시간에 그날의 응원을 열어봐요."
               selected
               icon={<Sparkles size={20} aria-hidden />}
             />
             <ChoiceCard
-              title="Long Card"
-              description="본문 자동 레이아웃 · 지원 에셋만 사용"
+              title="한 번에 열어보기"
+              description="정해둔 날까지 응원을 모아두고 한 번에 열어봐요."
               icon={<Type size={20} aria-hidden />}
             />
           </div>
         </SystemSection>
 
-        <SystemSection title="Composer Tabs" description="Standard와 Long Card 모두 같은 탭 구조를 유지합니다.">
+        <SystemSection title="Composer Tabs" description="모든 카드 페이지는 같은 5개 편집 탭을 사용합니다.">
           <div className="system-tabs-demo">
             <Tabs
               items={editorTabs}
               value={tab}
               onChange={setTab}
-              onRestricted={(item) => showToast(`${item.label}은 긴 카드에서 사용할 수 없는 요소예요.`)}
               ariaLabel="에디터 도구"
             />
           </div>
         </SystemSection>
 
-        <SystemSection title="Asset Tiles" description="Long Card에서 못 쓰는 에셋은 숨기지 않고 Restricted 상태로 보여줍니다.">
+        <SystemSection title="Asset Tiles" description="배경과 꾸미기 에셋은 같은 선택 패턴을 사용합니다.">
           <div className="system-asset-grid">
             <AssetTile
               name="Cream"
               selected={selectedAsset === 'cream'}
-              supportsLongCard
               onClick={() => setSelectedAsset('cream')}
               thumbnail={<span className="system-thumb system-thumb--cream" />}
             />
             <AssetTile
               name="Star Pattern"
               selected={selectedAsset === 'star'}
-              supportsLongCard
               onClick={() => setSelectedAsset('star')}
               thumbnail={<span className="system-thumb system-thumb--star">✦ ✧ ✦</span>}
             />
             <AssetTile
               name="Clover Frame"
-              restricted
-              onClick={() => showToast('긴 카드에서는 사용할 수 없는 배경이에요.')}
+              selected={selectedAsset === 'clover'}
+              onClick={() => setSelectedAsset('clover')}
               thumbnail={<span className="system-thumb system-thumb--clover">♧</span>}
             />
             <AssetTile
               name="내 사진"
-              restricted
-              onClick={() => showToast('사진 전체 배경은 4:5 카드에서만 사용할 수 있어요.')}
+              selected={selectedAsset === 'photo'}
+              onClick={() => setSelectedAsset('photo')}
               thumbnail={<span className="system-thumb system-thumb--photo"><ImageIcon size={24} /></span>}
             />
           </div>
@@ -178,7 +175,7 @@ export function SystemPage() {
           <div className="system-button-stack">
             <Button variant="secondary" onClick={() => setSheetOpen(true)} fullWidth>Bottom Sheet 열기</Button>
             <Button variant="secondary" onClick={() => setDialogOpen(true)} fullWidth>Dialog 열기</Button>
-            <Button variant="secondary" onClick={() => showToast('긴 카드에서는 사용할 수 없는 요소예요.')} fullWidth>Toast 보기</Button>
+            <Button variant="secondary" onClick={() => showToast('배경을 변경했어요.')} fullWidth>Toast 보기</Button>
             <Button
               variant="secondary"
               onClick={() =>
@@ -212,15 +209,14 @@ export function SystemPage() {
       <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
-        title="긴 카드로 이어쓸까요?"
-        description="글이 길어지고 있어요. 긴 카드로 바꾸면 내용을 더 편하게 이어서 쓸 수 있어요."
-        secondaryAction={{ label: '이대로 정리하기', onClick: () => setDialogOpen(false) }}
+        title="응원을 삭제할까요?"
+        description="삭제한 응원은 책상에서 사라져요."
+        secondaryAction={{ label: '취소', onClick: () => setDialogOpen(false) }}
         primaryAction={{
-          label: '긴 카드로 이어쓰기',
-          variant: 'brand',
+          label: '삭제하기',
           onClick: () => {
             setDialogOpen(false)
-            showToast({ message: 'Long Card로 바꿨어요.', tone: 'success' })
+            showToast({ message: '응원을 삭제했어요.', tone: 'success' })
           },
         }}
       />

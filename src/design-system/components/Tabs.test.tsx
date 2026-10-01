@@ -4,11 +4,11 @@ import { Tabs, type TabItem } from './Tabs'
 
 const items: TabItem[] = [
   { id: 'background', label: '배경' },
-  { id: 'photo', label: '사진', restricted: true },
+  { id: 'photo', label: '사진' },
 ]
 
 describe('Tabs', () => {
-  it('changes to an available tab', () => {
+  it('changes the selected tab', () => {
     const onChange = vi.fn()
     render(<Tabs items={items} value="photo" onChange={onChange} />)
 
@@ -17,21 +17,20 @@ describe('Tabs', () => {
     expect(onChange).toHaveBeenCalledWith('background')
   })
 
-  it('keeps restricted items clickable for explanation without selecting them', () => {
-    const onChange = vi.fn()
-    const onRestricted = vi.fn()
+  it('exposes the active tab with aria-selected', () => {
     render(
       <Tabs
         items={items}
         value="background"
-        onChange={onChange}
-        onRestricted={onRestricted}
+        onChange={() => undefined}
       />,
     )
 
-    fireEvent.click(screen.getByRole('tab', { name: '사진' }))
-
-    expect(onChange).not.toHaveBeenCalled()
-    expect(onRestricted).toHaveBeenCalledWith(items[1])
+    expect(
+      screen.getByRole('tab', { name: '배경' }),
+    ).toHaveAttribute('aria-selected', 'true')
+    expect(
+      screen.getByRole('tab', { name: '사진' }),
+    ).toHaveAttribute('aria-selected', 'false')
   })
 })

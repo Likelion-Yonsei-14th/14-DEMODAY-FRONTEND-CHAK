@@ -10,7 +10,6 @@ function localIso(daysAgo: number, hour: number, minute: number) {
 export const seededSupportMessages: Message[] = [
   {
     id: 'seed-message-multicard-demo',
-    canvasMode: 'standard',
     backgroundAssetId: 'bg-frame-ribbon-pink',
     textElements: [
       {
@@ -29,7 +28,6 @@ export const seededSupportMessages: Message[] = [
     pages: [
       {
         id: 'seed-demo-page-1',
-        canvasMode: 'standard',
         backgroundAssetId: 'bg-frame-ribbon-pink',
         textElements: [
           {
@@ -58,7 +56,6 @@ export const seededSupportMessages: Message[] = [
       },
       {
         id: 'seed-demo-page-2',
-        canvasMode: 'standard',
         backgroundAssetId: 'bg-frame-ribbon-pink',
         textElements: [
           {
@@ -87,7 +84,6 @@ export const seededSupportMessages: Message[] = [
       },
       {
         id: 'seed-demo-page-3',
-        canvasMode: 'standard',
         backgroundAssetId: 'bg-frame-ribbon-pink',
         textElements: [
           {
@@ -125,7 +121,6 @@ export const seededSupportMessages: Message[] = [
   },
   {
     id: 'seed-message-minji',
-    canvasMode: 'standard',
     backgroundAssetId: 'bg-frame-ribbon-pink',
     textElements: [
       {
@@ -150,7 +145,6 @@ export const seededSupportMessages: Message[] = [
   },
   {
     id: 'seed-message-soobin',
-    canvasMode: 'standard',
     backgroundAssetId: 'bg-pattern-stars-butter',
     textElements: [
       {
@@ -175,7 +169,6 @@ export const seededSupportMessages: Message[] = [
   },
   {
     id: 'seed-message-hyunwoo',
-    canvasMode: 'standard',
     backgroundAssetId: 'bg-art-rainbow-cloud-blue',
     textElements: [
       {
@@ -200,7 +193,6 @@ export const seededSupportMessages: Message[] = [
   },
   {
     id: 'seed-message-yuna',
-    canvasMode: 'standard',
     backgroundAssetId: 'bg-pattern-daisy-sage',
     textElements: [
       {
@@ -225,7 +217,6 @@ export const seededSupportMessages: Message[] = [
   },
   {
     id: 'seed-message-jun',
-    canvasMode: 'standard',
     backgroundAssetId: 'bg-soft-coral',
     textElements: [
       {
@@ -251,7 +242,6 @@ export const seededSupportMessages: Message[] = [
   },
   {
     id: 'seed-message-seoyeon',
-    canvasMode: 'standard',
     backgroundAssetId: 'bg-frame-clover-orange',
     textElements: [
       {
