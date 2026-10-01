@@ -9,6 +9,7 @@
 .desk-scene__svg {
   width: 100%;
   height: auto;
+  display: block;
 }
 
 .desk-scene__light {
@@ -16,20 +17,30 @@
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(120deg, rgba(255, 250, 226, .32), transparent 28%),
-    radial-gradient(circle at 82% 12%, rgba(255, 228, 177, .28), transparent 34%);
+    linear-gradient(
+      128deg,
+      rgba(255, 252, 235, .26),
+      transparent 31%
+    ),
+    radial-gradient(
+      circle at 84% 10%,
+      rgba(255, 231, 185, .21),
+      transparent 31%
+    );
   mix-blend-mode: screen;
 }
 
-.desk-scene__wall-messages,
-.desk-scene__environment,
-.desk-scene__message-objects {
+.desk-scene__table,
+.desk-scene__decor {
   transform-box: fill-box;
   transform-origin: center;
 }
 
-.desk-scene__message-objects > g {
-  transition: transform var(--duration-normal) var(--ease-emphasized);
+.desk-scene__lamp,
+.desk-scene__books,
+.desk-scene__plant {
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .desk-scene__extra {
@@ -46,12 +57,20 @@
     transform: translateY(-18px) scale(1.06) rotate(2deg);
     opacity: 0;
   }
+
   66% {
     transform: translateY(2px) scale(.99) rotate(-1deg);
     opacity: 1;
   }
+
   100% {
     transform: translateY(0) scale(1) rotate(0);
     opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desk-scene__extra--highlight {
+    animation: none;
   }
 }
