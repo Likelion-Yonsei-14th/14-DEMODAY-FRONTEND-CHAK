@@ -98,10 +98,18 @@ export function ClassroomLockerScene({
             className="locker-scene__door-face locker-scene__door-face--back"
             aria-hidden
           >
-            <span className="locker-scene__door-back-rib locker-scene__door-back-rib--left" />
-            <span className="locker-scene__door-back-rib locker-scene__door-back-rib--right" />
-            <span className="locker-scene__door-back-pocket" />
-            <span className="locker-scene__door-back-latch" />
+            <span className="locker-scene__door-back-frame">
+              <span className="locker-scene__door-back-panel">
+                <span className="locker-scene__door-back-brace locker-scene__door-back-brace--top" />
+                <span className="locker-scene__door-back-brace locker-scene__door-back-brace--bottom" />
+              </span>
+            </span>
+            <span className="locker-scene__door-back-hinge-rail" />
+            <span className="locker-scene__door-back-latch">
+              <span className="locker-scene__door-back-latch-arm" />
+            </span>
+            <span className="locker-scene__door-back-screw locker-scene__door-back-screw--one" />
+            <span className="locker-scene__door-back-screw locker-scene__door-back-screw--two" />
           </span>
         </button>
       </div>
