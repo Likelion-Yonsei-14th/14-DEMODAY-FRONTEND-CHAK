@@ -3,22 +3,33 @@ import {
   MoreHorizontal,
   Share2,
 } from 'lucide-react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppBar, Button, IconButton, useFeedback } from '@/design-system'
 import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
 import { DeskScene } from '@/features/desk/DeskScene'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import {
+  mergeSupportMessages,
+  seededDeskObjects,
+} from './seededMessages'
 import './SupportDeskPage.css'
-
-const seededObjectCount = 6
 
 export function SupportDeskPage() {
   const navigate = useNavigate()
   const { showToast } = useFeedback()
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
-  const messages = usePrototypeStore((state) => state.messages)
-  const objectCount = seededObjectCount + currentDesk.objects.length
+  const storedMessages = usePrototypeStore((state) => state.messages)
+  const messages = useMemo(
+    () => mergeSupportMessages(storedMessages),
+    [storedMessages],
+  )
+  const objects = useMemo(
+    () => [...seededDeskObjects, ...currentDesk.objects],
+    [currentDesk.objects],
+  )
+  const objectCount = objects.length
 
   return (
     <AppShell
@@ -78,7 +89,7 @@ export function SupportDeskPage() {
         <div className="support-desk__scene-wrap">
           <DeskScene ownerName="지수님" />
           <DeskObjectLayer
-            objects={currentDesk.objects}
+            objects={objects}
             messages={messages}
           />
         </div>
