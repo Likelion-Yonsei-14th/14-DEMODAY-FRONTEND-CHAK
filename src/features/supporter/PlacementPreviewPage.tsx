@@ -82,6 +82,7 @@ export function PlacementPreviewPage() {
     objectType,
   )
   const visibilityPrivate = draft.visibility === 'private'
+  const recipientName = currentDesk.displayName
 
   const handlePointerDown: React.PointerEventHandler<HTMLButtonElement> = (
     event,
@@ -179,7 +180,7 @@ export function PlacementPreviewPage() {
     >
       <main className="placement-preview">
         <section className="placement-preview__copy">
-          <h2>지수님의 책상에서<br />내 응원의 자리를 골라요.</h2>
+          <h2>{recipientName}님의 책상에서<br />내 응원의 자리를 골라요.</h2>
           <p>
             다른 친구의 응원을 거의 다 가리는 자리만 피하면 어디든 괜찮아요.
           </p>
@@ -258,7 +259,7 @@ export function PlacementPreviewPage() {
             dragging ? 'placement-preview__scene--dragging' : '',
           ].filter(Boolean).join(' ')}
         >
-          <DeskScene ownerName="지수님" />
+          <DeskScene ownerName={`${recipientName}님`} />
           <DeskObjectLayer
             objects={existingObjects}
             messages={messages}
@@ -307,7 +308,7 @@ export function PlacementPreviewPage() {
               ) : (
                 <Eye size={15} aria-hidden />
               )}
-              {visibilityPrivate ? '지수님만 보기' : '함께 보기'}
+              {visibilityPrivate ? `${recipientName}님만 보기` : '함께 보기'}
             </strong>
           </div>
         </section>
