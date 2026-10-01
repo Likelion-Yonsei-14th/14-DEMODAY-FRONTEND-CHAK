@@ -546,7 +546,6 @@ export function OffersPage() {
 export function OfferDetailPage() {
   const { offerId } = useParams()
   const navigate = useNavigate()
-  const { showToast } = useFeedback()
   const offer = offers.find((item) => item.id === offerId)
 
   if (!offer) {
@@ -573,7 +572,7 @@ export function OfferDetailPage() {
           variant="brand"
           fullWidth
           onClick={() =>
-            showToast('제휴처에서 보여줄 수험생 확인 화면을 열었어요.')
+            navigate(`/prototype/offers/${offer.id}/coupon`)
           }
         >
           혜택 사용하기
@@ -613,6 +612,109 @@ export function OfferDetailPage() {
         >
           다른 혜택 더 보기
         </button>
+      </main>
+    </AppShell>
+  )
+}
+
+
+export function OfferCouponPage() {
+  const { offerId } = useParams()
+  const navigate = useNavigate()
+  const { showToast } = useFeedback()
+  const offer = offers.find((item) => item.id === offerId)
+
+  if (!offer) {
+    return <Navigate to="/prototype/offers" replace />
+  }
+
+  const saveCoupon = async () => {
+    const text = [
+      offer.title,
+      offer.partner,
+      offer.period,
+      offer.condition,
+    ].join('\n')
+
+    try {
+      await navigator.clipboard.writeText(text)
+      showToast('쿠폰 정보를 저장했어요.')
+    } catch {
+      showToast('쿠폰 저장을 다시 시도해주세요.')
+    }
+  }
+
+  return (
+    <AppShell
+      surface="base"
+      contentClassName="wrapped-shell"
+      appBar={
+        <AppBar
+          title="수험생 쿠폰"
+          leading={
+            <WrappedBack
+              to={`/prototype/offers/${offer.id}`}
+              label="혜택 상세로 돌아가기"
+            />
+          }
+        />
+      }
+      fixedAction={
+        <Button
+          variant="brand"
+          fullWidth
+          onClick={() => {
+            showToast('혜택 사용을 완료했어요.')
+            navigate('/prototype/offers', { replace: true })
+          }}
+        >
+          사용 완료
+        </Button>
+      }
+    >
+      <main className="offer-coupon">
+        <section className="offer-coupon__card">
+          <span className="offer-coupon__badge">
+            STUDENT BENEFIT
+          </span>
+          <p>{offer.partner}</p>
+          <h1>{offer.title}</h1>
+
+          <div className="offer-coupon__barcode" aria-hidden>
+            {Array.from({ length: 24 }, (_, index) => (
+              <span
+                key={index}
+                style={{
+                  width: index % 4 === 0 ? 3 : index % 3 === 0 ? 2 : 1,
+                }}
+              />
+            ))}
+          </div>
+
+          <strong className="offer-coupon__code">
+            EXAM-{offer.id.toUpperCase()}-2026
+          </strong>
+
+          <div className="offer-coupon__meta">
+            <span>{offer.period}</span>
+            <span>{offer.condition}</span>
+          </div>
+        </section>
+
+        <section className="offer-coupon__guide">
+          <h2>제휴처 직원에게 이 화면을 보여주세요.</h2>
+          <p>
+            실제 서비스에서는 사용 여부와 유효기간을 서버에서 확인하게 돼요.
+          </p>
+        </section>
+
+        <Button
+          variant="secondary"
+          fullWidth
+          onClick={saveCoupon}
+        >
+          쿠폰 정보 저장하기
+        </Button>
       </main>
     </AppShell>
   )
