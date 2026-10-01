@@ -70,8 +70,8 @@ export function StartPage() {
 
         <section className="start-page__choices" aria-label="응원을 모으는 방법">
           <ChoiceCard
-            title="나를 응원해줄 친구들을 초대할래요"
-            description="친구들이 남긴 응원이 내 공간에 하나씩 쌓여요."
+            title="한 사람에게 마음을 모아줄래요"
+            description="나 또는 한 친구를 위한 공간을 만들고, 링크로 응원을 모아요."
             icon={<UserRound size={22} aria-hidden />}
             onClick={startPersonal}
           />
