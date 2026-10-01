@@ -30,6 +30,7 @@ export function SupportDeskPage() {
     [currentDesk.objects],
   )
   const objectCount = objects.length
+  const recipientName = currentDesk.displayName
 
   return (
     <AppShell
@@ -37,7 +38,7 @@ export function SupportDeskPage() {
       contentClassName="support-desk-shell"
       appBar={
         <AppBar
-          title="지수님의 책상"
+          title={`${recipientName}님의 책상`}
           subtitle="수능까지 D-42"
           transparent
           leading={
@@ -77,17 +78,17 @@ export function SupportDeskPage() {
           <h2>
             친구들이 하나씩
             <br />
-            지수님의 책상을 채우고 있어요.
+            {recipientName}님의 책상을 채우고 있어요.
           </h2>
           <p>
-            지수님에게 전하고 싶은 마음이 있다면,
+            {recipientName}님에게 전하고 싶은 마음이 있다면,
             <br />
             응원 하나를 남겨보세요.
           </p>
         </section>
 
         <div className="support-desk__scene-wrap">
-          <DeskScene ownerName="지수님" />
+          <DeskScene ownerName={`${recipientName}님`} />
           <DeskObjectLayer
             objects={objects}
             messages={messages}
