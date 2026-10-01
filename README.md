@@ -46,6 +46,17 @@ GitHub Actions runs the same checks on pushes and pull requests.
 
 The newest agreed UX rules live in [docs/PRODUCT_DECISIONS.md](docs/PRODUCT_DECISIONS.md). When an older Figma exploration conflicts with these decisions, the newer product decision should win.
 
+## Design system / frontend handoff
+
+Current color tokens, typography, spacing, common components, overlay behavior, card-content styling, and frontend implementation guidance are documented in [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md).
+
+The document explicitly separates:
+
+- service UI design tokens/components
+- user-created card styling/assets
+- prototype-only implementation details
+- items that still require product confirmation
+
 ## Next
 
 Phase 2 starts with the supporter flow:
