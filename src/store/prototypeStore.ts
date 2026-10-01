@@ -105,8 +105,11 @@ export const usePrototypeStore = create<PrototypeState>()(
               displayName,
               createdFor,
               readMode: state.deskCreationDraft.readMode,
+              objects: [],
               claimStatus,
             },
+            messages: [],
+            readMessageIds: [],
             claimReadMode: state.deskCreationDraft.readMode,
             claimState: claimStatus,
           }

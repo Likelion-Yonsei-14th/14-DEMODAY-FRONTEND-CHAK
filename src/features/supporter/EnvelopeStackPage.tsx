@@ -14,15 +14,13 @@ import { usePrototypeStore } from '@/store/prototypeStore'
 import {
   formatUnlockAt,
   getMessageAvailability,
+  isSameCalendarDate,
   resolvePreviewReadMode,
 } from '@/features/desk/dailyAvailability'
 import { useReadModeNow } from '@/features/desk/useReadModeNow'
 import type { Message } from '@/types'
 import { createEnvelopeTheme } from './envelopeTheme'
-import {
-  isToday,
-  mergeSupportMessages,
-} from './seededMessages'
+import { mergeSupportMessages } from './seededMessages'
 import './EnvelopeStackPage.css'
 
 const SCROLL_STEP = 130
@@ -78,9 +76,22 @@ export function EnvelopeStackPage() {
 
       return showHistory
         ? allMessages
-        : allMessages.filter((message) => isToday(message.createdAt))
+        : allMessages.filter((message) => {
+            const unlockAt =
+              availabilityById.get(message.id)?.unlockAt
+
+            return Boolean(
+              unlockAt && isSameCalendarDate(unlockAt, now),
+            )
+          })
     },
-    [allMessages, readMode.type, showHistory],
+    [
+      allMessages,
+      availabilityById,
+      now,
+      readMode.type,
+      showHistory,
+    ],
   )
 
   useEffect(() => {
@@ -135,7 +146,7 @@ export function EnvelopeStackPage() {
               ? '모아둔 응원'
               : showHistory
                 ? '지난 응원까지 보고 있어요'
-                : '오늘 도착한 응원'
+                : '오늘의 응원'
           }
           leading={
             <IconButton
@@ -159,7 +170,7 @@ export function EnvelopeStackPage() {
                 ? `모아둔 응원 ${messages.length}개`
                 : showHistory
                   ? '내게 도착했던 응원들'
-                  : `오늘 ${messages.length}개의 응원이 도착했어요.`}
+                  : `오늘의 응원 ${messages.length}개`}
             </h2>
           </div>
           {activeMessage && (
@@ -412,7 +423,7 @@ export function EnvelopeStackPage() {
             onClick={() => setShowHistory((value) => !value)}
           >
             <History size={15} aria-hidden />
-            {showHistory ? '오늘 온 응원만 보기' : '지난 응원도 보기'}
+            {showHistory ? '오늘의 응원만 보기' : '지난 응원도 보기'}
           </button>
         )}
       </main>

@@ -134,7 +134,7 @@ function toTimeValue(date: Date) {
   ].join(':')
 }
 
-function isSameCalendarDate(a: Date, b: Date) {
+export function isSameCalendarDate(a: Date, b: Date) {
   return (
     a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&

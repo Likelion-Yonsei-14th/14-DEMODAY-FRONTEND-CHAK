@@ -4,6 +4,7 @@ import { Button, useFeedback } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { DeskObjectVisual } from '@/features/desk/DeskObjectLayer'
+import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { deskObjectLabels } from './supporterFlow'
 import './supporterFlow.css'
 
@@ -20,7 +21,7 @@ export function SupportCompletePage() {
     : undefined
 
   const shareDesk = async () => {
-    const shareUrl = `${window.location.origin}/prototype/support/jisu`
+    const shareUrl = buildPrototypeShareUrl('/prototype/support/jisu')
 
     try {
       if (navigator.share) {

@@ -100,6 +100,7 @@ describe('prototype store composer handoff', () => {
       },
       claimReadMode: mockDesk.readMode,
       claimState: 'claimed',
+      readMessageIds: [],
       composerDraft: {
         ...emptyComposerDraft,
         textElements: emptyComposerDraft.textElements.map((item) => ({
@@ -215,6 +216,76 @@ describe('prototype store composer handoff', () => {
     })
     expect(state.currentDesk.ownerId).toBeUndefined()
     expect(state.claimState).toBe('unclaimed')
+  })
+
+  it('creates a self-owned time capsule and clears the previous desk session', () => {
+    usePrototypeStore.setState({
+      composerDraft: {
+        ...emptyComposerDraft,
+        senderName: '이전 친구',
+      },
+    })
+    usePrototypeStore.getState().placeComposerMessage()
+    const previousMessageId =
+      usePrototypeStore.getState().messages[0]?.id
+
+    if (previousMessageId) {
+      usePrototypeStore.getState().markMessageRead(previousMessageId)
+    }
+
+    const currentUser = usePrototypeStore.getState().currentUser
+    usePrototypeStore.setState({
+      deskCreationDraft: {
+        createdFor: 'self',
+        recipientDisplayName: currentUser.displayName,
+        readMode: {
+          type: 'time-capsule',
+          unlockAt: '2026-11-12T20:00',
+        },
+      },
+    })
+
+    usePrototypeStore.getState().createDeskFromDraft()
+
+    const state = usePrototypeStore.getState()
+    expect(state.currentDesk.readMode).toEqual({
+      type: 'time-capsule',
+      unlockAt: '2026-11-12T20:00',
+    })
+    expect(state.currentDesk.claimStatus).toBe('claimed')
+    expect(state.currentDesk.objects).toEqual([])
+    expect(state.messages).toEqual([])
+    expect(state.readMessageIds).toEqual([])
+  })
+
+  it('claims a supporter-created daily desk without changing its schedule', () => {
+    usePrototypeStore.setState({
+      deskCreationDraft: {
+        createdFor: 'other',
+        recipientDisplayName: '민지',
+        readMode: {
+          type: 'daily',
+          unlockTime: '22:15',
+        },
+      },
+    })
+
+    usePrototypeStore.getState().createDeskFromDraft()
+    usePrototypeStore.getState().beginClaim()
+    usePrototypeStore.getState().completeClaim()
+
+    const state = usePrototypeStore.getState()
+    expect(state.currentDesk).toMatchObject({
+      displayName: '민지',
+      createdFor: 'other',
+      claimStatus: 'claimed',
+      readMode: {
+        type: 'daily',
+        unlockTime: '22:15',
+      },
+    })
+    expect(state.currentDesk.ownerId).toBeDefined()
+    expect(state.claimState).toBe('claimed')
   })
 
   it('claims a supporter-created desk with the recipient-approved read mode', () => {

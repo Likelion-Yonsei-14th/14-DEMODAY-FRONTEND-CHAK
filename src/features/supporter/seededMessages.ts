@@ -14,7 +14,7 @@ export const seededSupportMessages: Message[] = [
     textElements: [
       {
         id: 'seed-demo-text-1',
-        text: '지수야, 여기까지 온 것만으로도 정말 대단해.',
+        text: '여기까지 온 것만으로도 정말 대단해.',
         styleId: 'handwriting-default',
         x: 50,
         y: 48,
@@ -32,7 +32,7 @@ export const seededSupportMessages: Message[] = [
         textElements: [
           {
             id: 'seed-demo-text-1',
-            text: '지수야, 여기까지 온 것만으로도 정말 대단해.',
+            text: '여기까지 온 것만으로도 정말 대단해.',
             styleId: 'handwriting-default',
             x: 50,
             y: 48,
@@ -125,7 +125,7 @@ export const seededSupportMessages: Message[] = [
     textElements: [
       {
         id: 'seed-minji-text',
-        text: '지수야, 네가 여기까지 온 것만으로도 진짜 대단해. 끝나면 제일 먼저 맛있는 거 먹으러 가자!',
+        text: '네가 여기까지 온 것만으로도 진짜 대단해. 끝나면 제일 먼저 맛있는 거 먹으러 가자!',
         styleId: 'handwriting-default',
         x: 50,
         y: 51,
@@ -149,7 +149,7 @@ export const seededSupportMessages: Message[] = [
     textElements: [
       {
         id: 'seed-soobin-text',
-        text: '오늘도 할 만큼 했다! 이제 푹 자고 내일의 지수한테 넘겨주기 🌟',
+        text: '오늘도 할 만큼 했다! 이제 푹 자고 내일의 너한테 넘겨주기 🌟',
         styleId: 'handwriting-large',
         x: 50,
         y: 50,
@@ -246,7 +246,7 @@ export const seededSupportMessages: Message[] = [
     textElements: [
       {
         id: 'seed-seoyeon-text',
-        text: '행운은 이미 충분히 모였고, 이제 지수가 해온 거 보여주기만 하면 됨!',
+        text: '행운은 이미 충분히 모였고, 이제 네가 해온 거 보여주기만 하면 됨!',
         styleId: 'handwriting-large',
         x: 50,
         y: 50,

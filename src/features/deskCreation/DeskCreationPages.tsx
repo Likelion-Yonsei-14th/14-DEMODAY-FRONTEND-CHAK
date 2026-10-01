@@ -24,6 +24,7 @@ import {
   splitDateTime,
 } from '@/features/desk/readModeUtils'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import type { ReadMode } from '@/types'
 import './DeskCreation.css'
 
@@ -297,8 +298,8 @@ export function DeskCreateCompletePage() {
 
     const url =
       kind === 'owner'
-        ? `${window.location.origin}/prototype/claim`
-        : `${window.location.origin}/prototype/support/jisu`
+        ? buildPrototypeShareUrl('/prototype/claim')
+        : buildPrototypeShareUrl('/prototype/support/jisu')
     const title =
       kind === 'owner'
         ? `${desk.displayName}님의 응원 책상`
