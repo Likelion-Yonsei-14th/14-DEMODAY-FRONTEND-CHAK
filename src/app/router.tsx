@@ -18,6 +18,7 @@ import { MessageViewerPage } from '@/features/supporter/MessageViewerPage'
 import { PlacementPreviewPage } from '@/features/supporter/PlacementPreviewPage'
 import { SupportCompletePage } from '@/features/supporter/SupportCompletePage'
 import { SupportDeskPage } from '@/features/supporter/SupportDeskPage'
+import { StartPage } from '@/features/start/StartPage'
 import { PrototypeIndexPage } from '@/prototype/screens/PrototypeIndexPage'
 import {
   ClassroomPage,
@@ -30,7 +31,8 @@ export const router = createBrowserRouter([
   {
     element: <App />,
     children: [
-      { index: true, element: <Navigate to="/prototype" replace /> },
+      { index: true, element: <Navigate to="/start" replace /> },
+      { path: '/start', element: <StartPage /> },
       { path: '/prototype', element: <PrototypeIndexPage /> },
 
       { path: '/prototype/create', element: <DeskCreateWhoPage /> },
@@ -94,7 +96,7 @@ export const router = createBrowserRouter([
       },
       { path: '/prototype/classroom', element: <ClassroomPage /> },
       { path: '/system', element: <SystemPage /> },
-      { path: '*', element: <Navigate to="/prototype" replace /> },
+      { path: '*', element: <Navigate to="/start" replace /> },
     ],
   },
 ])

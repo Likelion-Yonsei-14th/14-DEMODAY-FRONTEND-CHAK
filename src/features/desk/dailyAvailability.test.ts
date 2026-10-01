@@ -58,14 +58,14 @@ describe('message availability', () => {
   it('locks every time-capsule message until the single unlock moment', () => {
     const mode = {
       type: 'time-capsule' as const,
-      unlockAt: '2026-11-12T20:00',
+      unlockAt: '2026-11-18T20:00',
     }
 
     expect(
       getMessageAvailability(
         mode,
         '2026-10-01T12:00:00',
-        new Date('2026-11-12T19:59:00'),
+        new Date('2026-11-18T19:59:00'),
       ).available,
     ).toBe(false)
 
@@ -73,7 +73,7 @@ describe('message availability', () => {
       getMessageAvailability(
         mode,
         '2026-10-01T12:00:00',
-        new Date('2026-11-12T20:00:00'),
+        new Date('2026-11-18T20:00:00'),
       ).available,
     ).toBe(true)
   })
@@ -81,7 +81,7 @@ describe('message availability', () => {
   it('keeps the capsule open for messages that arrive after unlock', () => {
     const mode = {
       type: 'time-capsule' as const,
-      unlockAt: '2026-11-12T20:00',
+      unlockAt: '2026-11-18T20:00',
     }
 
     expect(
@@ -120,7 +120,7 @@ describe('message availability', () => {
 
     expect(previewMode).toEqual({
       type: 'time-capsule',
-      unlockAt: '2026-11-12T20:00',
+      unlockAt: '2026-11-18T20:00',
     })
 
     expect(
@@ -129,7 +129,7 @@ describe('message availability', () => {
         '?capsule=before',
         new Date('2026-10-02T12:00:00'),
       ).getTime(),
-    ).toBe(new Date('2026-11-12T19:59:00').getTime())
+    ).toBe(new Date('2026-11-18T19:59:00').getTime())
 
     expect(
       resolveReadModeNow(
@@ -137,7 +137,7 @@ describe('message availability', () => {
         '?capsule=after',
         new Date('2026-10-02T12:00:00'),
       ).getTime(),
-    ).toBe(new Date('2026-11-12T20:01:00').getTime())
+    ).toBe(new Date('2026-11-18T20:01:00').getTime())
   })
 
   it('formats same-day and next-day unlock moments for the owner', () => {

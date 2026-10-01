@@ -1,9 +1,12 @@
 import type { ReadMode } from '@/types'
+import { getDefaultCapsuleUnlockAt } from '@/features/csat/csatSchedule'
 
-export const DEFAULT_CAPSULE_UNLOCK_AT = '2026-11-12T20:00'
+export const DEFAULT_CAPSULE_UNLOCK_AT = getDefaultCapsuleUnlockAt()
 
 export function splitDateTime(value: string) {
-  const [date = '2026-11-12', time = '20:00'] = value.split('T')
+  const [fallbackDate, fallbackTime] =
+    DEFAULT_CAPSULE_UNLOCK_AT.split('T')
+  const [date = fallbackDate, time = fallbackTime] = value.split('T')
   return {
     date,
     time: time.slice(0, 5),
@@ -11,7 +14,10 @@ export function splitDateTime(value: string) {
 }
 
 export function joinDateTime(date: string, time: string) {
-  return `${date || '2026-11-12'}T${time || '20:00'}`
+  const [fallbackDate, fallbackTime] =
+    DEFAULT_CAPSULE_UNLOCK_AT.split('T')
+
+  return `${date || fallbackDate}T${time || fallbackTime}`
 }
 
 export function formatReadMode(mode: ReadMode) {

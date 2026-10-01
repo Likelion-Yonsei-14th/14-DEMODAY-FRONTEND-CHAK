@@ -1,0 +1,85 @@
+.start-page-shell {
+  padding-top: 0;
+}
+
+.start-page {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding-top: max(36px, env(safe-area-inset-top));
+}
+
+.start-page__header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--color-content-secondary);
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-line);
+}
+
+.start-page__dday {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 11px;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-soft);
+  color: var(--color-brand-pressed);
+  font-weight: 700;
+}
+
+.start-page__date {
+  font-weight: 600;
+}
+
+.start-page__hero {
+  display: grid;
+  gap: 12px;
+}
+
+.start-page__hero h1 {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.28;
+  letter-spacing: -.045em;
+}
+
+.start-page__hero p {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-line);
+}
+
+.start-page__scene {
+  position: relative;
+  overflow: hidden;
+  margin-top: 4px;
+  border: 1px solid color-mix(
+    in srgb,
+    var(--color-border-subtle) 80%,
+    transparent
+  );
+  border-radius: 28px;
+  box-shadow: var(--shadow-card);
+}
+
+.start-page__scene .desk-scene {
+  border-radius: inherit;
+}
+
+.start-page__scene .desk-object {
+  pointer-events: none;
+}
+
+@media (max-width: 350px) {
+  .start-page__hero h1 {
+    font-size: 29px;
+  }
+
+  .start-page__header {
+    gap: 7px;
+  }
+}

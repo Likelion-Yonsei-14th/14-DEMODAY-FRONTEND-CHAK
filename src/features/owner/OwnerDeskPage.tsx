@@ -16,6 +16,7 @@ import {
   mergeSupportMessages,
   seededDeskObjects,
 } from '@/features/supporter/seededMessages'
+import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { OwnerViewToggle } from './OwnerViewToggle'
 import './OwnerDeskPage.css'
 
@@ -146,7 +147,7 @@ export function OwnerDeskPage() {
       appBar={
         <AppBar
           title="내 책상"
-          subtitle="수능까지 D-42"
+          subtitle={getCsatDdayLabel()}
           transparent
           leading={
             <IconButton

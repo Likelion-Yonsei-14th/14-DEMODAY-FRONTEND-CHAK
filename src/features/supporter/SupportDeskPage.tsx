@@ -10,6 +10,7 @@ import { DeskScene } from '@/features/desk/DeskScene'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
+import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import {
   mergeSupportMessages,
   seededDeskObjects,
@@ -73,7 +74,7 @@ export function SupportDeskPage() {
       appBar={
         <AppBar
           title={`${recipientName}님의 책상`}
-          subtitle="수능까지 D-42"
+          subtitle={getCsatDdayLabel()}
           transparent
           leading={
             <IconButton

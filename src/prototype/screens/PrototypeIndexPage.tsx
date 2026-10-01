@@ -6,6 +6,12 @@ import './prototype.css'
 
 const routes = [
   {
+    path: '/start',
+    title: 'Service Start',
+    description: '서비스 최초 진입 → 응원 책상 만들기',
+    phase: 'LIVE',
+  },
+  {
     path: '/prototype/create',
     title: 'Desk Creation',
     description: '본인/주변인 선택 → 읽기 방식 설정 → 응원 책상 생성',

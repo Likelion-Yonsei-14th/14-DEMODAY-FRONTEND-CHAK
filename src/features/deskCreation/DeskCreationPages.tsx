@@ -49,7 +49,7 @@ export function DeskCreateWhoPage() {
   return (
     <CreationShell
       title="응원 책상 만들기"
-      back={() => navigate('/prototype')}
+      back={() => navigate('/start')}
       action={
         <Button
           variant="brand"
