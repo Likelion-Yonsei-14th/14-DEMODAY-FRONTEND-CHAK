@@ -34,6 +34,7 @@ import {
   EndRoomPage,
 } from '@/features/management/DeskManagementPages'
 import {
+  OfferCouponPage,
   OfferDetailPage,
   OffersPage,
   WrappedFriendsPage,
@@ -228,6 +229,10 @@ export const router = createBrowserRouter([
       {
         path: '/prototype/offers/:offerId',
         element: <OfferDetailPage />,
+      },
+      {
+        path: '/prototype/offers/:offerId/coupon',
+        element: <OfferCouponPage />,
       },
       { path: '/system', element: <SystemPage /> },
       { path: '*', element: <Navigate to="/start" replace /> },
