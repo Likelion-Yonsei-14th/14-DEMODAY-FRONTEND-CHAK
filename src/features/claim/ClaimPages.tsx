@@ -147,16 +147,11 @@ export function ClaimReadModePage() {
     >
       <section className="claim-flow__heading">
         <h1>
-          응원은 이렇게
+          응원을 언제
           <br />
-          열도록 설정되어 있어요.
+          열어볼까요?
         </h1>
       </section>
-
-      <div className="claim-flow__current-setting">
-        <span>현재 설정</span>
-        <strong>{formatReadMode(desk.readMode)}</strong>
-      </div>
 
       <div className="claim-flow__mode-list">
         <ChoiceCard
