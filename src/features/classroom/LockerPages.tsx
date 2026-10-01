@@ -59,6 +59,11 @@ export function ClassroomLockerPage() {
   const locker = classroom.lockers.find(
     (item) => item.id === lockerId,
   )
+  const readMode = {
+    type: 'daily' as const,
+    unlockTime: classroom.dailyUnlockTime ?? '22:00',
+  }
+  const now = useReadModeNow(readMode, location.search)
 
   if (!member) {
     return (
@@ -82,11 +87,6 @@ export function ClassroomLockerPage() {
   const messages = allMessages.filter((message) =>
     locker.messageIds.includes(message.id),
   )
-  const readMode = {
-    type: 'daily' as const,
-    unlockTime: classroom.dailyUnlockTime,
-  }
-  const now = useReadModeNow(readMode, location.search)
   const availabilityById = new Map(
     messages.map((message) => [
       message.id,
