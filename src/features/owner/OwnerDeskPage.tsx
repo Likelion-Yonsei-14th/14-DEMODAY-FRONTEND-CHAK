@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Settings } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { AppBar, IconButton, useFeedback } from '@/design-system'
 import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
@@ -26,12 +26,19 @@ export function OwnerDeskPage() {
   const { showToast } = useFeedback()
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const storedMessages = usePrototypeStore((state) => state.messages)
+  const ownerSettings = usePrototypeStore((state) => state.ownerSettings)
   const readMessageIds = usePrototypeStore((state) => state.readMessageIds)
   const [openingMessageId, setOpeningMessageId] = useState<string | null>(null)
 
   const messages = useMemo(
-    () => mergeSupportMessages(storedMessages),
-    [storedMessages],
+    () =>
+      mergeSupportMessages(storedMessages).filter(
+        (message) =>
+          !ownerSettings.blockedSupporters.includes(
+            message.senderName,
+          ),
+      ),
+    [ownerSettings.blockedSupporters, storedMessages],
   )
   const objects = useMemo(
     () => [...seededDeskObjects, ...currentDesk.objects],
@@ -154,6 +161,13 @@ export function OwnerDeskPage() {
               label="프로토타입 목록으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() => navigate('/prototype')}
+            />
+          }
+          trailing={
+            <IconButton
+              label="응원 공간 설정"
+              icon={<Settings size={20} aria-hidden />}
+              onClick={() => navigate('/prototype/my/settings')}
             />
           }
         />

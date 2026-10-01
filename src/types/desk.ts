@@ -67,3 +67,18 @@ export type Desk = {
   objects: DeskObject[]
   claimStatus: 'unclaimed' | 'claimed'
 }
+
+
+export type ConnectedRoom = {
+  id: string
+  name: string
+  code: string
+}
+
+export type OwnerSettings = {
+  publicFeedEnabled: boolean
+  pushEnabled: boolean
+  roomClosed: boolean
+  blockedSupporters: string[]
+  connectedRooms: ConnectedRoom[]
+}

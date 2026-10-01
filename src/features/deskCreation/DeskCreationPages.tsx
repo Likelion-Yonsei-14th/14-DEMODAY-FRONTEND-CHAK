@@ -395,6 +395,13 @@ export function DeskCreateCompletePage() {
               >
                 친구들에게 응원 링크 보내기
               </Button>
+              <Button
+                variant="tertiary"
+                fullWidth
+                onClick={() => navigate('/prototype/manage')}
+              >
+                만든 공간 관리하기
+              </Button>
             </>
           )}
         </div>

@@ -27,6 +27,13 @@ import {
   SignupPage,
 } from '@/features/account/AccountPages'
 import {
+  BlockedSupportersPage,
+  ConnectRoomsPage,
+  CreatorManagementPage,
+  DeskSettingsPage,
+  EndRoomPage,
+} from '@/features/management/DeskManagementPages'
+import {
   ClassroomCreateCompletePage,
   ClassroomCreatePage,
   ClassroomEntryRedirect,
@@ -95,6 +102,19 @@ export const router = createBrowserRouter([
 
       { path: '/prototype/my/desk', element: <OwnerDeskPage /> },
       { path: '/prototype/my/desk/cards', element: <EnvelopeStackPage /> },
+      { path: '/prototype/my/settings', element: <DeskSettingsPage /> },
+      {
+        path: '/prototype/my/settings/blocked',
+        element: <BlockedSupportersPage />,
+      },
+      {
+        path: '/prototype/my/settings/connect',
+        element: <ConnectRoomsPage />,
+      },
+      {
+        path: '/prototype/my/settings/end',
+        element: <EndRoomPage />,
+      },
       {
         path: '/prototype/my/message/:messageId',
         element: <MessageViewerPage />,
@@ -115,6 +135,7 @@ export const router = createBrowserRouter([
 
       { path: '/prototype/composer', element: <ComposerPage /> },
       { path: '/prototype/reader', element: <ReaderPage /> },
+      { path: '/prototype/manage', element: <CreatorManagementPage /> },
       { path: '/prototype/claim', element: <ClaimIntroPage /> },
       {
         path: '/prototype/claim/read-mode',

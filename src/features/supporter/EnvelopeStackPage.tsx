@@ -32,6 +32,7 @@ export function EnvelopeStackPage() {
   const { showToast } = useFeedback()
   const scrollerRef = useRef<HTMLDivElement>(null)
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
+  const ownerSettings = usePrototypeStore((state) => state.ownerSettings)
   const storedMessages = usePrototypeStore((state) => state.messages)
   const readMessageIds = usePrototypeStore((state) => state.readMessageIds)
   const [showHistory, setShowHistory] = useState(false)
@@ -39,8 +40,14 @@ export function EnvelopeStackPage() {
   const [openingId, setOpeningId] = useState<string | null>(null)
 
   const allMessages = useMemo(
-    () => mergeSupportMessages(storedMessages),
-    [storedMessages],
+    () =>
+      mergeSupportMessages(storedMessages).filter(
+        (message) =>
+          !ownerSettings.blockedSupporters.includes(
+            message.senderName,
+          ),
+      ),
+    [ownerSettings.blockedSupporters, storedMessages],
   )
   const readMode = useMemo(
     () =>

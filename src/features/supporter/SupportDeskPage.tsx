@@ -22,6 +22,7 @@ export function SupportDeskPage() {
   const { showToast } = useFeedback()
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const storedMessages = usePrototypeStore((state) => state.messages)
+  const ownerSettings = usePrototypeStore((state) => state.ownerSettings)
   const messages = useMemo(
     () => mergeSupportMessages(storedMessages),
     [storedMessages],
@@ -87,29 +88,44 @@ export function SupportDeskPage() {
         />
       }
       fixedAction={
-        <div className="support-desk__action">
-          <Button
-            variant="brand"
-            fullWidth
-            onClick={() => navigate('/prototype/support/jisu/compose')}
-          >
-            응원 놓고 가기
-          </Button>
-        </div>
+        ownerSettings.roomClosed ? undefined : (
+          <div className="support-desk__action">
+            <Button
+              variant="brand"
+              fullWidth
+              onClick={() => navigate('/prototype/support/jisu/compose')}
+            >
+              응원 놓고 가기
+            </Button>
+          </div>
+        )
       }
     >
       <div className="support-desk">
         <section className="support-desk__intro">
-          <h2>
-            친구들이 하나씩
-            <br />
-            {recipientName}님의 책상을 채우고 있어요.
-          </h2>
-          <p>
-            {recipientName}님에게 전하고 싶은 마음이 있다면,
-            <br />
-            응원 하나를 남겨보세요.
-          </p>
+          {ownerSettings.roomClosed ? (
+            <>
+              <h2>
+                {recipientName}님의
+                <br />
+                응원 받기가 끝났어요.
+              </h2>
+              <p>그동안 모인 공개 응원은 계속 둘러볼 수 있어요.</p>
+            </>
+          ) : (
+            <>
+              <h2>
+                친구들이 하나씩
+                <br />
+                {recipientName}님의 책상을 채우고 있어요.
+              </h2>
+              <p>
+                {recipientName}님에게 전하고 싶은 마음이 있다면,
+                <br />
+                응원 하나를 남겨보세요.
+              </p>
+            </>
+          )}
         </section>
 
         <div className="support-desk__scene-wrap">

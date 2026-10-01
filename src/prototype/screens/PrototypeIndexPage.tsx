@@ -48,6 +48,18 @@ const routes = [
     phase: 'LIVE',
   },
   {
+    path: '/prototype/my/settings',
+    title: 'Owner Settings',
+    description: '열기 방식 · 공개/알림 · 초대 · 차단 · 다른 공간 연결 · 응원 종료',
+    phase: 'LIVE',
+  },
+  {
+    path: '/prototype/manage',
+    title: 'Creator Management',
+    description: 'Claim 전 링크·연결 코드·초기 설정 관리 → Claim 후 Supporter 전환',
+    phase: 'LIVE',
+  },
+  {
     path: '/prototype/claim',
     title: 'Creator / Claim',
     description: '친구가 먼저 만든 Desk를 실제 수험생이 소유권 이전',

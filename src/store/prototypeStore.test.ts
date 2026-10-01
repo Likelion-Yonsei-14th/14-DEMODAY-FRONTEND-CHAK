@@ -114,6 +114,13 @@ describe('prototype store composer handoff', () => {
         })),
       },
       classroomMember: null,
+      ownerSettings: {
+        publicFeedEnabled: true,
+        pushEnabled: true,
+        roomClosed: false,
+        blockedSupporters: [],
+        connectedRooms: [],
+      },
       readMessageIds: [],
       composerDraft: {
         ...emptyComposerDraft,
@@ -220,6 +227,48 @@ describe('prototype store composer handoff', () => {
       status: 'anonymous',
     })
     expect(state.currentUser).toEqual(mockCurrentUser)
+  })
+
+  it('updates owner settings, blocks supporters, and connects separate rooms', () => {
+    usePrototypeStore.getState().updateOwnerSettings({
+      pushEnabled: false,
+    })
+    usePrototypeStore
+      .getState()
+      .toggleBlockedSupporter('민지')
+    usePrototypeStore
+      .getState()
+      .connectRoom('abc123')
+
+    let state = usePrototypeStore.getState()
+    expect(state.ownerSettings.pushEnabled).toBe(false)
+    expect(state.ownerSettings.blockedSupporters).toEqual(['민지'])
+    expect(state.ownerSettings.connectedRooms[0]).toMatchObject({
+      code: 'ABC123',
+    })
+
+    usePrototypeStore
+      .getState()
+      .toggleBlockedSupporter('민지')
+    usePrototypeStore.getState().endRoom()
+
+    state = usePrototypeStore.getState()
+    expect(state.ownerSettings.blockedSupporters).toEqual([])
+    expect(state.ownerSettings.roomClosed).toBe(true)
+  })
+
+  it('updates the current desk opening schedule from management', () => {
+    usePrototypeStore.getState().setDeskReadMode({
+      type: 'daily',
+      unlockTime: '23:10',
+    })
+
+    expect(
+      usePrototypeStore.getState().currentDesk.readMode,
+    ).toEqual({
+      type: 'daily',
+      unlockTime: '23:10',
+    })
   })
 
   it('creates a self-owned desk as claimed with the chosen read mode', () => {

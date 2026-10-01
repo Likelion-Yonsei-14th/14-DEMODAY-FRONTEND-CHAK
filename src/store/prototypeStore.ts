@@ -26,6 +26,7 @@ import type {
   DeskPlacement,
   Message,
   MessageDraft,
+  OwnerSettings,
   PrototypeUser,
   ReadMode,
 } from '@/types'
@@ -44,12 +45,18 @@ type PrototypeState = {
   claimState: ClaimState
   classroom: Classroom
   classroomMember: ClassroomMember | null
+  ownerSettings: OwnerSettings
   readMessageIds: string[]
   setDebugMode: (value: boolean) => void
   signIn: (email: string, provider?: AuthProvider) => void
   signUp: (displayName: string, email: string) => void
   signOut: () => void
   deleteAccount: () => void
+  setDeskReadMode: (readMode: ReadMode) => void
+  updateOwnerSettings: (patch: Partial<OwnerSettings>) => void
+  toggleBlockedSupporter: (senderName: string) => void
+  connectRoom: (code: string) => void
+  endRoom: () => void
   setComposerDraft: (draft: MessageDraft) => void
   resetComposerDraft: () => void
   setDeskCreationDraft: (patch: Partial<DeskCreationDraft>) => void
@@ -93,6 +100,13 @@ export const usePrototypeStore = create<PrototypeState>()(
       claimState: 'claimed',
       classroom: mockClassroom,
       classroomMember: null,
+      ownerSettings: {
+        publicFeedEnabled: true,
+        pushEnabled: true,
+        roomClosed: false,
+        blockedSupporters: [],
+        connectedRooms: [],
+      },
       readMessageIds: [],
       setDebugMode: (debugMode) => set({ debugMode }),
       signIn: (email, provider = 'password') =>
@@ -124,6 +138,69 @@ export const usePrototypeStore = create<PrototypeState>()(
           currentUser: mockCurrentUser,
           authSession: { status: 'anonymous' },
         }),
+      setDeskReadMode: (readMode) =>
+        set((state) => ({
+          currentDesk: {
+            ...state.currentDesk,
+            readMode,
+          },
+        })),
+      updateOwnerSettings: (patch) =>
+        set((state) => ({
+          ownerSettings: {
+            ...state.ownerSettings,
+            ...patch,
+          },
+        })),
+      toggleBlockedSupporter: (senderName) =>
+        set((state) => ({
+          ownerSettings: {
+            ...state.ownerSettings,
+            blockedSupporters: state.ownerSettings.blockedSupporters.includes(
+              senderName,
+            )
+              ? state.ownerSettings.blockedSupporters.filter(
+                  (name) => name !== senderName,
+                )
+              : [
+                  ...state.ownerSettings.blockedSupporters,
+                  senderName,
+                ],
+          },
+        })),
+      connectRoom: (code) =>
+        set((state) => {
+          const normalized = code.trim().toUpperCase()
+          if (!normalized) return state
+          if (
+            state.ownerSettings.connectedRooms.some(
+              (room) => room.code === normalized,
+            )
+          ) {
+            return state
+          }
+
+          return {
+            ownerSettings: {
+              ...state.ownerSettings,
+              connectedRooms: [
+                ...state.ownerSettings.connectedRooms,
+                {
+                  id: `connected-${Date.now().toString(36)}`,
+                  name: `응원 공간 ${normalized}`,
+                  code: normalized,
+                },
+              ],
+            },
+          }
+        }),
+      endRoom: () =>
+        set((state) => ({
+          ownerSettings: {
+            ...state.ownerSettings,
+            roomClosed: true,
+          },
+        })),
       setComposerDraft: (composerDraft) => set({ composerDraft }),
       resetComposerDraft: () => set({ composerDraft: emptyComposerDraft }),
       setDeskCreationDraft: (patch) =>
@@ -415,6 +492,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         claimState: state.claimState,
         classroom: state.classroom,
         classroomMember: state.classroomMember,
+        ownerSettings: state.ownerSettings,
         readMessageIds: state.readMessageIds,
       }),
     },

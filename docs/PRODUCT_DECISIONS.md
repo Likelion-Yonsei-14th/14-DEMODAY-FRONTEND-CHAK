@@ -97,6 +97,21 @@ The current product model uses standard 4:5 cards only, with up to 3 pages per m
 - Before completing claim, the recipient can confirm or change the read mode.
 - After claim, the original creator should have the same control level as an ordinary supporter.
 
+## Owner / creator management
+
+- The desk owner can manage:
+  - Daily / Time Capsule opening schedule
+  - whether public encouragements can be viewed by visitors
+  - new-encouragement notifications
+  - supporter invite link
+  - hidden / blocked supporters
+  - connecting another separately created room by code
+  - ending new encouragement intake while keeping existing messages readable
+- Blocking a supporter hides that supporter’s encouragements from the owner desk and envelope list.
+- Connected rooms remain separate. Connecting does not merge rooms or messages.
+- Before Claim, the creator can manage the owner/share links, connection code, and initial opening schedule.
+- After Claim, creator management ends and the creator returns to ordinary supporter permissions.
+
 ## Read modes
 
 User-facing copy describes the outcome rather than exposing internal mode names.
