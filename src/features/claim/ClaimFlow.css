@@ -1,0 +1,133 @@
+.claim-flow-shell {
+  padding-inline: var(--page-gutter);
+  padding-bottom: 40px;
+}
+
+.claim-flow {
+  display: grid;
+  gap: 26px;
+  padding-top: 24px;
+}
+
+.claim-flow__heading h1 {
+  margin: 0;
+  font-size: 29px;
+  line-height: 1.26;
+  letter-spacing: -.04em;
+}
+
+.claim-flow__scene-wrap {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 24px;
+  background: #f6ecdf;
+}
+
+.claim-flow__scene-wrap .desk-scene {
+  border-radius: inherit;
+}
+
+.claim-flow__count {
+  margin-top: -8px;
+  color: var(--color-content-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.claim-flow__count strong {
+  color: var(--color-content-primary);
+  font-weight: 750;
+}
+
+.claim-flow__current-setting {
+  display: grid;
+  gap: 5px;
+  padding: 17px 18px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 17px;
+  background: var(--color-surface-raised);
+}
+
+.claim-flow__current-setting span {
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.claim-flow__current-setting strong {
+  font-size: 16px;
+  line-height: 23px;
+}
+
+.claim-flow__mode-list {
+  display: grid;
+  gap: 14px;
+}
+
+.claim-flow__mode-setting {
+  display: grid;
+  gap: 8px;
+  margin-top: -5px;
+  padding: 3px 4px 9px;
+}
+
+.claim-flow__mode-setting--split {
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, .9fr);
+  gap: 10px;
+}
+
+.claim-flow__field {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.claim-flow__field-label {
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 750;
+}
+
+.claim-flow__native-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 14px;
+  background: var(--color-surface-raised);
+  color: var(--color-content-primary);
+  font: inherit;
+  font-size: 16px;
+  outline: none;
+}
+
+.claim-flow__native-input:focus {
+  border-color: var(--color-content-primary);
+  box-shadow: 0 0 0 2px rgba(76, 66, 59, .08);
+}
+
+.claim-flow--complete {
+  padding-top: 72px;
+}
+
+.claim-flow__complete-mark {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-brand-soft);
+  color: var(--color-brand-pressed);
+  font-size: 25px;
+  font-weight: 800;
+}
+
+@media (max-width: 350px) {
+  .claim-flow__mode-setting--split {
+    grid-template-columns: 1fr;
+  }
+}
