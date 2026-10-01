@@ -1,3 +1,11 @@
+export type DeskCreatedFor = 'self' | 'other'
+
+export type DeskCreationDraft = {
+  createdFor: DeskCreatedFor | null
+  recipientDisplayName: string
+  readMode: ReadMode
+}
+
 export type ReadMode =
   | {
       type: 'daily'
@@ -53,6 +61,7 @@ export type Desk = {
   ownerId?: string
   creatorId?: string
   displayName: string
+  createdFor?: DeskCreatedFor
   theme: DeskTheme
   readMode: ReadMode
   objects: DeskObject[]
