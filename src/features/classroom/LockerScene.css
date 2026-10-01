@@ -12,12 +12,18 @@
   position: relative;
   width: 100%;
   aspect-ratio: .76;
+  transform-origin: left center;
   transform-style: preserve-3d;
+  transition: transform 620ms cubic-bezier(.2,.78,.18,1);
+}
+
+.locker-scene--open .locker-scene__case {
+  transform: translateX(-28px) scale(.76);
 }
 
 .locker-scene__interior {
   position: absolute;
-  inset: 0 24% 0 0;
+  inset: 0;
   overflow: hidden;
   border: 10px solid #a94f4a;
   border-radius: 8px;
@@ -177,7 +183,7 @@
 .locker-scene__hinge {
   position: absolute;
   z-index: 15;
-  right: 22.1%;
+  right: -4px;
   width: 8px;
   height: 39px;
   border-radius: 4px;
@@ -197,7 +203,7 @@
   top: 0;
   bottom: 0;
   left: 0;
-  right: 24%;
+  right: 0;
   z-index: 14;
   width: auto;
   padding: 0;
@@ -214,7 +220,7 @@
 }
 
 .locker-scene--open .locker-scene__door {
-  transform: rotateY(142deg);
+  transform: rotateY(115deg);
 }
 
 /* Exterior and interior are intentionally different constructions. */
@@ -223,8 +229,8 @@
   inset: 0;
   display: block;
   border-radius: 7px;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+  backface-visibility: visible;
+  -webkit-backface-visibility: visible;
   transition: opacity 90ms linear;
 }
 
@@ -263,12 +269,12 @@
 
 .locker-scene--open .locker-scene__door-face--front {
   opacity: 0;
-  transition-delay: 250ms;
+  transition-delay: 220ms;
 }
 
 .locker-scene--open .locker-scene__door-face--back {
   opacity: 1;
-  transition-delay: 250ms;
+  transition-delay: 220ms;
 }
 
 .locker-scene--closed .locker-scene__door-face--front {
@@ -477,6 +483,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .locker-scene__case,
   .locker-scene__door,
   .locker-scene__door-face {
     transition-duration: 1ms;
