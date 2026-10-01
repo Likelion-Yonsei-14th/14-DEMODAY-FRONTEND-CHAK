@@ -19,9 +19,24 @@ import { PlacementPreviewPage } from '@/features/supporter/PlacementPreviewPage'
 import { SupportCompletePage } from '@/features/supporter/SupportCompletePage'
 import { SupportDeskPage } from '@/features/supporter/SupportDeskPage'
 import { StartPage } from '@/features/start/StartPage'
+import {
+  ClassroomCreateCompletePage,
+  ClassroomCreatePage,
+  ClassroomEntryRedirect,
+  ClassroomJoinPage,
+} from '@/features/classroom/ClassroomCreationPages'
+import { ClassroomMapPage } from '@/features/classroom/ClassroomMapPage'
+import {
+  BlackboardPage,
+  BlackboardWritePage,
+} from '@/features/classroom/BlackboardPages'
+import {
+  ClassroomLockerCompletePage,
+  ClassroomLockerPage,
+  ClassroomLockerPlacementPage,
+} from '@/features/classroom/LockerPages'
 import { PrototypeIndexPage } from '@/prototype/screens/PrototypeIndexPage'
 import {
-  ClassroomPage,
   ComposerPage,
   ReaderPage,
 } from '@/prototype/screens/flowPages'
@@ -94,7 +109,54 @@ export const router = createBrowserRouter([
         path: '/prototype/claim/complete',
         element: <ClaimCompletePage />,
       },
-      { path: '/prototype/classroom', element: <ClassroomPage /> },
+      {
+        path: '/prototype/classroom',
+        element: <ClassroomEntryRedirect />,
+      },
+      {
+        path: '/prototype/classroom/create',
+        element: <ClassroomCreatePage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/complete',
+        element: <ClassroomCreateCompletePage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/join',
+        element: <ClassroomJoinPage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/map',
+        element: <ClassroomMapPage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/blackboard',
+        element: <BlackboardPage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/blackboard/write',
+        element: <BlackboardWritePage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/locker/:lockerId',
+        element: <ClassroomLockerPage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/locker/:lockerId/compose',
+        element: <UnifiedComposerPage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/locker/:lockerId/placement',
+        element: <ClassroomLockerPlacementPage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/locker/:lockerId/complete',
+        element: <ClassroomLockerCompletePage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/locker/:lockerId/message/:messageId',
+        element: <MessageViewerPage />,
+      },
       { path: '/system', element: <SystemPage /> },
       { path: '*', element: <Navigate to="/start" replace /> },
     ],

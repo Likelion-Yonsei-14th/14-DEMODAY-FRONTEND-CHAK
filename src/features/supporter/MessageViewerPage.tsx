@@ -27,13 +27,19 @@ type ReaderLocationState = {
     | 'desk'
     | 'cards'
     | 'support-desk'
+    | 'classroom-locker'
+  lockerId?: string
 }
 
 export function MessageViewerPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { messageId } = useParams()
+  const { messageId, classroomId, lockerId } = useParams()
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
+  const classroom = usePrototypeStore((state) => state.classroom)
+  const classroomMember = usePrototypeStore(
+    (state) => state.classroomMember,
+  )
   const storedMessages = usePrototypeStore((state) => state.messages)
   const markMessageRead = usePrototypeStore((state) => state.markMessageRead)
   const pageScrollerRef = useRef<HTMLDivElement>(null)
@@ -48,13 +54,34 @@ export function MessageViewerPage() {
   const supporterView =
     state?.from === 'support-desk' ||
     location.pathname.startsWith('/prototype/support/')
+  const classroomLocker = classroom.lockers.find(
+    (locker) => locker.id === lockerId,
+  )
+  const classroomView = Boolean(
+    classroomLocker &&
+      location.pathname.startsWith('/prototype/classroom/'),
+  )
+  const classroomOwner = Boolean(
+    classroomView &&
+      classroomMember?.lockerId === classroomLocker?.id,
+  )
   const readMode = useMemo(
     () =>
-      resolvePreviewReadMode(
-        currentDesk.readMode,
-        location.search,
-      ),
-    [currentDesk.readMode, location.search],
+      classroomView
+        ? {
+            type: 'daily' as const,
+            unlockTime: classroom.dailyUnlockTime,
+          }
+        : resolvePreviewReadMode(
+            currentDesk.readMode,
+            location.search,
+          ),
+    [
+      classroom.dailyUnlockTime,
+      classroomView,
+      currentDesk.readMode,
+      location.search,
+    ],
   )
   const now = useReadModeNow(
     readMode,
@@ -77,6 +104,7 @@ export function MessageViewerPage() {
 
     if (
       !supporterView &&
+      (!classroomView || classroomOwner) &&
       messageId &&
       availability?.available &&
       reachedReadPoint
@@ -91,6 +119,8 @@ export function MessageViewerPage() {
     messageId,
     pages.length,
     supporterView,
+    classroomOwner,
+    classroomView,
   ])
 
   useEffect(() => {
@@ -151,6 +181,13 @@ export function MessageViewerPage() {
   )
 
   const back = () => {
+    if (classroomView && classroomLocker) {
+      navigate(
+        `/prototype/classroom/${classroomId ?? classroom.id}/locker/${classroomLocker.id}`,
+      )
+      return
+    }
+
     if (supporterView) {
       navigate('/prototype/support/jisu')
       return
@@ -192,6 +229,43 @@ export function MessageViewerPage() {
     )
   }
 
+  if (
+    classroomView &&
+    !classroomOwner &&
+    message?.visibility === 'private'
+  ) {
+    return (
+      <AppShell
+        surface="base"
+        contentClassName="message-viewer-shell"
+        appBar={
+          <AppBar
+            title="응원 보기"
+            leading={
+              <IconButton
+                label="사물함으로 돌아가기"
+                icon={<ArrowLeft size={21} aria-hidden />}
+                onClick={back}
+              />
+            }
+          />
+        }
+      >
+        <main className="message-viewer__locked">
+          <span className="message-viewer__locked-icon" aria-hidden>
+            <LockKeyhole size={23} />
+          </span>
+          <h2>
+            {classroomLocker?.studentName ?? '사물함 주인'}님만 볼 수 있는 응원이에요.
+          </h2>
+          <Button variant="secondary" onClick={back}>
+            사물함으로 돌아가기
+          </Button>
+        </main>
+      </AppShell>
+    )
+  }
+
   if (supporterView && message?.visibility === 'private') {
     return (
       <AppShell
@@ -223,7 +297,12 @@ export function MessageViewerPage() {
     )
   }
 
-  if (!supporterView && availability && !availability.available) {
+  if (
+    !supporterView &&
+    (!classroomView || classroomOwner) &&
+    availability &&
+    !availability.available
+  ) {
     const unlockLabel = availability.unlockAt
       ? formatUnlockAt(availability.unlockAt, now)
       : null
@@ -276,9 +355,11 @@ export function MessageViewerPage() {
           leading={
             <IconButton
               label={
-                supporterView
-                  ? '책상으로 돌아가기'
-                  : state?.from === 'owner-desk' || state?.from === 'desk'
+                classroomView
+                  ? '사물함으로 돌아가기'
+                  : supporterView
+                    ? '책상으로 돌아가기'
+                    : state?.from === 'owner-desk' || state?.from === 'desk'
                     ? '내 책상으로 돌아가기'
                     : '응원 목록으로 돌아가기'
               }

@@ -92,12 +92,28 @@ Internal modes:
 - `daily`: open the day’s messages at a configured daily time.
 - `time-capsule`: keep messages locked until a configured date/time.
 
-## Class mode
+## Class / group mode
 
-- Static 2D classroom, not a metaverse.
-- Blackboard = shared/public messages.
-- Locker = personal message objects.
-- Locker Object → Common Reader reuses the Personal Desk reading pattern.
+- The mode is for a high-school class, study group, friend group, or another small community preparing for the exam together.
+- Entry copy describes the situation and desired action rather than asking users to understand product-internal terms such as “personal desk” vs. “group space.”
+- The creator is assumed to be one of the members; no creator-role question is required.
+- Member names are not collected when the space is created.
+- A shared link opens the group space; each visitor enters their own name or nickname and gets one locker.
+- There is no separate Claim flow for lockers.
+- The main experience is a horizontally explorable 2D classroom map rather than a menu of feature buttons.
+- Users move left/right through the classroom and interact directly with the blackboard and lockers in the scene.
+- Blackboard:
+  - shared/public by default
+  - visible immediately
+  - supports short text and freehand chalk drawing
+- Locker:
+  - one locker per member
+  - uses the existing Unified Composer for personal encouragements
+  - the placement destination is the inside of the locker instead of the personal desk
+  - public encouragements may be viewed by other visitors
+  - private encouragements can only be opened by the locker owner
+  - the locker owner reads incoming encouragements on Daily mode only
+- Locker Object → Common Reader reuses the same card renderer and reader behavior as Personal Desk.
 
 ## Design principle
 

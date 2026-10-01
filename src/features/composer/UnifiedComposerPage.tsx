@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { AppBar, Button, IconButton, useFeedback } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -31,10 +31,24 @@ const FLOATING_PHOTO_LIMIT = 3
 
 export function UnifiedComposerPage() {
   const navigate = useNavigate()
+  const { classroomId, lockerId } = useParams()
   const { showToast } = useFeedback()
   const draft = usePrototypeStore((state) => state.composerDraft)
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
+  const classroom = usePrototypeStore((state) => state.classroom)
   const setComposerDraft = usePrototypeStore((state) => state.setComposerDraft)
+  const classroomLocker = classroom.lockers.find(
+    (locker) => locker.id === lockerId,
+  )
+  const classroomMode = Boolean(classroomId && classroomLocker)
+  const recipientName =
+    classroomLocker?.studentName ?? currentDesk.displayName
+  const backPath = classroomMode
+    ? `/prototype/classroom/${classroomId}/locker/${lockerId}`
+    : '/prototype/support/jisu'
+  const placementPath = classroomMode
+    ? `/prototype/classroom/${classroomId}/locker/${lockerId}/placement`
+    : '/prototype/support/jisu/placement'
   const [tool, setTool] = useState<ComposerTool>('background')
   const [visibilityOpen, setVisibilityOpen] = useState(false)
   const page = getActiveCardPage(draft)
@@ -354,9 +368,9 @@ export function UnifiedComposerPage() {
             title="응원 만들기"
             leading={
               <IconButton
-                label={`${currentDesk.displayName}님의 책상으로 돌아가기`}
+                label={`${recipientName}님의 공간으로 돌아가기`}
                 icon={<ArrowLeft size={21} aria-hidden />}
-                onClick={() => navigate('/prototype/support/jisu')}
+                onClick={() => navigate(backPath)}
               />
             }
             trailing={
@@ -539,12 +553,12 @@ export function UnifiedComposerPage() {
       <VisibilitySheet
         open={visibilityOpen}
         value={draft.visibility}
-        recipientName={currentDesk.displayName}
+        recipientName={recipientName}
         onChange={updateVisibility}
         onClose={() => setVisibilityOpen(false)}
         onContinue={() => {
           setVisibilityOpen(false)
-          navigate('/prototype/support/jisu/placement')
+          navigate(placementPath)
         }}
       />
     </>

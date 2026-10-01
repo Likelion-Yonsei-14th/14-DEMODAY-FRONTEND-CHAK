@@ -50,8 +50,8 @@ const routes = [
   {
     path: '/prototype/classroom',
     title: 'Classroom',
-    description: 'Blackboard · Locker · Object → Common Reader',
-    phase: 'Phase 6',
+    description: '교실 맵 탐색 · 함께 쓰는 칠판 · 학생별 사물함 · Daily 열람',
+    phase: 'LIVE',
   },
 ]
 

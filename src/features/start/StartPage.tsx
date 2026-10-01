@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import { ArrowRight } from 'lucide-react'
+import { UserRound, UsersRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '@/design-system'
+import { ChoiceCard } from '@/design-system'
 import {
   getCsatDateLabel,
   getCsatDdayLabel,
@@ -27,7 +27,7 @@ export function StartPage() {
     [],
   )
 
-  const startCreating = () => {
+  const startPersonal = () => {
     resetDeskCreationDraft()
     navigate('/prototype/create')
   }
@@ -36,16 +36,6 @@ export function StartPage() {
     <AppShell
       surface="transparent"
       contentClassName="start-page-shell"
-      fixedAction={
-        <Button
-          variant="brand"
-          fullWidth
-          trailingIcon={<ArrowRight size={18} aria-hidden />}
-          onClick={startCreating}
-        >
-          응원 책상 만들기
-        </Button>
-      }
     >
       <main className="start-page">
         <header className="start-page__header">
@@ -59,12 +49,12 @@ export function StartPage() {
 
         <section className="start-page__hero">
           <h1>
-            수능까지 쌓이는
+            수능 전까지,
             <br />
-            응원 책상을 만들어보세요.
+            친구들의 마음을 모아두세요.
           </h1>
           <p>
-            친구들이 남긴 마음이 책상 위에 하나씩 쌓여요.
+            링크 하나로 응원을 모으고, 정해둔 시간에 꺼내볼 수 있어요.
           </p>
         </section>
 
@@ -77,6 +67,21 @@ export function StartPage() {
             showUnreadState={false}
           />
         </div>
+
+        <section className="start-page__choices" aria-label="응원을 모으는 방법">
+          <ChoiceCard
+            title="나를 응원해줄 친구들을 초대할래요"
+            description="친구들이 남긴 응원이 내 공간에 하나씩 쌓여요."
+            icon={<UserRound size={22} aria-hidden />}
+            onClick={startPersonal}
+          />
+          <ChoiceCard
+            title="우리끼리 서로 응원할래요"
+            description="같은 공간에서 칠판을 채우고, 각자 사물함에 마음을 남겨요."
+            icon={<UsersRound size={22} aria-hidden />}
+            onClick={() => navigate('/prototype/classroom/create')}
+          />
+        </section>
       </main>
     </AppShell>
   )

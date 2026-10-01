@@ -81,9 +81,24 @@ export const mockClassroom: Classroom = {
   id: 'classroom-3-2',
   name: '3학년 2반',
   blackboardMessageIds: [],
-  lockers: [
-    { id: 'locker-jisu', studentName: '지수', messageIds: [] },
-    { id: 'locker-minji', studentName: '민지', messageIds: [] },
-    { id: 'locker-hyunwoo', studentName: '현우', messageIds: [] },
+  blackboardEntries: [
+    {
+      id: 'board-entry-1',
+      authorName: '민지',
+      text: '우리 반 다 같이 끝까지 가보자 🍀',
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'board-entry-2',
+      authorName: '현우',
+      text: '수능 끝나고 바로 놀러 가는 거다',
+      createdAt: new Date().toISOString(),
+    },
   ],
+  lockers: [
+    { id: 'locker-minji', studentName: '민지', messageIds: [], objects: [] },
+    { id: 'locker-hyunwoo', studentName: '현우', messageIds: [], objects: [] },
+    { id: 'locker-seoyeon', studentName: '서연', messageIds: [], objects: [] },
+  ],
+  dailyUnlockTime: '22:00',
 }

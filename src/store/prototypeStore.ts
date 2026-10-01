@@ -15,7 +15,9 @@ import {
   resolveInitialPlacement,
 } from '@/features/supporter/supporterFlow'
 import type {
+  BlackboardEntry,
   Classroom,
+  ClassroomMember,
   Desk,
   DeskCreationDraft,
   DeskObjectType,
@@ -38,6 +40,7 @@ type PrototypeState = {
   claimReadMode: ReadMode
   claimState: ClaimState
   classroom: Classroom
+  classroomMember: ClassroomMember | null
   readMessageIds: string[]
   setDebugMode: (value: boolean) => void
   setComposerDraft: (draft: MessageDraft) => void
@@ -49,6 +52,17 @@ type PrototypeState = {
   setClaimReadMode: (readMode: ReadMode) => void
   completeClaim: () => void
   addMessage: (message: Message) => void
+  createClassroom: (name: string) => string
+  joinClassroom: (displayName: string) => string
+  addBlackboardEntry: (
+    entry: Pick<BlackboardEntry, 'text' | 'drawingDataUrl'>,
+  ) => void
+  placeComposerMessageInLocker: (
+    lockerId: string,
+    placement?: DeskPlacement,
+    representationType?: DeskObjectType,
+    objectColor?: string,
+  ) => void
   placeComposerMessage: (
     placement?: DeskPlacement,
     representationType?: DeskObjectType,
@@ -70,6 +84,7 @@ export const usePrototypeStore = create<PrototypeState>()(
       claimReadMode: mockDesk.readMode,
       claimState: 'claimed',
       classroom: mockClassroom,
+      classroomMember: null,
       readMessageIds: [],
       setDebugMode: (debugMode) => set({ debugMode }),
       setComposerDraft: (composerDraft) => set({ composerDraft }),
@@ -138,6 +153,143 @@ export const usePrototypeStore = create<PrototypeState>()(
         })),
       addMessage: (message) =>
         set((state) => ({ messages: [...state.messages, message] })),
+      createClassroom: (name) => {
+        const stamp = Date.now().toString(36)
+        const classroomId = `classroom-${stamp}`
+
+        set({
+          classroom: {
+            id: classroomId,
+            name: name.trim() || '우리 반',
+            blackboardMessageIds: [],
+            blackboardEntries: [],
+            lockers: [],
+            dailyUnlockTime: '22:00',
+          },
+          classroomMember: null,
+        })
+
+        return classroomId
+      },
+      joinClassroom: (displayName) => {
+        const stamp = Date.now().toString(36)
+        const lockerId = `locker-${stamp}`
+        const normalizedName = displayName.trim() || '친구'
+
+        set((state) => ({
+          classroom: {
+            ...state.classroom,
+            lockers: [
+              ...state.classroom.lockers,
+              {
+                id: lockerId,
+                studentName: normalizedName,
+                messageIds: [],
+                objects: [],
+              },
+            ],
+          },
+          classroomMember: {
+            lockerId,
+            displayName: normalizedName,
+          },
+        }))
+
+        return lockerId
+      },
+      addBlackboardEntry: (entry) =>
+        set((state) => {
+          const stamp = Date.now().toString(36)
+          const authorName =
+            state.classroomMember?.displayName ??
+            state.currentUser.displayName
+
+          return {
+            classroom: {
+              ...state.classroom,
+              blackboardEntries: [
+                ...state.classroom.blackboardEntries,
+                {
+                  id: `board-entry-${stamp}`,
+                  authorName,
+                  text: entry.text.trim(),
+                  drawingDataUrl: entry.drawingDataUrl,
+                  createdAt: new Date().toISOString(),
+                },
+              ],
+            },
+          }
+        }),
+      placeComposerMessageInLocker: (
+        lockerId,
+        placement,
+        selectedRepresentationType,
+        objectColor,
+      ) =>
+        set((state) => {
+          const locker = state.classroom.lockers.find(
+            (item) => item.id === lockerId,
+          )
+          if (!locker) return state
+
+          const stamp = Date.now().toString(36)
+          const messageId = `classroom-message-${stamp}`
+          const objectId = `locker-object-${stamp}`
+          const representationType =
+            selectedRepresentationType ??
+            resolveDeskObjectType(state.composerDraft)
+          const finalPlacement =
+            placement ??
+            resolveInitialPlacement(locker.objects.length)
+          const firstPage = getFirstCardPage(state.composerDraft)
+          const previewColor = getComposerBackground(
+            firstPage.backgroundAssetId,
+          ).tone
+          const senderName =
+            state.classroomMember?.displayName ??
+            state.composerDraft.senderName.trim() ??
+            '친구'
+
+          const message: Message = {
+            ...state.composerDraft,
+            id: messageId,
+            senderName: senderName || '친구',
+            recipientDeskId: locker.id,
+            status: 'sent',
+            createdAt: new Date().toISOString(),
+            previewColor,
+          }
+
+          return {
+            messages: [...state.messages, message],
+            classroom: {
+              ...state.classroom,
+              lockers: state.classroom.lockers.map((item) =>
+                item.id === lockerId
+                  ? {
+                      ...item,
+                      messageIds: [...item.messageIds, messageId],
+                      objects: [
+                        ...item.objects,
+                        {
+                          id: objectId,
+                          messageId,
+                          representationType,
+                          color: objectColor,
+                          zone: resolveDeskZone(item.objects.length),
+                          order: item.objects.length,
+                          locked: false,
+                          ...finalPlacement,
+                          zIndex: item.objects.length + 10,
+                        },
+                      ],
+                    }
+                  : item,
+              ),
+            },
+            composerDraft: emptyComposerDraft,
+          }
+        }),
       placeComposerMessage: (
         placement,
         selectedRepresentationType,
@@ -222,6 +374,8 @@ export const usePrototypeStore = create<PrototypeState>()(
         deskCreationDraft: state.deskCreationDraft,
         claimReadMode: state.claimReadMode,
         claimState: state.claimState,
+        classroom: state.classroom,
+        classroomMember: state.classroomMember,
         readMessageIds: state.readMessageIds,
       }),
     },
