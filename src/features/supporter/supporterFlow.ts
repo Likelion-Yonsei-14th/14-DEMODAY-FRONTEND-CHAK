@@ -50,11 +50,11 @@ export function resolveDeskZone(existingCount: number): DeskZone {
 }
 
 const placementPresets: DeskPlacement[] = [
-  { x: 54, y: 49, rotation: -2, scale: 1 },
-  { x: 25, y: 51, rotation: 3, scale: 1 },
-  { x: 76, y: 50, rotation: -3, scale: 1 },
-  { x: 40, y: 43, rotation: 2, scale: 0.98 },
-  { x: 66, y: 43, rotation: 1, scale: 0.98 },
+  { x: 52, y: 54, rotation: -2, scale: 1 },
+  { x: 29, y: 59, rotation: 3, scale: 1 },
+  { x: 73, y: 58, rotation: -3, scale: 1 },
+  { x: 40, y: 45, rotation: 2, scale: 0.98 },
+  { x: 64, y: 68, rotation: 1, scale: 0.98 },
 ]
 
 export function resolveInitialPlacement(existingCount: number): DeskPlacement {
@@ -90,11 +90,9 @@ type Rect = {
   height: number
 }
 
-const STATIC_MESSAGE_RECTS: Rect[] = [
-  { x: 35, y: 48, width: 12, height: 11 },
-  { x: 68, y: 49, width: 13, height: 11 },
-  { x: 50, y: 54, width: 14, height: 8 },
-  { x: 84, y: 44, width: 10, height: 12 },
+const STATIC_DECOR_RECTS: Rect[] = [
+  { x: 14, y: 39, width: 23, height: 19 },
+  { x: 84, y: 37, width: 23, height: 15 },
 ]
 
 const objectSizeByType: Record<
@@ -114,7 +112,7 @@ export function clampPlacement(placement: DeskPlacement): DeskPlacement {
   return {
     ...placement,
     x: clamp(placement.x, 12, 88),
-    y: clamp(placement.y, 38, 58),
+    y: clamp(placement.y, 40, 72),
     rotation: clamp(placement.rotation, -7, 7),
     scale: clamp(placement.scale, 0.9, 1.08),
   }
@@ -137,7 +135,7 @@ export function isPlacementValid(
   )
 
   const occupiedRects = [
-    ...STATIC_MESSAGE_RECTS.map((rect) =>
+    ...STATIC_DECOR_RECTS.map((rect) =>
       centeredRect(rect.x, rect.y, rect.width, rect.height),
     ),
     ...existingObjects.map((object) => {
