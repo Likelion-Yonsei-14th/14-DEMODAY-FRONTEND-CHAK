@@ -96,7 +96,7 @@ export function PrototypeIndexPage() {
         <aside className="prototype-index__note">
           <strong>현재 원칙</strong>
           <p>
-            Desk는 정면 시점의 2.5D 일러스트 공간으로 구현합니다. 구조 UI는 차분하게,
+            Desk는 살짝 위에서 내려다보는 2.5D 일러스트 공간으로 구현합니다. 구조 UI는 차분하게,
             친구가 남기는 메시지 오브젝트는 더 컬러풀하고 장난스럽게 표현합니다.
           </p>
         </aside>
