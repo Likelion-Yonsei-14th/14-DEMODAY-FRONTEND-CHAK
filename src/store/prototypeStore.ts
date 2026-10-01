@@ -15,6 +15,8 @@ import {
   resolveInitialPlacement,
 } from '@/features/supporter/supporterFlow'
 import type {
+  AuthProvider,
+  AuthSession,
   BlackboardEntry,
   Classroom,
   ClassroomMember,
@@ -33,6 +35,7 @@ type ClaimState = 'unclaimed' | 'claiming' | 'claimed'
 type PrototypeState = {
   debugMode: boolean
   currentUser: PrototypeUser
+  authSession: AuthSession
   currentDesk: Desk
   messages: Message[]
   composerDraft: MessageDraft
@@ -43,6 +46,10 @@ type PrototypeState = {
   classroomMember: ClassroomMember | null
   readMessageIds: string[]
   setDebugMode: (value: boolean) => void
+  signIn: (email: string, provider?: AuthProvider) => void
+  signUp: (displayName: string, email: string) => void
+  signOut: () => void
+  deleteAccount: () => void
   setComposerDraft: (draft: MessageDraft) => void
   resetComposerDraft: () => void
   setDeskCreationDraft: (patch: Partial<DeskCreationDraft>) => void
@@ -77,6 +84,7 @@ export const usePrototypeStore = create<PrototypeState>()(
     (set) => ({
       debugMode: false,
       currentUser: mockCurrentUser,
+      authSession: { status: 'anonymous' },
       currentDesk: mockDesk,
       messages: [],
       composerDraft: emptyComposerDraft,
@@ -87,6 +95,35 @@ export const usePrototypeStore = create<PrototypeState>()(
       classroomMember: null,
       readMessageIds: [],
       setDebugMode: (debugMode) => set({ debugMode }),
+      signIn: (email, provider = 'password') =>
+        set({
+          authSession: {
+            status: 'authenticated',
+            email: email.trim() || 'jisu@example.com',
+            provider,
+          },
+        }),
+      signUp: (displayName, email) =>
+        set((state) => ({
+          currentUser: {
+            ...state.currentUser,
+            displayName: displayName.trim() || state.currentUser.displayName,
+          },
+          authSession: {
+            status: 'authenticated',
+            email: email.trim() || 'jisu@example.com',
+            provider: 'password',
+          },
+        })),
+      signOut: () =>
+        set({
+          authSession: { status: 'anonymous' },
+        }),
+      deleteAccount: () =>
+        set({
+          currentUser: mockCurrentUser,
+          authSession: { status: 'anonymous' },
+        }),
       setComposerDraft: (composerDraft) => set({ composerDraft }),
       resetComposerDraft: () => set({ composerDraft: emptyComposerDraft }),
       setDeskCreationDraft: (patch) =>
@@ -368,6 +405,8 @@ export const usePrototypeStore = create<PrototypeState>()(
       name: 'eun-demoday-prototype',
       partialize: (state) => ({
         debugMode: state.debugMode,
+        currentUser: state.currentUser,
+        authSession: state.authSession,
         currentDesk: state.currentDesk,
         messages: state.messages,
         composerDraft: state.composerDraft,

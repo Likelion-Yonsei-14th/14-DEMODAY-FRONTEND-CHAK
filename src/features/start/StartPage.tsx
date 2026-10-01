@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { UserRound, UsersRound } from 'lucide-react'
+import { LogIn, UserRound, UsersRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { ChoiceCard } from '@/design-system'
 import {
@@ -21,6 +21,7 @@ export function StartPage() {
   const resetDeskCreationDraft = usePrototypeStore(
     (state) => state.resetDeskCreationDraft,
   )
+  const authSession = usePrototypeStore((state) => state.authSession)
 
   const messages = useMemo(
     () => mergeSupportMessages([]),
@@ -39,12 +40,30 @@ export function StartPage() {
     >
       <main className="start-page">
         <header className="start-page__header">
-          <span className="start-page__dday">
-            {getCsatDdayLabel()}
+          <span className="start-page__header-meta">
+            <span className="start-page__dday">
+              {getCsatDdayLabel()}
+            </span>
+            <span className="start-page__date">
+              {getCsatDateLabel()} 수능
+            </span>
           </span>
-          <span className="start-page__date">
-            {getCsatDateLabel()} 수능
-          </span>
+          <button
+            type="button"
+            className="start-page__account"
+            onClick={() =>
+              navigate(
+                authSession.status === 'authenticated'
+                  ? '/account'
+                  : '/auth/login',
+              )
+            }
+          >
+            <LogIn size={15} aria-hidden />
+            {authSession.status === 'authenticated'
+              ? '내 계정'
+              : '로그인'}
+          </button>
         </header>
 
         <section className="start-page__hero">

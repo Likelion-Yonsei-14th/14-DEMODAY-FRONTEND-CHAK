@@ -20,6 +20,13 @@ import { SupportCompletePage } from '@/features/supporter/SupportCompletePage'
 import { SupportDeskPage } from '@/features/supporter/SupportDeskPage'
 import { StartPage } from '@/features/start/StartPage'
 import {
+  AccountPage,
+  DeleteAccountCompletePage,
+  DeleteAccountPage,
+  LoginPage,
+  SignupPage,
+} from '@/features/account/AccountPages'
+import {
   ClassroomCreateCompletePage,
   ClassroomCreatePage,
   ClassroomEntryRedirect,
@@ -48,6 +55,14 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/start" replace /> },
       { path: '/start', element: <StartPage /> },
+      { path: '/auth/login', element: <LoginPage /> },
+      { path: '/auth/signup', element: <SignupPage /> },
+      { path: '/account', element: <AccountPage /> },
+      { path: '/account/delete', element: <DeleteAccountPage /> },
+      {
+        path: '/account/delete/complete',
+        element: <DeleteAccountCompletePage />,
+      },
       { path: '/prototype', element: <PrototypeIndexPage /> },
 
       { path: '/prototype/create', element: <DeskCreateWhoPage /> },

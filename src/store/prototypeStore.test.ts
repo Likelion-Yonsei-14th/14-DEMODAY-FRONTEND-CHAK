@@ -3,6 +3,7 @@ import {
   emptyComposerDraft,
   emptyDeskCreationDraft,
   mockClassroom,
+  mockCurrentUser,
   mockDesk,
 } from '@/prototype/mock/initialState'
 import {
@@ -92,6 +93,8 @@ describe('prototype store composer handoff', () => {
   beforeEach(() => {
     usePrototypeStore.setState({
       messages: [],
+      currentUser: mockCurrentUser,
+      authSession: { status: 'anonymous' },
       currentDesk: {
         ...mockDesk,
         objects: [],
@@ -167,6 +170,56 @@ describe('prototype store composer handoff', () => {
     expect(
       getActiveCardPage(state.composerDraft).textElements[0]?.text,
     ).toBe('')
+  })
+
+  it('supports signup, logout, and email login without gating anonymous use', () => {
+    usePrototypeStore
+      .getState()
+      .signUp('혜경', 'hyegyeong@example.com')
+
+    let state = usePrototypeStore.getState()
+    expect(state.currentUser.displayName).toBe('혜경')
+    expect(state.authSession).toEqual({
+      status: 'authenticated',
+      email: 'hyegyeong@example.com',
+      provider: 'password',
+    })
+
+    usePrototypeStore.getState().signOut()
+    expect(usePrototypeStore.getState().authSession).toEqual({
+      status: 'anonymous',
+    })
+
+    usePrototypeStore
+      .getState()
+      .signIn('hyegyeong@example.com')
+
+    state = usePrototypeStore.getState()
+    expect(state.authSession).toEqual({
+      status: 'authenticated',
+      email: 'hyegyeong@example.com',
+      provider: 'password',
+    })
+  })
+
+  it('supports Google login and returns to anonymous state after account deletion', () => {
+    usePrototypeStore
+      .getState()
+      .signIn('jisu@gmail.com', 'google')
+
+    expect(usePrototypeStore.getState().authSession).toEqual({
+      status: 'authenticated',
+      email: 'jisu@gmail.com',
+      provider: 'google',
+    })
+
+    usePrototypeStore.getState().deleteAccount()
+
+    const state = usePrototypeStore.getState()
+    expect(state.authSession).toEqual({
+      status: 'anonymous',
+    })
+    expect(state.currentUser).toEqual(mockCurrentUser)
   })
 
   it('creates a self-owned desk as claimed with the chosen read mode', () => {

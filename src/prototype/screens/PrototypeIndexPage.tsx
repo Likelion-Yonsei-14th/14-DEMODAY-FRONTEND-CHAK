@@ -12,6 +12,12 @@ const routes = [
     phase: 'LIVE',
   },
   {
+    path: '/auth/login',
+    title: 'Account',
+    description: '비로그인 이용 → 로그인/회원가입 → 계정 → 로그아웃/탈퇴',
+    phase: 'LIVE',
+  },
+  {
     path: '/prototype/create',
     title: 'Desk Creation',
     description: '본인/주변인 선택 → 읽기 방식 설정 → 응원 책상 생성',
@@ -90,8 +96,8 @@ export function PrototypeIndexPage() {
           <p className="prototype-index__eyebrow">INTERACTIVE UX SPEC</p>
           <h2>전체 서비스 플로우를<br />코드로 연결합니다.</h2>
           <p>
-            로그인·회원가입 같은 부수 화면은 Figma에 남기고, 핵심 경험은 실제로 눌러볼 수 있는
-            프로토타입으로 구현합니다.
+            서비스 진입부터 계정, 개인 응원, 반별 응원까지 주요 흐름을 실제로 눌러볼 수 있는
+            프로토타입으로 연결합니다.
           </p>
         </section>
 

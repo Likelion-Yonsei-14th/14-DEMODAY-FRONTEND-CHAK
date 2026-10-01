@@ -4,9 +4,23 @@ This document tracks the latest decisions that the code prototype must prioritiz
 
 ## Prototype scope
 
-- Login, signup, account deletion, and other secondary account screens stay documented in Figma for now.
-- Core experience flows are implemented as clickable code prototypes.
+- Core experience flows and the account lifecycle are implemented as clickable code prototypes.
+- Authentication screens simulate state only; real credentials, OAuth, sessions, and backend persistence remain production implementation work.
 - The code prototype is an interactive UX specification, not a production backend.
+
+## Account / authentication
+
+- The service remains usable without login for browsing and leaving encouragements.
+- Account screens exist so users can understand how they would return to their saved spaces across visits.
+- Prototype flows include:
+  - email login
+  - email signup
+  - Google login mock
+  - account page
+  - logout
+  - account deletion and completion
+- Google is the primary social-login prototype. Kakao login remains optional follow-up scope.
+- No production authentication or OAuth credentials are included in the prototype.
 
 ## Personal Desk
 
