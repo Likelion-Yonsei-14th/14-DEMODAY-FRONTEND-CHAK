@@ -2,6 +2,12 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { App } from '@/app/App'
 import { UnifiedComposerPage } from '@/features/composer/UnifiedComposerPage'
 import { OwnerDeskPage } from '@/features/owner/OwnerDeskPage'
+import {
+  DeskCreateCompletePage,
+  DeskCreateReadModePage,
+  DeskCreateRecipientPage,
+  DeskCreateWhoPage,
+} from '@/features/deskCreation/DeskCreationPages'
 import { EnvelopeStackPage } from '@/features/supporter/EnvelopeStackPage'
 import { MessageViewerPage } from '@/features/supporter/MessageViewerPage'
 import { PlacementPreviewPage } from '@/features/supporter/PlacementPreviewPage'
@@ -22,6 +28,20 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/prototype" replace /> },
       { path: '/prototype', element: <PrototypeIndexPage /> },
+
+      { path: '/prototype/create', element: <DeskCreateWhoPage /> },
+      {
+        path: '/prototype/create/recipient',
+        element: <DeskCreateRecipientPage />,
+      },
+      {
+        path: '/prototype/create/read-mode',
+        element: <DeskCreateReadModePage />,
+      },
+      {
+        path: '/prototype/create/complete',
+        element: <DeskCreateCompletePage />,
+      },
 
       { path: '/prototype/support/jisu', element: <SupportDeskPage /> },
       {
