@@ -21,8 +21,8 @@ import {
   deskObjectLabels,
   deskObjectToneOptions,
   isPlacementValid,
+  resolveAvailablePlacement,
   resolveDeskObjectType,
-  resolveInitialPlacement,
   selectableDeskObjectTypes,
 } from './supporterFlow'
 import './supporterFlow.css'
@@ -69,8 +69,8 @@ export function PlacementPreviewPage() {
     ),
   ]
   const initialPlacement = useMemo(
-    () => resolveInitialPlacement(existingObjects.length),
-    [existingObjects.length],
+    () => resolveAvailablePlacement(existingObjects, objectType),
+    [existingObjects, objectType],
   )
   const [placement, setPlacement] = useState<DeskPlacement>(initialPlacement)
   const [lastValidPlacement, setLastValidPlacement] =
