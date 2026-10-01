@@ -13,6 +13,10 @@ import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import type { DeskObjectType, DeskPlacement } from '@/types'
 import {
+  mergeSupportMessages,
+  seededDeskObjects,
+} from './seededMessages'
+import {
   clampPlacement,
   deskObjectLabels,
   deskObjectToneOptions,
@@ -28,7 +32,15 @@ export function PlacementPreviewPage() {
   const sceneRef = useRef<HTMLDivElement>(null)
   const draft = usePrototypeStore((state) => state.composerDraft)
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
-  const messages = usePrototypeStore((state) => state.messages)
+  const storedMessages = usePrototypeStore((state) => state.messages)
+  const messages = useMemo(
+    () => mergeSupportMessages(storedMessages),
+    [storedMessages],
+  )
+  const existingObjects = useMemo(
+    () => [...seededDeskObjects, ...currentDesk.objects],
+    [currentDesk.objects],
+  )
   const placeComposerMessage = usePrototypeStore(
     (state) => state.placeComposerMessage,
   )
@@ -57,8 +69,8 @@ export function PlacementPreviewPage() {
     ),
   ]
   const initialPlacement = useMemo(
-    () => resolveInitialPlacement(currentDesk.objects.length),
-    [currentDesk.objects.length],
+    () => resolveInitialPlacement(existingObjects.length),
+    [existingObjects.length],
   )
   const [placement, setPlacement] = useState<DeskPlacement>(initialPlacement)
   const [lastValidPlacement, setLastValidPlacement] =
@@ -66,7 +78,7 @@ export function PlacementPreviewPage() {
 
   const valid = isPlacementValid(
     placement,
-    currentDesk.objects,
+    existingObjects,
     objectType,
   )
   const visibilityPrivate = draft.visibility === 'private'
@@ -92,7 +104,7 @@ export function PlacementPreviewPage() {
       if (
         isPlacementValid(
           next,
-          currentDesk.objects,
+          existingObjects,
           objectType,
         )
       ) {
@@ -111,7 +123,7 @@ export function PlacementPreviewPage() {
       setPlacement((current) =>
         isPlacementValid(
           current,
-          currentDesk.objects,
+          existingObjects,
           objectType,
         )
           ? current
@@ -248,7 +260,7 @@ export function PlacementPreviewPage() {
         >
           <DeskScene ownerName="지수님" />
           <DeskObjectLayer
-            objects={currentDesk.objects}
+            objects={existingObjects}
             messages={messages}
             draftObject={{
               representationType: objectType,
