@@ -87,8 +87,8 @@ describe('message availability', () => {
     expect(
       getMessageAvailability(
         mode,
-        '2026-11-13T09:00:00',
-        new Date('2026-11-13T09:01:00'),
+        '2026-11-19T09:00:00',
+        new Date('2026-11-19T09:01:00'),
       ).available,
     ).toBe(true)
   })
