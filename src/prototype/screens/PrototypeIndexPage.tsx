@@ -38,7 +38,7 @@ const routes = [
   {
     path: '/prototype/composer',
     title: 'Unified Composer Spec',
-    description: '모드 선택 없이 배경 · 글자 · 문구 · 스티커 · 사진을 한 화면에서 편집',
+    description: '배경 · 글자 · 문구 · 스티커 · 사진 편집 + 응원 소재/질문 제안',
     phase: 'LIVE',
   },
   {

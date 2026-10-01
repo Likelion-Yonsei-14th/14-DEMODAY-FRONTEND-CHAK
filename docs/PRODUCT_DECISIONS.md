@@ -45,6 +45,20 @@ One editor provides:
 
 A supporter can start typing immediately and add only the elements they need.
 
+### Message idea assist
+
+- The composer includes a low-friction entry for supporters who do not know what to write.
+- The feature suggests **topics and questions**, not a finished encouragement message.
+- Suggestions should help recall:
+  - a recent funny moment
+  - a shared photo or memory
+  - what the recipient may be doing now
+  - something to do together after the exam
+  - one short thing the supporter genuinely wants to say
+- Selecting a suggestion never inserts text into the message automatically.
+- The selected question remains as a temporary writing prompt while the supporter writes in their own words.
+- Prototype suggestions are deterministic. Production AI generation can later use relationship, memory, and D-day context.
+
 ## Card pages
 
 - All message cards use the standard 4:5 canvas.

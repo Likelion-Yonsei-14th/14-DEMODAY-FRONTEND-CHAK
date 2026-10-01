@@ -1,7 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import {
+  ArrowLeft,
+  Lightbulb,
+  RefreshCw,
+  X,
+} from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { AppBar, Button, IconButton, useFeedback } from '@/design-system'
+import {
+  AppBar,
+  BottomSheet,
+  Button,
+  IconButton,
+  useFeedback,
+} from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import type {
@@ -29,6 +40,24 @@ import './composer.css'
 
 const FLOATING_PHOTO_LIMIT = 3
 
+const IDEA_PROMPT_SETS = [
+  [
+    '최근 둘이 제일 많이 웃었던 일은?',
+    '수능 끝나면 제일 먼저 같이 하고 싶은 건?',
+    '요즘 그 친구가 가장 자주 하는 말은?',
+  ],
+  [
+    '같이 찍은 사진 중 가장 먼저 떠오르는 장면은?',
+    '힘들 때도 그 친구답다고 느꼈던 순간은?',
+    '지금 딱 하나만 해주고 싶은 말은?',
+  ],
+  [
+    '오늘 그 친구는 지금쯤 뭘 하고 있을까?',
+    '수능이 끝난 날 같이 먹고 싶은 건?',
+    '둘만 아는 웃긴 일 하나를 떠올려볼까?',
+  ],
+] as const
+
 export function UnifiedComposerPage() {
   const navigate = useNavigate()
   const { classroomId, lockerId } = useParams()
@@ -51,6 +80,9 @@ export function UnifiedComposerPage() {
     : '/prototype/support/jisu/placement'
   const [tool, setTool] = useState<ComposerTool>('background')
   const [visibilityOpen, setVisibilityOpen] = useState(false)
+  const [ideaOpen, setIdeaOpen] = useState(false)
+  const [ideaSetIndex, setIdeaSetIndex] = useState(0)
+  const [ideaPrompt, setIdeaPrompt] = useState<string | null>(null)
   const page = getActiveCardPage(draft)
   const pages = getMessagePages(draft)
   const activePageId = draft.activePageId ?? page.id
@@ -358,6 +390,31 @@ export function UnifiedComposerPage() {
     })
   }
 
+  const focusMessageText = () => {
+    setTool('text')
+    setSelectedLayerId(
+      selectedText?.id ?? primaryText?.id ?? null,
+    )
+
+    window.setTimeout(() => {
+      document.querySelector<HTMLTextAreaElement>(
+        '.canvas-text-element__input',
+      )?.focus()
+    }, 120)
+  }
+
+  const chooseIdeaPrompt = (prompt: string) => {
+    setIdeaPrompt(prompt)
+    setIdeaOpen(false)
+    focusMessageText()
+  }
+
+  const showNextIdeaSet = () => {
+    setIdeaSetIndex(
+      (current) => (current + 1) % IDEA_PROMPT_SETS.length,
+    )
+  }
+
   return (
     <>
       <AppShell
@@ -449,6 +506,44 @@ export function UnifiedComposerPage() {
             onPhotoChange={updatePhoto}
             onOverflowChange={setPageOverflow}
           />
+
+          <div className="composer-idea">
+            {ideaPrompt ? (
+              <div className="composer-idea__prompt">
+                <span className="composer-idea__prompt-icon" aria-hidden>
+                  <Lightbulb size={16} />
+                </span>
+                <span className="composer-idea__prompt-copy">
+                  <small>생각해볼 거리</small>
+                  <strong>{ideaPrompt}</strong>
+                </span>
+                <button
+                  type="button"
+                  className="composer-idea__dismiss"
+                  aria-label="생각해볼 거리 닫기"
+                  onClick={() => setIdeaPrompt(null)}
+                >
+                  <X size={16} aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  className="composer-idea__more"
+                  onClick={() => setIdeaOpen(true)}
+                >
+                  다른 소재
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="composer-idea__entry"
+                onClick={() => setIdeaOpen(true)}
+              >
+                <Lightbulb size={16} aria-hidden />
+                무슨 말을 써야 할지 모르겠어요
+              </button>
+            )}
+          </div>
 
           <ComposerPageRail
             pages={pages}
@@ -549,6 +644,41 @@ export function UnifiedComposerPage() {
           />
         </div>
       </AppShell>
+
+      <BottomSheet
+        open={ideaOpen}
+        onClose={() => setIdeaOpen(false)}
+        title="이런 얘기부터 떠올려볼까요?"
+        description="하나 골라서 떠오르는 말부터 직접 써보세요."
+      >
+        <div className="composer-idea-sheet">
+          <div className="composer-idea-sheet__list">
+            {IDEA_PROMPT_SETS[ideaSetIndex]?.map((prompt) => (
+              <button
+                type="button"
+                key={prompt}
+                className="composer-idea-sheet__item"
+                onClick={() => chooseIdeaPrompt(prompt)}
+              >
+                <span>{prompt}</span>
+                <ArrowLeft
+                  className="composer-idea-sheet__arrow"
+                  size={17}
+                  aria-hidden
+                />
+              </button>
+            ))}
+          </div>
+          <Button
+            variant="secondary"
+            fullWidth
+            leadingIcon={<RefreshCw size={16} aria-hidden />}
+            onClick={showNextIdeaSet}
+          >
+            다른 소재 보기
+          </Button>
+        </div>
+      </BottomSheet>
 
       <VisibilitySheet
         open={visibilityOpen}

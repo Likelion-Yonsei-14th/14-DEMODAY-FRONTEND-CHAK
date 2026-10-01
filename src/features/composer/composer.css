@@ -1717,3 +1717,131 @@
   background: rgba(255,249,247,.82);
   color: #a85045;
 }
+
+
+/* Message idea prompts */
+.composer-idea {
+  display: grid;
+  justify-items: center;
+  padding: 0 var(--page-gutter) 14px;
+}
+
+.composer-idea__entry {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-base);
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--highlight-inset);
+}
+
+.composer-idea__prompt {
+  width: min(100%, 336px);
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 30px;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px 9px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-base);
+  box-shadow: var(--highlight-inset);
+}
+
+.composer-idea__prompt-icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--color-brand-soft);
+  color: var(--color-brand-pressed);
+}
+
+.composer-idea__prompt-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.composer-idea__prompt-copy small {
+  color: var(--color-content-tertiary);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.composer-idea__prompt-copy strong {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.composer-idea__dismiss {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-content-tertiary);
+  cursor: pointer;
+}
+
+.composer-idea__more {
+  grid-column: 2 / 4;
+  justify-self: start;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--color-content-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.composer-idea-sheet {
+  display: grid;
+  gap: 16px;
+  padding-bottom: max(6px, env(safe-area-inset-bottom));
+}
+
+.composer-idea-sheet__list {
+  display: grid;
+  gap: 8px;
+}
+
+.composer-idea-sheet__item {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-base);
+  color: var(--color-content-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.composer-idea-sheet__item span {
+  flex: 1;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 650;
+}
+
+.composer-idea-sheet__arrow {
+  flex: none;
+  color: var(--color-content-tertiary);
+  transform: rotate(180deg);
+}
