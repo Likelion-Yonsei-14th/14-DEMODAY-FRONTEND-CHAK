@@ -72,7 +72,7 @@ Background types:
 - fixed
 - photo
 
-Long Card is not part of the current product model.
+The current product model uses standard 4:5 cards only, with up to 3 pages per message.
 
 ## Desk creation / ownership
 
