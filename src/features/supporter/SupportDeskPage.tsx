@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  MessageCircleMore,
   Share2,
 } from 'lucide-react'
 import { useMemo } from 'react'
@@ -23,14 +24,47 @@ export function SupportDeskPage() {
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const storedMessages = usePrototypeStore((state) => state.messages)
   const ownerSettings = usePrototypeStore((state) => state.ownerSettings)
+  const supporterIdentityName = usePrototypeStore(
+    (state) => state.supporterIdentityName,
+  )
+  const messageReplies = usePrototypeStore(
+    (state) => state.messageReplies,
+  )
+  const publicHiddenMessageIds = usePrototypeStore(
+    (state) => state.publicHiddenMessageIds,
+  )
+  const publicBlockedSupporters = usePrototypeStore(
+    (state) => state.publicBlockedSupporters,
+  )
   const messages = useMemo(
-    () => mergeSupportMessages(storedMessages),
-    [storedMessages],
+    () =>
+      mergeSupportMessages(storedMessages).filter(
+        (message) =>
+          !publicHiddenMessageIds.includes(message.id) &&
+          !publicBlockedSupporters.includes(message.senderName),
+      ),
+    [
+      publicBlockedSupporters,
+      publicHiddenMessageIds,
+      storedMessages,
+    ],
+  )
+  const visibleMessageIds = useMemo(
+    () => new Set(messages.map((message) => message.id)),
+    [messages],
   )
   const objects = useMemo(
-    () => [...seededDeskObjects, ...currentDesk.objects],
-    [currentDesk.objects],
+    () =>
+      [...seededDeskObjects, ...currentDesk.objects].filter(
+        (object) => visibleMessageIds.has(object.messageId),
+      ),
+    [currentDesk.objects, visibleMessageIds],
   )
+  const receivedReplyCount = supporterIdentityName
+    ? messageReplies.filter((reply) =>
+        reply.targetSenderNames.includes(supporterIdentityName),
+      ).length
+    : 0
   const objectCount = objects.length
   const recipientName = currentDesk.displayName
 
@@ -40,6 +74,11 @@ export function SupportDeskPage() {
 
     if (message.visibility === 'private') {
       showToast(`${recipientName}님만 열어볼 수 있는 응원이에요.`)
+      return
+    }
+
+    if (!ownerSettings.publicFeedEnabled) {
+      showToast('공개 응원 함께 보기가 꺼져 있어요.')
       return
     }
 
@@ -84,7 +123,21 @@ export function SupportDeskPage() {
               onClick={() => navigate('/prototype')}
             />
           }
-
+          trailing={
+            supporterIdentityName ? (
+              <IconButton
+                label={
+                  receivedReplyCount > 0
+                    ? `받은 답장 ${receivedReplyCount}개`
+                    : '받은 답장'
+                }
+                icon={<MessageCircleMore size={20} aria-hidden />}
+                onClick={() =>
+                  navigate('/prototype/support/jisu/replies')
+                }
+              />
+            ) : undefined
+          }
         />
       }
       fixedAction={

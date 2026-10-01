@@ -50,3 +50,17 @@ export type Message = MessageDraft & {
   readAt?: string
   previewColor?: string
 }
+
+
+export type MessageReaction = 'heart' | 'teary' | 'clap'
+
+export type MessageReply = {
+  id: string
+  scope: 'single' | 'daily'
+  sourceMessageId: string
+  targetMessageIds: string[]
+  targetSenderNames: string[]
+  ownerName: string
+  text: string
+  createdAt: string
+}

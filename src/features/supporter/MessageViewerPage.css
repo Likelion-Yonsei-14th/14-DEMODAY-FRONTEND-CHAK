@@ -468,3 +468,95 @@
 .message-viewer__locked .ds-button {
   width: min(100%, 260px);
 }
+
+
+.message-viewer__responses {
+  display: grid;
+  gap: 12px;
+  padding: 2px 0 10px;
+}
+
+.message-viewer__reactions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.message-viewer__reaction {
+  width: 44px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-base);
+  font-size: 19px;
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    background var(--duration-fast) var(--ease-standard);
+}
+
+.message-viewer__reaction--selected {
+  border-color: var(--color-brand);
+  background: var(--color-brand-soft);
+  transform: translateY(-2px);
+}
+
+.message-viewer__reply-sent {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.message-viewer__reply-options,
+.message-viewer__more-options {
+  display: grid;
+  gap: 8px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+}
+
+.message-viewer__reply-options button,
+.message-viewer__more-options button {
+  width: 100%;
+  min-height: 58px;
+  display: grid;
+  gap: 3px;
+  align-content: center;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-base);
+  color: var(--color-content-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.message-viewer__reply-options strong {
+  font-size: 14px;
+}
+
+.message-viewer__reply-options span {
+  color: var(--color-content-secondary);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.message-viewer__more-options button {
+  min-height: 50px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.message-viewer__more-options button:nth-child(n + 2) {
+  color: var(--color-danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .message-viewer__reaction {
+    transition: none;
+  }
+}

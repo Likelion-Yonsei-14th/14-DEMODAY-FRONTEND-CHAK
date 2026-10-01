@@ -48,6 +48,12 @@ const routes = [
     phase: 'LIVE',
   },
   {
+    path: '/prototype/support/jisu/replies',
+    title: 'Reply Flow',
+    description: '개별/오늘의 공통 답장 · Supporter 받은 답장 · 새 이야기로 재진입',
+    phase: 'LIVE',
+  },
+  {
     path: '/prototype/my/settings',
     title: 'Owner Settings',
     description: '열기 방식 · 공개/알림 · 초대 · 차단 · 다른 공간 연결 · 응원 종료',

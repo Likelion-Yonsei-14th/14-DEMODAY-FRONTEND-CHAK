@@ -26,6 +26,8 @@ import type {
   DeskPlacement,
   Message,
   MessageDraft,
+  MessageReaction,
+  MessageReply,
   OwnerSettings,
   PrototypeUser,
   ReadMode,
@@ -46,6 +48,12 @@ type PrototypeState = {
   classroom: Classroom
   classroomMember: ClassroomMember | null
   ownerSettings: OwnerSettings
+  messageReplies: MessageReply[]
+  messageReactions: Partial<Record<string, MessageReaction>>
+  supporterIdentityName: string | null
+  publicHiddenMessageIds: string[]
+  publicBlockedSupporters: string[]
+  reportedMessageIds: string[]
   readMessageIds: string[]
   setDebugMode: (value: boolean) => void
   signIn: (email: string, provider?: AuthProvider) => void
@@ -57,6 +65,14 @@ type PrototypeState = {
   toggleBlockedSupporter: (senderName: string) => void
   connectRoom: (code: string) => void
   endRoom: () => void
+  sendMessageReply: (reply: Omit<MessageReply, 'id' | 'createdAt'>) => void
+  reactToMessage: (
+    messageId: string,
+    reaction: MessageReaction,
+  ) => void
+  hidePublicMessage: (messageId: string) => void
+  blockPublicSupporter: (senderName: string) => void
+  reportMessage: (messageId: string) => void
   setComposerDraft: (draft: MessageDraft) => void
   resetComposerDraft: () => void
   setDeskCreationDraft: (patch: Partial<DeskCreationDraft>) => void
@@ -107,6 +123,12 @@ export const usePrototypeStore = create<PrototypeState>()(
         blockedSupporters: [],
         connectedRooms: [],
       },
+      messageReplies: [],
+      messageReactions: {},
+      supporterIdentityName: null,
+      publicHiddenMessageIds: [],
+      publicBlockedSupporters: [],
+      reportedMessageIds: [],
       readMessageIds: [],
       setDebugMode: (debugMode) => set({ debugMode }),
       signIn: (email, provider = 'password') =>
@@ -200,6 +222,50 @@ export const usePrototypeStore = create<PrototypeState>()(
             ...state.ownerSettings,
             roomClosed: true,
           },
+        })),
+      sendMessageReply: (reply) =>
+        set((state) => ({
+          messageReplies: [
+            ...state.messageReplies,
+            {
+              ...reply,
+              id: `reply-${Date.now().toString(36)}`,
+              createdAt: new Date().toISOString(),
+            },
+          ],
+        })),
+      reactToMessage: (messageId, reaction) =>
+        set((state) => ({
+          messageReactions: {
+            ...state.messageReactions,
+            [messageId]:
+              state.messageReactions[messageId] === reaction
+                ? undefined
+                : reaction,
+          },
+        })),
+      hidePublicMessage: (messageId) =>
+        set((state) => ({
+          publicHiddenMessageIds: state.publicHiddenMessageIds.includes(
+            messageId,
+          )
+            ? state.publicHiddenMessageIds
+            : [...state.publicHiddenMessageIds, messageId],
+        })),
+      blockPublicSupporter: (senderName) =>
+        set((state) => ({
+          publicBlockedSupporters:
+            state.publicBlockedSupporters.includes(senderName)
+              ? state.publicBlockedSupporters
+              : [...state.publicBlockedSupporters, senderName],
+        })),
+      reportMessage: (messageId) =>
+        set((state) => ({
+          reportedMessageIds: state.reportedMessageIds.includes(
+            messageId,
+          )
+            ? state.reportedMessageIds
+            : [...state.reportedMessageIds, messageId],
         })),
       setComposerDraft: (composerDraft) => set({ composerDraft }),
       resetComposerDraft: () => set({ composerDraft: emptyComposerDraft }),
@@ -376,6 +442,7 @@ export const usePrototypeStore = create<PrototypeState>()(
 
           return {
             messages: [...state.messages, message],
+            supporterIdentityName: message.senderName,
             classroom: {
               ...state.classroom,
               lockers: state.classroom.lockers.map((item) =>
@@ -437,6 +504,7 @@ export const usePrototypeStore = create<PrototypeState>()(
 
           return {
             messages: [...state.messages, message],
+            supporterIdentityName: message.senderName,
             currentDesk: {
               ...state.currentDesk,
               objects: [
@@ -493,6 +561,12 @@ export const usePrototypeStore = create<PrototypeState>()(
         classroom: state.classroom,
         classroomMember: state.classroomMember,
         ownerSettings: state.ownerSettings,
+        messageReplies: state.messageReplies,
+        messageReactions: state.messageReactions,
+        supporterIdentityName: state.supporterIdentityName,
+        publicHiddenMessageIds: state.publicHiddenMessageIds,
+        publicBlockedSupporters: state.publicBlockedSupporters,
+        reportedMessageIds: state.reportedMessageIds,
         readMessageIds: state.readMessageIds,
       }),
     },

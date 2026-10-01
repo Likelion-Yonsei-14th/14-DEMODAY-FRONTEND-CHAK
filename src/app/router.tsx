@@ -15,6 +15,10 @@ import {
 } from '@/features/deskCreation/DeskCreationPages'
 import { EnvelopeStackPage } from '@/features/supporter/EnvelopeStackPage'
 import { MessageViewerPage } from '@/features/supporter/MessageViewerPage'
+import {
+  MessageReplyPage,
+  SupporterRepliesPage,
+} from '@/features/reply/ReplyPages'
 import { PlacementPreviewPage } from '@/features/supporter/PlacementPreviewPage'
 import { SupportCompletePage } from '@/features/supporter/SupportCompletePage'
 import { SupportDeskPage } from '@/features/supporter/SupportDeskPage'
@@ -130,6 +134,10 @@ export const router = createBrowserRouter([
         path: '/prototype/my/message/:messageId',
         element: <MessageViewerPage />,
       },
+      {
+        path: '/prototype/my/message/:messageId/reply',
+        element: <MessageReplyPage />,
+      },
 
       {
         path: '/prototype/desk',
@@ -142,6 +150,10 @@ export const router = createBrowserRouter([
       {
         path: '/prototype/support/jisu/message/:messageId',
         element: <MessageViewerPage />,
+      },
+      {
+        path: '/prototype/support/jisu/replies',
+        element: <SupporterRepliesPage />,
       },
 
       { path: '/prototype/composer', element: <ComposerPage /> },
@@ -203,6 +215,10 @@ export const router = createBrowserRouter([
       {
         path: '/prototype/classroom/:classroomId/locker/:lockerId/message/:messageId',
         element: <MessageViewerPage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/locker/:lockerId/message/:messageId/reply',
+        element: <MessageReplyPage />,
       },
       { path: '/prototype/wrapped', element: <WrappedHomePage /> },
       {

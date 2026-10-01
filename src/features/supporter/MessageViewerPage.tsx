@@ -4,9 +4,17 @@ import {
   ChevronLeft,
   ChevronRight,
   LockKeyhole,
+  MessageCircleReply,
+  MoreHorizontal,
 } from 'lucide-react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { AppBar, Button, IconButton } from '@/design-system'
+import {
+  AppBar,
+  BottomSheet,
+  Button,
+  IconButton,
+  useFeedback,
+} from '@/design-system'
 import { getMessagePages } from '@/features/composer/messagePages'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -34,6 +42,7 @@ type ReaderLocationState = {
 export function MessageViewerPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { showToast } = useFeedback()
   const { messageId, classroomId, lockerId } = useParams()
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const classroom = usePrototypeStore((state) => state.classroom)
@@ -41,9 +50,27 @@ export function MessageViewerPage() {
     (state) => state.classroomMember,
   )
   const storedMessages = usePrototypeStore((state) => state.messages)
+  const messageReplies = usePrototypeStore((state) => state.messageReplies)
+  const messageReactions = usePrototypeStore(
+    (state) => state.messageReactions,
+  )
+  const reactToMessage = usePrototypeStore(
+    (state) => state.reactToMessage,
+  )
+  const hidePublicMessage = usePrototypeStore(
+    (state) => state.hidePublicMessage,
+  )
+  const blockPublicSupporter = usePrototypeStore(
+    (state) => state.blockPublicSupporter,
+  )
+  const reportMessage = usePrototypeStore(
+    (state) => state.reportMessage,
+  )
   const markMessageRead = usePrototypeStore((state) => state.markMessageRead)
   const pageScrollerRef = useRef<HTMLDivElement>(null)
   const [activePageIndex, setActivePageIndex] = useState(0)
+  const [replyOptionsOpen, setReplyOptionsOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
 
   const messages = useMemo(
     () => mergeSupportMessages(storedMessages),
@@ -96,6 +123,21 @@ export function MessageViewerPage() {
     : null
   const pages = message ? getMessagePages(message) : []
   const lastPageIndex = Math.max(0, pages.length - 1)
+  const ownerCanRespond =
+    !supporterView &&
+    (!classroomView || classroomOwner) &&
+    Boolean(availability?.available)
+  const publicVisitor =
+    (supporterView || (classroomView && !classroomOwner)) &&
+    message?.visibility === 'public'
+  const existingReply = messageId
+    ? messageReplies.find((reply) =>
+        reply.targetMessageIds.includes(messageId),
+      )
+    : undefined
+  const selectedReaction = messageId
+    ? messageReactions[messageId]
+    : undefined
 
   useEffect(() => {
     const reachedReadPoint =
@@ -367,6 +409,15 @@ export function MessageViewerPage() {
               onClick={back}
             />
           }
+          trailing={
+            publicVisitor ? (
+              <IconButton
+                label="응원 옵션"
+                icon={<MoreHorizontal size={21} aria-hidden />}
+                onClick={() => setMoreOpen(true)}
+              />
+            ) : undefined
+          }
         />
       }
     >
@@ -486,7 +537,146 @@ export function MessageViewerPage() {
             </nav>
           </>
         )}
+
+        {activePageIndex === lastPageIndex &&
+          (ownerCanRespond || publicVisitor) && (
+            <section className="message-viewer__responses">
+              <div
+                className="message-viewer__reactions"
+                aria-label="응원에 반응 남기기"
+              >
+                {[
+                  ['heart', '❤️', '하트'],
+                  ['teary', '🥹', '뭉클해요'],
+                  ['clap', '👏', '박수'],
+                ].map(([reaction, emoji, label]) => (
+                  <button
+                    type="button"
+                    key={reaction}
+                    className={[
+                      'message-viewer__reaction',
+                      selectedReaction === reaction
+                        ? 'message-viewer__reaction--selected'
+                        : '',
+                    ].filter(Boolean).join(' ')}
+                    aria-label={label}
+                    aria-pressed={selectedReaction === reaction}
+                    onClick={() =>
+                      messageId &&
+                      reactToMessage(
+                        messageId,
+                        reaction as 'heart' | 'teary' | 'clap',
+                      )
+                    }
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+
+              {ownerCanRespond && (
+                existingReply ? (
+                  <p className="message-viewer__reply-sent">
+                    답장을 보냈어요.
+                  </p>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    fullWidth
+                    leadingIcon={
+                      <MessageCircleReply size={17} aria-hidden />
+                    }
+                    onClick={() => setReplyOptionsOpen(true)}
+                  >
+                    답장 보내기
+                  </Button>
+                )
+              )}
+            </section>
+          )}
       </main>
+
+      <BottomSheet
+        open={replyOptionsOpen}
+        onClose={() => setReplyOptionsOpen(false)}
+        title="어떻게 답장할까요?"
+      >
+        <div className="message-viewer__reply-options">
+          <button
+            type="button"
+            onClick={() => {
+              setReplyOptionsOpen(false)
+              navigate(
+                classroomView
+                  ? `/prototype/classroom/${classroomId}/locker/${lockerId}/message/${message.id}/reply?scope=single`
+                  : `/prototype/my/message/${message.id}/reply?scope=single`,
+              )
+            }}
+          >
+            <strong>이 응원에 답장</strong>
+            <span>{message.senderName}님에게만 보내요.</span>
+          </button>
+
+          {readMode.type === 'daily' && (
+            <button
+              type="button"
+              onClick={() => {
+                setReplyOptionsOpen(false)
+                navigate(
+                  classroomView
+                    ? `/prototype/classroom/${classroomId}/locker/${lockerId}/message/${message.id}/reply?scope=daily`
+                    : `/prototype/my/message/${message.id}/reply?scope=daily`,
+                )
+              }}
+            >
+              <strong>오늘의 응원에 한 번에 답장</strong>
+              <span>오늘 응원해준 친구들에게 같은 답장을 보내요.</span>
+            </button>
+          )}
+        </div>
+      </BottomSheet>
+
+      <BottomSheet
+        open={moreOpen}
+        onClose={() => setMoreOpen(false)}
+        title="응원 옵션"
+      >
+        <div className="message-viewer__more-options">
+          <button
+            type="button"
+            onClick={() => {
+              hidePublicMessage(message.id)
+              setMoreOpen(false)
+              showToast('이 응원을 숨겼어요.')
+              back()
+            }}
+          >
+            이 응원 숨기기
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              reportMessage(message.id)
+              setMoreOpen(false)
+              showToast('신고를 접수했어요.')
+              back()
+            }}
+          >
+            신고하기
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              blockPublicSupporter(message.senderName)
+              setMoreOpen(false)
+              showToast(`${message.senderName}님의 응원을 숨겼어요.`)
+              back()
+            }}
+          >
+            {message.senderName}님 숨기기
+          </button>
+        </div>
+      </BottomSheet>
     </AppShell>
   )
 }

@@ -53,6 +53,12 @@ export function ClassroomLockerPage() {
   const classroom = usePrototypeStore((state) => state.classroom)
   const member = usePrototypeStore((state) => state.classroomMember)
   const allMessages = usePrototypeStore((state) => state.messages)
+  const publicHiddenMessageIds = usePrototypeStore(
+    (state) => state.publicHiddenMessageIds,
+  )
+  const publicBlockedSupporters = usePrototypeStore(
+    (state) => state.publicBlockedSupporters,
+  )
   const readMessageIds = usePrototypeStore((state) => state.readMessageIds)
   const [open, setOpen] = useState(false)
 
@@ -84,9 +90,27 @@ export function ClassroomLockerPage() {
   }
 
   const owner = member.lockerId === locker.id
-  const messages = allMessages.filter((message) =>
+  const lockerMessages = allMessages.filter((message) =>
     locker.messageIds.includes(message.id),
   )
+  const messages = owner
+    ? lockerMessages
+    : lockerMessages.filter(
+        (message) =>
+          !publicHiddenMessageIds.includes(message.id) &&
+          !publicBlockedSupporters.includes(message.senderName),
+      )
+  const visibleMessageIds = new Set(
+    messages.map((message) => message.id),
+  )
+  const visibleLocker = owner
+    ? locker
+    : {
+        ...locker,
+        objects: locker.objects.filter((object) =>
+          visibleMessageIds.has(object.messageId),
+        ),
+      }
   const availabilityById = new Map(
     messages.map((message) => [
       message.id,
@@ -201,7 +225,7 @@ export function ClassroomLockerPage() {
         )}
 
         <ClassroomLockerScene
-          locker={locker}
+          locker={visibleLocker}
           messages={messages}
           open={open}
           owner={owner}
@@ -211,7 +235,7 @@ export function ClassroomLockerPage() {
           onObjectClick={open ? openMessage : undefined}
         />
 
-        {open && locker.objects.length === 0 && (
+        {open && visibleLocker.objects.length === 0 && (
           <p className="classroom-locker-page__empty">
             아직 놓인 응원이 없어요.
           </p>

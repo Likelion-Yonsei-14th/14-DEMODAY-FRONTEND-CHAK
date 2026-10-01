@@ -111,6 +111,19 @@ The current product model uses standard 4:5 cards only, with up to 3 pages per m
 - Before completing claim, the recipient can confirm or change the read mode.
 - After claim, the original creator should have the same control level as an ordinary supporter.
 
+## Reactions / replies
+
+- Reading an encouragement can end with a lightweight emoji reaction.
+- The owner can send a **one-way reply** to a specific encouragement.
+- In Daily mode, the owner can instead send one common reply to the unique supporters in that day's opening batch.
+- A supporter who sent multiple messages in the batch receives the common reply once.
+- Replies do not create chat threads or nested conversations.
+- Supporters see replies as:
+  - “내가 남긴 이야기”
+  - “OO님의 답장”
+- The reply screen has no “reply again” action. The only continuation is starting a **new encouragement**.
+- Visitors viewing public encouragements can react, hide a message, report it, or hide that supporter.
+
 ## Owner / creator management
 
 - The desk owner can manage:

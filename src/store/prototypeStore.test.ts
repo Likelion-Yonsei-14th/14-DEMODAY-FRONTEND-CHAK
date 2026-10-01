@@ -121,6 +121,12 @@ describe('prototype store composer handoff', () => {
         blockedSupporters: [],
         connectedRooms: [],
       },
+      messageReplies: [],
+      messageReactions: {},
+      supporterIdentityName: null,
+      publicHiddenMessageIds: [],
+      publicBlockedSupporters: [],
+      reportedMessageIds: [],
       readMessageIds: [],
       composerDraft: {
         ...emptyComposerDraft,
@@ -269,6 +275,59 @@ describe('prototype store composer handoff', () => {
       type: 'daily',
       unlockTime: '23:10',
     })
+  })
+
+  it('stores one-way replies and message reactions', () => {
+    usePrototypeStore.getState().sendMessageReply({
+      scope: 'single',
+      sourceMessageId: 'seed-message-1',
+      targetMessageIds: ['seed-message-1'],
+      targetSenderNames: ['민지'],
+      ownerName: '지수',
+      text: '진짜 고마워!',
+    })
+
+    usePrototypeStore
+      .getState()
+      .reactToMessage('seed-message-1', 'heart')
+
+    let state = usePrototypeStore.getState()
+    expect(state.messageReplies[0]).toMatchObject({
+      scope: 'single',
+      targetSenderNames: ['민지'],
+      ownerName: '지수',
+      text: '진짜 고마워!',
+    })
+    expect(state.messageReactions['seed-message-1']).toBe(
+      'heart',
+    )
+
+    usePrototypeStore
+      .getState()
+      .reactToMessage('seed-message-1', 'heart')
+    state = usePrototypeStore.getState()
+    expect(state.messageReactions['seed-message-1']).toBeUndefined()
+  })
+
+  it('tracks public hide, block, and report actions separately', () => {
+    usePrototypeStore
+      .getState()
+      .hidePublicMessage('seed-message-1')
+    usePrototypeStore
+      .getState()
+      .blockPublicSupporter('민지')
+    usePrototypeStore
+      .getState()
+      .reportMessage('seed-message-2')
+
+    const state = usePrototypeStore.getState()
+    expect(state.publicHiddenMessageIds).toEqual([
+      'seed-message-1',
+    ])
+    expect(state.publicBlockedSupporters).toEqual(['민지'])
+    expect(state.reportedMessageIds).toEqual([
+      'seed-message-2',
+    ])
   })
 
   it('creates a self-owned desk as claimed with the chosen read mode', () => {
