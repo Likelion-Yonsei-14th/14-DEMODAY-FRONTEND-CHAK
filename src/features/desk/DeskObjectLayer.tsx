@@ -25,6 +25,7 @@ type DeskObjectLayerProps = {
   readMessageIds?: string[]
   lockedMessageIds?: string[]
   respectObjectLocks?: boolean
+  showUnreadState?: boolean
   draftObject?: DraftObject
 }
 
@@ -36,6 +37,7 @@ export function DeskObjectLayer({
   readMessageIds = [],
   lockedMessageIds = [],
   respectObjectLocks = true,
+  showUnreadState = true,
   draftObject,
 }: DeskObjectLayerProps) {
   const messageById = new Map(messages.map((message) => [message.id, message]))
@@ -68,7 +70,9 @@ export function DeskObjectLayer({
               `desk-object--${object.representationType}`,
               locked ? 'desk-object--locked' : '',
               !interactive ? 'desk-object--passive' : '',
-              interactive && !read && !locked ? 'desk-object--unread' : '',
+              interactive && showUnreadState && !read && !locked
+                ? 'desk-object--unread'
+                : '',
               opening ? 'desk-object--opening' : '',
               deemphasized ? 'desk-object--deemphasized' : '',
             ].filter(Boolean).join(' ')}
@@ -85,7 +89,7 @@ export function DeskObjectLayer({
                 ? message
                   ? locked
                     ? `${message.senderName}의 응원은 아직 잠겨 있음`
-                    : `${message.senderName}의 ${read ? '' : '새 '}응원 열기`
+                    : `${message.senderName}의 ${showUnreadState && !read ? '새 ' : ''}응원 열기`
                   : '응원 열기'
                 : undefined
             }
@@ -98,7 +102,7 @@ export function DeskObjectLayer({
                 <LockKeyhole size={11} />
               </span>
             )}
-            {interactive && !read && !locked && (
+            {interactive && showUnreadState && !read && !locked && (
               <span className="desk-object__unread-dot" aria-hidden />
             )}
           </button>

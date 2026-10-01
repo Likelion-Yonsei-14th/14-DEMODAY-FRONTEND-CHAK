@@ -21,7 +21,12 @@ import { mergeSupportMessages } from './seededMessages'
 import './MessageViewerPage.css'
 
 type ReaderLocationState = {
-  from?: 'owner-desk' | 'owner-cards' | 'desk' | 'cards'
+  from?:
+    | 'owner-desk'
+    | 'owner-cards'
+    | 'desk'
+    | 'cards'
+    | 'support-desk'
 }
 
 export function MessageViewerPage() {
@@ -40,6 +45,9 @@ export function MessageViewerPage() {
   )
   const message = messages.find((item) => item.id === messageId)
   const state = location.state as ReaderLocationState | null
+  const supporterView =
+    state?.from === 'support-desk' ||
+    location.pathname.startsWith('/prototype/support/')
   const readMode = useMemo(
     () =>
       resolvePreviewReadMode(
@@ -63,13 +71,18 @@ export function MessageViewerPage() {
   const lastPageIndex = Math.max(0, pages.length - 1)
 
   useEffect(() => {
-    if (messageId && availability?.available) {
+    if (
+      !supporterView &&
+      messageId &&
+      availability?.available
+    ) {
       markMessageRead(messageId)
     }
   }, [
     availability?.available,
     markMessageRead,
     messageId,
+    supporterView,
   ])
 
   useEffect(() => {
@@ -130,6 +143,11 @@ export function MessageViewerPage() {
   )
 
   const back = () => {
+    if (supporterView) {
+      navigate('/prototype/support/jisu')
+      return
+    }
+
     const path =
       state?.from === 'owner-desk' || state?.from === 'desk'
         ? '/prototype/my/desk'
@@ -166,7 +184,38 @@ export function MessageViewerPage() {
     )
   }
 
-  if (availability && !availability.available) {
+  if (supporterView && message?.visibility === 'private') {
+    return (
+      <AppShell
+        surface="base"
+        contentClassName="message-viewer-shell"
+        appBar={
+          <AppBar
+            title="응원 보기"
+            leading={
+              <IconButton
+                label="책상으로 돌아가기"
+                icon={<ArrowLeft size={21} aria-hidden />}
+                onClick={back}
+              />
+            }
+          />
+        }
+      >
+        <main className="message-viewer__locked">
+          <span className="message-viewer__locked-icon" aria-hidden>
+            <LockKeyhole size={23} />
+          </span>
+          <h2>책상 주인만 볼 수 있는 응원이에요.</h2>
+          <Button variant="secondary" onClick={back}>
+            책상으로 돌아가기
+          </Button>
+        </main>
+      </AppShell>
+    )
+  }
+
+  if (!supporterView && availability && !availability.available) {
     const unlockLabel = availability.unlockAt
       ? formatUnlockAt(availability.unlockAt, now)
       : null
@@ -219,9 +268,11 @@ export function MessageViewerPage() {
           leading={
             <IconButton
               label={
-                state?.from === 'owner-desk' || state?.from === 'desk'
-                  ? '내 책상으로 돌아가기'
-                  : '응원 목록으로 돌아가기'
+                supporterView
+                  ? '책상으로 돌아가기'
+                  : state?.from === 'owner-desk' || state?.from === 'desk'
+                    ? '내 책상으로 돌아가기'
+                    : '응원 목록으로 돌아가기'
               }
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={back}

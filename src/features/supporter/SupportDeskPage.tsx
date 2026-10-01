@@ -1,6 +1,5 @@
 import {
   ArrowLeft,
-  MoreHorizontal,
   Share2,
 } from 'lucide-react'
 import { useMemo } from 'react'
@@ -10,6 +9,7 @@ import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
 import { DeskScene } from '@/features/desk/DeskScene'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import {
   mergeSupportMessages,
   seededDeskObjects,
@@ -32,6 +32,40 @@ export function SupportDeskPage() {
   const objectCount = objects.length
   const recipientName = currentDesk.displayName
 
+  const openObject = (messageId: string) => {
+    const message = messages.find((item) => item.id === messageId)
+    if (!message) return
+
+    if (message.visibility === 'private') {
+      showToast(`${recipientName}님만 열어볼 수 있는 응원이에요.`)
+      return
+    }
+
+    navigate(`/prototype/support/jisu/message/${messageId}`, {
+      state: { from: 'support-desk' },
+    })
+  }
+
+  const shareDesk = async () => {
+    const url = buildPrototypeShareUrl('/prototype/support/jisu')
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${recipientName}님의 응원 책상`,
+          text: `${recipientName}님에게 응원 하나 남겨주세요.`,
+          url,
+        })
+        return
+      }
+
+      await navigator.clipboard.writeText(url)
+      showToast('책상 링크를 복사했어요.')
+    } catch {
+      // 공유 시트를 닫은 경우에는 별도 오류를 노출하지 않습니다.
+    }
+  }
+
   return (
     <AppShell
       surface="transparent"
@@ -48,17 +82,7 @@ export function SupportDeskPage() {
               onClick={() => navigate('/prototype')}
             />
           }
-          trailing={
-            <IconButton
-              label="더보기"
-              icon={<MoreHorizontal size={22} aria-hidden />}
-              onClick={() =>
-                showToast(
-                  '공유·신고 같은 부수 기능은 이후 단계에서 연결할게요.',
-                )
-              }
-            />
-          }
+
         />
       }
       fixedAction={
@@ -92,6 +116,8 @@ export function SupportDeskPage() {
           <DeskObjectLayer
             objects={objects}
             messages={messages}
+            onObjectClick={openObject}
+            showUnreadState={false}
           />
         </div>
 
@@ -103,11 +129,7 @@ export function SupportDeskPage() {
           <button
             type="button"
             className="support-desk__share"
-            onClick={() =>
-              showToast(
-                '친구에게 공유하는 기능은 완료 화면에서 먼저 연결했어요.',
-              )
-            }
+            onClick={shareDesk}
           >
             <Share2 size={16} aria-hidden />
             공유
