@@ -155,10 +155,10 @@ Internal modes:
   - share image that uses aggregate statistics and does not expose original message text
 - Wrapped is non-competitive. It should never rank users by how many messages or friends they had.
 - The final Wrapped screen can lead into student benefits.
-- Benefits prototype currently includes:
+- Benefits prototype includes:
   - category-based benefit list
   - benefit detail with partner, period, condition, and use CTA
-- The exact third benefits step (O03) is intentionally not invented until its role is reconfirmed.
+  - coupon save / on-site presentation / use completion
 
 ## Design principle
 
