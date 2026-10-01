@@ -8,6 +8,7 @@ import type {
   Message,
 } from '@/types'
 import './Classroom.css'
+import './LockerScene.css'
 
 type DraftLockerObject = {
   representationType: DeskObjectType
