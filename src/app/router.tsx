@@ -203,6 +203,32 @@ export const router = createBrowserRouter([
         path: '/prototype/classroom/:classroomId/locker/:lockerId/message/:messageId',
         element: <MessageViewerPage />,
       },
+      { path: '/prototype/wrapped', element: <WrappedHomePage /> },
+      {
+        path: '/prototype/wrapped/intro',
+        element: <WrappedIntroPage />,
+      },
+      {
+        path: '/prototype/wrapped/insight',
+        element: <WrappedInsightPage />,
+      },
+      {
+        path: '/prototype/wrapped/friends',
+        element: <WrappedFriendsPage />,
+      },
+      {
+        path: '/prototype/wrapped/records',
+        element: <WrappedRecordsPage />,
+      },
+      {
+        path: '/prototype/wrapped/share',
+        element: <WrappedSharePage />,
+      },
+      { path: '/prototype/offers', element: <OffersPage /> },
+      {
+        path: '/prototype/offers/:offerId',
+        element: <OfferDetailPage />,
+      },
       { path: '/system', element: <SystemPage /> },
       { path: '*', element: <Navigate to="/start" replace /> },
     ],
