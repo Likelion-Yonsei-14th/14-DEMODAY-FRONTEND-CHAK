@@ -1,4 +1,11 @@
-import type { CardPage, Classroom, Desk, MessageDraft, PrototypeUser } from '@/types'
+import type {
+  CardPage,
+  Classroom,
+  Desk,
+  DeskCreationDraft,
+  MessageDraft,
+  PrototypeUser,
+} from '@/types'
 
 export const mockCurrentUser: PrototypeUser = {
   id: 'user-owner-01',
@@ -11,6 +18,7 @@ export const mockDesk: Desk = {
   ownerId: 'user-owner-01',
   creatorId: 'user-creator-01',
   displayName: '지수',
+  createdFor: 'self',
   theme: {
     id: 'desk-theme-cream',
     name: '따뜻한 크림',
@@ -22,6 +30,15 @@ export const mockDesk: Desk = {
   },
   objects: [],
   claimStatus: 'claimed',
+}
+
+export const emptyDeskCreationDraft: DeskCreationDraft = {
+  createdFor: null,
+  recipientDisplayName: '',
+  readMode: {
+    type: 'daily',
+    unlockTime: '22:00',
+  },
 }
 
 const initialCardPage: CardPage = {
