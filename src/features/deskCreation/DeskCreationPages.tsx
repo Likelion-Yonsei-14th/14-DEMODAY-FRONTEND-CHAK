@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import {
   ArrowLeft,
   CalendarDays,
@@ -402,8 +402,8 @@ function CreationShell({
 }: {
   title: string
   back: () => void
-  action: React.ReactNode
-  children: React.ReactNode
+  action: ReactNode
+  children: ReactNode
 }) {
   return (
     <AppShell
@@ -431,7 +431,7 @@ function CreationShell({
 function CreationHeading({
   title,
 }: {
-  title: React.ReactNode
+  title: ReactNode
 }) {
   return (
     <section className="desk-create__heading">
