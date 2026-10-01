@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import {
   emptyComposerDraft,
   emptyDeskCreationDraft,
+  mockClassroom,
   mockDesk,
 } from '@/prototype/mock/initialState'
 import {
@@ -100,6 +101,16 @@ describe('prototype store composer handoff', () => {
       },
       claimReadMode: mockDesk.readMode,
       claimState: 'claimed',
+      classroom: {
+        ...mockClassroom,
+        blackboardEntries: [...mockClassroom.blackboardEntries],
+        lockers: mockClassroom.lockers.map((locker) => ({
+          ...locker,
+          messageIds: [...locker.messageIds],
+          objects: [...locker.objects],
+        })),
+      },
+      classroomMember: null,
       readMessageIds: [],
       composerDraft: {
         ...emptyComposerDraft,
@@ -286,6 +297,89 @@ describe('prototype store composer handoff', () => {
     })
     expect(state.currentDesk.ownerId).toBeDefined()
     expect(state.claimState).toBe('claimed')
+  })
+
+
+  it('creates a shared classroom and gives each joining member one locker', () => {
+    const classroomId = usePrototypeStore
+      .getState()
+      .createClassroom('수능 뿌셔')
+
+    expect(usePrototypeStore.getState().classroom).toMatchObject({
+      id: classroomId,
+      name: '수능 뿌셔',
+      dailyUnlockTime: '22:00',
+      lockers: [],
+    })
+
+    const lockerId = usePrototypeStore
+      .getState()
+      .joinClassroom('지수')
+
+    const state = usePrototypeStore.getState()
+    expect(state.classroomMember).toEqual({
+      lockerId,
+      displayName: '지수',
+    })
+    expect(state.classroom.lockers).toEqual([
+      expect.objectContaining({
+        id: lockerId,
+        studentName: '지수',
+        messageIds: [],
+        objects: [],
+      }),
+    ])
+  })
+
+  it('adds public blackboard notes and places composer cards inside a locker', () => {
+    usePrototypeStore.getState().createClassroom('3학년 2반')
+    const lockerId = usePrototypeStore
+      .getState()
+      .joinClassroom('지수')
+
+    usePrototypeStore.getState().addBlackboardEntry({
+      text: '우리 반 다 같이 끝까지 가자!',
+    })
+
+    usePrototypeStore.setState({
+      composerDraft: {
+        ...emptyComposerDraft,
+        senderName: '',
+        textElements: emptyComposerDraft.textElements.map((item) => ({
+          ...item,
+          text: '오늘도 파이팅!',
+        })),
+        pages: emptyComposerDraft.pages?.map((page) => ({
+          ...page,
+          textElements: page.textElements.map((item) => ({
+            ...item,
+            text: '오늘도 파이팅!',
+          })),
+        })),
+      },
+    })
+
+    usePrototypeStore
+      .getState()
+      .placeComposerMessageInLocker(lockerId)
+
+    const state = usePrototypeStore.getState()
+    const locker = state.classroom.lockers.find(
+      (item) => item.id === lockerId,
+    )
+    const message = state.messages.at(-1)
+
+    expect(state.classroom.blackboardEntries.at(-1)).toMatchObject({
+      authorName: '지수',
+      text: '우리 반 다 같이 끝까지 가자!',
+    })
+    expect(locker?.messageIds).toContain(message?.id)
+    expect(locker?.objects).toHaveLength(1)
+    expect(message).toMatchObject({
+      senderName: '지수',
+      recipientDeskId: lockerId,
+      status: 'sent',
+    })
   })
 
   it('claims a supporter-created desk with the recipient-approved read mode', () => {
