@@ -102,7 +102,7 @@ export function OwnerDeskPage() {
             openingMessageId ? 'owner-desk__scene-wrap--opening' : '',
           ].filter(Boolean).join(' ')}
         >
-          <DeskScene ownerName="지수" />
+          <DeskScene ownerName={currentDesk.displayName} />
           <DeskObjectLayer
             objects={objects}
             messages={messages}
