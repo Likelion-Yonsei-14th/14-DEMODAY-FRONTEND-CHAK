@@ -21,3 +21,10 @@ export type AuthSession =
       email: string
       provider: AuthProvider
     }
+
+
+export type SupporterSettings = {
+  defaultNickname: string
+  revealAfterExam: boolean
+  pushEnabled: boolean
+}

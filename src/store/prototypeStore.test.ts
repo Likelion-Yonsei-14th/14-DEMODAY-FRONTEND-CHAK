@@ -124,6 +124,11 @@ describe('prototype store composer handoff', () => {
       messageReplies: [],
       messageReactions: {},
       supporterIdentityName: null,
+      supporterSettings: {
+        defaultNickname: '',
+        revealAfterExam: false,
+        pushEnabled: true,
+      },
       publicHiddenMessageIds: [],
       publicBlockedSupporters: [],
       reportedMessageIds: [],
@@ -382,6 +387,24 @@ describe('prototype store composer handoff', () => {
         .getState()
         .messages.some((message) => message.id === secondId),
     ).toBe(true)
+  })
+
+  it('persists supporter defaults and applies the nickname to a new draft', () => {
+    usePrototypeStore.getState().updateSupporterSettings({
+      defaultNickname: '민지',
+      revealAfterExam: true,
+      pushEnabled: false,
+    })
+
+    usePrototypeStore.getState().resetComposerDraft()
+
+    const state = usePrototypeStore.getState()
+    expect(state.supporterSettings).toEqual({
+      defaultNickname: '민지',
+      revealAfterExam: true,
+      pushEnabled: false,
+    })
+    expect(state.composerDraft.senderName).toBe('민지')
   })
 
   it('creates a self-owned desk as claimed with the chosen read mode', () => {

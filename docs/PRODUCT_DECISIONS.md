@@ -124,6 +124,12 @@ The current product model uses standard 4:5 cards only, with up to 3 pages per m
   - “OO님의 답장”
 - The reply screen has no “reply again” action. The only continuation is starting a **new encouragement**.
 - Visitors viewing public encouragements can react, hide a message, report it, or hide that supporter.
+- Supporter settings include:
+  - default nickname for future encouragements
+  - per-message nickname override in the composer
+  - consent to show the nickname in the post-exam Reveal
+  - reply push notifications
+  - login/account entry
 - A supporter can delete **their own public encouragement only before the recipient has opened it**.
 - Once the recipient has read a public encouragement, deletion is no longer available.
 - Public → private editing is not supported after sending.

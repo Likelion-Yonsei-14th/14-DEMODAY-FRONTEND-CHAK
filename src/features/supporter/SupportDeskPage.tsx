@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   MessageCircleMore,
   Send,
+  Settings,
   Share2,
 } from 'lucide-react'
 import { useMemo } from 'react'
@@ -125,19 +126,28 @@ export function SupportDeskPage() {
             />
           }
           trailing={
-            supporterIdentityName ? (
+            <div className="support-desk__app-actions">
+              {supporterIdentityName && (
+                <IconButton
+                  label={
+                    receivedReplyCount > 0
+                      ? `받은 답장 ${receivedReplyCount}개`
+                      : '받은 답장'
+                  }
+                  icon={<MessageCircleMore size={20} aria-hidden />}
+                  onClick={() =>
+                    navigate('/prototype/support/jisu/replies')
+                  }
+                />
+              )}
               <IconButton
-                label={
-                  receivedReplyCount > 0
-                    ? `받은 답장 ${receivedReplyCount}개`
-                    : '받은 답장'
-                }
-                icon={<MessageCircleMore size={20} aria-hidden />}
+                label="내 응원 설정"
+                icon={<Settings size={20} aria-hidden />}
                 onClick={() =>
-                  navigate('/prototype/support/jisu/replies')
+                  navigate('/prototype/support/jisu/settings')
                 }
               />
-            ) : undefined
+            </div>
           }
         />
       }

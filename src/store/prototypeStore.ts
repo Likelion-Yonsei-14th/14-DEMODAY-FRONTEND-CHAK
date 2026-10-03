@@ -31,6 +31,7 @@ import type {
   OwnerSettings,
   PrototypeUser,
   ReadMode,
+  SupporterSettings,
 } from '@/types'
 
 type ClaimState = 'unclaimed' | 'claiming' | 'claimed'
@@ -51,6 +52,7 @@ type PrototypeState = {
   messageReplies: MessageReply[]
   messageReactions: Partial<Record<string, MessageReaction>>
   supporterIdentityName: string | null
+  supporterSettings: SupporterSettings
   publicHiddenMessageIds: string[]
   publicBlockedSupporters: string[]
   reportedMessageIds: string[]
@@ -74,6 +76,9 @@ type PrototypeState = {
   blockPublicSupporter: (senderName: string) => void
   reportMessage: (messageId: string) => void
   deleteOwnPublicMessage: (messageId: string) => void
+  updateSupporterSettings: (
+    patch: Partial<SupporterSettings>,
+  ) => void
   setComposerDraft: (draft: MessageDraft) => void
   resetComposerDraft: () => void
   setDeskCreationDraft: (patch: Partial<DeskCreationDraft>) => void
@@ -127,6 +132,11 @@ export const usePrototypeStore = create<PrototypeState>()(
       messageReplies: [],
       messageReactions: {},
       supporterIdentityName: null,
+      supporterSettings: {
+        defaultNickname: '',
+        revealAfterExam: false,
+        pushEnabled: true,
+      },
       publicHiddenMessageIds: [],
       publicBlockedSupporters: [],
       reportedMessageIds: [],
@@ -268,6 +278,20 @@ export const usePrototypeStore = create<PrototypeState>()(
             ? state.reportedMessageIds
             : [...state.reportedMessageIds, messageId],
         })),
+      updateSupporterSettings: (patch) =>
+        set((state) => ({
+          supporterSettings: {
+            ...state.supporterSettings,
+            ...patch,
+          },
+          composerDraft:
+            typeof patch.defaultNickname === 'string'
+              ? {
+                  ...state.composerDraft,
+                  senderName: patch.defaultNickname,
+                }
+              : state.composerDraft,
+        })),
       deleteOwnPublicMessage: (messageId) =>
         set((state) => {
           const message = state.messages.find(
@@ -312,7 +336,16 @@ export const usePrototypeStore = create<PrototypeState>()(
           }
         }),
       setComposerDraft: (composerDraft) => set({ composerDraft }),
-      resetComposerDraft: () => set({ composerDraft: emptyComposerDraft }),
+      resetComposerDraft: () =>
+        set((state) => ({
+          composerDraft: {
+            ...emptyComposerDraft,
+            senderName:
+              state.supporterSettings.defaultNickname ||
+              state.supporterIdentityName ||
+              '',
+          },
+        })),
       setDeskCreationDraft: (patch) =>
         set((state) => ({
           deskCreationDraft: {
@@ -512,7 +545,10 @@ export const usePrototypeStore = create<PrototypeState>()(
                   : item,
               ),
             },
-            composerDraft: emptyComposerDraft,
+            composerDraft: {
+              ...emptyComposerDraft,
+              senderName: state.supporterSettings.defaultNickname,
+            },
           }
         }),
       placeComposerMessage: (
@@ -566,7 +602,10 @@ export const usePrototypeStore = create<PrototypeState>()(
                 },
               ],
             },
-            composerDraft: emptyComposerDraft,
+            composerDraft: {
+              ...emptyComposerDraft,
+              senderName: state.supporterSettings.defaultNickname,
+            },
           }
         }),
       markMessageRead: (messageId) =>
@@ -608,6 +647,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         messageReplies: state.messageReplies,
         messageReactions: state.messageReactions,
         supporterIdentityName: state.supporterIdentityName,
+        supporterSettings: state.supporterSettings,
         publicHiddenMessageIds: state.publicHiddenMessageIds,
         publicBlockedSupporters: state.publicBlockedSupporters,
         reportedMessageIds: state.reportedMessageIds,
