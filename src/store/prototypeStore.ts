@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { LockerDecor } from '@/features/classroom/lockerDecor'
 import { persist } from 'zustand/middleware'
 import {
   emptyComposerDraft,
@@ -72,6 +73,9 @@ type PrototypeState = {
   unlockDecor: (assetId: string) => void
   /** Messages the desk owner tidied off the desk into the basket. */
   basketMessageIds: string[]
+  /** Light and paint each locker owner bought, by locker id. */
+  lockerDecor: Record<string, LockerDecor>
+  saveLockerDecor: (lockerId: string, decor: LockerDecor) => void
   moveToBasket: (messageIds: string[]) => void
   supporterObjectChoice: SupporterObjectChoice
   stickerDraft: { stickerId: string; senderName: string }
@@ -187,6 +191,11 @@ export const usePrototypeStore = create<PrototypeState>()(
           unlockedStationeryIds: state.unlockedStationeryIds.includes(backgroundId)
             ? state.unlockedStationeryIds
             : [...state.unlockedStationeryIds, backgroundId],
+        })),
+      lockerDecor: {},
+      saveLockerDecor: (lockerId, decor) =>
+        set((state) => ({
+          lockerDecor: { ...state.lockerDecor, [lockerId]: decor },
         })),
       basketMessageIds: [],
       moveToBasket: (messageIds) =>
@@ -892,6 +901,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         unlockedStationeryIds: state.unlockedStationeryIds,
         unlockedDecorIds: state.unlockedDecorIds,
         basketMessageIds: state.basketMessageIds,
+        lockerDecor: state.lockerDecor,
         supporterObjectChoice: state.supporterObjectChoice,
         stickerDraft: state.stickerDraft,
       }),

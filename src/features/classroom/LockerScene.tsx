@@ -8,6 +8,7 @@ import type {
   DeskObjectType,
   Message,
 } from '@/types'
+import type { LockerDecor } from './lockerDecor'
 import './Classroom.css'
 import './LockerScene.css'
 
@@ -32,6 +33,8 @@ type ClassroomLockerSceneProps = {
   onToggle?: () => void
   onObjectClick?: (messageId: string) => void
   draftObject?: DraftLockerObject
+  /** Owner-bought light and paint. */
+  decor?: LockerDecor
 }
 
 /*
@@ -49,6 +52,7 @@ export function ClassroomLockerScene({
   onToggle,
   onObjectClick,
   draftObject,
+  decor,
 }: ClassroomLockerSceneProps) {
   const daypart = useDeskDaypart()
 
@@ -68,12 +72,48 @@ export function ClassroomLockerScene({
           alt=""
           draggable={false}
         />
+        {decor?.outside && (
+          <img
+            className="locker-v2__photo locker-v2__photo--closed"
+            src={`${LOCKER_ASSET_PATH}/paint/closed-outside-${decor.outside}.webp`}
+            alt=""
+            draggable={false}
+          />
+        )}
         <img
           className="locker-v2__photo locker-v2__photo--open"
           src={`${LOCKER_ASSET_PATH}/locker-open.webp`}
           alt=""
           draggable={false}
         />
+        {decor?.outside && (
+          <img
+            className="locker-v2__photo locker-v2__photo--open"
+            src={`${LOCKER_ASSET_PATH}/paint/open-outside-${decor.outside}.webp`}
+            alt=""
+            draggable={false}
+          />
+        )}
+        {decor?.inside && (
+          <img
+            className="locker-v2__photo locker-v2__photo--open"
+            src={`${LOCKER_ASSET_PATH}/paint/open-inside-${decor.inside}.webp`}
+            alt=""
+            draggable={false}
+          />
+        )}
+        {decor?.bulb && (
+          <div className="locker-v2__light" aria-hidden>
+            <span className="locker-v2__glow" />
+            <span className="locker-v2__cord" />
+            <img
+              className={`locker-v2__bulb locker-v2__bulb--${decor.bulb}`}
+              src={`${LOCKER_ASSET_PATH}/bulb-${decor.bulb}.webp`}
+              alt=""
+              draggable={false}
+            />
+          </div>
+        )}
 
         <div className="locker-v2__object-zone" aria-hidden={!open}>
           <DeskObjectLayer

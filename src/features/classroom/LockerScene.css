@@ -142,3 +142,75 @@
     transition: none;
   }
 }
+
+/* Hanging light: under the shelf, centred on the lower compartment */
+.locker-v2__light {
+  position: absolute;
+  z-index: 2;
+  left: 6.8%;
+  right: 29.2%;
+  top: 3%;
+  bottom: 6%;
+  pointer-events: none;
+  transition: opacity 260ms ease 120ms;
+}
+
+.locker-v2--closed .locker-v2__light {
+  opacity: 0;
+}
+
+.locker-v2__glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 75% 42% at 50% 27%,
+      rgba(255, 214, 150, .62),
+      rgba(255, 190, 110, .24) 45%,
+      transparent 78%
+    );
+  mix-blend-mode: screen;
+}
+
+.locker-v2--night .locker-v2__glow {
+  background:
+    radial-gradient(
+      ellipse 80% 48% at 50% 27%,
+      rgba(255, 206, 140, .85),
+      rgba(255, 180, 96, .34) 45%,
+      transparent 80%
+    );
+}
+
+.locker-v2__cord {
+  position: absolute;
+  left: 50%;
+  top: 16.2%;
+  width: 2px;
+  height: 4%;
+  background: #1f1d1b;
+  transform: translateX(-50%);
+}
+
+.locker-v2__bulb {
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  height: auto;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 0 6px rgba(255, 190, 90, .85));
+}
+
+.locker-v2__bulb--globe {
+  width: 19%;
+}
+
+.locker-v2__bulb--edison {
+  width: 12%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .locker-v2__light {
+    transition: none;
+  }
+}

@@ -8,6 +8,7 @@ import {
   Eye,
   LockKeyhole,
   Move,
+  Paintbrush,
 } from 'lucide-react'
 import {
   Navigate,
@@ -75,6 +76,9 @@ export function ClassroomLockerPage() {
   const readMessageIds = usePrototypeStore((state) => state.readMessageIds)
   const [open, setOpen] = useState(false)
   const [choiceOpen, setChoiceOpen] = useState(false)
+  const decor = usePrototypeStore((state) =>
+    lockerId ? state.lockerDecor[lockerId] : undefined,
+  )
 
   const locker = classroom.lockers.find(
     (item) => item.id === lockerId,
@@ -210,7 +214,20 @@ export function ClassroomLockerPage() {
         />
       }
       fixedAction={
-        open ? (
+        owner ? (
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={() =>
+              navigate(
+                `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/decorate`,
+              )
+            }
+          >
+            <Paintbrush size={17} aria-hidden />
+            사물함 꾸미기 · 조명, 페인트
+          </Button>
+        ) : open ? (
           <Button
             variant="brand"
             fullWidth
@@ -231,6 +248,7 @@ export function ClassroomLockerPage() {
         <ClassroomLockerScene
           locker={visibleLocker}
           messages={messages}
+          decor={decor}
           open={open}
           owner={owner}
           readMessageIds={readMessageIds}
@@ -292,6 +310,9 @@ export function ClassroomLockerPlacementPage() {
   )
   const placeSticker = usePrototypeStore(
     (state) => state.placeStickerInLocker,
+  )
+  const decor = usePrototypeStore((state) =>
+    lockerId ? state.lockerDecor[lockerId] : undefined,
   )
   const objectChoice = usePrototypeStore(
     (state) => state.supporterObjectChoice,
@@ -602,6 +623,7 @@ export function ClassroomLockerPlacementPage() {
             locker={locker}
             messages={messages}
             open
+            decor={decor}
             draftObject={{
               representationType: stickerMode
                 ? 'sticker'
