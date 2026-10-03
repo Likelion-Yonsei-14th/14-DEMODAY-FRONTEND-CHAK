@@ -1326,3 +1326,60 @@
   height: 72%;
   object-fit: contain;
 }
+
+/* University goods charm picker on the locker placement page */
+.university-charm-picker {
+  display: grid;
+  gap: 10px;
+}
+
+.university-charm-picker__label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.university-charm-picker__label strong {
+  font-size: 15px;
+}
+
+.university-charm-picker__label span {
+  color: var(--color-content-secondary);
+  font-size: 12px;
+}
+
+.university-charm-picker__schools {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-inline: calc(var(--page-gutter, 20px) * -1);
+  padding: 2px var(--page-gutter, 20px) 6px;
+  scrollbar-width: none;
+}
+
+.university-charm-picker__schools::-webkit-scrollbar {
+  display: none;
+}
+
+.university-charm-picker__school {
+  flex: none;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1.5px solid color-mix(in srgb, var(--school-color) 35%, transparent);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--school-color);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.university-charm-picker__school--selected {
+  border-color: var(--school-color);
+  background: var(--school-color);
+  color: #fff;
+}
+
+.placement-object-picker.university-charm-picker__shapes {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}

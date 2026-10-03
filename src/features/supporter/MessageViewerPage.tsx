@@ -83,7 +83,11 @@ export function MessageViewerPage() {
     [storedMessages],
   )
   const message = messages.find((item) => item.id === messageId)
-  const charmObject = [...seededDeskObjects, ...currentDesk.objects].find(
+  const charmObject = [
+    ...seededDeskObjects,
+    ...currentDesk.objects,
+    ...classroom.lockers.flatMap((locker) => locker.objects),
+  ].find(
     (object) =>
       object.messageId === messageId &&
       object.representationType === 'charm' &&

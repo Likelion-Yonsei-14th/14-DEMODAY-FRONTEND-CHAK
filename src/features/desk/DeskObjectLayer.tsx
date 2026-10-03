@@ -15,6 +15,8 @@ import {
   resolveCharmPhrase,
 } from '@/features/supporter/charmDesigns'
 import { getGemImage } from '@/features/supporter/gems'
+import { UniversityCharm } from '@/features/classroom/UniversityCharm'
+import { parseUniversityCharmId } from '@/features/classroom/universities'
 import { useDeskDaypart } from './useDeskDaypart'
 import './DeskObjectLayer.css'
 
@@ -269,6 +271,27 @@ export function DeskObjectVisual({
           alt=""
           draggable={false}
         />
+      </span>
+    )
+  }
+
+  const universityCharm =
+    type === 'charm' ? parseUniversityCharmId(assetId) : null
+  if (universityCharm) {
+    // Locker university goods: always an acrylic keyring
+    return (
+      <span
+        className="desk-object__visual desk-object__visual--charm-acrylic"
+        style={style}
+        aria-hidden
+      >
+        <span className="desk-object__charm desk-object__charm--university">
+          <UniversityCharm
+            school={universityCharm.school}
+            shape={universityCharm.shape}
+          />
+        </span>
+        {gemLayer}
       </span>
     )
   }

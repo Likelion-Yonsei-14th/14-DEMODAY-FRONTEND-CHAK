@@ -11,6 +11,10 @@ type ObjectChoiceSheetProps = {
   types?: SupporterObjectChoice[]
   /** Where it will be placed, e.g. '책상' or '사물함'. */
   placeLabel?: string
+  /** Per-place copy, e.g. the locker's paid university charm. */
+  descriptions?: Partial<Record<SupporterObjectChoice, string>>
+  /** Charm artwork on the 부적 option. */
+  charmPreviewAssetId?: string
 }
 
 const choices: {
@@ -48,6 +52,8 @@ export function ObjectChoiceSheet({
   onChoose,
   types,
   placeLabel = '책상',
+  descriptions,
+  charmPreviewAssetId = 'charm-yeot',
 }: ObjectChoiceSheetProps) {
   return (
     <BottomSheet
@@ -63,7 +69,9 @@ export function ObjectChoiceSheet({
           <ChoiceCard
             key={choice.type}
             title={choice.title}
-            description={choice.description(recipientName)}
+            description={
+              descriptions?.[choice.type] ?? choice.description(recipientName)
+            }
             icon={
               <span
                 className={[
@@ -81,7 +89,7 @@ export function ObjectChoiceSheet({
                     choice.type === 'sticker'
                       ? deskStickers[0]!.id
                       : choice.type === 'charm'
-                        ? 'charm-yeot'
+                        ? charmPreviewAssetId
                         : undefined
                   }
                   material="flat"

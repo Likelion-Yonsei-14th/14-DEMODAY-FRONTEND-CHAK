@@ -130,6 +130,7 @@ type PrototypeState = {
     placement?: DeskPlacement,
     representationType?: DeskObjectType,
     objectColor?: string,
+    charm?: { assetId: string; material: CharmMaterial },
   ) => void
   placeComposerMessage: (
     placement?: DeskPlacement,
@@ -709,6 +710,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         placement,
         selectedRepresentationType,
         objectColor,
+        charm,
       ) =>
         set((state) => {
           const locker = state.classroom.lockers.find(
@@ -761,6 +763,9 @@ export const usePrototypeStore = create<PrototypeState>()(
                           messageId,
                           representationType,
                           color: objectColor,
+                          ...(representationType === 'charm' && charm
+                            ? charm
+                            : {}),
                           zone: resolveDeskZone(item.objects.length),
                           order: item.objects.length,
                           locked: false,

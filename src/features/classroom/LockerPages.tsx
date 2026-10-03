@@ -17,6 +17,7 @@ import {
 } from 'react-router-dom'
 import {
   AppBar,
+  BottomSheet,
   Button,
   IconButton,
   useFeedback,
@@ -31,6 +32,14 @@ import {
 } from '@/features/supporter/deskStickers'
 import { ObjectChoiceSheet } from '@/features/supporter/ObjectChoiceSheet'
 import { lockerStickers } from './lockerStickers'
+import {
+  UNIVERSITY_CHARM_PRICE,
+  charmUniversities,
+  getUniversity,
+  universityCharmId,
+  universityCharmShapes,
+  type UniversityCharmShape,
+} from './universities'
 import { useReadModeNow } from '@/features/desk/useReadModeNow'
 import { DeskObjectVisual } from '@/features/desk/DeskObjectLayer'
 import { AppShell } from '@/layout/AppShell'
@@ -234,7 +243,11 @@ export function ClassroomLockerPage() {
           open={choiceOpen}
           recipientName={locker.studentName}
           placeLabel="사물함"
-          types={['letter', 'sticker']}
+          types={['letter', 'charm', 'sticker']}
+          charmPreviewAssetId={universityCharmId('yonsei', 'jersey')}
+          descriptions={{
+            charm: `대학 굿즈 아크릴 키링에 응원을 담아요. 하나에 ${UNIVERSITY_CHARM_PRICE}원이에요.`,
+          }}
           onClose={() => setChoiceOpen(false)}
           onChoose={(choice) => {
             const store = usePrototypeStore.getState()
@@ -288,6 +301,16 @@ export function ClassroomLockerPlacementPage() {
   )
   const stickerMode = objectChoice === 'sticker'
   const sticker = getDeskSticker(stickerId)
+  // Locker charms are university goods: acrylic only, always paid
+  const charmMode = objectChoice === 'charm'
+  const [schoolId, setSchoolId] = useState(charmUniversities[0]!.id)
+  const [charmShape, setCharmShape] = useState<UniversityCharmShape>('jersey')
+  const [paymentOpen, setPaymentOpen] = useState(false)
+  const school = getUniversity(schoolId)
+  const charmAssetId = universityCharmId(schoolId, charmShape)
+  const charmLabel = `${school.name} ${
+    universityCharmShapes.find((item) => item.id === charmShape)?.label ?? ''
+  } 키링`
   const locker = classroom.lockers.find(
     (item) => item.id === lockerId,
   )
@@ -298,7 +321,9 @@ export function ClassroomLockerPlacementPage() {
   )
   // Chose "편지" up front: start as a letter, other shapes stay one tap away
   const [objectType, setObjectType] = useState<DeskObjectType>(
-    objectChoice === 'letter' ? 'letter' : recommendedObjectType,
+    objectChoice === 'letter' || objectChoice === 'charm'
+      ? objectChoice
+      : recommendedObjectType,
   )
   const firstPage = getFirstCardPage(draft)
   const cardPreviewColor =
@@ -372,8 +397,12 @@ export function ClassroomLockerPlacementPage() {
     window.addEventListener('pointerup', onUp, { once: true })
   }
 
-  const finish = () => {
+  const finish = (paid = false) => {
     if (placing) return
+    if (charmMode && !paid) {
+      setPaymentOpen(true)
+      return
+    }
     setPlacing(true)
 
     window.setTimeout(() => {
@@ -383,8 +412,9 @@ export function ClassroomLockerPlacementPage() {
         placeMessage(
           locker.id,
           placement,
-          objectType,
+          charmMode ? 'charm' : objectType,
           objectColor,
+          charmMode ? { assetId: charmAssetId, material: 'acrylic' } : undefined,
         )
       }
       navigate(
@@ -419,9 +449,13 @@ export function ClassroomLockerPlacementPage() {
           variant="brand"
           fullWidth
           loading={placing}
-          onClick={finish}
+          onClick={() => finish()}
         >
-          {stickerMode ? '이대로 붙이고 가기' : '이대로 놓고 가기'}
+          {stickerMode
+            ? '이대로 붙이고 가기'
+            : charmMode
+              ? `${UNIVERSITY_CHARM_PRICE}원 결제하고 놓기`
+              : '이대로 놓고 가기'}
         </Button>
       }
     >
@@ -430,11 +464,73 @@ export function ClassroomLockerPlacementPage() {
           <h1>
             {locker.studentName}님의 사물함에
             <br />
-            {stickerMode ? '스티커를 붙여주세요.' : '내 응원을 놓아주세요.'}
+            {stickerMode
+              ? '스티커를 붙여주세요.'
+              : charmMode
+                ? '대학 굿즈 부적을 걸어주세요.'
+                : '내 응원을 놓아주세요.'}
           </h1>
         </section>
 
-        {!stickerMode && (
+        {charmMode && (
+          <section className="university-charm-picker" aria-label="대학 굿즈 부적">
+            <div className="university-charm-picker__label">
+              <strong>학교</strong>
+              <span>아크릴 키링 · {UNIVERSITY_CHARM_PRICE}원</span>
+            </div>
+            <div className="university-charm-picker__schools" role="list">
+              {charmUniversities.map((item) => (
+                <button
+                  type="button"
+                  key={item.id}
+                  className={[
+                    'university-charm-picker__school',
+                    item.id === schoolId
+                      ? 'university-charm-picker__school--selected'
+                      : '',
+                  ].filter(Boolean).join(' ')}
+                  style={{ '--school-color': item.color } as React.CSSProperties}
+                  aria-pressed={item.id === schoolId}
+                  onClick={() => setSchoolId(item.id)}
+                >
+                  {item.name.replace('대학교', '대')}
+                </button>
+              ))}
+            </div>
+            <div className="university-charm-picker__label">
+              <strong>모양</strong>
+            </div>
+            <div className="placement-object-picker university-charm-picker__shapes">
+              {universityCharmShapes.map((item) => (
+                <button
+                  type="button"
+                  key={item.id}
+                  className={[
+                    'placement-object-option',
+                    charmShape === item.id
+                      ? 'placement-object-option--selected'
+                      : '',
+                  ].filter(Boolean).join(' ')}
+                  aria-pressed={charmShape === item.id}
+                  onClick={() => setCharmShape(item.id)}
+                >
+                  <span
+                    className="placement-object-option__preview desk-object--charm"
+                    aria-hidden
+                  >
+                    <DeskObjectVisual
+                      type="charm"
+                      assetId={universityCharmId(schoolId, item.id)}
+                    />
+                  </span>
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {!stickerMode && !charmMode && (
         <>
         <section
           className="placement-object-picker"
@@ -507,8 +603,16 @@ export function ClassroomLockerPlacementPage() {
             messages={messages}
             open
             draftObject={{
-              representationType: stickerMode ? 'sticker' : objectType,
-              assetId: stickerMode ? sticker.id : undefined,
+              representationType: stickerMode
+                ? 'sticker'
+                : charmMode
+                  ? 'charm'
+                  : objectType,
+              assetId: stickerMode
+                ? sticker.id
+                : charmMode
+                  ? charmAssetId
+                  : undefined,
               placement,
               previewColor: objectColor,
               dragging,
@@ -530,9 +634,19 @@ export function ClassroomLockerPlacementPage() {
           <div className="placement-preview__summary-row">
             <span>{stickerMode ? '스티커' : '형태'}</span>
             <strong>
-              {stickerMode ? sticker.name : deskObjectLabels[objectType]}
+              {stickerMode
+                ? sticker.name
+                : charmMode
+                  ? charmLabel
+                  : deskObjectLabels[objectType]}
             </strong>
           </div>
+          {charmMode && (
+            <div className="placement-preview__summary-row">
+              <span>가격</span>
+              <strong>{UNIVERSITY_CHARM_PRICE}원 · 아크릴</strong>
+            </div>
+          )}
           {stickerMode && sticker.price ? (
             <div className="placement-preview__summary-row">
               <span>결제</span>
@@ -556,6 +670,37 @@ export function ClassroomLockerPlacementPage() {
           </div>
         </section>
       </main>
+
+      <BottomSheet
+        open={paymentOpen}
+        onClose={() => setPaymentOpen(false)}
+        title="이대로 결제하고 놓을까요?"
+        description="대학 굿즈 부적은 아크릴 키링으로만 만들어요."
+      >
+        <div className="charm-payment">
+          <div className="charm-payment__row">
+            <span>{charmLabel} · 아크릴</span>
+            <strong>{UNIVERSITY_CHARM_PRICE}원</strong>
+          </div>
+          <div className="charm-payment__row charm-payment__row--total">
+            <span>합계</span>
+            <strong>{UNIVERSITY_CHARM_PRICE}원</strong>
+          </div>
+          <p className="charm-payment__note">
+            프로토타입이라 실제 결제는 되지 않아요.
+          </p>
+          <Button
+            variant="brand"
+            fullWidth
+            onClick={() => {
+              setPaymentOpen(false)
+              finish(true)
+            }}
+          >
+            {UNIVERSITY_CHARM_PRICE}원 결제하기
+          </Button>
+        </div>
+      </BottomSheet>
     </AppShell>
   )
 }

@@ -615,3 +615,15 @@
   height: auto;
   aspect-ratio: 510 / 188;
 }
+
+/* University acrylic keyring, drawn as SVG in the charm's 300:443 box */
+.desk-object__charm--university {
+  aspect-ratio: 100 / 148;
+}
+
+.desk-object__charm--university .university-charm {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
