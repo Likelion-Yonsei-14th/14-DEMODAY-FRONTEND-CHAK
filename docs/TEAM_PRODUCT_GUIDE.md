@@ -222,11 +222,25 @@ flowchart TD
 Claim 과정:
 
 1. “친구들이 OO님을 위해 응원 책상을 만들었어요.”
-2. 이미 모인 응원을 보여줌
-3. 기존 열람 방식을 확인
-4. 수험생이 Daily / Time Capsule을 그대로 쓰거나 변경
-5. “내 책상으로 가져오기”
-6. Owner 권한으로 전환
+2. 이미 모인 응원의 존재를 보여줌
+3. **Claim 전에 도착한 응원 backlog를 별도로 안내**
+4. 기존 열람 방식을 확인
+5. 수험생이 Daily / Time Capsule을 그대로 쓰거나 변경
+6. “내 책상으로 가져오기”
+7. Owner 권한으로 전환
+
+### Claim 전 backlog
+
+**[확정] Claim 전에 쌓인 Daily 응원은 새 하루 batch로 다시 밀어 넣지 않고 ‘먼저 와 있던/지난 응원’으로 보관한다.**
+
+첫 Claim에서:
+
+- “친구들이 먼저 기다리고 있었어요.”
+- 도착한 응원 수 / 마음을 남긴 친구 수 등으로 backlog 존재를 분명히 알림
+- **“지금 만나보기” / “나중에 보기”** 선택 제공
+- 나중에 보기를 선택해도 backlog는 사라지지 않음
+- Owner Home에서 미확인 backlog가 있다는 안내를 계속 노출
+- 사용자가 준비됐을 때 카드/봉투 Archive에서 열람 가능
 
 Claim 이후:
 
@@ -719,19 +733,25 @@ Repository:
 | `main` | baseline | 초기 커밋 수준 |
 | `feat/phase1-foundation` | +12 commits | React/Vite/TS, design system foundation, prototype skeleton |
 | `feat/phase2-supporter-core` | +59 commits | Composer, supporter flow, desk scene, envelope/reader |
-| `feat/recipient-multicard-viewer` | +210 feature commits + 이후 문서화 commits | 현재 가장 많은 기능이 누적된 브랜치 |
+| `feat/recipient-multicard-viewer` | +211 feature commits + 이후 문서화 commits | 현재 가장 많은 기능이 누적된 브랜치 |
 
-문서화 직전 기능 구현 상태에서 `feat/recipient-multicard-viewer`는 `feat/phase2-supporter-core`보다 151 commits 앞서고, main 대비 163개 파일 변화가 있었다.
+최신 기능 구현 상태에서 `feat/recipient-multicard-viewer`는 main에서 크게 앞선 누적 작업 브랜치이며, 이후 문서화 commit까지 포함하면 이 문서 갱신 직전 **main 대비 214 commits ahead / 164 files changed** 상태였다.
 
 최신 기능 구현 기준 commit:
+
+- `48b5d59` — `feat: add pre-claim encouragement backlog flow`
+- 2026-10-03 14:04 KST
+
+바로 이전 주요 기능 commit:
 
 - `efa5d95` — `feat: implement supporter settings flow`
 - 2026-10-03 14:01 KST
 
-이후 `TEAM_PRODUCT_GUIDE.md` 추가와 README 갱신은 문서화 commit이며 제품 기능 변경은 아니다.
+`TEAM_PRODUCT_GUIDE.md` 추가, README 갱신, 이후 guide 보정 commit은 문서화 변경이며 제품 기능 변경이 아니다.
 
 최근 주요 구현:
 
+- Claim 전 응원 backlog: 지금 만나보기 / 나중에 보기 / Owner Home 재진입
 - Supporter settings
 - 읽기 전 보낸 공개 응원 삭제
 - Password reset prototype
@@ -797,6 +817,7 @@ Repository:
 ## Claim
 
 - Claim intro
+- Pre-claim backlog
 - Read mode review
 - Claim complete
 
