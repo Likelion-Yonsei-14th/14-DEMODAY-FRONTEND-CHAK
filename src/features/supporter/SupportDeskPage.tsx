@@ -1,6 +1,7 @@
 import {
   ArrowLeft,
   MessageCircleMore,
+  Send,
   Share2,
 } from 'lucide-react'
 import { useMemo } from 'react'
@@ -196,14 +197,28 @@ export function SupportDeskPage() {
             <strong>{objectCount}개의 응원이 기다리는 중</strong>
             <span>사진, 메모, 편지와 작은 행운들이 쌓이고 있어요.</span>
           </div>
-          <button
-            type="button"
-            className="support-desk__share"
-            onClick={shareDesk}
-          >
-            <Share2 size={16} aria-hidden />
-            공유
-          </button>
+          <div className="support-desk__meta-actions">
+            {supporterIdentityName && (
+              <button
+                type="button"
+                className="support-desk__share"
+                onClick={() =>
+                  navigate('/prototype/support/jisu/sent')
+                }
+              >
+                <Send size={15} aria-hidden />
+                내 응원
+              </button>
+            )}
+            <button
+              type="button"
+              className="support-desk__share"
+              onClick={shareDesk}
+            >
+              <Share2 size={16} aria-hidden />
+              공유
+            </button>
+          </div>
         </div>
       </div>
     </AppShell>

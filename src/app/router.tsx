@@ -22,6 +22,7 @@ import {
 import { PlacementPreviewPage } from '@/features/supporter/PlacementPreviewPage'
 import { SupportCompletePage } from '@/features/supporter/SupportCompletePage'
 import { SupportDeskPage } from '@/features/supporter/SupportDeskPage'
+import { SentMessagesPage } from '@/features/supporter/SentMessagesPage'
 import { StartPage } from '@/features/start/StartPage'
 import {
   AccountPage,
@@ -173,6 +174,10 @@ export const router = createBrowserRouter([
       {
         path: '/prototype/support/jisu/replies',
         element: <SupporterRepliesPage />,
+      },
+      {
+        path: '/prototype/support/jisu/sent',
+        element: <SentMessagesPage />,
       },
 
       { path: '/prototype/composer', element: <ComposerPage /> },

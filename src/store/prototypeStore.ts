@@ -73,6 +73,7 @@ type PrototypeState = {
   hidePublicMessage: (messageId: string) => void
   blockPublicSupporter: (senderName: string) => void
   reportMessage: (messageId: string) => void
+  deleteOwnPublicMessage: (messageId: string) => void
   setComposerDraft: (draft: MessageDraft) => void
   resetComposerDraft: () => void
   setDeskCreationDraft: (patch: Partial<DeskCreationDraft>) => void
@@ -267,6 +268,49 @@ export const usePrototypeStore = create<PrototypeState>()(
             ? state.reportedMessageIds
             : [...state.reportedMessageIds, messageId],
         })),
+      deleteOwnPublicMessage: (messageId) =>
+        set((state) => {
+          const message = state.messages.find(
+            (item) => item.id === messageId,
+          )
+          const ownMessage =
+            Boolean(message) &&
+            Boolean(state.supporterIdentityName) &&
+            message?.senderName === state.supporterIdentityName
+          const unread =
+            message?.status !== 'read' &&
+            !state.readMessageIds.includes(messageId)
+          const deletable =
+            ownMessage &&
+            message?.visibility === 'public' &&
+            unread
+
+          if (!deletable) return state
+
+          return {
+            messages: state.messages.filter(
+              (item) => item.id !== messageId,
+            ),
+            currentDesk: {
+              ...state.currentDesk,
+              objects: state.currentDesk.objects.filter(
+                (object) => object.messageId !== messageId,
+              ),
+            },
+            classroom: {
+              ...state.classroom,
+              lockers: state.classroom.lockers.map((locker) => ({
+                ...locker,
+                messageIds: locker.messageIds.filter(
+                  (id) => id !== messageId,
+                ),
+                objects: locker.objects.filter(
+                  (object) => object.messageId !== messageId,
+                ),
+              })),
+            },
+          }
+        }),
       setComposerDraft: (composerDraft) => set({ composerDraft }),
       resetComposerDraft: () => set({ composerDraft: emptyComposerDraft }),
       setDeskCreationDraft: (patch) =>

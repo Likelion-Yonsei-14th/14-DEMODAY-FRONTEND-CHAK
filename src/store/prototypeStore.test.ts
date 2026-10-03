@@ -330,6 +330,60 @@ describe('prototype store composer handoff', () => {
     ])
   })
 
+  it('deletes an own public encouragement only before the recipient reads it', () => {
+    usePrototypeStore.setState({
+      composerDraft: {
+        ...emptyComposerDraft,
+        senderName: '다은',
+        visibility: 'public',
+      },
+    })
+    usePrototypeStore.getState().placeComposerMessage()
+
+    let state = usePrototypeStore.getState()
+    const firstId = state.messages.at(-1)?.id
+    expect(firstId).toBeDefined()
+    expect(state.supporterIdentityName).toBe('다은')
+
+    usePrototypeStore
+      .getState()
+      .deleteOwnPublicMessage(firstId!)
+
+    state = usePrototypeStore.getState()
+    expect(
+      state.messages.some((message) => message.id === firstId),
+    ).toBe(false)
+    expect(
+      state.currentDesk.objects.some(
+        (object) => object.messageId === firstId,
+      ),
+    ).toBe(false)
+
+    usePrototypeStore.setState({
+      composerDraft: {
+        ...emptyComposerDraft,
+        senderName: '다은',
+        visibility: 'public',
+      },
+    })
+    usePrototypeStore.getState().placeComposerMessage()
+
+    const secondId =
+      usePrototypeStore.getState().messages.at(-1)?.id
+    expect(secondId).toBeDefined()
+
+    usePrototypeStore.getState().markMessageRead(secondId!)
+    usePrototypeStore
+      .getState()
+      .deleteOwnPublicMessage(secondId!)
+
+    expect(
+      usePrototypeStore
+        .getState()
+        .messages.some((message) => message.id === secondId),
+    ).toBe(true)
+  })
+
   it('creates a self-owned desk as claimed with the chosen read mode', () => {
     const currentUser = usePrototypeStore.getState().currentUser
 

@@ -96,3 +96,11 @@
 .support-desk__action {
   width: 100%;
 }
+
+
+.support-desk__meta-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
