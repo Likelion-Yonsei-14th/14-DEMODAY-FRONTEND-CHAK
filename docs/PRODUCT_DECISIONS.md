@@ -16,6 +16,7 @@ This document tracks the latest decisions that the code prototype must prioritiz
   - email login
   - email signup
   - Google login mock
+  - password reset mock
   - account page
   - logout
   - account deletion and completion

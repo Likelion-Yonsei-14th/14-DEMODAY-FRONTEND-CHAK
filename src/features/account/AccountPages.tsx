@@ -109,6 +109,11 @@ export function LoginPage() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
+          <div className="account-auth__password-help">
+            <Link to="/auth/reset-password">
+              비밀번호를 잊었어요
+            </Link>
+          </div>
           <Button
             type="submit"
             variant="brand"
@@ -131,6 +136,192 @@ export function LoginPage() {
         >
           로그인 없이 계속하기
         </button>
+      </main>
+    </AppShell>
+  )
+}
+
+
+export function ResetPasswordPage() {
+  const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    if (!email.trim()) return
+
+    navigate(
+      `/auth/reset-password/new?email=${encodeURIComponent(
+        email.trim(),
+      )}`,
+    )
+  }
+
+  return (
+    <AppShell
+      surface="base"
+      contentClassName="account-flow-shell"
+      appBar={
+        <AppBar
+          title="비밀번호 재설정"
+          leading={
+            <IconButton
+              label="로그인으로 돌아가기"
+              icon={<ArrowLeft size={21} aria-hidden />}
+              onClick={() => navigate('/auth/login')}
+            />
+          }
+        />
+      }
+    >
+      <main className="account-auth">
+        <section className="account-auth__heading">
+          <h1>
+            가입한 이메일을
+            <br />
+            입력해주세요.
+          </h1>
+          <p>
+            실제 서비스에서는 이메일 인증 후 새 비밀번호를
+            설정하게 돼요.
+          </p>
+        </section>
+
+        <form className="account-auth__form" onSubmit={submit}>
+          <TextField
+            id="reset-email"
+            label="이메일"
+            type="email"
+            autoComplete="email"
+            placeholder="example@email.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
+          <Button
+            type="submit"
+            variant="brand"
+            fullWidth
+            disabled={!email.trim()}
+          >
+            인증 메일 보내기
+          </Button>
+        </form>
+      </main>
+    </AppShell>
+  )
+}
+
+export function ResetPasswordNewPage() {
+  const navigate = useNavigate()
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+
+  const valid =
+    password.length >= 8 &&
+    password === confirmPassword
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    if (!valid) return
+
+    navigate('/auth/reset-password/complete', {
+      replace: true,
+    })
+  }
+
+  return (
+    <AppShell
+      surface="base"
+      contentClassName="account-flow-shell"
+      appBar={
+        <AppBar
+          title="새 비밀번호"
+          leading={
+            <IconButton
+              label="이전으로"
+              icon={<ArrowLeft size={21} aria-hidden />}
+              onClick={() => navigate('/auth/reset-password')}
+            />
+          }
+        />
+      }
+    >
+      <main className="account-auth">
+        <section className="account-auth__heading">
+          <h1>
+            새로 사용할 비밀번호를
+            <br />
+            정해주세요.
+          </h1>
+        </section>
+
+        <form className="account-auth__form" onSubmit={submit}>
+          <TextField
+            id="reset-new-password"
+            label="새 비밀번호"
+            type="password"
+            autoComplete="new-password"
+            placeholder="8자 이상 입력해주세요"
+            helper="8자 이상"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+          <TextField
+            id="reset-confirm-password"
+            label="새 비밀번호 확인"
+            type="password"
+            autoComplete="new-password"
+            placeholder="한 번 더 입력해주세요"
+            error={
+              confirmPassword.length > 0 &&
+              password !== confirmPassword
+                ? '비밀번호가 일치하지 않아요.'
+                : undefined
+            }
+            value={confirmPassword}
+            onChange={(event) =>
+              setConfirmPassword(event.target.value)
+            }
+          />
+          <Button
+            type="submit"
+            variant="brand"
+            fullWidth
+            disabled={!valid}
+          >
+            비밀번호 바꾸기
+          </Button>
+        </form>
+      </main>
+    </AppShell>
+  )
+}
+
+export function ResetPasswordCompletePage() {
+  const navigate = useNavigate()
+
+  return (
+    <AppShell
+      surface="base"
+      contentClassName="account-flow-shell"
+      fixedAction={
+        <Button
+          variant="brand"
+          fullWidth
+          onClick={() =>
+            navigate('/auth/login', { replace: true })
+          }
+        >
+          새 비밀번호로 로그인하기
+        </Button>
+      }
+    >
+      <main className="account-delete account-delete--complete">
+        <span className="account-delete__complete-mark" aria-hidden>
+          ✓
+        </span>
+        <h1>비밀번호를 바꿨어요.</h1>
+        <p>이제 새 비밀번호로 로그인할 수 있어요.</p>
       </main>
     </AppShell>
   )

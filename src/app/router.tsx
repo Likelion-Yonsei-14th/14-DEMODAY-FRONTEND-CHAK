@@ -28,6 +28,9 @@ import {
   DeleteAccountCompletePage,
   DeleteAccountPage,
   LoginPage,
+  ResetPasswordCompletePage,
+  ResetPasswordNewPage,
+  ResetPasswordPage,
   SignupPage,
 } from '@/features/account/AccountPages'
 import {
@@ -83,6 +86,18 @@ export const router = createBrowserRouter([
       { path: '/start', element: <StartPage /> },
       { path: '/auth/login', element: <LoginPage /> },
       { path: '/auth/signup', element: <SignupPage /> },
+      {
+        path: '/auth/reset-password',
+        element: <ResetPasswordPage />,
+      },
+      {
+        path: '/auth/reset-password/new',
+        element: <ResetPasswordNewPage />,
+      },
+      {
+        path: '/auth/reset-password/complete',
+        element: <ResetPasswordCompletePage />,
+      },
       { path: '/account', element: <AccountPage /> },
       { path: '/account/delete', element: <DeleteAccountPage /> },
       {

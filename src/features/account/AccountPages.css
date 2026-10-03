@@ -253,3 +253,18 @@
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
+
+
+.account-auth__password-help {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -6px;
+}
+
+.account-auth__password-help a {
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
