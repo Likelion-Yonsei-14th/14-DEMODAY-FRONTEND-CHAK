@@ -617,6 +617,7 @@ export function UnifiedComposerPage() {
 
           <ComposerToolTray
             tool={tool}
+            hideGraphicBackgrounds={Boolean(lockerId)}
             draft={page}
             selectedText={selectedText}
             selectedPhoto={selectedPhoto}

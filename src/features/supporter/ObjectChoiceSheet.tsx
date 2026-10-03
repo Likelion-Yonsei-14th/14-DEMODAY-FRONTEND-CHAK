@@ -7,6 +7,10 @@ type ObjectChoiceSheetProps = {
   recipientName: string
   onClose: () => void
   onChoose: (choice: SupporterObjectChoice) => void
+  /** Which options to offer; all of them by default. */
+  types?: SupporterObjectChoice[]
+  /** Where it will be placed, e.g. '책상' or '사물함'. */
+  placeLabel?: string
 }
 
 const choices: {
@@ -42,16 +46,20 @@ export function ObjectChoiceSheet({
   recipientName,
   onClose,
   onChoose,
+  types,
+  placeLabel = '책상',
 }: ObjectChoiceSheetProps) {
   return (
     <BottomSheet
       open={open}
       onClose={onClose}
       title="무엇을 놓고 갈까요?"
-      description={`${recipientName}님 책상에 놓을 것을 골라요.`}
+      description={`${recipientName}님 ${placeLabel}에 놓을 것을 골라요.`}
     >
       <div className="object-choice">
-        {choices.map((choice) => (
+        {choices
+          .filter((choice) => !types || types.includes(choice.type))
+          .map((choice) => (
           <ChoiceCard
             key={choice.type}
             title={choice.title}

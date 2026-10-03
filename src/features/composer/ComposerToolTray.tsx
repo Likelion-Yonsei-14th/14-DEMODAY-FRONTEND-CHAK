@@ -44,6 +44,8 @@ import {
 
 type ComposerToolTrayProps = {
   tool: ComposerTool
+  /** Lockers offer plain and stationery sheets only. */
+  hideGraphicBackgrounds?: boolean
   draft: CardPage
   selectedText?: TextElement
   selectedPhoto?: PhotoElement
@@ -80,6 +82,7 @@ type ComposerToolTrayProps = {
 
 export function ComposerToolTray({
   tool,
+  hideGraphicBackgrounds = false,
   draft,
   selectedText,
   selectedPhoto,
@@ -167,12 +170,14 @@ export function ComposerToolTray({
             selectedId={draft.backgroundAssetId}
             onSelect={onBackgroundChange}
           />
-          <BackgroundRow
-            label="그래픽"
-            backgrounds={graphicBackgrounds}
-            selectedId={draft.backgroundAssetId}
-            onSelect={onBackgroundChange}
-          />
+          {!hideGraphicBackgrounds && (
+            <BackgroundRow
+              label="그래픽"
+              backgrounds={graphicBackgrounds}
+              selectedId={draft.backgroundAssetId}
+              onSelect={onBackgroundChange}
+            />
+          )}
         </>
       )}
 

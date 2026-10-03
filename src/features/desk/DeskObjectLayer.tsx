@@ -86,6 +86,7 @@ export function DeskObjectLayer({
             className={[
               'desk-object',
               `desk-object--${object.representationType}`,
+              stickerShapeClass(object.representationType, object.assetId),
               locked ? 'desk-object--locked' : '',
               !interactive ? 'desk-object--passive' : '',
               interactive && showUnreadState && !read && !locked
@@ -143,6 +144,10 @@ export function DeskObjectLayer({
             'desk-object',
             'desk-object--draft',
             `desk-object--${draftObject.representationType}`,
+            stickerShapeClass(
+              draftObject.representationType,
+              draftObject.assetId,
+            ),
             draftObject.invalid ? 'desk-object--invalid' : '',
             draftObject.dragging ? 'desk-object--dragging' : '',
           ].filter(Boolean).join(' ')}
@@ -368,4 +373,10 @@ export function DeskGemLayer({ gems }: { gems: DeskGem[] }) {
       ))}
     </span>
   )
+}
+
+/** Wide stickers (garlands, pennants) need their own box size. */
+function stickerShapeClass(type: DeskObjectType, assetId?: string) {
+  if (type !== 'sticker') return ''
+  return `desk-object--sticker-${getDeskSticker(assetId).shape ?? 'square'}`
 }

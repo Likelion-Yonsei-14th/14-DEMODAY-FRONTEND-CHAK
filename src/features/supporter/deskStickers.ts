@@ -3,11 +3,16 @@ import {
   type MessageAvailability,
 } from '@/features/desk/dailyAvailability'
 import type { DeskObjectType, Message, ReadMode } from '@/types'
+import { lockerStickers } from '@/features/classroom/lockerStickers'
 
 export type DeskSticker = {
   id: string
   name: string
   source: string
+  /** Box the sticker needs; garlands and pennants are wide. */
+  shape?: 'square' | 'bow' | 'garland' | 'pennant'
+  /** Prototype price in won; free when absent. */
+  price?: number
 }
 
 const DESK_STICKER_PATH = '/assets/desk-stickers'
@@ -22,8 +27,12 @@ export const deskStickers: DeskSticker[] = [
   { id: 'desk-sticker-bolt', name: '번개', source: `${DESK_STICKER_PATH}/desk-sticker-bolt.webp` },
 ]
 
-export function getDeskSticker(id: string | undefined) {
-  return deskStickers.find((sticker) => sticker.id === id) ?? deskStickers[0]!
+export function getDeskSticker(id: string | undefined): DeskSticker {
+  return (
+    deskStickers.find((sticker) => sticker.id === id) ??
+    lockerStickers.find((sticker) => sticker.id === id) ??
+    deskStickers[0]!
+  )
 }
 
 /** What a supporter chooses to leave before anything else. */

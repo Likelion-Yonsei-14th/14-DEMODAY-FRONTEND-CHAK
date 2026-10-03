@@ -78,6 +78,7 @@ type PrototypeState = {
   setSupporterObjectChoice: (choice: SupporterObjectChoice) => void
   setStickerDraft: (patch: Partial<{ stickerId: string; senderName: string }>) => void
   placeSticker: (placement: DeskPlacement) => void
+  placeStickerInLocker: (lockerId: string, placement: DeskPlacement) => void
   setDebugMode: (value: boolean) => void
   signIn: (email: string, provider?: AuthProvider) => void
   signUp: (displayName: string, email: string) => void
@@ -250,6 +251,62 @@ export const usePrototypeStore = create<PrototypeState>()(
                   zIndex: state.currentDesk.objects.length + 30,
                 },
               ],
+            },
+          }
+        }),
+      placeStickerInLocker: (lockerId, placement) =>
+        set((state) => {
+          const locker = state.classroom.lockers.find(
+            (item) => item.id === lockerId,
+          )
+          if (!locker) return state
+
+          const stamp = Date.now().toString(36)
+          const messageId = `classroom-message-${stamp}`
+          const senderName =
+            state.classroomMember?.displayName?.trim() ||
+            state.supporterSettings.defaultNickname.trim() ||
+            '친구'
+
+          const message: Message = {
+            ...emptyComposerDraft,
+            id: messageId,
+            kind: 'sticker',
+            stickerId: state.stickerDraft.stickerId,
+            visibility: 'private',
+            senderName,
+            recipientDeskId: locker.id,
+            status: 'sent',
+            createdAt: new Date().toISOString(),
+          }
+
+          return {
+            messages: [...state.messages, message],
+            supporterIdentityName: senderName,
+            classroom: {
+              ...state.classroom,
+              lockers: state.classroom.lockers.map((item) =>
+                item.id === lockerId
+                  ? {
+                      ...item,
+                      messageIds: [...item.messageIds, messageId],
+                      objects: [
+                        ...item.objects,
+                        {
+                          id: `locker-object-${stamp}`,
+                          messageId,
+                          representationType: 'sticker',
+                          assetId: state.stickerDraft.stickerId,
+                          zone: resolveDeskZone(item.objects.length),
+                          order: item.objects.length,
+                          locked: false,
+                          ...placement,
+                          zIndex: item.objects.length + 10,
+                        },
+                      ],
+                    }
+                  : item,
+              ),
             },
           }
         }),

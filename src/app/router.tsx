@@ -76,6 +76,7 @@ import {
   ClassroomLockerPage,
   ClassroomLockerPlacementPage,
 } from '@/features/classroom/LockerPages'
+import { LockerStickerPickPage } from '@/features/classroom/LockerStickerPage'
 import { PrototypeIndexPage } from '@/prototype/screens/PrototypeIndexPage'
 import {
   ComposerPage,
@@ -255,6 +256,10 @@ export const router = createBrowserRouter([
       {
         path: '/prototype/classroom/:classroomId/locker/:lockerId/compose',
         element: <UnifiedComposerPage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/locker/:lockerId/sticker',
+        element: <LockerStickerPickPage />,
       },
       {
         path: '/prototype/classroom/:classroomId/locker/:lockerId/placement',

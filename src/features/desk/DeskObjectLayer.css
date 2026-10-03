@@ -582,3 +582,36 @@
       scale(calc(var(--desk-object-scale) * 1.025));
   }
 }
+
+/* Non-square stickers: bows, hanging garlands and felt pennants */
+.desk-object__sticker {
+  object-fit: contain;
+}
+
+.desk-object--sticker-bow {
+  width: 58px;
+  height: 52px;
+}
+
+.desk-object--sticker-garland {
+  width: 136px;
+  height: 24px;
+}
+
+.desk-object--sticker-pennant {
+  width: 104px;
+  height: 38px;
+}
+
+/* Inside a locker they hang across the compartment */
+.locker-v2__object-zone .desk-object--sticker-garland {
+  width: 96%;
+  height: auto;
+  aspect-ratio: 900 / 150;
+}
+
+.locker-v2__object-zone .desk-object--sticker-pennant {
+  width: 80%;
+  height: auto;
+  aspect-ratio: 510 / 188;
+}

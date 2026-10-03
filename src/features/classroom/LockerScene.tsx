@@ -15,6 +15,7 @@ const LOCKER_ASSET_PATH = '/assets/classroom'
 
 type DraftLockerObject = {
   representationType: DeskObjectType
+  assetId?: string
   placement: DeskPlacement
   previewColor: string
   dragging?: boolean

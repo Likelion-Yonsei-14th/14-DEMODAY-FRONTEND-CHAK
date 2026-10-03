@@ -23,10 +23,14 @@ import {
 } from '@/design-system'
 import { getComposerBackground } from '@/features/composer/backgroundAssets'
 import { getFirstCardPage } from '@/features/composer/messagePages'
+import { formatUnlockAt } from '@/features/desk/dailyAvailability'
 import {
-  formatUnlockAt,
-  getMessageAvailability,
-} from '@/features/desk/dailyAvailability'
+  getDeskSticker,
+  getSupportMessageAvailability,
+  type DeskSticker,
+} from '@/features/supporter/deskStickers'
+import { ObjectChoiceSheet } from '@/features/supporter/ObjectChoiceSheet'
+import { lockerStickers } from './lockerStickers'
 import { useReadModeNow } from '@/features/desk/useReadModeNow'
 import { DeskObjectVisual } from '@/features/desk/DeskObjectLayer'
 import { AppShell } from '@/layout/AppShell'
@@ -61,6 +65,7 @@ export function ClassroomLockerPage() {
   )
   const readMessageIds = usePrototypeStore((state) => state.readMessageIds)
   const [open, setOpen] = useState(false)
+  const [choiceOpen, setChoiceOpen] = useState(false)
 
   const locker = classroom.lockers.find(
     (item) => item.id === lockerId,
@@ -114,11 +119,8 @@ export function ClassroomLockerPage() {
   const availabilityById = new Map(
     messages.map((message) => [
       message.id,
-      getMessageAvailability(
-        readMode,
-        message.createdAt,
-        now,
-      ),
+      // Stickers skip the daily unlock, the same as on a desk
+      getSupportMessageAvailability(readMode, message, now),
     ]),
   )
   const lockedMessageIds = owner
@@ -203,14 +205,7 @@ export function ClassroomLockerPage() {
           <Button
             variant="brand"
             fullWidth
-            onClick={() => {
-              usePrototypeStore
-                .getState()
-                .resetComposerDraft()
-              navigate(
-                `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/compose`,
-              )
-            }}
+            onClick={() => setChoiceOpen(true)}
           >
             {locker.studentName}님에게 응원 남기기
           </Button>
@@ -233,6 +228,27 @@ export function ClassroomLockerPage() {
           lockedMessageIds={lockedMessageIds}
           onToggle={() => setOpen((value) => !value)}
           onObjectClick={open ? openMessage : undefined}
+        />
+
+        <ObjectChoiceSheet
+          open={choiceOpen}
+          recipientName={locker.studentName}
+          placeLabel="사물함"
+          types={['letter', 'sticker']}
+          onClose={() => setChoiceOpen(false)}
+          onChoose={(choice) => {
+            const store = usePrototypeStore.getState()
+            const lockerPath = `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}`
+            setChoiceOpen(false)
+            store.setSupporterObjectChoice(choice)
+            if (choice === 'sticker') {
+              store.setStickerDraft({ stickerId: lockerStickers[0]!.id })
+              navigate(`${lockerPath}/sticker`)
+              return
+            }
+            store.resetComposerDraft()
+            navigate(`${lockerPath}/compose`)
+          }}
         />
 
         {open && visibleLocker.objects.length === 0 && (
@@ -261,6 +277,17 @@ export function ClassroomLockerPlacementPage() {
   const placeMessage = usePrototypeStore(
     (state) => state.placeComposerMessageInLocker,
   )
+  const placeSticker = usePrototypeStore(
+    (state) => state.placeStickerInLocker,
+  )
+  const objectChoice = usePrototypeStore(
+    (state) => state.supporterObjectChoice,
+  )
+  const stickerId = usePrototypeStore(
+    (state) => state.stickerDraft.stickerId,
+  )
+  const stickerMode = objectChoice === 'sticker'
+  const sticker = getDeskSticker(stickerId)
   const locker = classroom.lockers.find(
     (item) => item.id === lockerId,
   )
@@ -269,15 +296,18 @@ export function ClassroomLockerPlacementPage() {
     () => resolveDeskObjectType(draft),
     [draft],
   )
+  // Chose "편지" up front: start as a letter, other shapes stay one tap away
   const [objectType, setObjectType] = useState<DeskObjectType>(
-    recommendedObjectType,
+    objectChoice === 'letter' ? 'letter' : recommendedObjectType,
   )
   const firstPage = getFirstCardPage(draft)
   const cardPreviewColor =
     getComposerBackground(firstPage.backgroundAssetId).tone
   const [objectColor, setObjectColor] = useState(cardPreviewColor)
   const [placement, setPlacement] = useState<DeskPlacement>(() =>
-    lockerPlacement(locker?.objects.length ?? 0),
+    stickerMode
+      ? stickerLockerPlacement(sticker)
+      : lockerPlacement(locker?.objects.length ?? 0),
   )
   const [dragging, setDragging] = useState(false)
   const [placing, setPlacing] = useState(false)
@@ -316,11 +346,14 @@ export function ClassroomLockerPlacementPage() {
 
       const rect = scene.getBoundingClientRect()
       setPlacement((current) =>
-        clampLockerPlacement({
-          ...current,
-          x: ((clientX - rect.left) / rect.width) * 100,
-          y: ((clientY - rect.top) / rect.height) * 100,
-        }),
+        clampLockerPlacement(
+          {
+            ...current,
+            x: ((clientX - rect.left) / rect.width) * 100,
+            y: ((clientY - rect.top) / rect.height) * 100,
+          },
+          stickerMode ? sticker.shape : undefined,
+        ),
       )
     }
 
@@ -344,12 +377,16 @@ export function ClassroomLockerPlacementPage() {
     setPlacing(true)
 
     window.setTimeout(() => {
-      placeMessage(
-        locker.id,
-        placement,
-        objectType,
-        objectColor,
-      )
+      if (stickerMode) {
+        placeSticker(locker.id, placement)
+      } else {
+        placeMessage(
+          locker.id,
+          placement,
+          objectType,
+          objectColor,
+        )
+      }
       navigate(
         `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/complete`,
         { replace: true },
@@ -366,11 +403,11 @@ export function ClassroomLockerPlacementPage() {
           title="사물함에 놓기"
           leading={
             <IconButton
-              label="응원 만들기로 돌아가기"
+              label={stickerMode ? '스티커 고르기로 돌아가기' : '응원 만들기로 돌아가기'}
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() =>
                 navigate(
-                  `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/compose`,
+                  `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/${stickerMode ? 'sticker' : 'compose'}`,
                 )
               }
             />
@@ -384,7 +421,7 @@ export function ClassroomLockerPlacementPage() {
           loading={placing}
           onClick={finish}
         >
-          이대로 놓고 가기
+          {stickerMode ? '이대로 붙이고 가기' : '이대로 놓고 가기'}
         </Button>
       }
     >
@@ -393,10 +430,12 @@ export function ClassroomLockerPlacementPage() {
           <h1>
             {locker.studentName}님의 사물함에
             <br />
-            내 응원을 놓아주세요.
+            {stickerMode ? '스티커를 붙여주세요.' : '내 응원을 놓아주세요.'}
           </h1>
         </section>
 
+        {!stickerMode && (
+        <>
         <section
           className="placement-object-picker"
           aria-label="사물함에 놓을 형태"
@@ -456,6 +495,8 @@ export function ClassroomLockerPlacementPage() {
             ))}
           </div>
         </section>
+        </>
+        )}
 
         <div
           ref={sceneRef}
@@ -466,7 +507,8 @@ export function ClassroomLockerPlacementPage() {
             messages={messages}
             open
             draftObject={{
-              representationType: objectType,
+              representationType: stickerMode ? 'sticker' : objectType,
+              assetId: stickerMode ? sticker.id : undefined,
               placement,
               previewColor: objectColor,
               dragging,
@@ -477,23 +519,37 @@ export function ClassroomLockerPlacementPage() {
 
         <div className="placement-preview__notice placement-preview__notice--valid">
           <Move size={16} aria-hidden />
-          <span>응원을 끌어서 사물함 안 원하는 자리에 놓아보세요.</span>
+          <span>
+            {stickerMode
+              ? '스티커를 끌어서 원하는 자리에 붙여보세요.'
+              : '응원을 끌어서 사물함 안 원하는 자리에 놓아보세요.'}
+          </span>
         </div>
 
         <section className="placement-preview__summary">
           <div className="placement-preview__summary-row">
-            <span>형태</span>
-            <strong>{deskObjectLabels[objectType]}</strong>
+            <span>{stickerMode ? '스티커' : '형태'}</span>
+            <strong>
+              {stickerMode ? sticker.name : deskObjectLabels[objectType]}
+            </strong>
           </div>
+          {stickerMode && sticker.price ? (
+            <div className="placement-preview__summary-row">
+              <span>결제</span>
+              <strong>{sticker.price}원 결제 완료</strong>
+            </div>
+          ) : null}
           <div className="placement-preview__summary-row">
-            <span>공개 범위</span>
+            <span>{stickerMode ? '보낸 사람' : '공개 범위'}</span>
             <strong className="placement-preview__visibility">
-              {draft.visibility === 'private' ? (
+              {stickerMode ? (
+                <LockKeyhole size={15} aria-hidden />
+              ) : draft.visibility === 'private' ? (
                 <LockKeyhole size={15} aria-hidden />
               ) : (
                 <Eye size={15} aria-hidden />
               )}
-              {draft.visibility === 'private'
+              {stickerMode || draft.visibility === 'private'
                 ? `${locker.studentName}님만 보기`
                 : '함께 보기'}
             </strong>
@@ -580,13 +636,30 @@ function lockerPlacement(index: number): DeskPlacement {
   return presets[index % presets.length] ?? presets[0]!
 }
 
+/** Garlands and pennants hang from the top of the compartment. */
+function stickerLockerPlacement(sticker: DeskSticker): DeskPlacement {
+  if (sticker.shape === 'garland') return { x: 50, y: 7, rotation: 0, scale: 1 }
+  if (sticker.shape === 'pennant') return { x: 50, y: 16, rotation: -5, scale: 1 }
+  return { x: 50, y: 42, rotation: -4, scale: 1 }
+}
+
 function clampLockerPlacement(
   placement: DeskPlacement,
+  stickerShape?: DeskSticker['shape'],
 ): DeskPlacement {
+  // Wide pieces span most of the compartment, so they only slide vertically
+  const [minX, maxX, minY] =
+    stickerShape === 'garland'
+      ? [48, 52, 5]
+      : stickerShape === 'pennant'
+        ? [40, 60, 6]
+        : stickerShape
+          ? [18, 82, 6]
+          : [24, 76, 28]
   return {
     ...placement,
-    x: Math.min(76, Math.max(24, placement.x)),
-    y: Math.min(75, Math.max(28, placement.y)),
+    x: Math.min(maxX, Math.max(minX, placement.x)),
+    y: Math.min(stickerShape ? 88 : 75, Math.max(minY, placement.y)),
   }
 }
 
