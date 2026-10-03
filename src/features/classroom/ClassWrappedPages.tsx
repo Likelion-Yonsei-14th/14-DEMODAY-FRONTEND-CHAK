@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import {
   ArrowLeft,
   MessageCircleHeart,
@@ -48,10 +47,7 @@ export function ClassWrappedPage() {
     return <Navigate to="/prototype/classroom" replace />
   }
 
-  const record = useMemo(
-    () => buildClassRecord(classroom, messages),
-    [classroom, messages],
-  )
+  const record = buildClassRecord(classroom, messages)
 
   return (
     <AppShell
@@ -189,10 +185,7 @@ export function ClassWrappedSharePage() {
     return <Navigate to="/prototype/classroom" replace />
   }
 
-  const record = useMemo(
-    () => buildClassRecord(classroom, messages),
-    [classroom, messages],
-  )
+  const record = buildClassRecord(classroom, messages)
 
   const share = async () => {
     const text = [
