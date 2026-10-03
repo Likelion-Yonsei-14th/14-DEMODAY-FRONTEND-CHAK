@@ -61,6 +61,7 @@ import {
   ClassroomJoinPage,
 } from '@/features/classroom/ClassroomCreationPages'
 import { ClassroomMapPage } from '@/features/classroom/ClassroomMapPage'
+import { ClassroomSettingsPage } from '@/features/classroom/ClassroomSettingsPage'
 import {
   ClassWrappedPage,
   ClassWrappedSharePage,
@@ -221,6 +222,10 @@ export const router = createBrowserRouter([
       {
         path: '/prototype/classroom/:classroomId/map',
         element: <ClassroomMapPage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/settings',
+        element: <ClassroomSettingsPage />,
       },
       {
         path: '/prototype/classroom/:classroomId/wrapped',

@@ -180,6 +180,11 @@ Internal modes:
   - private encouragements can only be opened by the locker owner
   - the locker owner reads incoming encouragements on Daily mode only
 - Locker Object → Common Reader reuses the same card renderer and reader behavior as Personal Desk.
+- Classroom settings:
+  - the first member of a newly created group acts as Admin
+  - Admin can edit the group name, Daily locker unlock time, regenerate the invite code, and share the invite link
+  - every member can edit their display name and push preference
+  - non-Admin members can leave the group
 - After the exam, Class Wrapped summarizes the **group record**, not individual performance:
   - total encouragement volume
   - blackboard activity

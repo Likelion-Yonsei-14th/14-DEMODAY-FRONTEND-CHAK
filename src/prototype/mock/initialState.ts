@@ -101,4 +101,5 @@ export const mockClassroom: Classroom = {
     { id: 'locker-seoyeon', studentName: '서연', messageIds: [], objects: [] },
   ],
   dailyUnlockTime: '22:00',
+  inviteCode: 'CLASS32',
 }

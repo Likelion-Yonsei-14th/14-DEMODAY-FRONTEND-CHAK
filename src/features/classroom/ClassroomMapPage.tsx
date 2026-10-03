@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageCircleMore,
+  Settings,
   Sparkles,
 } from 'lucide-react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
@@ -53,17 +54,28 @@ export function ClassroomMapPage() {
             />
           }
           trailing={
-            wrappedAvailable ? (
+            <div className="classroom-map__app-actions">
+              {wrappedAvailable && (
+                <IconButton
+                  label="우리의 수능 기록"
+                  icon={<Sparkles size={20} aria-hidden />}
+                  onClick={() =>
+                    navigate(
+                      `/prototype/classroom/${id}/wrapped`,
+                    )
+                  }
+                />
+              )}
               <IconButton
-                label="우리의 수능 기록"
-                icon={<Sparkles size={20} aria-hidden />}
+                label="우리 공간 설정"
+                icon={<Settings size={20} aria-hidden />}
                 onClick={() =>
                   navigate(
-                    `/prototype/classroom/${id}/wrapped`,
+                    `/prototype/classroom/${id}/settings`,
                   )
                 }
               />
-            ) : undefined
+            </div>
           }
         />
       }

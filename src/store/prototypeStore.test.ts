@@ -559,6 +559,7 @@ describe('prototype store composer handoff', () => {
     expect(state.classroomMember).toEqual({
       lockerId,
       displayName: '지수',
+      pushEnabled: true,
     })
     expect(state.classroom.lockers).toEqual([
       expect.objectContaining({
@@ -568,6 +569,42 @@ describe('prototype store composer handoff', () => {
         objects: [],
       }),
     ])
+  })
+
+  it('updates classroom admin settings and member preferences', () => {
+    usePrototypeStore.getState().createClassroom('우리 반')
+    const lockerId = usePrototypeStore
+      .getState()
+      .joinClassroom('지수')
+
+    usePrototypeStore.getState().updateClassroomSettings({
+      name: '3학년 2반',
+      dailyUnlockTime: '21:30',
+    })
+    usePrototypeStore.getState().updateClassroomMember({
+      displayName: '지수짱',
+      pushEnabled: false,
+    })
+    usePrototypeStore
+      .getState()
+      .regenerateClassroomInviteCode()
+
+    const state = usePrototypeStore.getState()
+    expect(state.classroom).toMatchObject({
+      name: '3학년 2반',
+      dailyUnlockTime: '21:30',
+    })
+    expect(state.classroom.inviteCode).toHaveLength(6)
+    expect(state.classroomMember).toEqual({
+      lockerId,
+      displayName: '지수짱',
+      pushEnabled: false,
+    })
+    expect(
+      state.classroom.lockers.find(
+        (locker) => locker.id === lockerId,
+      )?.studentName,
+    ).toBe('지수짱')
   })
 
   it('adds public blackboard notes and places composer cards inside a locker', () => {

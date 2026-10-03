@@ -18,6 +18,7 @@ export type BlackboardEntry = {
 export type ClassroomMember = {
   lockerId: string
   displayName: string
+  pushEnabled: boolean
 }
 
 export type Classroom = {
@@ -27,4 +28,5 @@ export type Classroom = {
   blackboardEntries: BlackboardEntry[]
   lockers: ClassroomLocker[]
   dailyUnlockTime: string
+  inviteCode: string
 }

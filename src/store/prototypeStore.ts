@@ -96,6 +96,14 @@ type PrototypeState = {
   addBlackboardEntry: (
     entry: Pick<BlackboardEntry, 'text' | 'drawingDataUrl'>,
   ) => void
+  updateClassroomSettings: (
+    patch: Partial<Pick<Classroom, 'name' | 'dailyUnlockTime'>>,
+  ) => void
+  regenerateClassroomInviteCode: () => void
+  updateClassroomMember: (
+    patch: Partial<Pick<ClassroomMember, 'displayName' | 'pushEnabled'>>,
+  ) => void
+  leaveClassroom: () => void
   placeComposerMessageInLocker: (
     lockerId: string,
     placement?: DeskPlacement,
@@ -431,6 +439,7 @@ export const usePrototypeStore = create<PrototypeState>()(
             blackboardEntries: [],
             lockers: [],
             dailyUnlockTime: '22:00',
+            inviteCode: stamp.slice(-6).toUpperCase(),
           },
           classroomMember: null,
         })
@@ -458,11 +467,62 @@ export const usePrototypeStore = create<PrototypeState>()(
           classroomMember: {
             lockerId,
             displayName: normalizedName,
+            pushEnabled: true,
           },
         }))
 
         return lockerId
       },
+      updateClassroomSettings: (patch) =>
+        set((state) => ({
+          classroom: {
+            ...state.classroom,
+            ...patch,
+          },
+        })),
+      regenerateClassroomInviteCode: () =>
+        set((state) => ({
+          classroom: {
+            ...state.classroom,
+            inviteCode: Date.now()
+              .toString(36)
+              .slice(-6)
+              .toUpperCase(),
+          },
+        })),
+      updateClassroomMember: (patch) =>
+        set((state) => {
+          if (!state.classroomMember) return state
+
+          const displayName =
+            typeof patch.displayName === 'string'
+              ? patch.displayName.trim() ||
+                state.classroomMember.displayName
+              : state.classroomMember.displayName
+
+          return {
+            classroomMember: {
+              ...state.classroomMember,
+              ...patch,
+              displayName,
+            },
+            classroom: {
+              ...state.classroom,
+              lockers: state.classroom.lockers.map((locker) =>
+                locker.id === state.classroomMember?.lockerId
+                  ? {
+                      ...locker,
+                      studentName: displayName,
+                    }
+                  : locker,
+              ),
+            },
+          }
+        }),
+      leaveClassroom: () =>
+        set({
+          classroomMember: null,
+        }),
       addBlackboardEntry: (entry) =>
         set((state) => {
           const stamp = Date.now().toString(36)
