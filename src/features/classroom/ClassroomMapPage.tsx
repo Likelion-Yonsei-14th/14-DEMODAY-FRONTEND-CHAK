@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   ArrowLeft,
   ChevronLeft,
@@ -13,7 +13,11 @@ import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { LockerMiniDoor } from './LockerScene'
+import { useDeskDaypart } from '@/features/desk/useDeskDaypart'
 import './Classroom.css'
+
+/** classroom-day/night.webp are 1344 × 576. */
+const CLASSROOM_PHOTO_RATIO = 1344 / 576
 
 const zoneLabels = ['칠판', '교실', '사물함'] as const
 
@@ -23,6 +27,32 @@ export function ClassroomMapPage() {
   const classroom = usePrototypeStore((state) => state.classroom)
   const member = usePrototypeStore((state) => state.classroomMember)
   const [camera, setCamera] = useState(1)
+  const daypart = useDeskDaypart()
+  const viewportRef = useRef<HTMLElement>(null)
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 })
+
+  // The world keeps the photo's aspect ratio; the three camera stops are its
+  // left edge, centre and right edge.
+  useEffect(() => {
+    const viewport = viewportRef.current
+    if (!viewport) return
+    const observer = new ResizeObserver(([entry]) => {
+      if (!entry) return
+      setViewportSize({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
+      })
+    })
+    observer.observe(viewport)
+    return () => observer.disconnect()
+  }, [])
+
+  const worldWidth = Math.max(
+    viewportSize.height * CLASSROOM_PHOTO_RATIO,
+    viewportSize.width,
+  )
+  const cameraOffset =
+    (camera * Math.max(0, worldWidth - viewportSize.width)) / 2
   const wrappedAvailable =
     getCsatDdayLabel() === '수능이 끝났어요'
 
@@ -85,97 +115,86 @@ export function ClassroomMapPage() {
           좌우로 둘러보고, 가까이 있는 공간을 눌러보세요.
         </p>
 
-        <section className="classroom-map__viewport" aria-label="응원 교실">
+        <section
+          ref={viewportRef}
+          className={`classroom-map__viewport classroom-map__viewport--${daypart}`}
+          aria-label="응원 교실"
+        >
           <div
             className="classroom-map__world"
             style={{
-              transform: `translateX(-${camera * 33.333333}%)`,
+              width: worldWidth || undefined,
+              transform: `translateX(-${cameraOffset}px)`,
             }}
           >
-            <div className="classroom-map__zone classroom-map__zone--board">
-              <div className="classroom-map__wall">
-                <div className="classroom-map__clock">10:10</div>
+            <div className="classroom-map__photo classroom-map__photo--day" />
+            <div className="classroom-map__photo classroom-map__photo--night" />
+
+            {/* Overlays use the photo's own coordinates (% of the world) */}
+            <button
+              type="button"
+              className="classroom-map__blackboard"
+              aria-label="칠판 보기"
+              onClick={() =>
+                navigate(
+                  `/prototype/classroom/${id}/blackboard`,
+                )
+              }
+            >
+              <span className="classroom-map__chalk">
+                <span className="classroom-map__chalk-title">
+                  수능까지 같이 가자!
+                </span>
+                {classroom.blackboardEntries
+                  .slice(-4)
+                  .map((entry) => (
+                    <span
+                      key={entry.id}
+                      className="classroom-map__chalk-note"
+                    >
+                      {entry.text || '✦'}
+                    </span>
+                  ))}
+              </span>
+              <span className="classroom-map__interaction">
+                <MessageCircleMore size={15} aria-hidden />
+                칠판 보기
+              </span>
+            </button>
+
+            <div className="classroom-map__banner">
+              오늘 한 만큼이면 충분해
+            </div>
+
+            <div
+              className="classroom-map__lockers"
+              style={{
+                '--locker-count': Math.max(classroom.lockers.length, 3),
+              } as React.CSSProperties}
+            >
+              {classroom.lockers.map((locker) => (
                 <button
                   type="button"
-                  className="classroom-map__blackboard"
+                  key={locker.id}
+                  className="classroom-map__locker-button"
+                  aria-label={`${locker.studentName}의 사물함`}
                   onClick={() =>
                     navigate(
-                      `/prototype/classroom/${id}/blackboard`,
+                      `/prototype/classroom/${id}/locker/${locker.id}`,
                     )
                   }
                 >
-                  <span className="classroom-map__chalk-title">
-                    수능까지 같이 가자!
-                  </span>
-                  <div className="classroom-map__chalk-notes">
-                    {classroom.blackboardEntries
-                      .slice(-4)
-                      .map((entry) => (
-                        <span key={entry.id}>
-                          {entry.text || '✦'}
-                        </span>
-                      ))}
-                  </div>
-                  <span className="classroom-map__interaction">
-                    <MessageCircleMore size={15} aria-hidden />
-                    칠판 보기
-                  </span>
-                </button>
-                <div className="classroom-map__board-ledge" />
-              </div>
-              <div className="classroom-map__floor">
-                <span className="classroom-map__desk classroom-map__desk--left" />
-                <span className="classroom-map__desk classroom-map__desk--right" />
-              </div>
-            </div>
-
-            <div className="classroom-map__zone classroom-map__zone--center">
-              <div className="classroom-map__windows">
-                <span />
-                <span />
-                <span />
-              </div>
-              <div className="classroom-map__banner">
-                오늘 한 만큼이면 충분해
-              </div>
-              <div className="classroom-map__floor classroom-map__floor--center">
-                {[0, 1, 2, 3, 4, 5].map((desk) => (
-                  <span
-                    className="classroom-map__student-desk"
-                    key={desk}
+                  <LockerMiniDoor
+                    studentName={locker.studentName}
+                    active={locker.id === member.lockerId}
                   />
-                ))}
-              </div>
-            </div>
-
-            <div className="classroom-map__zone classroom-map__zone--lockers">
-              <div className="classroom-map__locker-wall">
-                <div className="classroom-map__locker-grid">
-                  {classroom.lockers.map((locker) => (
-                    <button
-                      type="button"
-                      key={locker.id}
-                      className="classroom-map__locker-button"
-                      onClick={() =>
-                        navigate(
-                          `/prototype/classroom/${id}/locker/${locker.id}`,
-                        )
-                      }
-                    >
-                      <LockerMiniDoor
-                        studentName={locker.studentName}
-                        active={locker.id === member.lockerId}
-                      />
-                      {locker.id === member.lockerId && (
-                        <span className="classroom-map__mine">
-                          내 사물함
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="classroom-map__floor" />
+                  {locker.id === member.lockerId && (
+                    <span className="classroom-map__mine">
+                      내 사물함
+                    </span>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
 

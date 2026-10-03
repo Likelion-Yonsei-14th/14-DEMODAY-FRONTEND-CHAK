@@ -308,7 +308,10 @@ export function ClassroomLockerPlacementPage() {
     setDragging(true)
 
     const update = (clientX: number, clientY: number) => {
-      const scene = sceneRef.current
+      // Placement is relative to the locker's interior, not the whole scene
+      const scene =
+        sceneRef.current?.querySelector<HTMLElement>('.locker-v2__object-zone') ??
+        sceneRef.current
       if (!scene) return
 
       const rect = scene.getBoundingClientRect()

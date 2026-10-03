@@ -1,6 +1,7 @@
 import {
   DeskObjectLayer,
 } from '@/features/desk/DeskObjectLayer'
+import { useDeskDaypart } from '@/features/desk/useDeskDaypart'
 import type {
   ClassroomLocker,
   DeskPlacement,
@@ -9,6 +10,8 @@ import type {
 } from '@/types'
 import './Classroom.css'
 import './LockerScene.css'
+
+const LOCKER_ASSET_PATH = '/assets/classroom'
 
 type DraftLockerObject = {
   representationType: DeskObjectType
@@ -30,6 +33,11 @@ type ClassroomLockerSceneProps = {
   draftObject?: DraftLockerObject
 }
 
+/*
+ * Two photographs of the same locker, cropped to the same box: closed, and
+ * open with the inside of the door and the interior depth visible. They are
+ * deliberately separate images — the open state is never a mirrored front.
+ */
 export function ClassroomLockerScene({
   locker,
   messages,
@@ -41,45 +49,42 @@ export function ClassroomLockerScene({
   onObjectClick,
   draftObject,
 }: ClassroomLockerSceneProps) {
+  const daypart = useDeskDaypart()
+
   return (
     <div
       className={[
         'locker-v2',
         open ? 'locker-v2--open' : 'locker-v2--closed',
+        `locker-v2--${daypart}`,
       ].join(' ')}
       aria-label={`${locker.studentName}의 사물함`}
     >
       <div className="locker-v2__stage">
-        <div className="locker-v2__cabinet" aria-hidden={!open}>
-          <div className="locker-v2__frame">
-            <span className="locker-v2__back" aria-hidden />
-            <span className="locker-v2__wall locker-v2__wall--left" aria-hidden />
-            <span className="locker-v2__wall locker-v2__wall--right" aria-hidden />
-            <span className="locker-v2__roof" aria-hidden />
-            <span className="locker-v2__floor" aria-hidden />
+        <img
+          className="locker-v2__photo locker-v2__photo--closed"
+          src={`${LOCKER_ASSET_PATH}/locker-closed.webp`}
+          alt=""
+          draggable={false}
+        />
+        <img
+          className="locker-v2__photo locker-v2__photo--open"
+          src={`${LOCKER_ASSET_PATH}/locker-open.webp`}
+          alt=""
+          draggable={false}
+        />
 
-            <span className="locker-v2__shelf" aria-hidden />
-            <span className="locker-v2__hook" aria-hidden />
-            <span className="locker-v2__notebook locker-v2__notebook--blue" aria-hidden />
-            <span className="locker-v2__notebook locker-v2__notebook--cream" aria-hidden />
-            <span className="locker-v2__pouch" aria-hidden />
-
-            <div className="locker-v2__object-zone">
-              <DeskObjectLayer
-                objects={locker.objects}
-                messages={messages}
-                onObjectClick={onObjectClick}
-                readMessageIds={readMessageIds}
-                lockedMessageIds={lockedMessageIds}
-                respectObjectLocks={false}
-                showUnreadState={owner}
-                draftObject={draftObject}
-              />
-            </div>
-          </div>
-
-          <span className="locker-v2__cabinet-hinge locker-v2__cabinet-hinge--top" aria-hidden />
-          <span className="locker-v2__cabinet-hinge locker-v2__cabinet-hinge--bottom" aria-hidden />
+        <div className="locker-v2__object-zone" aria-hidden={!open}>
+          <DeskObjectLayer
+            objects={locker.objects}
+            messages={messages}
+            onObjectClick={onObjectClick}
+            readMessageIds={readMessageIds}
+            lockedMessageIds={lockedMessageIds}
+            respectObjectLocks={false}
+            showUnreadState={owner}
+            draftObject={draftObject}
+          />
         </div>
 
         <button
@@ -90,22 +95,8 @@ export function ClassroomLockerScene({
           tabIndex={open ? -1 : 0}
           onClick={onToggle}
         >
-          <span className="locker-v2__front-inner">
-            <span className="locker-v2__nameplate">
-              {locker.studentName}
-            </span>
-
-            <span className="locker-v2__front-vents locker-v2__front-vents--top" aria-hidden>
-              <i /><i /><i /><i />
-            </span>
-
-            <span className="locker-v2__front-lock" aria-hidden>
-              <span className="locker-v2__front-keyhole" />
-            </span>
-
-            <span className="locker-v2__front-vents locker-v2__front-vents--bottom" aria-hidden>
-              <i /><i /><i /><i />
-            </span>
+          <span className="locker-v2__nameplate">
+            {locker.studentName}
           </span>
         </button>
 
@@ -116,21 +107,7 @@ export function ClassroomLockerScene({
           disabled={!open}
           tabIndex={open ? 0 : -1}
           onClick={onToggle}
-        >
-          <span className="locker-v2__back-door-frame">
-            <span className="locker-v2__back-door-panel">
-              <span className="locker-v2__back-door-brace locker-v2__back-door-brace--top" />
-              <span className="locker-v2__back-door-brace locker-v2__back-door-brace--bottom" />
-            </span>
-
-            <span className="locker-v2__back-hinge-rail" />
-            <span className="locker-v2__back-latch">
-              <span className="locker-v2__back-latch-arm" />
-            </span>
-            <span className="locker-v2__back-screw locker-v2__back-screw--top" />
-            <span className="locker-v2__back-screw locker-v2__back-screw--bottom" />
-          </span>
-        </button>
+        />
       </div>
     </div>
   )
@@ -151,9 +128,13 @@ export function LockerMiniDoor({
       ].filter(Boolean).join(' ')}
       aria-hidden
     >
+      <img
+        className="locker-mini__photo"
+        src={`${LOCKER_ASSET_PATH}/locker-tile.webp`}
+        alt=""
+        draggable={false}
+      />
       <span className="locker-mini__name">{studentName}</span>
-      <span className="locker-mini__vents" />
-      <span className="locker-mini__handle" />
     </span>
   )
 }

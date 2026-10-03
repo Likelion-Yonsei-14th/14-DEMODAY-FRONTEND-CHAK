@@ -1,540 +1,144 @@
 /*
- * Classroom locker v2
- * Closed front and opened back are deliberately separate drawings.
- * No 3D backface tricks are used for the final open state.
+ * Classroom locker v3 — photographed.
+ * locker-closed.webp and locker-open.webp share one 436 × 983 crop, so the
+ * cabinet body lines up exactly. The closed locker fills the left 68.7%;
+ * the open door swings into the right 31.3%.
  */
 
 .locker-v2 {
-  width: min(100%, 370px);
+  /* Fit the tall locker into the viewport height on short phones */
+  width: min(100%, 236px, calc((100dvh - 320px) * .4435));
   margin: 0 auto;
 }
 
 .locker-v2__stage {
   position: relative;
   width: 100%;
-  aspect-ratio: .78;
-  overflow: visible;
+  aspect-ratio: 436 / 983;
+  transition: transform 420ms var(--ease-emphasized);
+  filter:
+    drop-shadow(-2px 3px 2px rgba(30, 20, 10, .2))
+    drop-shadow(-8px 14px 18px rgba(30, 20, 10, .16));
 }
 
-/* ------------------------------
-   Cabinet
-   ------------------------------ */
-
-.locker-v2__cabinet {
-  position: absolute;
-  top: 2%;
-  left: 17%;
-  width: 66%;
-  height: 96%;
-  transition:
-    left 520ms cubic-bezier(.2,.76,.2,1),
-    width 520ms cubic-bezier(.2,.76,.2,1),
-    opacity 180ms ease;
+/* Closed: centre the cabinet; open: make room for the swung door */
+.locker-v2--closed .locker-v2__stage {
+  transform: translateX(15.65%);
 }
 
-.locker-v2--open .locker-v2__cabinet {
-  left: 2%;
-  width: 64%;
+.locker-v2--night .locker-v2__stage {
+  filter:
+    brightness(.84)
+    saturate(.88)
+    drop-shadow(-2px 3px 2px rgba(10, 10, 8, .3))
+    drop-shadow(-6px 12px 16px rgba(10, 10, 8, .22));
 }
 
-.locker-v2__frame {
+.locker-v2__photo {
   position: absolute;
   inset: 0;
-  overflow: hidden;
-  border: 10px solid #a94d49;
-  border-radius: 8px;
-  background: #b6534f;
-  box-shadow:
-    0 18px 30px rgba(76, 44, 37, .13),
-    inset 16px 0 22px rgba(66, 20, 19, .15),
-    inset -10px 0 16px rgba(255, 255, 255, .035),
-    inset 0 16px 20px rgba(61, 18, 17, .12);
-}
-
-.locker-v2__back {
-  position: absolute;
-  inset: 20px 18px 18px;
-  z-index: 0;
-  border: 1px solid rgba(92, 31, 29, .24);
-  background:
-    linear-gradient(
-      90deg,
-      rgba(255,255,255,.035),
-      transparent 18% 82%,
-      rgba(67,20,19,.05)
-    ),
-    #ce6560;
-  box-shadow:
-    inset 0 13px 18px rgba(255,255,255,.025),
-    inset 0 -12px 18px rgba(67,20,19,.05);
-}
-
-.locker-v2__wall,
-.locker-v2__roof,
-.locker-v2__floor {
-  position: absolute;
-  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: block;
   pointer-events: none;
+  user-select: none;
+  transition: opacity 260ms ease;
 }
 
-.locker-v2__wall--left {
-  top: 10px;
-  bottom: 10px;
-  left: 10px;
-  width: 20px;
-  background: linear-gradient(90deg, #893633, #bd514d);
-  clip-path: polygon(0 0, 100% 5%, 100% 95%, 0 100%);
+.locker-v2--closed .locker-v2__photo--open,
+.locker-v2--open .locker-v2__photo--closed {
+  opacity: 0;
 }
 
-.locker-v2__wall--right {
-  top: 10px;
-  right: 10px;
-  bottom: 10px;
-  width: 18px;
-  background: linear-gradient(90deg, #c25a54, #8a3532);
-  clip-path: polygon(0 5%, 100% 0, 100% 100%, 0 95%);
-}
-
-.locker-v2__roof {
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  height: 20px;
-  background: linear-gradient(#8e3734, #bd514c);
-  clip-path: polygon(0 0, 100% 0, 94% 100%, 6% 100%);
-}
-
-.locker-v2__floor {
-  left: 10px;
-  right: 10px;
-  bottom: 10px;
-  height: 24px;
-  background: linear-gradient(#ad4743, #80302d);
-  clip-path: polygon(6% 0, 94% 0, 100% 100%, 0 100%);
-}
-
-.locker-v2__shelf {
-  position: absolute;
-  z-index: 3;
-  top: 31%;
-  left: 29px;
-  right: 27px;
-  height: 12px;
-  border-radius: 1px;
-  background: linear-gradient(#b94f4a, #85312f);
-  box-shadow:
-    0 8px 11px rgba(55, 15, 14, .24),
-    inset 0 2px rgba(255,255,255,.05);
-}
-
-.locker-v2__shelf::before {
-  content: '';
-  position: absolute;
-  left: 1px;
-  right: 1px;
-  top: -8px;
-  height: 9px;
-  background: #c55c56;
-  transform: skewX(-7deg);
-  transform-origin: bottom;
-}
-
-.locker-v2__hook {
-  position: absolute;
-  z-index: 4;
-  top: 38%;
-  right: 17%;
-  width: 11px;
-  height: 16px;
-  border-right: 3px solid #76302e;
-  border-bottom: 3px solid #76302e;
-  border-radius: 0 0 6px 0;
-}
-
-.locker-v2__notebook {
-  position: absolute;
-  z-index: 4;
-  bottom: 7%;
-  width: 21px;
-  border-radius: 2px 2px 0 0;
-  box-shadow: inset -3px 0 rgba(0,0,0,.05);
-}
-
-.locker-v2__notebook--blue {
-  left: 14%;
-  height: 70px;
-  background: #8199aa;
-}
-
-.locker-v2__notebook--cream {
-  left: 23%;
-  height: 59px;
-  background: #ddce93;
-}
-
-.locker-v2__pouch {
-  position: absolute;
-  z-index: 4;
-  right: 14%;
-  bottom: 7%;
-  width: 46px;
-  height: 29px;
-  border-radius: 7px 7px 4px 4px;
-  background: #b9cbaa;
-  box-shadow: inset 0 4px rgba(255,255,255,.12);
-}
-
+/* Lower compartment of the open locker, below the shelf */
 .locker-v2__object-zone {
   position: absolute;
-  z-index: 6;
-  inset: 20px;
+  z-index: 3;
+  left: 5%;
+  right: 36.3%;
+  top: 18.5%;
+  bottom: 8.5%;
+  transition: opacity 260ms ease 120ms;
+}
+
+.locker-v2--closed .locker-v2__object-zone {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .locker-v2__object-zone .desk-object-layer {
   inset: 0;
 }
 
-.locker-v2__cabinet-hinge {
-  position: absolute;
-  z-index: 8;
-  right: -5px;
-  width: 8px;
-  height: 42px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #6f2b29, #b14b47 48%, #6d2927);
-  box-shadow:
-    0 1px 2px rgba(50,14,13,.24),
-    inset 1px 0 rgba(255,255,255,.1);
+/* Inside the cabinet the light is dimmer than on the desk */
+.locker-v2__object-zone .desk-object__visual {
+  filter:
+    brightness(.9)
+    drop-shadow(-.4px .6px .35px rgba(20, 12, 4, .5))
+    drop-shadow(-2px 4px 5px rgba(20, 12, 4, .25));
 }
-
-.locker-v2__cabinet-hinge--top {
-  top: 15%;
-}
-
-.locker-v2__cabinet-hinge--bottom {
-  bottom: 15%;
-}
-
-/* ------------------------------
-   Closed front
-   ------------------------------ */
 
 .locker-v2__front-door {
   position: absolute;
-  z-index: 12;
-  top: 2%;
-  left: 17%;
-  width: 66%;
-  height: 96%;
-  padding: 0;
-  overflow: hidden;
-  border: 2px solid #b94945;
-  border-radius: 8px;
-  background:
-    linear-gradient(150deg, rgba(255,255,255,.15), transparent 34%),
-    #df706a;
-  box-shadow:
-    inset 6px 0 rgba(255,255,255,.06),
-    inset -5px 0 rgba(93,29,27,.05),
-    0 18px 30px rgba(76,44,37,.13);
-  color: inherit;
-  cursor: pointer;
-  transform-origin: right center;
-  transition:
-    left 520ms cubic-bezier(.2,.76,.2,1),
-    width 520ms cubic-bezier(.2,.76,.2,1),
-    transform 430ms cubic-bezier(.28,.7,.18,1),
-    opacity 160ms 210ms ease;
-}
-
-.locker-v2__front-door:disabled {
-  cursor: default;
-}
-
-.locker-v2--open .locker-v2__front-door {
-  left: 2%;
-  width: 64%;
-  opacity: 0;
-  transform: perspective(850px) rotateY(-76deg) scaleX(.42);
-  pointer-events: none;
-}
-
-.locker-v2__front-inner {
-  position: absolute;
-  inset: 9px;
-  border: 2px solid rgba(154, 57, 54, .58);
-  border-radius: 3px;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.045);
-}
-
-.locker-v2__nameplate {
-  position: absolute;
-  top: 5.5%;
-  left: 50%;
-  min-width: 96px;
-  max-width: 72%;
-  transform: translateX(-50%);
-  padding: 6px 12px;
-  overflow: hidden;
-  border: 2px solid #d5cfc7;
-  border-radius: 3px;
-  background: #efebe5;
-  color: #56514c;
-  font-size: 13px;
-  font-weight: 800;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.locker-v2__front-vents {
-  position: absolute;
-  left: 50%;
-  width: 38%;
-  display: grid;
-  gap: 6px;
-  transform: translateX(-50%);
-}
-
-.locker-v2__front-vents--top {
-  top: 22%;
-}
-
-.locker-v2__front-vents--bottom {
-  bottom: 12%;
-}
-
-.locker-v2__front-vents i {
-  display: block;
-  height: 4px;
-  border-radius: 999px;
-  background: rgba(112, 38, 35, .42);
-  box-shadow: inset 0 1px rgba(255,255,255,.08);
-}
-
-.locker-v2__front-lock {
-  position: absolute;
-  left: 8%;
-  top: 48%;
-  width: 39px;
-  height: 62px;
-  border: 6px solid #d3cec8;
-  border-radius: 8px;
-  background: linear-gradient(#555250, #3f3d3b);
-  box-shadow:
-    inset 0 0 0 3px #77726d,
-    0 5px 8px rgba(54,22,20,.12);
-}
-
-.locker-v2__front-keyhole {
-  position: absolute;
-  left: 50%;
-  top: 14px;
-  width: 17px;
-  height: 17px;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: #bcb5ad;
-  box-shadow: inset 0 0 0 5px #4e4b48;
-}
-
-.locker-v2__front-keyhole::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 11px;
-  width: 5px;
-  height: 12px;
-  transform: translateX(-50%);
-  border-radius: 0 0 3px 3px;
-  background: #4e4b48;
-}
-
-/* ------------------------------
-   Opened back
-   ------------------------------ */
-
-.locker-v2__back-door {
-  position: absolute;
-  z-index: 11;
-  top: 4%;
-  left: 63%;
-  width: 35%;
-  height: 92%;
+  z-index: 4;
+  left: 0;
+  top: 0;
+  width: 68.7%;
+  height: 100%;
   padding: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
-  transform:
-    translateX(-88%)
-    perspective(850px)
-    rotateY(72deg)
-    scaleX(.2);
-  transform-origin: left center;
-  transition:
-    transform 560ms cubic-bezier(.2,.76,.2,1),
-    opacity 120ms 200ms ease;
+}
+
+.locker-v2__front-door:disabled {
+  display: none;
+}
+
+/* Written on the paper in the photographed name-card holder */
+.locker-v2__nameplate {
+  position: absolute;
+  left: 36.4%;
+  width: 28.8%;
+  top: 13%;
+  height: 4.3%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #3e3a33;
+  font-family: var(--font-hand);
+  font-size: clamp(11px, 2.4vh, 16px);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.locker-v2__back-door {
+  position: absolute;
+  z-index: 4;
+  left: 68.7%;
+  top: 0;
+  width: 31.3%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
 .locker-v2__back-door:disabled {
-  cursor: default;
+  display: none;
 }
 
-.locker-v2--open .locker-v2__back-door {
-  opacity: 1;
-  pointer-events: auto;
-  transform:
-    translateX(0)
-    perspective(850px)
-    rotateY(0deg)
-    scaleX(1);
-}
-
-.locker-v2__back-door-frame {
-  position: absolute;
-  inset: 0;
-  display: block;
-  overflow: hidden;
-  clip-path: polygon(8% 1.5%, 100% 0, 100% 100%, 8% 98.5%);
-  border: 7px solid #8f3633;
-  border-left-width: 11px;
-  border-radius: 3px 7px 7px 3px;
-  background: #a9433f;
-  box-shadow:
-    -10px 14px 20px rgba(62, 26, 23, .14),
-    inset 0 0 0 2px rgba(255,255,255,.035);
-}
-
-.locker-v2__back-door-panel {
-  position: absolute;
-  inset: 18px 13px 18px 20px;
-  border: 3px solid #8f3734;
-  border-radius: 2px;
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255,255,255,.055),
-      transparent 26% 78%,
-      rgba(55,14,13,.07)
-    ),
-    #c55b55;
-  box-shadow:
-    inset 13px 0 18px rgba(65,18,17,.075),
-    inset -8px 0 14px rgba(255,255,255,.025),
-    inset 0 12px 16px rgba(65,18,17,.06);
-}
-
-.locker-v2__back-door-panel::before,
-.locker-v2__back-door-panel::after {
-  content: '';
-  position: absolute;
-  top: 5%;
-  bottom: 5%;
-  width: 8px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, #9d3d39, #cf635c, #903431);
-}
-
-.locker-v2__back-door-panel::before {
-  left: 5%;
-}
-
-.locker-v2__back-door-panel::after {
-  right: 5%;
-}
-
-.locker-v2__back-door-brace {
-  position: absolute;
-  left: 10%;
-  right: 10%;
-  height: 11px;
-  border-radius: 2px;
-  background: linear-gradient(#a43f3b, #812d2b);
-  box-shadow:
-    inset 0 2px rgba(255,255,255,.035),
-    0 4px 7px rgba(52,14,13,.11);
-}
-
-.locker-v2__back-door-brace--top {
-  top: 12%;
-}
-
-.locker-v2__back-door-brace--bottom {
-  bottom: 12%;
-}
-
-.locker-v2__back-hinge-rail {
-  position: absolute;
-  top: 3%;
-  left: 4px;
-  bottom: 3%;
-  width: 13px;
-  border-radius: 3px;
-  background: linear-gradient(90deg, #702522, #af4843 50%, #6e2522);
-  box-shadow: inset 1px 0 rgba(255,255,255,.07);
-}
-
-.locker-v2__back-latch {
-  position: absolute;
-  right: 8%;
-  top: 45%;
-  width: 30px;
-  height: 53px;
-  border: 4px solid #77716b;
-  border-radius: 6px;
-  background: linear-gradient(#4c4947, #32312f);
-  box-shadow:
-    inset 0 0 0 3px #908a83,
-    0 4px 7px rgba(46,18,17,.13);
-}
-
-.locker-v2__back-latch::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 9px;
-  width: 12px;
-  height: 12px;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: #bbb4ac;
-  box-shadow: inset 0 0 0 4px #5d5955;
-}
-
-.locker-v2__back-latch-arm {
-  position: absolute;
-  right: 24px;
-  top: 19px;
-  width: 28px;
-  height: 8px;
-  border-radius: 2px;
-  background: linear-gradient(#aaa39c, #716b66);
-}
-
-.locker-v2__back-screw {
-  position: absolute;
-  right: 13%;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #918a83;
-  box-shadow: inset 0 0 0 2px #5e5955;
-}
-
-.locker-v2__back-screw--top {
-  top: 11%;
-}
-
-.locker-v2__back-screw--bottom {
-  bottom: 11%;
+.locker-v2__front-door:focus-visible,
+.locker-v2__back-door:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-focus) 50%, transparent);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .locker-v2__cabinet,
-  .locker-v2__front-door,
-  .locker-v2__back-door {
-    transition-duration: 1ms;
-    transition-delay: 0ms;
+  .locker-v2__stage,
+  .locker-v2__photo,
+  .locker-v2__object-zone {
+    transition: none;
   }
 }

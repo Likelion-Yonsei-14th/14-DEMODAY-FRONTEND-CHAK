@@ -82,255 +82,164 @@
   height: min(66dvh, 560px);
   min-height: 470px;
   border-block: 1px solid var(--color-border-subtle);
-  background: #f1e7d7;
+  background: #2c2a22;
 }
 
+/*
+ * The world is the classroom photograph at its own aspect ratio (set in JS).
+ * Everything inside is positioned in the photo's coordinates.
+ */
 .classroom-map__world {
-  width: 300%;
+  position: relative;
   height: 100%;
-  display: flex;
+  width: 233.33%;
   transition: transform var(--duration-slow) var(--ease-emphasized);
 }
 
-.classroom-map__zone {
-  position: relative;
-  width: 33.333333%;
-  height: 100%;
-  flex: none;
-  overflow: hidden;
-  background:
-    linear-gradient(to bottom, #f8f0e5 0 64%, #d8b795 64% 100%);
-}
-
-.classroom-map__wall {
+.classroom-map__photo {
   position: absolute;
-  inset: 0 0 36% 0;
-  background:
-    linear-gradient(90deg, rgba(210,190,166,.24) 1px, transparent 1px) 0 0 / 72px 100%,
-    #f6eee3;
+  inset: 0;
+  background-position: center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  transition: opacity 1.2s ease;
 }
 
-.classroom-map__clock {
-  position: absolute;
-  top: 22px;
-  right: 32px;
-  width: 54px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  border: 5px solid #d8d0c5;
-  border-radius: 999px;
-  background: #fffdf8;
-  color: var(--color-content-secondary);
-  font-size: 10px;
-  font-weight: 700;
+.classroom-map__photo--day {
+  background-image: url('/assets/classroom/classroom-day.webp');
 }
 
+.classroom-map__photo--night {
+  background-image: url('/assets/classroom/classroom-night.webp');
+  opacity: 0;
+}
+
+.classroom-map__viewport--night .classroom-map__photo--night {
+  opacity: 1;
+}
+
+/* Chalkboard: the button covers the board in the photo */
 .classroom-map__blackboard {
   position: absolute;
-  left: 50%;
-  top: 72px;
-  width: min(84%, 340px);
-  height: 220px;
-  transform: translateX(-50%);
-  border: 10px solid #8f725d;
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(255,255,255,.035), transparent 32%),
-    #315f50;
-  box-shadow:
-    inset 0 0 24px rgba(15, 43, 36, .28),
-    0 8px 18px rgba(79, 56, 40, .1);
-  color: #fff8e8;
+  z-index: 2;
+  left: 0;
+  top: 0;
+  width: 19.8%;
+  height: 58%;
+  padding: 0;
+  border: 0;
+  background: transparent;
   cursor: pointer;
 }
 
-.classroom-map__chalk-title {
+/* The board recedes to the right, so the chalk follows its plane */
+.classroom-map__chalk {
   position: absolute;
-  top: 26px;
-  left: 0;
-  right: 0;
-  font-size: 21px;
-  font-weight: 700;
-  letter-spacing: -.04em;
-}
-
-.classroom-map__chalk-notes {
-  position: absolute;
-  inset: 72px 28px 44px;
+  inset: 13% 12% 18% 9%;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  align-content: center;
-  gap: 12px 18px;
-  color: rgba(255,248,232,.82);
-  font-size: 12px;
-  line-height: 1.45;
+  align-content: start;
+  gap: 6%;
+  color: rgba(238, 238, 226, .86);
+  font-family: var(--font-hand);
+  text-align: left;
+  text-shadow: 0 0 1px rgba(238, 238, 226, .5);
+  transform: perspective(520px) rotateY(24deg);
+  transform-origin: left center;
 }
 
-.classroom-map__chalk-notes span:nth-child(2n) {
-  color: #f5e28a;
-  transform: rotate(1.5deg);
+.classroom-map__chalk-title {
+  font-size: clamp(18px, 4.2vh, 26px);
+  line-height: 1.1;
+}
+
+.classroom-map__chalk-note {
+  overflow: hidden;
+  font-size: clamp(13px, 2.8vh, 18px);
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: .82;
 }
 
 .classroom-map__interaction {
   position: absolute;
-  right: 14px;
-  bottom: 12px;
-  min-height: 29px;
+  right: 10%;
+  bottom: 9%;
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 0 10px;
-  border-radius: var(--radius-full);
-  background: rgba(255,253,248,.92);
-  color: #315f50;
-  font-size: 11px;
+  min-height: 30px;
+  padding: 0 11px;
+  border-radius: 999px;
+  background: rgba(255, 253, 248, .9);
+  color: var(--color-content-primary);
+  font-size: 12px;
   font-weight: 800;
+  box-shadow: 0 4px 12px rgba(30, 20, 10, .25);
 }
 
-.classroom-map__board-ledge {
-  position: absolute;
-  left: 50%;
-  top: 294px;
-  width: min(86%, 350px);
-  height: 11px;
-  transform: translateX(-50%);
-  border-radius: 2px 2px 8px 8px;
-  background: #95745c;
-}
-
-.classroom-map__floor {
-  position: absolute;
-  inset: 64% 0 0;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(123,84,58,.06) 0 1px,
-      transparent 1px 74px
-    ),
-    linear-gradient(#dfc3a2, #cba37f);
-}
-
-.classroom-map__desk {
-  position: absolute;
-  bottom: 58px;
-  width: 116px;
-  height: 54px;
-  border-radius: 7px 7px 3px 3px;
-  background: linear-gradient(#d5b28c, #bd936d);
-  box-shadow: 0 9px 0 #8c715c;
-}
-
-.classroom-map__desk--left { left: 42px; transform: rotate(-2deg); }
-.classroom-map__desk--right { right: 35px; transform: rotate(2deg); }
-
-.classroom-map__windows {
-  position: absolute;
-  top: 38px;
-  left: 30px;
-  right: 30px;
-  height: 172px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 7px;
-  padding: 8px;
-  border: 5px solid #c8b9a6;
-  background: #d9d0c3;
-}
-
-.classroom-map__windows span {
-  background:
-    linear-gradient(rgba(255,255,255,.26), transparent),
-    #bad9e4;
-}
-
+/* A paper note taped to the wall under the windows */
 .classroom-map__banner {
   position: absolute;
-  top: 234px;
-  left: 50%;
-  transform: translateX(-50%) rotate(-1deg);
-  width: 250px;
-  padding: 11px 16px;
-  text-align: center;
-  border-radius: 4px;
-  background: #fff8df;
-  box-shadow: var(--shadow-card);
-  color: #6b5d52;
-  font-weight: 700;
-  font-size: 15px;
+  z-index: 2;
+  /* Inside the centre camera stop (≈33–67% of the world) */
+  left: 38%;
+  top: 47.5%;
+  padding: 7px 14px;
+  background:
+    linear-gradient(160deg, rgba(255,255,255,.35), transparent 50%),
+    #f4ead2;
+  color: #4a4136;
+  font-family: var(--font-hand);
+  font-size: clamp(14px, 3vh, 19px);
+  white-space: nowrap;
+  transform: rotate(-2deg);
+  filter:
+    drop-shadow(-.5px .8px .5px rgba(30, 17, 6, .4))
+    drop-shadow(-2px 4px 5px rgba(30, 17, 6, .18));
 }
 
-.classroom-map__floor--center {
-  display: grid;
-  grid-template-columns: repeat(3, 82px);
-  grid-auto-rows: 62px;
-  justify-content: center;
-  align-content: center;
-  gap: 24px 26px;
-  padding-top: 22px;
-}
-
-.classroom-map__student-desk {
-  display: block;
-  border-radius: 7px 7px 3px 3px;
-  background: linear-gradient(#d6b38e, #be9470);
-  box-shadow: 0 8px 0 #876f5d;
-}
-
-.classroom-map__avatar {
+.classroom-map__banner::before {
+  content: '';
   position: absolute;
+  top: -7px;
   left: 50%;
-  bottom: 38px;
-  z-index: 4;
-  display: grid;
-  justify-items: center;
-  gap: 3px;
-  transform: translateX(-50%);
+  width: 34px;
+  height: 13px;
+  background: url('/assets/desk/tape-cream.webp') center / 100% 100% no-repeat;
+  transform: translateX(-50%) rotate(-5deg);
+  opacity: .9;
 }
 
-.classroom-map__avatar > span {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border: 4px solid #fffdf8;
+/* A bank of lockers standing on the floor at the right of the room */
+.classroom-map__lockers {
+  position: absolute;
+  z-index: 2;
+  right: 1.5%;
+  bottom: 4%;
+  width: 20%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.classroom-map__lockers::after {
+  content: '';
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  bottom: -2.5%;
+  height: 6%;
   border-radius: 50%;
-  background: var(--color-brand);
-  color: white;
-  font-weight: 800;
-  box-shadow: 0 6px 14px rgba(83,56,42,.16);
-}
-
-.classroom-map__avatar small {
-  padding: 3px 7px;
-  border-radius: var(--radius-full);
-  background: rgba(255,253,248,.9);
-  color: var(--color-content-primary);
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.classroom-map__locker-wall {
-  position: absolute;
-  inset: 34px 24px 38%;
-  display: grid;
-  align-items: center;
-  padding: 18px;
-  border-radius: 10px;
-  background: #eee4d7;
-  box-shadow: inset 0 -10px 20px rgba(104,72,50,.05);
-}
-
-.classroom-map__locker-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  background: radial-gradient(closest-side, rgba(20, 14, 8, .45), transparent);
+  filter: blur(3px);
+  z-index: -1;
 }
 
 .classroom-map__locker-button {
   position: relative;
-  border: 0;
+  width: calc(100% / var(--locker-count, 3));
   padding: 0;
+  border: 0;
   background: transparent;
   cursor: pointer;
 }
@@ -338,15 +247,23 @@
 .classroom-map__mine {
   position: absolute;
   left: 50%;
-  bottom: 7px;
-  transform: translateX(-50%);
-  padding: 3px 6px;
-  white-space: nowrap;
-  border-radius: var(--radius-full);
-  background: #fffdf8;
-  color: var(--color-brand-pressed);
-  font-size: 8px;
+  top: -22px;
+  padding: 3px 8px;
+  background: #f4ead2;
+  color: #4a4136;
+  font-size: 10px;
   font-weight: 800;
+  white-space: nowrap;
+  transform: translateX(-50%) rotate(-3deg);
+  box-shadow: 0 2px 5px rgba(30, 17, 6, .3);
+}
+
+.classroom-map__viewport--day .locker-mini__photo {
+  filter: sepia(.08) brightness(1.02);
+}
+
+.classroom-map__viewport--night .locker-mini__photo {
+  filter: brightness(.78) saturate(.85);
 }
 
 .classroom-map__move {
@@ -392,73 +309,40 @@
   background: var(--color-content-primary);
 }
 
+/* Small closed locker used on the classroom map */
 .locker-mini {
   position: relative;
-  width: 100%;
-  aspect-ratio: .68;
   display: block;
-  overflow: hidden;
-  border: 2px solid #c85f58;
-  border-radius: 4px;
-  background:
-    linear-gradient(155deg, rgba(255,255,255,.15), transparent 35%),
-    #df746d;
-  box-shadow:
-    inset 3px 0 0 rgba(255,255,255,.12),
-    inset -3px 0 0 rgba(124,44,40,.1);
+  width: 100%;
+  aspect-ratio: 150 / 493;
 }
 
-.locker-mini--active {
-  outline: 3px solid #fff7d3;
-  outline-offset: 1px;
+.locker-mini__photo {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
+/* Written on the paper in the locker's name-card holder */
 .locker-mini__name {
   position: absolute;
-  top: 9px;
-  left: 50%;
-  max-width: 74%;
-  transform: translateX(-50%);
+  left: 36%;
+  width: 29%;
+  top: 12.7%;
+  height: 4.3%;
+  display: grid;
+  place-items: center;
   overflow: hidden;
-  padding: 2px 5px;
-  border-radius: 2px;
-  background: #efe9df;
-  color: #5b534b;
-  font-size: 8px;
-  font-weight: 800;
-  text-overflow: ellipsis;
+  color: #3e3a33;
+  font-family: var(--font-hand);
+  font-size: clamp(7px, 1.6vh, 11px);
+  line-height: 1;
   white-space: nowrap;
 }
 
-.locker-mini__vents,
-.locker-mini__vents::before,
-.locker-mini__vents::after {
-  position: absolute;
-  left: 50%;
-  width: 32%;
-  height: 2px;
-  transform: translateX(-50%);
-  border-radius: 3px;
-  background: rgba(119,43,40,.36);
-  content: '';
-}
-
-.locker-mini__vents {
-  top: 33%;
-}
-
-.locker-mini__vents::before { top: 5px; }
-.locker-mini__vents::after { top: 10px; }
-
-.locker-mini__handle {
-  position: absolute;
-  right: 12%;
-  top: 52%;
-  width: 10px;
-  height: 18px;
-  border: 2px solid #d9d3ca;
-  border-radius: 3px;
-  background: #615d59;
+.locker-mini--active .locker-mini__photo {
+  outline: 2px solid rgba(255, 246, 214, .9);
+  outline-offset: 1px;
 }
 
 .blackboard-page,
