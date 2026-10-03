@@ -95,3 +95,33 @@
   font-weight: 750;
   cursor: pointer;
 }
+
+
+.owner-desk__backlog {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-base);
+  box-shadow: var(--highlight-inset);
+}
+
+.owner-desk__backlog > div {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 2px;
+}
+
+.owner-desk__backlog strong {
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.owner-desk__backlog span {
+  color: var(--color-content-secondary);
+  font-size: 11px;
+  line-height: 16px;
+}

@@ -46,6 +46,7 @@ type PrototypeState = {
   deskCreationDraft: DeskCreationDraft
   claimReadMode: ReadMode
   claimState: ClaimState
+  claimBacklogDeferred: boolean
   classroom: Classroom
   classroomMember: ClassroomMember | null
   ownerSettings: OwnerSettings
@@ -87,6 +88,8 @@ type PrototypeState = {
   beginClaim: () => void
   setClaimReadMode: (readMode: ReadMode) => void
   completeClaim: () => void
+  setClaimBacklogDeferred: (value: boolean) => void
+  clearClaimBacklogDeferred: () => void
   addMessage: (message: Message) => void
   createClassroom: (name: string) => string
   joinClassroom: (displayName: string) => string
@@ -120,6 +123,7 @@ export const usePrototypeStore = create<PrototypeState>()(
       deskCreationDraft: emptyDeskCreationDraft,
       claimReadMode: mockDesk.readMode,
       claimState: 'claimed',
+      claimBacklogDeferred: false,
       classroom: mockClassroom,
       classroomMember: null,
       ownerSettings: {
@@ -384,6 +388,7 @@ export const usePrototypeStore = create<PrototypeState>()(
             readMessageIds: [],
             claimReadMode: state.deskCreationDraft.readMode,
             claimState: claimStatus,
+            claimBacklogDeferred: false,
           }
         }),
       beginClaim: () =>
@@ -408,6 +413,10 @@ export const usePrototypeStore = create<PrototypeState>()(
           },
           claimState: 'claimed',
         })),
+      setClaimBacklogDeferred: (claimBacklogDeferred) =>
+        set({ claimBacklogDeferred }),
+      clearClaimBacklogDeferred: () =>
+        set({ claimBacklogDeferred: false }),
       addMessage: (message) =>
         set((state) => ({ messages: [...state.messages, message] })),
       createClassroom: (name) => {
@@ -641,6 +650,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         deskCreationDraft: state.deskCreationDraft,
         claimReadMode: state.claimReadMode,
         claimState: state.claimState,
+        claimBacklogDeferred: state.claimBacklogDeferred,
         classroom: state.classroom,
         classroomMember: state.classroomMember,
         ownerSettings: state.ownerSettings,

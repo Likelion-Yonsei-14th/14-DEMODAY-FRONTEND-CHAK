@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { App } from '@/app/App'
 import { UnifiedComposerPage } from '@/features/composer/UnifiedComposerPage'
 import {
+  ClaimBacklogPage,
   ClaimCompletePage,
   ClaimIntroPage,
   ClaimReadModePage,
@@ -189,6 +190,10 @@ export const router = createBrowserRouter([
       { path: '/prototype/reader', element: <ReaderPage /> },
       { path: '/prototype/manage', element: <CreatorManagementPage /> },
       { path: '/prototype/claim', element: <ClaimIntroPage /> },
+      {
+        path: '/prototype/claim/backlog',
+        element: <ClaimBacklogPage />,
+      },
       {
         path: '/prototype/claim/read-mode',
         element: <ClaimReadModePage />,

@@ -131,3 +131,52 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+.claim-flow__heading p {
+  margin: 10px 0 0;
+  color: var(--color-content-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.claim-flow__backlog-summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.claim-flow__backlog-summary > div {
+  display: grid;
+  gap: 6px;
+  padding: 17px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+}
+
+.claim-flow__backlog-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--color-brand-soft);
+  color: var(--color-brand-pressed);
+}
+
+.claim-flow__backlog-summary strong {
+  font-size: 25px;
+  line-height: 1;
+}
+
+.claim-flow__backlog-summary > div > span:last-child {
+  color: var(--color-content-secondary);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.claim-flow__backlog-actions {
+  display: grid;
+  gap: 6px;
+}

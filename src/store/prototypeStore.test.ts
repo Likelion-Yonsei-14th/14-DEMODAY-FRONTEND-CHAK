@@ -104,6 +104,7 @@ describe('prototype store composer handoff', () => {
       },
       claimReadMode: mockDesk.readMode,
       claimState: 'claimed',
+      claimBacklogDeferred: false,
       classroom: {
         ...mockClassroom,
         blackboardEntries: [...mockClassroom.blackboardEntries],
@@ -618,6 +619,24 @@ describe('prototype store composer handoff', () => {
       recipientDeskId: lockerId,
       status: 'sent',
     })
+  })
+
+  it('keeps a deferred pre-claim backlog until the owner chooses to open it', () => {
+    usePrototypeStore
+      .getState()
+      .setClaimBacklogDeferred(true)
+
+    expect(
+      usePrototypeStore.getState().claimBacklogDeferred,
+    ).toBe(true)
+
+    usePrototypeStore
+      .getState()
+      .clearClaimBacklogDeferred()
+
+    expect(
+      usePrototypeStore.getState().claimBacklogDeferred,
+    ).toBe(false)
   })
 
   it('claims a supporter-created desk with the recipient-approved read mode', () => {

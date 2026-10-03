@@ -1,7 +1,12 @@
 import { useMemo, useState } from 'react'
 import { ArrowLeft, Settings } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { AppBar, IconButton, useFeedback } from '@/design-system'
+import {
+  AppBar,
+  Button,
+  IconButton,
+  useFeedback,
+} from '@/design-system'
 import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
 import { DeskScene } from '@/features/desk/DeskScene'
 import { AppShell } from '@/layout/AppShell'
@@ -27,6 +32,12 @@ export function OwnerDeskPage() {
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const storedMessages = usePrototypeStore((state) => state.messages)
   const ownerSettings = usePrototypeStore((state) => state.ownerSettings)
+  const claimBacklogDeferred = usePrototypeStore(
+    (state) => state.claimBacklogDeferred,
+  )
+  const clearClaimBacklogDeferred = usePrototypeStore(
+    (state) => state.clearClaimBacklogDeferred,
+  )
   const readMessageIds = usePrototypeStore((state) => state.readMessageIds)
   const [openingMessageId, setOpeningMessageId] = useState<string | null>(null)
 
@@ -215,6 +226,25 @@ export function OwnerDeskPage() {
             )}
           </h2>
         </section>
+
+        {claimBacklogDeferred && (
+          <section className="owner-desk__backlog">
+            <div>
+              <strong>먼저 와 있던 응원이 기다리고 있어요.</strong>
+              <span>준비됐을 때 천천히 열어보세요.</span>
+            </div>
+            <Button
+              variant="secondary"
+              size="m"
+              onClick={() => {
+                clearClaimBacklogDeferred()
+                navigate('/prototype/my/desk/cards')
+              }}
+            >
+              보기
+            </Button>
+          </section>
+        )}
 
         <div
           className={[

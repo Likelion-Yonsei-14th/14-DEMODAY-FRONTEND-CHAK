@@ -2,7 +2,9 @@ import { useMemo, type ReactNode } from 'react'
 import {
   ArrowLeft,
   CalendarDays,
+  Heart,
   MoonStar,
+  UsersRound,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -51,7 +53,7 @@ export function ClaimIntroPage() {
     }
 
     beginClaim()
-    navigate('/prototype/claim/read-mode')
+    navigate('/prototype/claim/backlog')
   }
 
   return (
@@ -99,6 +101,96 @@ export function ClaimIntroPage() {
   )
 }
 
+export function ClaimBacklogPage() {
+  const navigate = useNavigate()
+  const desk = usePrototypeStore((state) => state.currentDesk)
+  const storedMessages = usePrototypeStore((state) => state.messages)
+  const setDeferred = usePrototypeStore(
+    (state) => state.setClaimBacklogDeferred,
+  )
+
+  const messages = useMemo(
+    () => mergeSupportMessages(storedMessages),
+    [storedMessages],
+  )
+  const objects = useMemo(
+    () => [...seededDeskObjects, ...desk.objects],
+    [desk.objects],
+  )
+  const supporterCount = useMemo(
+    () =>
+      new Set(
+        messages
+          .filter((message) =>
+            objects.some(
+              (object) => object.messageId === message.id,
+            ),
+          )
+          .map((message) => message.senderName),
+      ).size,
+    [messages, objects],
+  )
+
+  const continueWith = (deferred: boolean) => {
+    setDeferred(deferred)
+    navigate('/prototype/claim/read-mode')
+  }
+
+  return (
+    <ClaimShell
+      title="응원 책상 받기"
+      back={() => navigate('/prototype/claim')}
+      action={
+        <div className="claim-flow__backlog-actions">
+          <Button
+            variant="brand"
+            fullWidth
+            onClick={() => continueWith(false)}
+          >
+            지금 만나보기
+          </Button>
+          <Button
+            variant="tertiary"
+            fullWidth
+            onClick={() => continueWith(true)}
+          >
+            나중에 보기
+          </Button>
+        </div>
+      }
+    >
+      <section className="claim-flow__heading">
+        <h1>
+          친구들이 먼저
+          <br />
+          기다리고 있었어요.
+        </h1>
+        <p>
+          이 공간이 {desk.displayName}님의 것이 되기 전부터
+          도착한 마음이에요.
+        </p>
+      </section>
+
+      <div className="claim-flow__backlog-summary">
+        <div>
+          <span className="claim-flow__backlog-icon" aria-hidden>
+            <Heart size={19} />
+          </span>
+          <strong>{objects.length}</strong>
+          <span>도착한 응원</span>
+        </div>
+        <div>
+          <span className="claim-flow__backlog-icon" aria-hidden>
+            <UsersRound size={19} />
+          </span>
+          <strong>{supporterCount}</strong>
+          <span>마음을 남긴 친구</span>
+        </div>
+      </div>
+    </ClaimShell>
+  )
+}
+
 export function ClaimReadModePage() {
   const navigate = useNavigate()
   const readMode = usePrototypeStore((state) => state.claimReadMode)
@@ -138,7 +230,7 @@ export function ClaimReadModePage() {
   return (
     <ClaimShell
       title="응원 책상 받기"
-      back={() => navigate('/prototype/claim')}
+      back={() => navigate('/prototype/claim/backlog')}
       action={
         <Button variant="brand" fullWidth onClick={finish}>
           이대로 시작하기
