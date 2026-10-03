@@ -1,20 +1,20 @@
 /*
- * Classroom locker v3 — photographed.
- * locker-closed.webp and locker-open.webp share one 436 × 983 crop, so the
- * cabinet body lines up exactly. The closed locker fills the left 68.7%;
- * the open door swings into the right 31.3%.
+ * Classroom locker v3 — photographed, widened.
+ * locker-closed.webp and locker-open.webp share one 616 × 983 crop, so the
+ * cabinet body lines up exactly. The closed locker fills the left 77.9%;
+ * the open door swings into the right 22.1%.
  */
 
 .locker-v2 {
   /* Fit the tall locker into the viewport height on short phones */
-  width: min(100%, 236px, calc((100dvh - 320px) * .4435));
+  width: min(100%, 334px, calc((100dvh - 320px) * .6267));
   margin: 0 auto;
 }
 
 .locker-v2__stage {
   position: relative;
   width: 100%;
-  aspect-ratio: 436 / 983;
+  aspect-ratio: 616 / 983;
   transition: transform 420ms var(--ease-emphasized);
   filter:
     drop-shadow(-2px 3px 2px rgba(30, 20, 10, .2))
@@ -23,13 +23,13 @@
 
 /* Closed: centre the cabinet; open: make room for the swung door */
 .locker-v2--closed .locker-v2__stage {
-  transform: translateX(15.65%);
+  transform: translateX(11.05%);
 }
 
 .locker-v2--night .locker-v2__stage {
   filter:
-    brightness(.84)
-    saturate(.88)
+    brightness(.95)
+    saturate(.92)
     drop-shadow(-2px 3px 2px rgba(10, 10, 8, .3))
     drop-shadow(-6px 12px 16px rgba(10, 10, 8, .22));
 }
@@ -54,8 +54,8 @@
 .locker-v2__object-zone {
   position: absolute;
   z-index: 3;
-  left: 5%;
-  right: 36.3%;
+  left: 3.5%;
+  right: 25.7%;
   top: 18.5%;
   bottom: 8.5%;
   transition: opacity 260ms ease 120ms;
@@ -73,7 +73,7 @@
 /* Inside the cabinet the light is dimmer than on the desk */
 .locker-v2__object-zone .desk-object__visual {
   filter:
-    brightness(.9)
+    brightness(.97)
     drop-shadow(-.4px .6px .35px rgba(20, 12, 4, .5))
     drop-shadow(-2px 4px 5px rgba(20, 12, 4, .25));
 }
@@ -83,7 +83,7 @@
   z-index: 4;
   left: 0;
   top: 0;
-  width: 68.7%;
+  width: 77.9%;
   height: 100%;
   padding: 0;
   border: 0;
@@ -98,8 +98,8 @@
 /* Written on the paper in the photographed name-card holder */
 .locker-v2__nameplate {
   position: absolute;
-  left: 36.4%;
-  width: 28.8%;
+  left: 30.8%;
+  width: 35.8%;
   top: 13%;
   height: 4.3%;
   display: grid;
@@ -115,9 +115,9 @@
 .locker-v2__back-door {
   position: absolute;
   z-index: 4;
-  left: 68.7%;
+  left: 77.9%;
   top: 0;
-  width: 31.3%;
+  width: 22.1%;
   height: 100%;
   padding: 0;
   border: 0;
