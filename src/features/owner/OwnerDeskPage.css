@@ -125,3 +125,159 @@
   font-size: 11px;
   line-height: 16px;
 }
+
+/* Desk full: offer to tidy read cheers into the basket */
+.owner-desk__full {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #fff6e8;
+  box-shadow: inset 0 0 0 1px rgba(205, 160, 110, .35);
+}
+
+.owner-desk__full div {
+  display: grid;
+  gap: 2px;
+}
+
+.owner-desk__full strong {
+  font-size: 15px;
+}
+
+.owner-desk__full span {
+  color: var(--color-content-secondary);
+  font-size: 13px;
+}
+
+/* The living box sits on the books in the bottom-right of the desk photo */
+.owner-desk__basket {
+  position: absolute;
+  z-index: 40;
+  right: 2%;
+  bottom: 3%;
+  width: 22%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  filter:
+    drop-shadow(-2px 4px 3px rgba(30, 20, 10, .35))
+    drop-shadow(-6px 12px 14px rgba(30, 20, 10, .25));
+  transition: transform 160ms ease;
+}
+
+.owner-desk__basket:active {
+  transform: scale(.96);
+}
+
+.owner-desk__basket img {
+  /* Take on the photo's warm window light */
+  filter: sepia(.14) brightness(.96);
+  transition: filter 1.2s ease;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.owner-desk__basket-count {
+  position: absolute;
+  top: 2%;
+  right: 4%;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #2b2622;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 22px;
+}
+
+.desk-basket {
+  display: grid;
+  gap: 16px;
+}
+
+.desk-basket__empty {
+  margin: 0;
+  padding: 18px 4px;
+  color: var(--color-content-secondary);
+  font-size: 14px;
+  text-align: center;
+}
+
+.desk-basket__list {
+  max-height: 44dvh;
+  overflow-y: auto;
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.desk-basket__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--color-surface-secondary, #f5f1ea);
+  color: var(--color-content-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.desk-basket__thumb {
+  --desk-object-rotation: 0deg;
+  --desk-object-scale: 1;
+  position: relative;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+}
+
+.desk-basket__thumb .desk-object__visual {
+  width: 100%;
+  height: 100%;
+}
+
+.desk-basket__meta {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--color-content-secondary);
+}
+
+.desk-basket__meta strong {
+  color: var(--color-content-primary);
+  font-size: 15px;
+}
+
+.desk-basket__ad {
+  flex: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(30, 27, 24, .86);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.owner-desk__scene-wrap:has(.desk-scene--night) .owner-desk__basket img {
+  filter: sepia(.32) saturate(1.05) brightness(.78);
+}
+
+.owner-desk__full > button {
+  flex: none;
+  white-space: nowrap;
+}

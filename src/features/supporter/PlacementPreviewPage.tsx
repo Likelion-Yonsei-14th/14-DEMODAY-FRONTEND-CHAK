@@ -58,9 +58,16 @@ export function PlacementPreviewPage() {
     () => mergeSupportMessages(storedMessages),
     [storedMessages],
   )
+  const basketMessageIds = usePrototypeStore(
+    (state) => state.basketMessageIds,
+  )
+  // Objects the owner put in the basket no longer take up desk space.
   const existingObjects = useMemo(
-    () => [...seededDeskObjects, ...currentDesk.objects],
-    [currentDesk.objects],
+    () =>
+      [...seededDeskObjects, ...currentDesk.objects].filter(
+        (object) => !basketMessageIds.includes(object.messageId),
+      ),
+    [basketMessageIds, currentDesk.objects],
   )
   const placeComposerMessage = usePrototypeStore(
     (state) => state.placeComposerMessage,
@@ -138,11 +145,14 @@ export function PlacementPreviewPage() {
       if (!scene) return
 
       const rect = scene.getBoundingClientRect()
-      const next = clampPlacement({
-        ...placement,
-        x: ((clientX - rect.left) / rect.width) * 100,
-        y: ((clientY - rect.top) / rect.height) * 100,
-      })
+      const next = clampPlacement(
+        {
+          ...placement,
+          x: ((clientX - rect.left) / rect.width) * 100,
+          y: ((clientY - rect.top) / rect.height) * 100,
+        },
+        objectType,
+      )
 
       setPlacement(next)
       if (

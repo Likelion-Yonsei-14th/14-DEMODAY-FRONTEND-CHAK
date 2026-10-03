@@ -61,12 +61,17 @@ export function SupportDeskPage() {
     () => new Set(messages.map((message) => message.id)),
     [messages],
   )
+  const basketMessageIds = usePrototypeStore(
+    (state) => state.basketMessageIds,
+  )
   const objects = useMemo(
     () =>
       [...seededDeskObjects, ...currentDesk.objects].filter(
-        (object) => visibleMessageIds.has(object.messageId),
+        (object) =>
+          visibleMessageIds.has(object.messageId) &&
+          !basketMessageIds.includes(object.messageId),
       ),
-    [currentDesk.objects, visibleMessageIds],
+    [basketMessageIds, currentDesk.objects, visibleMessageIds],
   )
   const receivedReplyCount = supporterIdentityName
     ? messageReplies.filter((reply) =>

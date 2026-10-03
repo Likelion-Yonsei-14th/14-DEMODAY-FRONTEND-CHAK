@@ -16,6 +16,8 @@ type AdUnlockSheetProps<T extends AdUnlockItem> = {
   kindLabel?: string
   /** 'contain' previews a cut-out (clip, tape); 'cover' a full sheet. */
   previewFit?: 'cover' | 'contain'
+  /** Replaces the default "keep using it" copy. */
+  description?: string
   onClose: () => void
   onUnlocked: (item: T) => void
 }
@@ -28,6 +30,7 @@ export function AdUnlockSheet<T extends AdUnlockItem>({
   item: background,
   kindLabel = '편지지',
   previewFit = 'cover',
+  description,
   onClose,
   onUnlocked,
 }: AdUnlockSheetProps<T>) {
@@ -52,7 +55,10 @@ export function AdUnlockSheet<T extends AdUnlockItem>({
       open={Boolean(background)}
       onClose={onClose}
       title={`광고 보고 ${kindLabel} 열기`}
-      description={`광고 하나를 끝까지 보면 이 ${kindLabel}${hasBatchim(kindLabel) ? '을' : '를'} 계속 쓸 수 있어요.`}
+      description={
+        description ??
+        `광고 하나를 끝까지 보면 이 ${kindLabel}${hasBatchim(kindLabel) ? '을' : '를'} 계속 쓸 수 있어요.`
+      }
     >
       {background && (
         <div className="ad-unlock">

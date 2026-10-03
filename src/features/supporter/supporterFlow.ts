@@ -84,6 +84,9 @@ export function resolveAvailablePlacement(
     }
   }
 
+  const open = findOpenPlacement(existingObjects, draftType)
+  if (open) return open
+
   const fallbackCandidates: DeskPlacement[] = [
     { x: 50, y: 70, rotation: -1, scale: .96 },
     { x: 20, y: 68, rotation: 2, scale: .94 },
@@ -126,8 +129,19 @@ type Rect = {
   height: number
 }
 
-// The desk photos keep their clutter outside the placement zone
-// (clampPlacement: x 12–88, y 40–72), so nothing static blocks placement.
+/**
+ * Where objects may sit on the desk photo, in % of the scene: the open wood
+ * between the books, laptop, cups and pencil case.
+ */
+export const DESK_PLACEMENT_AREA = {
+  left: 15,
+  right: 90,
+  top: 21,
+  bottom: 80,
+} as const
+
+// The desk photos keep their clutter outside DESK_PLACEMENT_AREA, so nothing
+// static blocks placement.
 const STATIC_DECOR_RECTS: Rect[] = []
 
 const objectSizeByType: Record<
@@ -144,14 +158,58 @@ const objectSizeByType: Record<
   sticker: { width: 13, height: 13 },
 }
 
-export function clampPlacement(placement: DeskPlacement): DeskPlacement {
+/** Keeps the whole object, not just its centre, inside the placement area. */
+export function clampPlacement(
+  placement: DeskPlacement,
+  draftType: DeskObjectType = 'memo',
+): DeskPlacement {
+  const size = objectSizeByType[draftType] ?? objectSizeByType.memo
+  const scale = clamp(placement.scale, 0.9, 1.08)
+  const halfWidth = (size.width * scale) / 2
+  const halfHeight = (size.height * scale) / 2
+  const area = DESK_PLACEMENT_AREA
+
   return {
     ...placement,
-    x: clamp(placement.x, 12, 88),
-    y: clamp(placement.y, 40, 72),
+    x: clamp(placement.x, area.left + halfWidth, area.right - halfWidth),
+    y: clamp(placement.y, area.top + halfHeight, area.bottom - halfHeight),
     rotation: clamp(placement.rotation, -7, 7),
-    scale: clamp(placement.scale, 0.9, 1.08),
+    scale,
   }
+}
+
+/** Grid of spots across the placement area, centre rows first. */
+const gridCandidates: DeskPlacement[] = (() => {
+  const columns = [52, 36, 68, 22, 82]
+  const rows = [52, 40, 64, 30, 74]
+  const tilts = [-3, 2, -1, 3, -2]
+  return rows.flatMap((y, row) =>
+    columns.map((x, column) => ({
+      x,
+      y,
+      rotation: tilts[(row + column) % tilts.length] ?? 0,
+      scale: 1,
+    })),
+  )
+})()
+
+/** A free spot for a new object, or null when the desk is full. */
+export function findOpenPlacement(
+  existingObjects: DeskObject[],
+  draftType: DeskObjectType = 'memo',
+): DeskPlacement | null {
+  for (const candidate of gridCandidates) {
+    const placement = clampPlacement(candidate, draftType)
+    if (isPlacementValid(placement, existingObjects, draftType)) {
+      return placement
+    }
+  }
+  return null
+}
+
+/** The desk is full when not even a small memo card has room left. */
+export function isDeskFull(existingObjects: DeskObject[]) {
+  return findOpenPlacement(existingObjects, 'memo') === null
 }
 
 export function isPlacementValid(

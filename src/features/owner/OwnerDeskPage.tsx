@@ -7,6 +7,8 @@ import {
   IconButton,
   useFeedback,
 } from '@/design-system'
+import { isDeskFull } from '@/features/supporter/supporterFlow'
+import { DeskBasketSheet } from './DeskBasketSheet'
 import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
 import { DeskScene } from '@/features/desk/DeskScene'
 import { AppShell } from '@/layout/AppShell'
@@ -40,6 +42,11 @@ export function OwnerDeskPage() {
   )
   const readMessageIds = usePrototypeStore((state) => state.readMessageIds)
   const [openingMessageId, setOpeningMessageId] = useState<string | null>(null)
+  const basketMessageIds = usePrototypeStore(
+    (state) => state.basketMessageIds,
+  )
+  const moveToBasket = usePrototypeStore((state) => state.moveToBasket)
+  const [basketOpen, setBasketOpen] = useState(false)
 
   const messages = useMemo(
     () =>
@@ -51,9 +58,33 @@ export function OwnerDeskPage() {
       ),
     [ownerSettings.blockedSupporters, storedMessages],
   )
-  const objects = useMemo(
+  const allObjects = useMemo(
     () => [...seededDeskObjects, ...currentDesk.objects],
     [currentDesk.objects],
+  )
+  const objects = useMemo(
+    () =>
+      allObjects.filter(
+        (object) => !basketMessageIds.includes(object.messageId),
+      ),
+    [allObjects, basketMessageIds],
+  )
+  const basketObjects = useMemo(
+    () =>
+      basketMessageIds
+        .map((messageId) =>
+          allObjects.find((object) => object.messageId === messageId),
+        )
+        .filter((object) => object !== undefined)
+        .reverse(),
+    [allObjects, basketMessageIds],
+  )
+  // ?desk=full previews the full-desk prompt without placing ~30 objects.
+  const deskFull = useMemo(
+    () =>
+      isDeskFull(objects) ||
+      new URLSearchParams(location.search).get('desk') === 'full',
+    [location.search, objects],
   )
   const readMode = useMemo(
     () =>
@@ -132,6 +163,27 @@ export function OwnerDeskPage() {
     objects,
     readMessageIds,
   ])
+
+  // Like compacting a long chat: everything already read goes in the basket
+  // in one go; unread or not-yet-open cheers stay on the desk.
+  const tidyableMessageIds = objects
+    .map((object) => object.messageId)
+    .filter(
+      (messageId) =>
+        !lockedMessageIdSet.has(messageId) &&
+        (readMessageIds.includes(messageId) ||
+          messages.find((message) => message.id === messageId)?.status ===
+            'read'),
+    )
+
+  const tidyDesk = () => {
+    if (tidyableMessageIds.length === 0) {
+      showToast('아직 안 읽은 응원만 남아 있어요.')
+      return
+    }
+    moveToBasket(tidyableMessageIds)
+    showToast(`읽은 응원 ${tidyableMessageIds.length}개를 바구니에 넣었어요.`)
+  }
 
   const openObject = (messageId: string) => {
     if (openingMessageId) return
@@ -227,6 +279,18 @@ export function OwnerDeskPage() {
           </h2>
         </section>
 
+        {deskFull && (
+          <section className="owner-desk__full">
+            <div>
+              <strong>책상이 꽉 찼어요.</strong>
+              <span>읽은 응원을 바구니에 넣으면 새 자리가 생겨요.</span>
+            </div>
+            <Button variant="secondary" size="m" onClick={tidyDesk}>
+              정리하기
+            </Button>
+          </section>
+        )}
+
         {claimBacklogDeferred && (
           <section className="owner-desk__backlog">
             <div>
@@ -262,7 +326,35 @@ export function OwnerDeskPage() {
             lockedMessageIds={lockedMessageIds}
             respectObjectLocks={false}
           />
+          <button
+            type="button"
+            className="owner-desk__basket"
+            aria-label={`바구니 열기, ${basketObjects.length}개 들어 있어요`}
+            onClick={() => setBasketOpen(true)}
+          >
+            <img src="/assets/desk/living-box.webp" alt="" draggable={false} />
+            {basketObjects.length > 0 && (
+              <span className="owner-desk__basket-count">
+                {basketObjects.length}
+              </span>
+            )}
+          </button>
         </div>
+
+        <DeskBasketSheet
+          open={basketOpen}
+          objects={basketObjects}
+          messages={messages}
+          tidyableCount={tidyableMessageIds.length}
+          onTidy={tidyDesk}
+          onClose={() => setBasketOpen(false)}
+          onOpenMessage={(messageId) => {
+            setBasketOpen(false)
+            navigate(`/prototype/my/message/${messageId}${location.search}`, {
+              state: { from: 'owner-desk' },
+            })
+          }}
+        />
 
       </main>
     </AppShell>

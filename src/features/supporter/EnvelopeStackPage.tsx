@@ -36,6 +36,10 @@ export function EnvelopeStackPage() {
   const ownerSettings = usePrototypeStore((state) => state.ownerSettings)
   const storedMessages = usePrototypeStore((state) => state.messages)
   const readMessageIds = usePrototypeStore((state) => state.readMessageIds)
+  // Basket messages reopen only from the basket, one ad per view.
+  const basketMessageIds = usePrototypeStore(
+    (state) => state.basketMessageIds,
+  )
   const [showHistory, setShowHistory] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const [openingId, setOpeningId] = useState<string | null>(null)
@@ -46,11 +50,12 @@ export function EnvelopeStackPage() {
         (message) =>
           // Stickers have no card to open, so they stay on the desk only.
           !isStickerMessage(message) &&
+          !basketMessageIds.includes(message.id) &&
           !ownerSettings.blockedSupporters.includes(
             message.senderName,
           ),
       ),
-    [ownerSettings.blockedSupporters, storedMessages],
+    [basketMessageIds, ownerSettings.blockedSupporters, storedMessages],
   )
   const readMode = useMemo(
     () =>

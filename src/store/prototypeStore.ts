@@ -70,6 +70,9 @@ type PrototypeState = {
   /** Clips and washi tapes unlocked by watching an ad (prototype). */
   unlockedDecorIds: string[]
   unlockDecor: (assetId: string) => void
+  /** Messages the desk owner tidied off the desk into the basket. */
+  basketMessageIds: string[]
+  moveToBasket: (messageIds: string[]) => void
   supporterObjectChoice: SupporterObjectChoice
   stickerDraft: { stickerId: string; senderName: string }
   setSupporterObjectChoice: (choice: SupporterObjectChoice) => void
@@ -182,6 +185,16 @@ export const usePrototypeStore = create<PrototypeState>()(
           unlockedStationeryIds: state.unlockedStationeryIds.includes(backgroundId)
             ? state.unlockedStationeryIds
             : [...state.unlockedStationeryIds, backgroundId],
+        })),
+      basketMessageIds: [],
+      moveToBasket: (messageIds) =>
+        set((state) => ({
+          basketMessageIds: [
+            ...state.basketMessageIds,
+            ...messageIds.filter(
+              (id) => !state.basketMessageIds.includes(id),
+            ),
+          ],
         })),
       unlockedDecorIds: [],
       unlockDecor: (assetId) =>
@@ -481,6 +494,7 @@ export const usePrototypeStore = create<PrototypeState>()(
             },
             messages: [],
             readMessageIds: [],
+            basketMessageIds: [],
             claimReadMode: state.deskCreationDraft.readMode,
             claimState: claimStatus,
             claimBacklogDeferred: false,
@@ -815,6 +829,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         readMessageIds: state.readMessageIds,
         unlockedStationeryIds: state.unlockedStationeryIds,
         unlockedDecorIds: state.unlockedDecorIds,
+        basketMessageIds: state.basketMessageIds,
         supporterObjectChoice: state.supporterObjectChoice,
         stickerDraft: state.stickerDraft,
       }),
