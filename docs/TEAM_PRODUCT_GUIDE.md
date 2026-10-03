@@ -530,7 +530,25 @@ Editor / Reader가 공유해야 하는 것:
 - private 응원은 사물함 주인만 열 수 있음
 - 사물함 주인의 응원 열람 방식은 **Daily only**
 
-## 13.5 Locker visual rule
+## 13.5 Classroom settings
+
+**[현재 구현 / 제품 확인 필요]** 현재 코드에는 다음 설정 flow가 추가되어 있다.
+
+- 새 그룹에서 처음 입장한 구성원을 Admin으로 간주
+- Admin:
+  - 공간 이름 수정
+  - 사물함 Daily 오픈 시간 수정
+  - 초대 코드 재발급
+  - 초대 링크 공유
+- 모든 구성원:
+  - 교실에서 보일 이름 수정
+  - 새 응원/답장 알림 on/off
+- 일반 구성원:
+  - 공간 나가기
+
+이 구현은 “생성 단계에서 Creator/Member 역할을 따로 묻지 않는다”는 확정 원칙과는 충돌하지 않는다. 다만 **‘첫 입장자를 영구 Admin으로 본다’는 권한 모델 자체는 이전 명시적 제품 논의에서 별도로 확정된 기록이 없으므로, production 권한 정책으로 고정하기 전 재확인한다.**
+
+## 13.6 Locker visual rule
 
 최근 논의에서 특히 중요하게 정한 구현 기준:
 
@@ -739,11 +757,13 @@ Repository:
 
 최신 기능 구현 기준 commit:
 
+- `8160d68` — `feat: implement classroom settings flow`
+- 2026-10-03 14:07 KST
+
+직전 주요 기능 commits:
+
 - `48b5d59` — `feat: add pre-claim encouragement backlog flow`
 - 2026-10-03 14:04 KST
-
-바로 이전 주요 기능 commit:
-
 - `efa5d95` — `feat: implement supporter settings flow`
 - 2026-10-03 14:01 KST
 
@@ -751,6 +771,7 @@ Repository:
 
 최근 주요 구현:
 
+- Classroom settings prototype: 공간명/오픈시간/초대코드/개인 설정
 - Claim 전 응원 backlog: 지금 만나보기 / 나중에 보기 / Owner Home 재진입
 - Supporter settings
 - 읽기 전 보낸 공개 응원 삭제
@@ -826,6 +847,7 @@ Repository:
 - Create
 - Join
 - Classroom Map
+- Classroom settings
 - Blackboard
 - Locker
 - Locker Composer
@@ -908,6 +930,7 @@ Repository:
 - 실제 partner/benefit 운영 정책과 수익 모델
 - notification 채널 및 빈도
 - abuse/report 운영 프로세스
+- classroom Admin 권한 모델의 production 확정
 - locker scene의 최종 visual polish 수준
 
 ---
