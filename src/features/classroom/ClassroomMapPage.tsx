@@ -40,6 +40,7 @@ export function ClassroomMapPage() {
   const member = usePrototypeStore((state) => state.classroomMember)
   const [camera, setCamera] = useState(1)
   const [allLockersOpen, setAllLockersOpen] = useState(false)
+  const lockerDecor = usePrototypeStore((state) => state.lockerDecor)
   const { showToast } = useFeedback()
   const daypart = useDeskDaypart()
   const viewportRef = useRef<HTMLElement>(null)
@@ -233,6 +234,7 @@ export function ClassroomMapPage() {
                   <LockerMiniDoor
                     studentName={locker.studentName}
                     active={locker.id === member.lockerId}
+                    paint={lockerDecor[locker.id]?.outside}
                   />
                   {locker.id === member.lockerId && (
                     <span className="classroom-map__mine">
@@ -306,6 +308,7 @@ export function ClassroomMapPage() {
                   <LockerMiniDoor
                     studentName={locker.studentName}
                     active={locker.id === member.lockerId}
+                    paint={lockerDecor[locker.id]?.outside}
                   />
                   <span>
                     {locker.studentName}

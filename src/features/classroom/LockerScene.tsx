@@ -8,7 +8,7 @@ import type {
   DeskObjectType,
   Message,
 } from '@/types'
-import type { LockerDecor } from './lockerDecor'
+import type { LockerDecor, LockerPaint } from './lockerDecor'
 import './Classroom.css'
 import './LockerScene.css'
 
@@ -157,9 +157,12 @@ export function ClassroomLockerScene({
 export function LockerMiniDoor({
   studentName,
   active = false,
+  paint,
 }: {
   studentName: string
   active?: boolean
+  /** Outside paint the owner bought, shown on the classroom map too. */
+  paint?: LockerPaint
 }) {
   return (
     <span
@@ -171,7 +174,11 @@ export function LockerMiniDoor({
     >
       <img
         className="locker-mini__photo"
-        src={`${LOCKER_ASSET_PATH}/locker-tile.webp`}
+        src={
+          paint
+            ? `${LOCKER_ASSET_PATH}/paint/tile-outside-${paint}.webp`
+            : `${LOCKER_ASSET_PATH}/locker-tile.webp`
+        }
         alt=""
         draggable={false}
       />
