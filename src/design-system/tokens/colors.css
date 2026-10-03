@@ -1,9 +1,9 @@
 :root {
-  /* Neutral surfaces */
-  --color-bg-canvas: #f6f3ec;
-  --color-surface-base: #fffdf8;
-  --color-surface-subtle: #f1ede6;
-  --color-surface-muted: #ebe5dc;
+  /* Neutral surfaces — calm greige base so collected objects pop */
+  --color-bg-canvas: #efebe4;
+  --color-surface-base: #fbf9f5;
+  --color-surface-subtle: #e9e4db;
+  --color-surface-muted: #e1dbd0;
   --color-surface-raised: #ffffff;
 
   /* Content */
@@ -18,21 +18,35 @@
   --color-border-default: #d9d1c7;
   --color-border-strong: #bdb4aa;
 
-  /* Brand */
-  --color-brand: #e88770;
-  --color-brand-pressed: #d8745e;
-  --color-brand-soft: #f6d8cf;
-  --color-brand-on: #fffaf7;
+  --color-ink: #1e1b18;
 
-  /* Supporting palette */
-  --color-sage: #a7b39b;
-  --color-sage-soft: #e6eadf;
-  --color-sky: #a9b8c9;
-  --color-sky-soft: #e7edf2;
-  --color-butter: #e9c95b;
-  --color-butter-soft: #f8edbd;
-  --color-pink-soft: #f2ced1;
-  --color-lilac-soft: #ddd5e7;
+  /* Collage materials — masking tape, grid tape, label-maker strips */
+  --tape-masking: rgba(221, 203, 146, .88);
+  --tape-grid:
+    linear-gradient(rgba(255,255,255,.55) 1px, transparent 1px) 0 0 / 5px 5px,
+    linear-gradient(90deg, rgba(255,255,255,.55) 1px, transparent 1px) 0 0 / 5px 5px,
+    rgba(126, 196, 168, .82);
+  --label-teal: #17866f;
+  --label-lime: #d8ee5a;
+  --label-blue: #2f6bff;
+
+  /* Brand (tomato red). #d93a1f keeps white text at 4.5:1. */
+  --color-brand: #d93a1f;
+  --color-brand-pressed: #bd2e15;
+  --color-brand-soft: #ffd9cf;
+  --color-brand-on: #ffffff;
+
+  /* Supporting palette — saturated pop colors */
+  --color-sage: #1faf8c;
+  --color-sage-soft: #cdefe4;
+  --color-sky: #2f6bff;
+  --color-sky-soft: #d6e2ff;
+  --color-butter: #ffc21a;
+  --color-butter-soft: #ffedb3;
+  --color-pink: #ff5fa2;
+  --color-pink-soft: #ffd3e6;
+  --color-lilac: #7b5cff;
+  --color-lilac-soft: #e3dbff;
 
   /* Feedback */
   --color-focus: #6e8fd1;

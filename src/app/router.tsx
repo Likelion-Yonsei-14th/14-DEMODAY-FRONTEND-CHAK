@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { App } from '@/app/App'
 import { UnifiedComposerPage } from '@/features/composer/UnifiedComposerPage'
+import { StickerPickPage } from '@/features/supporter/StickerPickPage'
 import {
   ClaimBacklogPage,
   ClaimCompletePage,
@@ -128,6 +129,10 @@ export const router = createBrowserRouter([
       {
         path: '/prototype/support/jisu/compose',
         element: <UnifiedComposerPage />,
+      },
+      {
+        path: '/prototype/support/jisu/sticker',
+        element: <StickerPickPage />,
       },
       {
         path: '/prototype/support/jisu/placement',

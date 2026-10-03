@@ -560,3 +560,28 @@
     transition: none;
   }
 }
+
+.message-viewer__sticker {
+  min-height: 460px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 20px;
+  padding: 36px 20px;
+  text-align: center;
+}
+
+.message-viewer__sticker-image {
+  width: 168px;
+  height: 168px;
+  transform: rotate(-6deg);
+  filter: drop-shadow(0 3px 4px rgba(40, 30, 20, .2));
+}
+
+.message-viewer__sticker h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.45;
+  letter-spacing: -.02em;
+  word-break: keep-all;
+}

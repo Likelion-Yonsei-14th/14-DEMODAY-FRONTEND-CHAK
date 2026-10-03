@@ -136,9 +136,9 @@
   place-items: center;
   margin-bottom: 22px;
   border-radius: 22px;
-  background: linear-gradient(145deg, #f8c8bc, #e88770);
-  color: white;
-  box-shadow: 0 14px 30px rgba(174, 98, 80, .2);
+  background: var(--color-brand);
+  color: #fff;
+  box-shadow: var(--shadow-paper);
   animation: supporter-complete-pop 480ms var(--ease-emphasized) both;
 }
 
@@ -378,7 +378,7 @@
 }
 
 .placement-object-tone {
-  --object-tone: #f4c6bc;
+  --object-tone: #d8644a;
   width: 28px;
   height: 28px;
   padding: 0;
@@ -393,4 +393,399 @@
   box-shadow:
     0 0 0 2px var(--color-surface-raised),
     0 0 0 4px var(--color-content-primary);
+}
+
+.object-choice {
+  display: grid;
+  gap: 18px;
+  padding-top: 8px;
+}
+
+.object-choice .ds-choice-card__icon {
+  background: transparent;
+}
+
+.placement-object-option__preview.desk-object--sticker {
+  width: 38px;
+  height: 38px;
+}
+
+.sticker-pick {
+  display: grid;
+  gap: 22px;
+  padding-bottom: 24px;
+}
+
+.sticker-pick__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.sticker-pick__grid .ds-asset-tile {
+  aspect-ratio: 1;
+}
+
+.sticker-pick__image {
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px rgba(40, 30, 20, .2));
+}
+
+.placement-object-picker--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.support-complete__object.desk-object--sticker .desk-object__visual {
+  width: 96px;
+  height: 96px;
+}
+
+/*
+ * Small previews (choice sheet, placement picker). Two-class selectors so they
+ * win over the full-size .desk-object--{type} rules in DeskObjectLayer.css.
+ */
+.placement-object-option__preview.desk-object--letter {
+  width: 46px;
+  height: 33px;
+}
+
+.placement-object-option__preview.desk-object--charm {
+  width: 26px;
+  height: 40px;
+}
+
+.placement-object-option__preview .desk-object__paper {
+  gap: 3px;
+  padding: 8px 6px;
+}
+
+.placement-object-option__preview.desk-object--charm .desk-object__paper {
+  padding-top: 10px;
+}
+
+.placement-object-option__preview .desk-object__charm-text {
+  font-size: 9px;
+  letter-spacing: 0;
+}
+
+.placement-object-option__preview .desk-object__label {
+  top: 9px;
+  font-size: 6px;
+}
+
+.placement-object-option__preview .desk-object__ticket-text {
+  font-size: 10px;
+}
+
+.placement-object-option__preview .desk-object__tape {
+  width: 20px;
+  height: 8px;
+  top: -4px;
+}
+
+.placement-object-option__preview .desk-object__string {
+  top: -6px;
+  width: 12px;
+  height: 12px;
+}
+
+/* Keep the preview column steady so card text never sits under it */
+.object-choice .ds-choice-card__icon {
+  width: 52px;
+  height: 52px;
+  flex: none;
+}
+
+/* Charm design + material picker on the placement screen */
+.charm-picker {
+  display: grid;
+  gap: 10px;
+}
+
+.charm-picker__designs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.charm-picker__design {
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 10px 2px 8px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 14px;
+  background: var(--color-surface-raised);
+  color: var(--color-content-secondary);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 13px;
+  cursor: pointer;
+}
+
+.charm-picker__design--selected {
+  border-color: var(--color-content-primary);
+  box-shadow: 0 0 0 1px var(--color-content-primary);
+  color: var(--color-content-primary);
+}
+
+.charm-picker__preview {
+  position: relative;
+  width: 38px;
+  height: 56px;
+  display: block;
+}
+
+.charm-picker__materials {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.charm-picker__material {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
+  background: var(--color-surface-raised);
+  color: var(--color-content-secondary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.charm-picker__material strong {
+  color: var(--color-content-primary);
+}
+
+.charm-picker__material--selected {
+  border-color: var(--color-content-primary);
+  box-shadow: 0 0 0 1px var(--color-content-primary);
+}
+
+.charm-payment {
+  display: grid;
+  gap: 12px;
+}
+
+.charm-payment__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--color-surface-subtle);
+  font-size: 14px;
+}
+
+.charm-payment__note {
+  margin: 0;
+  color: var(--color-content-tertiary);
+  font-size: 12px;
+}
+
+.support-complete__object.desk-object--charm .desk-object__visual--charm-flat,
+.support-complete__object.desk-object--charm .desk-object__visual--charm-acrylic {
+  width: 66px;
+  height: 96px;
+}
+
+.charm-phrase {
+  display: grid;
+  gap: 6px;
+}
+
+.charm-phrase__suggestion {
+  justify-self: start;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.charm-payment__row--total {
+  background: transparent;
+  border: 1px solid var(--color-border-default);
+  font-weight: 700;
+}
+
+/* Entry point to the gem decorator on the placement screen */
+.gem-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: 12px;
+  background: var(--color-surface-raised);
+  color: var(--color-content-primary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.gem-entry__label {
+  flex: 1;
+  text-align: left;
+}
+
+.gem-entry__meta {
+  color: var(--color-content-secondary);
+  font-weight: 600;
+}
+
+/* Gem decorator sheet */
+.gem-decorator {
+  display: grid;
+  gap: 12px;
+}
+
+.gem-decorator__stage {
+  display: grid;
+  place-items: center;
+  min-height: 250px;
+  border-radius: 14px;
+  background: #8a5a35 url('/assets/desk/desk-day.webp') center / 220% no-repeat;
+}
+
+.gem-decorator__object {
+  position: relative;
+  touch-action: none;
+}
+
+.gem-decorator__handles {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+}
+
+.gem-decorator__handle {
+  position: absolute;
+  aspect-ratio: 1;
+  min-width: 14px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  touch-action: none;
+}
+
+.gem-decorator__handle--selected {
+  outline: 2px solid #fff;
+  box-shadow: 0 0 0 3px rgba(30, 17, 6, .45);
+}
+
+.gem-decorator__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.gem-decorator__tabs button {
+  min-height: 36px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 999px;
+  background: var(--color-surface-raised);
+  color: var(--color-content-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.gem-decorator__tabs button[aria-selected='true'] {
+  border-color: var(--color-content-primary);
+  color: var(--color-content-primary);
+}
+
+.gem-decorator__tray {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  gap: 6px;
+}
+
+.gem-decorator__tray-gem {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  padding: 7px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 10px;
+  background: var(--color-surface-raised);
+  cursor: pointer;
+}
+
+.gem-decorator__tray-gem:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.gem-decorator__tray-gem img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.gem-decorator__patterns {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 6px;
+}
+
+.gem-decorator__pattern {
+  display: grid;
+  gap: 2px;
+  padding: 10px 8px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
+  background: var(--color-surface-raised);
+  color: var(--color-content-secondary);
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gem-decorator__pattern strong {
+  color: var(--color-content-primary);
+  font-size: 14px;
+}
+
+.gem-decorator__pattern--active {
+  border-color: var(--color-content-primary);
+  box-shadow: 0 0 0 1px var(--color-content-primary);
+}
+
+.gem-decorator__actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.gem-decorator__text-button {
+  min-height: 32px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--color-content-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.gem-decorator__text-button:disabled {
+  opacity: .4;
+  cursor: default;
 }

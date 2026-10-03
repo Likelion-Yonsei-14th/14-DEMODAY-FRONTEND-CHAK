@@ -343,7 +343,7 @@ export function UnifiedComposerPage() {
       setSelectedLayerId(photo.id)
 
       if (processed.hasTransparency) {
-        showToast('투명 배경을 유지해서 사진을 추가했어요.')
+        showToast('배경을 지운 사진을 추가했어요.')
       }
     } catch (error) {
       showToast(
@@ -422,10 +422,10 @@ export function UnifiedComposerPage() {
         contentClassName="composer-shell"
         appBar={
           <AppBar
-            title="응원 만들기"
+            title="응원 쓰기"
             leading={
               <IconButton
-                label={`${recipientName}님의 공간으로 돌아가기`}
+                label={`${recipientName}님의 책상으로 돌아가기`}
                 icon={<ArrowLeft size={21} aria-hidden />}
                 onClick={() => navigate(backPath)}
               />

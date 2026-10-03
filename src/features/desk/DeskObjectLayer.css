@@ -1,11 +1,25 @@
 .desk-object-layer {
+  --shadow-length: 1;
   position: absolute;
   inset: 0;
   pointer-events: none;
+  transition: filter 1.2s ease;
+}
+
+/* Day: the same warm window light as the desk photo */
+.desk-object-layer--day {
+  filter: sepia(.07) brightness(.99);
+}
+
+/* Night: objects take the lamp's warm cast and throw longer shadows */
+.desk-object-layer--night {
+  --shadow-length: 1.7;
+  /* The pile sits in the lamp's pool of light: warm, not dimmed */
+  filter: sepia(.3) saturate(1.08) brightness(.93);
 }
 
 .desk-object {
-  --desk-object-color: #f4c6bc;
+  --desk-object-color: #e18067;
   --desk-object-rotation: 0deg;
   --desk-object-scale: 1;
   position: absolute;
@@ -30,149 +44,395 @@
 }
 
 .desk-object__visual {
+  --paper-image: url('/assets/desk/memo.webp');
   position: relative;
   width: 100%;
   height: 100%;
   display: block;
-  filter: drop-shadow(0 6px 7px rgba(73, 48, 35, .18));
+  /* Light comes from the upper right: contact shadow falls down-left */
+  /*
+   * Light from the upper right. Three layers: a tight dark contact line where
+   * the paper edge meets the wood, a short soft shadow, and a wide ambient one
+   * whose spread follows how far this paper sits off the desk (--lift).
+   */
+  filter:
+    drop-shadow(-.4px .6px .35px rgba(30, 17, 6, .5))
+    drop-shadow(
+      calc(-1.2px * var(--lift, 1))
+      calc(1.8px * var(--lift, 1))
+      calc(1.6px * var(--lift, 1))
+      rgba(38, 22, 9, .26)
+    )
+    drop-shadow(
+      calc(-3px * var(--shadow-length) * var(--lift, 1))
+      calc(5px * var(--shadow-length) * var(--lift, 1))
+      calc(7px * var(--lift, 1))
+      rgba(38, 22, 9, .15)
+    );
+  transform:
+    rotate(var(--visual-jitter-rotation, 0deg))
+    scale(var(--visual-jitter-scale, 1));
 }
 
+/*
+ * Photographed off-white paper, tinted by the object color (multiply) and
+ * cut to the paper's own silhouette (mask), so torn edges and curls stay real.
+ */
 .desk-object__paper {
   position: absolute;
   inset: 0;
+  overflow: hidden;
   display: grid;
   align-content: center;
   gap: 6px;
-  padding: 12px 13px;
-  border: 1px solid rgba(72, 52, 42, .1);
-  border-radius: 9px;
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.52), transparent 40%),
-    var(--desk-object-color);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+  padding: 14px 12px;
+  background-color: var(--desk-object-color);
+  background-image: var(--paper-image);
+  background-size: 100% 100%;
+  background-blend-mode: multiply;
+  -webkit-mask: var(--paper-image) center / 100% 100% no-repeat;
+  mask: var(--paper-image) center / 100% 100% no-repeat;
 }
 
+/* Faint pencil scribbles — decorative only, never real message text */
 .desk-object__line {
-  height: 3px;
+  height: 1.5px;
   border-radius: 999px;
-  background: rgba(83, 64, 56, .34);
+  background: rgba(46, 34, 24, .26);
+  filter: blur(.2px);
 }
 
-.desk-object__line:nth-child(2) {
-  width: 74%;
-}
-
-.desk-object__line:nth-child(3) {
-  width: 54%;
-}
-
-.desk-object__seal {
+/*
+ * Window light from the upper right across each sheet: a lighter top-right,
+ * a slightly darker lower-left, and a soft highlight where an edge curls up.
+ */
+.desk-object__light {
   position: absolute;
-  right: 8px;
-  bottom: 7px;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #e8b84c;
-  box-shadow: 0 1px 0 rgba(255,255,255,.45) inset;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    215deg,
+    rgba(255, 249, 234, .3) 0%,
+    rgba(255, 249, 234, 0) 42%,
+    rgba(42, 26, 12, .1) 100%
+  );
+  mix-blend-mode: soft-light;
 }
 
+.desk-object__visual--curl .desk-object__light {
+  background:
+    radial-gradient(circle at var(--curl-at), rgba(255, 250, 238, .5), transparent 34%),
+    linear-gradient(
+      215deg,
+      rgba(255, 249, 234, .3) 0%,
+      rgba(255, 249, 234, 0) 42%,
+      rgba(42, 26, 12, .1) 100%
+    );
+}
+
+/* Dog-eared corner: cut the paper and lay the folded flap back over it */
+.desk-object__visual--dog-ear .desk-object__paper {
+  -webkit-mask:
+    var(--paper-image) center / 100% 100% no-repeat,
+    linear-gradient(315deg, transparent 7px, #000 7.5px);
+  -webkit-mask-composite: source-in;
+  mask:
+    var(--paper-image) center / 100% 100% no-repeat,
+    linear-gradient(315deg, transparent 7px, #000 7.5px);
+  mask-composite: intersect;
+}
+
+.desk-object__dog-ear {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 0;
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--desk-object-color) 55%, #fffaf0) 0%,
+    color-mix(in srgb, var(--desk-object-color) 80%, #3a2412) 100%
+  );
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.desk-object__line:nth-of-type(2) { width: 74%; }
+.desk-object__line:nth-of-type(3) { width: 52%; }
+
+.desk-object__tape {
+  position: absolute;
+  z-index: 2;
+  top: -6px;
+  left: var(--tape-x, 50%);
+  width: 34px;
+  height: 14px;
+  background: var(--tape-image) center / 100% 100% no-repeat;
+  opacity: .88;
+  mix-blend-mode: multiply;
+  transform: translateX(-50%) rotate(var(--tape-rotation, -4deg));
+}
+
+/* Memo */
+.desk-object--memo {
+  width: 64px;
+  height: 64px;
+}
+
+.desk-object__visual--lined {
+  --paper-image: url('/assets/desk/lined.webp');
+}
+
+.desk-object--memo .desk-object__visual--lined {
+  width: 82%;
+  margin-inline: auto;
+}
+
+/* Polaroid: colored "photo" behind a real frame — no message content */
 .desk-object--photo-card {
-  width: 68px;
-  height: 76px;
-}
-
-.desk-object--photo-card .desk-object__paper {
-  padding-top: 38px;
-  background: #fffaf5;
+  width: 62px;
+  height: 78px;
 }
 
 .desk-object__photo {
   position: absolute;
-  left: 8px;
-  right: 8px;
-  top: 8px;
-  height: 33px;
-  border-radius: 5px;
+  left: 8%;
+  right: 8%;
+  top: 7%;
+  bottom: 26%;
   background:
-    linear-gradient(145deg, rgba(255,255,255,.35), transparent 45%),
+    radial-gradient(circle at 70% 28%, rgba(255, 246, 228, .55), transparent 42%),
+    linear-gradient(200deg, transparent 50%, rgba(52, 40, 28, .2)),
     var(--desk-object-color);
 }
 
-.desk-object--memo {
-  width: 66px;
-  height: 66px;
-}
-
-.desk-object--letter {
-  width: 92px;
-  height: 50px;
-}
-
-.desk-object--letter .desk-object__paper {
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-}
-
-.desk-object--letter .desk-object__paper::after {
-  content: '';
+.desk-object__frame {
   position: absolute;
   inset: 0;
-  clip-path: polygon(0 0, 50% 58%, 100% 0, 100% 100%, 0 100%);
-  background: rgba(255,255,255,.18);
-  pointer-events: none;
+  background: url('/assets/desk/polaroid.webp') center / 100% 100% no-repeat;
 }
 
+.desk-object--photo-card .desk-object__tape {
+  top: -5px;
+  width: 26px;
+}
+
+/* Envelope */
+.desk-object--letter {
+  width: 90px;
+  height: 64px;
+}
+
+.desk-object--letter .desk-object__visual {
+  --paper-image: url('/assets/desk/envelope.webp');
+}
+
+/* Charm: a paper tag on a string */
 .desk-object--charm {
-  width: 58px;
+  width: 46px;
   height: 72px;
 }
 
-.desk-object--charm .desk-object__paper {
-  border-radius: 11px 11px 16px 16px;
+.desk-object--charm .desk-object__visual {
+  --paper-image: url('/assets/desk/tag.webp');
 }
 
-.desk-object__charm-knot {
+.desk-object--charm .desk-object__paper {
+  justify-items: center;
+  padding: 18px 0 0;
+}
+
+.desk-object__charm-text {
+  color: rgba(40, 30, 22, .72);
+  mix-blend-mode: multiply;
+  font-family: var(--font-hand);
+  font-size: 17px;
+  line-height: 1;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 2px;
+}
+
+.desk-object__string {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: -10px;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid #b49a78;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  transform: translateX(-50%) rotate(-18deg);
+}
+
+/*
+ * Designed charms. The artwork comes as an image; the phrase is printed in
+ * code on the empty banner, sized in container units so it scales with the
+ * charm everywhere (desk, pickers, completion screen).
+ */
+.desk-object__charm {
   position: absolute;
   left: 50%;
-  top: -8px;
-  width: 18px;
-  height: 13px;
-  border: 3px solid #7f6e55;
-  border-bottom: 0;
-  border-radius: 12px 12px 0 0;
-  transform: translateX(-50%);
+  top: 50%;
+  width: 100%;
+  aspect-ratio: 300 / 434;
+  max-height: 100%;
+  container-type: inline-size;
+  transform: translate(-50%, -50%);
 }
 
-.desk-object--poster-card {
-  width: 72px;
-  height: 88px;
+.desk-object__visual--charm-acrylic .desk-object__charm {
+  aspect-ratio: 300 / 443;
 }
 
-.desk-object--poster-card .desk-object__line:first-child {
-  height: 8px;
-  width: 86%;
+.desk-object__charm-art {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
 }
 
-.desk-object--ticket {
-  width: 86px;
-  height: 45px;
-}
-
-.desk-object--ticket .desk-object__paper {
-  border-radius: 7px;
-}
-
-.desk-object__ticket-notch {
+.desk-object__charm-phrase {
   position: absolute;
-  inset: 6px 28px;
-  border-left: 1px dashed rgba(68, 54, 46, .28);
-  border-right: 1px dashed rgba(68, 54, 46, .28);
+  left: 14%;
+  right: 14%;
+  top: 74.5%;
+  height: 8.5%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--charm-ink);
+  font-family: var(--font-hand);
+  /* Shrinks for longer custom phrases so they stay on the banner */
+  font-size: min(13cqw, calc(66cqw / var(--charm-phrase-length, 5)));
+  line-height: 1;
+  white-space: nowrap;
+  mix-blend-mode: multiply;
+}
+
+.desk-object__visual--charm-acrylic .desk-object__charm-phrase {
+  top: 77.5%;
+  height: 7.5%;
+}
+
+/* Flat sticker charm: stuck flat on the wood, barely any lift */
+.desk-object__visual--charm-flat {
+  filter:
+    drop-shadow(-.4px .6px .35px rgba(30, 17, 6, .45))
+    drop-shadow(-1px 1.4px 1.2px rgba(38, 22, 9, .2));
+}
+
+/* Acrylic charm: a thick clear slab, so a deeper and softer shadow */
+.desk-object__visual--charm-acrylic {
+  filter:
+    drop-shadow(-.6px 1px .5px rgba(30, 17, 6, .4))
+    drop-shadow(
+      calc(-2.5px * var(--shadow-length))
+      calc(4px * var(--shadow-length))
+      3px
+      rgba(38, 22, 9, .28)
+    )
+    drop-shadow(
+      calc(-5px * var(--shadow-length))
+      calc(8px * var(--shadow-length))
+      10px
+      rgba(38, 22, 9, .14)
+    );
+}
+
+.desk-object--charm:has(.desk-object__charm) {
+  width: 48px;
+  height: 72px;
+}
+
+/* Rhinestones glued on top: tiny hard contact shadow, no lift */
+.desk-object__gems {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  filter: drop-shadow(-.3px .5px .3px rgba(30, 17, 6, .4));
+}
+
+.desk-object__gem {
+  position: absolute;
+  height: auto;
+  display: block;
+  max-width: none;
+}
+
+/* Card with a label-maker strip */
+.desk-object--poster-card {
+  width: 70px;
+  height: 84px;
+}
+
+.desk-object--poster-card .desk-object__paper {
+  align-content: end;
+  padding-bottom: 16px;
+}
+
+.desk-object__label {
+  position: absolute;
+  z-index: 2;
+  left: -4px;
+  right: 6px;
+  top: 18px;
+  padding: 4px 7px;
+  background: url('/assets/desk/label-black.webp') center / 100% 100% no-repeat;
+  color: rgba(241, 236, 226, .9);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  line-height: 1;
+  transform: rotate(-4deg);
+}
+
+/* Ticket: a torn strip of paper */
+.desk-object--ticket {
+  width: 84px;
+  height: 44px;
+}
+
+.desk-object--ticket .desk-object__visual {
+  --paper-image: url('/assets/desk/torn-strip.webp');
+}
+
+/* Printed in grape-purple ink on the paper, slightly faded */
+.desk-object__ticket-text {
+  justify-self: center;
+  padding-top: 6px;
+  color: rgba(108, 72, 156, .86);
+  mix-blend-mode: multiply;
+  font-family: var(--font-hand);
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* Die-cut sticker stuck flat on the desk: barely any lift */
+.desk-object--sticker {
+  width: 50px;
+  height: 50px;
+}
+
+.desk-object--sticker .desk-object__visual {
+  filter: drop-shadow(-.5px 1px 1px rgba(52, 40, 28, .24));
+}
+
+.desk-object__sticker {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
 }
 
 .desk-object--locked .desk-object__visual {
   filter:
-    saturate(.72)
-    drop-shadow(0 5px 6px rgba(73, 48, 35, .14));
+    saturate(.5)
+    drop-shadow(-1px 1.5px 1px rgba(52, 40, 28, .18))
+    drop-shadow(-3px 5px 6px rgba(52, 40, 28, .1));
 }
 
 .desk-object__lock {
@@ -213,8 +473,11 @@
     drop-shadow(0 0 7px rgba(209, 88, 74, .88));
 }
 
-.desk-object--invalid .desk-object__paper {
-  outline: 2px solid #d15a4a;
+/* On the outer box: the paper itself is masked and would clip an outline */
+.desk-object--invalid .desk-object__visual {
+  outline: 2px solid #d93a1f;
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 .desk-object__drag-hint {
@@ -295,7 +558,7 @@
   height: 9px;
   border: 2px solid rgba(255, 253, 248, .95);
   border-radius: 50%;
-  background: #e98d78;
+  background: #d93a1f;
   box-shadow: 0 2px 7px rgba(113, 69, 56, .18);
 }
 

@@ -19,6 +19,7 @@ import {
   isSameCalendarDate,
 } from '@/features/desk/dailyAvailability'
 import { resolvePreviewReadMode } from '@/features/desk/dailyAvailability'
+import { isStickerMessage } from '@/features/supporter/deskStickers'
 import {
   mergeSupportMessages,
 } from '@/features/supporter/seededMessages'
@@ -300,7 +301,7 @@ export function SupporterRepliesPage() {
               navigate('/prototype/support/jisu/compose')
             }}
           >
-            {currentDesk.displayName}님에게 새로운 이야기 남기기
+            {currentDesk.displayName}님에게 응원 하나 더 쓰기
           </Button>
         ) : undefined
       }
@@ -328,7 +329,7 @@ export function SupporterRepliesPage() {
               <article className="received-reply" key={reply.id}>
                 {source && (
                   <div className="received-reply__mine">
-                    <span>내가 남긴 이야기</span>
+                    <span>내가 쓴 응원</span>
                     <p>{messagePreview(source)}</p>
                   </div>
                 )}
@@ -373,6 +374,8 @@ function getReplyTargets(
   const bySender = new Map<string, Message>()
 
   messages.forEach((message) => {
+    if (isStickerMessage(message)) return
+
     const unlockAt = getMessageAvailability(
       readMode,
       message.createdAt,

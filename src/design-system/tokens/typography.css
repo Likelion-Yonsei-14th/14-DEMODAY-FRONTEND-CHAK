@@ -1,4 +1,5 @@
 :root {
+  --font-hand: '나눔손글씨 김유이체', 'Nanum GimYuICe', cursive;
   --font-ui: 'Pretendard Variable', Pretendard, 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   --type-display-xl-size: 40px;

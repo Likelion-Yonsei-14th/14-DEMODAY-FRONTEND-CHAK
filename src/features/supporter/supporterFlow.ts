@@ -16,11 +16,15 @@ export const selectableDeskObjectTypes: DeskObjectType[] = [
 ]
 
 export const deskObjectToneOptions = [
-  { id: 'coral', label: '코랄', color: '#F4C6BC' },
-  { id: 'butter', label: '버터', color: '#F4D98A' },
-  { id: 'sage', label: '세이지', color: '#C7D8B8' },
-  { id: 'sky', label: '스카이', color: '#BFD8E8' },
-  { id: 'lilac', label: '라일락', color: '#D7C6E8' },
+  // Slightly aged early-2000s stationery colors: still saturated enough to
+  // pop on wood, softened by paper texture and light rather than muting.
+  { id: 'coral', label: '토마토', color: '#D8644A' },
+  { id: 'butter', label: '버터', color: '#EDCB62' },
+  { id: 'sage', label: '클로버', color: '#3E9A62' },
+  { id: 'sky', label: '코발트', color: '#4F72C4' },
+  { id: 'cream', label: '크림', color: '#F1E6CC' },
+  { id: 'pink', label: '핑크', color: '#DD7D95' },
+  { id: 'lilac', label: '포도', color: '#7D5BA6' },
 ] as const
 
 export function resolveDeskObjectType(draft: MessageDraft): DeskObjectType {
@@ -122,10 +126,9 @@ type Rect = {
   height: number
 }
 
-const STATIC_DECOR_RECTS: Rect[] = [
-  { x: 14, y: 39, width: 23, height: 19 },
-  { x: 84, y: 37, width: 23, height: 15 },
-]
+// The desk photos keep their clutter outside the placement zone
+// (clampPlacement: x 12–88, y 40–72), so nothing static blocks placement.
+const STATIC_DECOR_RECTS: Rect[] = []
 
 const objectSizeByType: Record<
   DeskObjectType,
@@ -138,6 +141,7 @@ const objectSizeByType: Record<
   charm: { width: 15, height: 19 },
   ticket: { width: 21, height: 11 },
   'generic-card': { width: 20, height: 14 },
+  sticker: { width: 13, height: 13 },
 }
 
 export function clampPlacement(placement: DeskPlacement): DeskPlacement {
@@ -233,4 +237,5 @@ export const deskObjectLabels: Record<DeskObjectType, string> = {
   letter: '편지',
   ticket: '약속 티켓',
   'generic-card': '응원 카드',
+  sticker: '스티커',
 }

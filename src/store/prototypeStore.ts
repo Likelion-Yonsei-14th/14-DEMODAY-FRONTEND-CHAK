@@ -14,10 +14,16 @@ import {
   resolveDeskZone,
   resolveInitialPlacement,
 } from '@/features/supporter/supporterFlow'
+import {
+  deskStickers,
+  type SupporterObjectChoice,
+} from '@/features/supporter/deskStickers'
 import type {
   AuthProvider,
   AuthSession,
   BlackboardEntry,
+  CharmMaterial,
+  DeskGem,
   Classroom,
   ClassroomMember,
   Desk,
@@ -58,6 +64,11 @@ type PrototypeState = {
   publicBlockedSupporters: string[]
   reportedMessageIds: string[]
   readMessageIds: string[]
+  supporterObjectChoice: SupporterObjectChoice
+  stickerDraft: { stickerId: string; senderName: string }
+  setSupporterObjectChoice: (choice: SupporterObjectChoice) => void
+  setStickerDraft: (patch: Partial<{ stickerId: string; senderName: string }>) => void
+  placeSticker: (placement: DeskPlacement) => void
   setDebugMode: (value: boolean) => void
   signIn: (email: string, provider?: AuthProvider) => void
   signUp: (displayName: string, email: string) => void
@@ -114,6 +125,12 @@ type PrototypeState = {
     placement?: DeskPlacement,
     representationType?: DeskObjectType,
     objectColor?: string,
+    charm?: {
+      assetId: string
+      material: CharmMaterial
+      charmPhrase?: string
+    },
+    gems?: DeskGem[],
   ) => void
   markMessageRead: (messageId: string) => void
   setClaimState: (state: ClaimState) => void
@@ -153,6 +170,56 @@ export const usePrototypeStore = create<PrototypeState>()(
       publicBlockedSupporters: [],
       reportedMessageIds: [],
       readMessageIds: [],
+      supporterObjectChoice: 'letter',
+      stickerDraft: { stickerId: deskStickers[0]!.id, senderName: '' },
+      setSupporterObjectChoice: (supporterObjectChoice) =>
+        set({ supporterObjectChoice }),
+      setStickerDraft: (patch) =>
+        set((state) => ({ stickerDraft: { ...state.stickerDraft, ...patch } })),
+      placeSticker: (placement) =>
+        set((state) => {
+          const stamp = Date.now().toString(36)
+          const messageId = `message-${stamp}`
+          const senderName =
+            state.stickerDraft.senderName.trim() ||
+            state.supporterSettings.defaultNickname.trim() ||
+            '익명의 친구'
+
+          // A sticker is stored as a message with no content so every desk
+          // object still maps to exactly one message.
+          const message: Message = {
+            ...emptyComposerDraft,
+            id: messageId,
+            kind: 'sticker',
+            stickerId: state.stickerDraft.stickerId,
+            visibility: 'private',
+            senderName,
+            recipientDeskId: state.currentDesk.id,
+            status: 'sent',
+            createdAt: new Date().toISOString(),
+          }
+
+          return {
+            messages: [...state.messages, message],
+            supporterIdentityName: senderName,
+            currentDesk: {
+              ...state.currentDesk,
+              objects: [
+                ...state.currentDesk.objects,
+                {
+                  id: `desk-object-${stamp}`,
+                  messageId,
+                  representationType: 'sticker',
+                  assetId: state.stickerDraft.stickerId,
+                  zone: resolveDeskZone(state.currentDesk.objects.length),
+                  order: state.currentDesk.objects.length,
+                  ...placement,
+                  zIndex: state.currentDesk.objects.length + 30,
+                },
+              ],
+            },
+          }
+        }),
       setDebugMode: (debugMode) => set({ debugMode }),
       signIn: (email, provider = 'password') =>
         set({
@@ -624,6 +691,8 @@ export const usePrototypeStore = create<PrototypeState>()(
         placement,
         selectedRepresentationType,
         objectColor,
+        charm,
+        gems,
       ) =>
         set((state) => {
           const stamp = Date.now().toString(36)
@@ -663,11 +732,13 @@ export const usePrototypeStore = create<PrototypeState>()(
                   messageId,
                   representationType,
                   color: objectColor,
+                  ...(representationType === 'charm' && charm ? charm : {}),
+                  ...(gems?.length ? { gems } : {}),
                   zone,
                   order: state.currentDesk.objects.length,
                   locked: state.composerDraft.visibility === 'private',
                   ...finalPlacement,
-                  zIndex: state.currentDesk.objects.length + 10,
+                  zIndex: state.currentDesk.objects.length + 30,
                 },
               ],
             },
@@ -722,6 +793,8 @@ export const usePrototypeStore = create<PrototypeState>()(
         publicBlockedSupporters: state.publicBlockedSupporters,
         reportedMessageIds: state.reportedMessageIds,
         readMessageIds: state.readMessageIds,
+        supporterObjectChoice: state.supporterObjectChoice,
+        stickerDraft: state.stickerDraft,
       }),
     },
   ),

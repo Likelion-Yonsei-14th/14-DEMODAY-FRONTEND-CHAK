@@ -43,7 +43,15 @@ export type MessageDraft = Omit<CardPage, 'id'> & {
   senderName: string
 }
 
+/**
+ * 'sticker' is a gift with no written content: pages stay empty and only the
+ * sender name and time are shown, to the desk owner only.
+ */
+export type MessageKind = 'card' | 'sticker'
+
 export type Message = MessageDraft & {
+  kind?: MessageKind
+  stickerId?: string
   recipientDeskId: string
   status: MessageStatus
   createdAt: string

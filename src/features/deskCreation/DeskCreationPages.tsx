@@ -201,7 +201,7 @@ export function DeskCreateReadModePage() {
 
       <div className="desk-create__mode-list">
         <ChoiceCard
-          title="하루를 마무리하며"
+          title="매일 조금씩 열어보기"
           description="매일 정해진 시간에 그날의 응원을 열어봐요."
           icon={<MoonStar size={22} aria-hidden />}
           selected={daily}
@@ -231,7 +231,7 @@ export function DeskCreateReadModePage() {
         )}
 
         <ChoiceCard
-          title="한 번에 열어보기"
+          title="정한 날 한 번에 열어보기"
           description="정해둔 날까지 응원을 모아두고 한 번에 열어봐요."
           icon={<CalendarDays size={22} aria-hidden />}
           selected={!daily}
@@ -303,11 +303,11 @@ export function DeskCreateCompletePage() {
     const title =
       kind === 'owner'
         ? `${desk.displayName}님의 응원 책상`
-        : `${desk.displayName}님에게 응원을 남겨주세요`
+        : `${desk.displayName} 책상에 응원 하나 놓고 가줘!`
     const text =
       kind === 'owner'
         ? '친구들이 응원 책상을 만들어두었어요.'
-        : `${desk.displayName}님의 책상에 응원 하나 남겨주세요.`
+        : `친구들이 ${desk.displayName} 응원 책상을 만들었어. 응원 하나 놓고 가줘!`
 
     try {
       if (navigator.share) {
@@ -375,7 +375,7 @@ export function DeskCreateCompletePage() {
               leadingIcon={<Share2 size={18} aria-hidden />}
               onClick={() => share('support')}
             >
-              친구에게 응원 링크 보내기
+              응원 링크 보내기
             </Button>
           ) : (
             <>
@@ -393,14 +393,14 @@ export function DeskCreateCompletePage() {
                 leadingIcon={<Share2 size={18} aria-hidden />}
                 onClick={() => share('support')}
               >
-                친구들에게 응원 링크 보내기
+                응원 링크 보내기
               </Button>
               <Button
                 variant="tertiary"
                 fullWidth
                 onClick={() => navigate('/prototype/manage')}
               >
-                만든 공간 관리하기
+                만든 응원 책상 관리하기
               </Button>
             </>
           )}

@@ -20,12 +20,15 @@ import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import {
   formatUnlockAt,
-  getMessageAvailability,
   resolvePreviewReadMode,
 } from '@/features/desk/dailyAvailability'
 import { useReadModeNow } from '@/features/desk/useReadModeNow'
 import { OriginalMessageRenderer } from './OriginalMessageRenderer'
 import { mergeSupportMessages } from './seededMessages'
+import {
+  getDeskSticker,
+  getSupportMessageAvailability,
+} from './deskStickers'
 import './MessageViewerPage.css'
 
 type ReaderLocationState = {
@@ -115,9 +118,9 @@ export function MessageViewerPage() {
     location.search,
   )
   const availability = message
-    ? getMessageAvailability(
+    ? getSupportMessageAvailability(
         readMode,
-        message.createdAt,
+        message,
         now,
       )
     : null
@@ -330,7 +333,7 @@ export function MessageViewerPage() {
           <span className="message-viewer__locked-icon" aria-hidden>
             <LockKeyhole size={23} />
           </span>
-          <h2>책상 주인만 볼 수 있는 응원이에요.</h2>
+          <h2>{currentDesk?.displayName ?? '책상 주인'}님만 볼 수 있는 응원이에요.</h2>
           <Button variant="secondary" onClick={back}>
             책상으로 돌아가기
           </Button>
@@ -373,7 +376,52 @@ export function MessageViewerPage() {
           <h2>
             {unlockLabel
               ? `${unlockLabel}에 열 수 있어요.`
-              : '아직 열 수 없는 응원이에요.'}
+              : '아직 열리지 않은 응원이에요.'}
+          </h2>
+          <Button variant="secondary" onClick={back}>
+            내 책상으로 돌아가기
+          </Button>
+        </main>
+      </AppShell>
+    )
+  }
+
+  if (message.kind === 'sticker') {
+    const sticker = getDeskSticker(message.stickerId)
+    const givenAt = new Intl.DateTimeFormat('ko-KR', {
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(new Date(message.createdAt))
+
+    return (
+      <AppShell
+        surface="base"
+        contentClassName="message-viewer-shell"
+        appBar={
+          <AppBar
+            title="받은 스티커"
+            leading={
+              <IconButton
+                label="내 책상으로 돌아가기"
+                icon={<ArrowLeft size={21} aria-hidden />}
+                onClick={back}
+              />
+            }
+          />
+        }
+      >
+        <main className="message-viewer__sticker">
+          <img
+            className="message-viewer__sticker-image"
+            src={sticker.source}
+            alt={sticker.name}
+          />
+          <h2>
+            {message.senderName}님이
+            <br />
+            {givenAt}에 붙인 스티커예요.
           </h2>
           <Button variant="secondary" onClick={back}>
             내 책상으로 돌아가기
@@ -546,9 +594,9 @@ export function MessageViewerPage() {
                 aria-label="응원에 반응 남기기"
               >
                 {[
-                  ['heart', '❤️', '하트'],
+                  ['heart', '❤️', '좋아요'],
                   ['teary', '🥹', '뭉클해요'],
-                  ['clap', '👏', '박수'],
+                  ['clap', '👏', '박수쳐요'],
                 ].map(([reaction, emoji, label]) => (
                   <button
                     type="button"

@@ -349,11 +349,6 @@ export function ComposerToolTray({
                 onBringForward={onTextBringForward}
                 onDelete={onTextDelete}
               />
-
-              <p className="composer-font-license-note">
-                네이버 나눔손글씨 · 나눔스퀘어 네오와 오픈 라이선스
-                Pretendard를 사용해요.
-              </p>
             </>
           ) : (
             <div className="composer-text-empty-state">
@@ -372,8 +367,8 @@ export function ComposerToolTray({
           icon={
             <Sparkles size={19} aria-hidden />
           }
-          title="그래픽 문구"
-          description="Figma에서 만든 벡터 에셋을 연결할 예정이에요."
+          title="문구"
+          description="곧 더 많은 문구가 추가돼요."
         />
       )}
 
@@ -656,7 +651,7 @@ function PhotoTool({
                   {photo.role === 'background'
                     ? '배경'
                     : photo.hasTransparency
-                      ? '누끼'
+                      ? '배경 지우기'
                       : '사진'}
                 </span>
               </button>
@@ -682,7 +677,7 @@ function PhotoTool({
               </span>
               <div className="composer-chip-row">
                 {([
-                  ['plain', '그대로'],
+                  ['plain', '테두리 없음'],
                   ['white', '화이트'],
                   ['polaroid', '폴라로이드'],
                 ] as Array<
@@ -732,7 +727,7 @@ function LayerActions({
     <div className="composer-layer-actions">
       {canReorder && (
         <>
-          <span className="composer-tool-label">레이어</span>
+          <span className="composer-tool-label">순서</span>
           <div className="composer-layer-actions__row">
             <button
               type="button"

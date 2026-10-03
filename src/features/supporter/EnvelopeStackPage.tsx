@@ -19,6 +19,7 @@ import {
 } from '@/features/desk/dailyAvailability'
 import { useReadModeNow } from '@/features/desk/useReadModeNow'
 import type { Message } from '@/types'
+import { isStickerMessage } from './deskStickers'
 import { createEnvelopeTheme } from './envelopeTheme'
 import { mergeSupportMessages } from './seededMessages'
 import './EnvelopeStackPage.css'
@@ -43,6 +44,8 @@ export function EnvelopeStackPage() {
     () =>
       mergeSupportMessages(storedMessages).filter(
         (message) =>
+          // Stickers have no card to open, so they stay on the desk only.
+          !isStickerMessage(message) &&
           !ownerSettings.blockedSupporters.includes(
             message.senderName,
           ),
@@ -275,7 +278,7 @@ export function EnvelopeStackPage() {
                       onClick={() => openMessage(message, index)}
                       aria-label={
                         locked
-                          ? `${message.senderName}에게서 온 응원 봉투는 아직 잠겨 있음`
+                          ? `아직 열리지 않은 ${message.senderName}님의 응원 봉투`
                           : `${message.senderName}에게서 온 응원 봉투 열기`
                       }
                     >
@@ -381,17 +384,23 @@ export function EnvelopeStackPage() {
                         {locked && (
                           <span
                             className="message-envelope__locked"
-                            aria-label="아직 열 수 없는 응원"
+                            aria-label={
+                              availability?.unlockAt
+                                ? `${formatUnlockAt(availability.unlockAt, now)}에 열려요`
+                                : '아직 열 수 없는 응원'
+                            }
                           >
                             <LockKeyhole size={11} aria-hidden />
-                            아직 잠김
+                            {availability?.unlockAt
+                              ? `${formatUnlockAt(availability.unlockAt, now)}에 열려요`
+                              : '아직 잠김'}
                           </span>
                         )}
 
                         {message.visibility === 'private' && (
                           <span
                             className="message-envelope__private"
-                            aria-label="비공개 응원"
+                            aria-label="나만 보는 응원"
                           >
                             <LockKeyhole size={13} aria-hidden />
                           </span>

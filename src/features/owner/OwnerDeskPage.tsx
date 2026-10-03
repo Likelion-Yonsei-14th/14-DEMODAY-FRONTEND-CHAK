@@ -13,9 +13,9 @@ import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import {
   formatUnlockAt,
-  getMessageAvailability,
   resolvePreviewReadMode,
 } from '@/features/desk/dailyAvailability'
+import { getSupportMessageAvailability } from '@/features/supporter/deskStickers'
 import { useReadModeNow } from '@/features/desk/useReadModeNow'
 import {
   mergeSupportMessages,
@@ -72,9 +72,9 @@ export function OwnerDeskPage() {
       new Map(
         messages.map((message) => [
           message.id,
-          getMessageAvailability(
+          getSupportMessageAvailability(
             readMode,
-            message.createdAt,
+            message,
             now,
           ),
         ]),
@@ -176,7 +176,7 @@ export function OwnerDeskPage() {
           }
           trailing={
             <IconButton
-              label="응원 공간 설정"
+              label="응원 책상 설정"
               icon={<Settings size={20} aria-hidden />}
               onClick={() => navigate('/prototype/my/settings')}
             />

@@ -18,6 +18,7 @@ export function SentMessagesPage() {
   const identity = usePrototypeStore(
     (state) => state.supporterIdentityName,
   )
+  const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const messages = usePrototypeStore((state) => state.messages)
   const readMessageIds = usePrototypeStore(
     (state) => state.readMessageIds,
@@ -66,7 +67,7 @@ export function SentMessagesPage() {
               navigate('/prototype/support/jisu/compose')
             }}
           >
-            새로운 응원 남기기
+            응원 하나 더 쓰기
           </Button>
         ) : undefined
       }
@@ -109,7 +110,7 @@ export function SentMessagesPage() {
                         )}
                         {publicMessage
                           ? '함께 보기'
-                          : '받는 사람만 보기'}
+                          : `${currentDesk.displayName}님만 보기`}
                       </span>
                       <time>
                         {new Intl.DateTimeFormat('ko-KR', {
@@ -128,7 +129,7 @@ export function SentMessagesPage() {
                   </header>
 
                   <p>
-                    {message.textElements[0]?.text ||
+                    {message.kind === 'sticker' ? '스티커를 붙였어요.' : message.textElements[0]?.text ||
                       message.pages?.[0]
                         ?.textElements[0]?.text ||
                       '마음을 담아 남긴 응원'}

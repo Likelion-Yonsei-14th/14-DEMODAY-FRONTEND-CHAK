@@ -5,7 +5,7 @@ import {
   Settings,
   Share2,
 } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppBar, Button, IconButton, useFeedback } from '@/design-system'
 import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
@@ -18,6 +18,8 @@ import {
   mergeSupportMessages,
   seededDeskObjects,
 } from './seededMessages'
+import { isStickerMessage, type SupporterObjectChoice } from './deskStickers'
+import { ObjectChoiceSheet } from './ObjectChoiceSheet'
 import './SupportDeskPage.css'
 
 export function SupportDeskPage() {
@@ -32,6 +34,10 @@ export function SupportDeskPage() {
   const messageReplies = usePrototypeStore(
     (state) => state.messageReplies,
   )
+  const setSupporterObjectChoice = usePrototypeStore(
+    (state) => state.setSupporterObjectChoice,
+  )
+  const [choiceOpen, setChoiceOpen] = useState(false)
   const publicHiddenMessageIds = usePrototypeStore(
     (state) => state.publicHiddenMessageIds,
   )
@@ -74,6 +80,11 @@ export function SupportDeskPage() {
     const message = messages.find((item) => item.id === messageId)
     if (!message) return
 
+    if (isStickerMessage(message)) {
+      showToast(`${message.senderName}님이 붙인 스티커예요.`)
+      return
+    }
+
     if (message.visibility === 'private') {
       showToast(`${recipientName}님만 열어볼 수 있는 응원이에요.`)
       return
@@ -96,7 +107,7 @@ export function SupportDeskPage() {
       if (navigator.share) {
         await navigator.share({
           title: `${recipientName}님의 응원 책상`,
-          text: `${recipientName}님에게 응원 하나 남겨주세요.`,
+          text: `${recipientName}님 책상에 응원 하나 놓고 가 주세요.`,
           url,
         })
         return
@@ -157,10 +168,24 @@ export function SupportDeskPage() {
             <Button
               variant="brand"
               fullWidth
-              onClick={() => navigate('/prototype/support/jisu/compose')}
+              onClick={() => setChoiceOpen(true)}
             >
               응원 놓고 가기
             </Button>
+            <ObjectChoiceSheet
+              open={choiceOpen}
+              recipientName={recipientName}
+              onClose={() => setChoiceOpen(false)}
+              onChoose={(choice: SupporterObjectChoice) => {
+                setSupporterObjectChoice(choice)
+                setChoiceOpen(false)
+                navigate(
+                  choice === 'sticker'
+                    ? '/prototype/support/jisu/sticker'
+                    : '/prototype/support/jisu/compose',
+                )
+              }}
+            />
           </div>
         )
       }
@@ -186,7 +211,7 @@ export function SupportDeskPage() {
               <p>
                 {recipientName}님에게 전하고 싶은 마음이 있다면,
                 <br />
-                응원 하나를 남겨보세요.
+                응원 하나를 놓고 가보세요.
               </p>
             </>
           )}

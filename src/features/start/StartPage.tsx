@@ -90,13 +90,13 @@ export function StartPage() {
         <section className="start-page__choices" aria-label="응원을 모으는 방법">
           <ChoiceCard
             title="한 사람에게 마음을 모아줄래요"
-            description="나 또는 한 친구를 위한 공간을 만들고, 링크로 응원을 모아요."
+            description="나 또는 친구 한 명의 응원 책상을 만들고, 링크로 응원을 모아요."
             icon={<UserRound size={22} aria-hidden />}
             onClick={startPersonal}
           />
           <ChoiceCard
             title="우리끼리 서로 응원할래요"
-            description="같은 공간에서 칠판을 채우고, 각자 사물함에 마음을 남겨요."
+            description="우리 반 교실에서 칠판을 채우고, 각자 사물함에 응원을 남겨요."
             icon={<UsersRound size={22} aria-hidden />}
             onClick={() => navigate('/prototype/classroom/create')}
           />

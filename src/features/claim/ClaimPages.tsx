@@ -62,7 +62,7 @@ export function ClaimIntroPage() {
       back={() => navigate('/prototype')}
       action={
         <Button variant="brand" fullWidth onClick={next}>
-          {alreadyClaimed ? '내 책상 보기' : '내 책상으로 가져오기'}
+          {alreadyClaimed ? '내 책상 보기' : '내 응원 책상 받기'}
         </Button>
       }
     >
@@ -70,9 +70,9 @@ export function ClaimIntroPage() {
         <h1>
           {alreadyClaimed ? (
             <>
-              이미 내 응원 책상으로
+              이미 받은
               <br />
-              가져왔어요.
+              응원 책상이에요.
             </>
           ) : (
             <>
@@ -166,8 +166,8 @@ export function ClaimBacklogPage() {
           기다리고 있었어요.
         </h1>
         <p>
-          이 공간이 {desk.displayName}님의 것이 되기 전부터
-          도착한 마음이에요.
+          이 응원 책상이 {desk.displayName}님 것이 되기 전부터
+          도착한 응원이에요.
         </p>
       </section>
 

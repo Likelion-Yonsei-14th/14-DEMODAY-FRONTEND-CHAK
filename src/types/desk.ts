@@ -24,6 +24,25 @@ export type DeskObjectType =
   | 'letter'
   | 'ticket'
   | 'generic-card'
+  | 'sticker'
+
+/** Charm finish: a free flat sticker, or the paid clear-acrylic keychain. */
+export type CharmMaterial = 'flat' | 'acrylic'
+
+/**
+ * A small rhinestone stuck on a desk object. Position and size are
+ * percentages of the object's box, so gems scale with the object.
+ */
+export type DeskGem = {
+  id: string
+  gemId: string
+  x: number
+  y: number
+  size: number
+  rotation: number
+  /** Set when the gem belongs to a shape set (star, heart, …). */
+  patternId?: string
+}
 
 export type DeskZone = 'left' | 'center' | 'right' | 'back' | 'front'
 
@@ -39,6 +58,10 @@ export type DeskObject = {
   messageId: string
   representationType: DeskObjectType
   assetId?: string
+  material?: CharmMaterial
+  /** Short phrase printed on a charm's banner — visible on the desk to everyone. */
+  charmPhrase?: string
+  gems?: DeskGem[]
   color?: string
   zone: DeskZone
   order: number
