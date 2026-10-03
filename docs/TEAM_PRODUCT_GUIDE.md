@@ -712,21 +712,23 @@ Repository:
 
 기본 브랜치는 `main`이지만, **현재 실제 구현은 feature branch에 누적되어 있다.**
 
-2026-10-03 기준:
+2026-10-03 기능 구현 스냅샷 기준:
 
 | Branch | main 대비 | 의미 |
 | --- | ---: | --- |
 | `main` | baseline | 초기 커밋 수준 |
 | `feat/phase1-foundation` | +12 commits | React/Vite/TS, design system foundation, prototype skeleton |
 | `feat/phase2-supporter-core` | +59 commits | Composer, supporter flow, desk scene, envelope/reader |
-| `feat/recipient-multicard-viewer` | +210 commits | 현재 가장 많은 기능이 누적된 브랜치 |
+| `feat/recipient-multicard-viewer` | +210 feature commits + 이후 문서화 commits | 현재 가장 많은 기능이 누적된 브랜치 |
 
-`feat/recipient-multicard-viewer`는 `feat/phase2-supporter-core`보다 151 commits 앞서고, main 대비 163개 파일 변화가 있다.
+문서화 직전 기능 구현 상태에서 `feat/recipient-multicard-viewer`는 `feat/phase2-supporter-core`보다 151 commits 앞서고, main 대비 163개 파일 변화가 있었다.
 
-현재 최신 확인 commit:
+최신 기능 구현 기준 commit:
 
 - `efa5d95` — `feat: implement supporter settings flow`
 - 2026-10-03 14:01 KST
+
+이후 `TEAM_PRODUCT_GUIDE.md` 추가와 README 갱신은 문서화 commit이며 제품 기능 변경은 아니다.
 
 최근 주요 구현:
 
