@@ -18,6 +18,7 @@ import {
   getComposerBackground,
   getTextBounds,
 } from './backgroundAssets'
+import { getStickerAsset } from './stickerAssets'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import type {
@@ -227,14 +228,38 @@ export function UnifiedComposerPage() {
     const stamp = Date.now().toString(36)
     const id = `sticker-${stamp}-${index}`
     const offset = ((index % 3) - 1) * 7
+    const group = getStickerAsset(assetId)?.group
+    const sameGroupCount = page.stickerElements.filter(
+      (element) => getStickerAsset(element.assetId)?.group === group,
+    ).length
+
+    // Clips grip the top edge; tapes stick down the corners first.
+    const spot =
+      group === 'clip'
+        ? {
+            x: [50, 24, 76][sameGroupCount % 3] ?? 50,
+            y: 6,
+            rotation: [0, -4, 5][sameGroupCount % 3] ?? 0,
+          }
+        : group === 'tape'
+          ? ([
+              { x: 13, y: 5, rotation: -38 },
+              { x: 87, y: 5, rotation: 38 },
+              { x: 13, y: 95, rotation: 38 },
+              { x: 87, y: 95, rotation: -38 },
+              { x: 50, y: 4, rotation: -3 },
+            ][sameGroupCount % 5] ?? { x: 50, y: 4, rotation: 0 })
+          : {
+              x: 50 + offset,
+              y: 46 + Math.min(index, 2) * 7,
+              rotation: [-6, 5, -2][index % 3] ?? 0,
+            }
 
     const sticker: PositionedAsset = {
       id,
       assetId,
-      x: 50 + offset,
-      y: 46 + Math.min(index, 2) * 7,
+      ...spot,
       scale: 1,
-      rotation: [-6, 5, -2][index % 3] ?? 0,
       zIndex: Math.min(80, getFrontLayerZ(page) + 1),
     }
 

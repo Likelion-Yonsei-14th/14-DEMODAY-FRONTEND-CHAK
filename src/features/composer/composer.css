@@ -1941,3 +1941,38 @@
   color: var(--color-content-tertiary);
   font-size: 12px;
 }
+
+/* Clips and washi tape rows in the sticker tool */
+.composer-sticker-section {
+  display: grid;
+  gap: 2px;
+}
+
+.composer-sticker-section > .composer-tool-label {
+  padding-inline: 8px;
+}
+
+.composer-sticker-item {
+  position: relative;
+  flex: 0 0 88px;
+}
+
+.composer-sticker-item .composer-sticker-asset {
+  width: 100%;
+}
+
+.composer-sticker-item--locked .ds-asset-tile__visual img {
+  filter: saturate(.7) brightness(.95);
+}
+
+.composer-sticker-list--tape .ds-asset-tile__visual img {
+  width: 88%;
+  transform: rotate(-8deg);
+}
+
+.ad-unlock__preview--contain img {
+  object-fit: contain;
+  box-shadow: none;
+  background: #f4efe6;
+  padding: 6px;
+}

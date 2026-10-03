@@ -30,6 +30,9 @@ import { usePrototypeStore } from '@/store/prototypeStore'
 import {
   composerStickers,
   getStickerAsset,
+  letterClips,
+  letterTapes,
+  type StickerAsset,
 } from './stickerAssets'
 import {
   composerFonts,
@@ -150,7 +153,7 @@ export function ComposerToolTray({
             }
           />
           <AdUnlockSheet
-            background={adBackground}
+            item={adBackground}
             onClose={() => setAdBackground(null)}
             onUnlocked={(background) => {
               unlockStationery(background.id)
@@ -458,31 +461,81 @@ function StickerTool({
   onBringForward: () => void
   onDelete: () => void
 }) {
+  // Prettier clips and tapes stay locked until the supporter watches an ad.
+  const unlockedDecorIds = usePrototypeStore(
+    (state) => state.unlockedDecorIds,
+  )
+  const unlockDecor = usePrototypeStore((state) => state.unlockDecor)
+  const [adAsset, setAdAsset] = useState<StickerAsset | null>(null)
+
+  const renderRow = (label: string, assets: StickerAsset[], kind?: string) => (
+    <div className="composer-sticker-section">
+      <span className="composer-tool-label">{label}</span>
+      <div
+        className={[
+          'composer-sticker-list',
+          kind ? `composer-sticker-list--${kind}` : '',
+        ].filter(Boolean).join(' ')}
+        role="list"
+        aria-label={`${label} 추가`}
+      >
+        {assets.map((asset) => {
+          const locked =
+            asset.adLocked && !unlockedDecorIds.includes(asset.id)
+
+          return (
+            <div
+              key={asset.id}
+              className={[
+                'composer-sticker-item',
+                locked ? 'composer-sticker-item--locked' : '',
+              ].filter(Boolean).join(' ')}
+            >
+              <AssetTile
+                name={locked ? `${asset.name} (광고 보고 열기)` : asset.name}
+                className="composer-sticker-asset"
+                thumbnail={
+                  <img
+                    src={asset.source}
+                    alt=""
+                    draggable={false}
+                  />
+                }
+                onClick={() =>
+                  locked ? setAdAsset(asset) : onAdd(asset.id)
+                }
+              />
+              {locked && (
+                <span className="composer-bg-item__lock" aria-hidden>
+                  AD
+                </span>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+
   return (
     <>
       <ToolTrayHeader title="스티커" />
 
-      <div
-        className="composer-sticker-list"
-        role="list"
-        aria-label="스티커 추가"
-      >
-        {composerStickers.map((asset) => (
-          <AssetTile
-            key={asset.id}
-            name={asset.name}
-            className="composer-sticker-asset"
-            thumbnail={
-              <img
-                src={asset.source}
-                alt=""
-                draggable={false}
-              />
-            }
-            onClick={() => onAdd(asset.id)}
-          />
-        ))}
-      </div>
+      {renderRow('클립', letterClips, 'clip')}
+      {renderRow('마스킹 테이프', letterTapes, 'tape')}
+      {renderRow('스티커', composerStickers)}
+
+      <AdUnlockSheet
+        item={adAsset}
+        kindLabel={adAsset?.group === 'tape' ? '테이프' : '클립'}
+        previewFit="contain"
+        onClose={() => setAdAsset(null)}
+        onUnlocked={(asset) => {
+          unlockDecor(asset.id)
+          onAdd(asset.id)
+          setAdAsset(null)
+        }}
+      />
 
       {draft.stickerElements.length > 0 && (
         <div

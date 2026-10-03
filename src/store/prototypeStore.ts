@@ -67,6 +67,9 @@ type PrototypeState = {
   /** Stationery templates unlocked by watching an ad (prototype). */
   unlockedStationeryIds: string[]
   unlockStationery: (backgroundId: string) => void
+  /** Clips and washi tapes unlocked by watching an ad (prototype). */
+  unlockedDecorIds: string[]
+  unlockDecor: (assetId: string) => void
   supporterObjectChoice: SupporterObjectChoice
   stickerDraft: { stickerId: string; senderName: string }
   setSupporterObjectChoice: (choice: SupporterObjectChoice) => void
@@ -179,6 +182,13 @@ export const usePrototypeStore = create<PrototypeState>()(
           unlockedStationeryIds: state.unlockedStationeryIds.includes(backgroundId)
             ? state.unlockedStationeryIds
             : [...state.unlockedStationeryIds, backgroundId],
+        })),
+      unlockedDecorIds: [],
+      unlockDecor: (assetId) =>
+        set((state) => ({
+          unlockedDecorIds: state.unlockedDecorIds.includes(assetId)
+            ? state.unlockedDecorIds
+            : [...state.unlockedDecorIds, assetId],
         })),
       supporterObjectChoice: 'letter',
       stickerDraft: { stickerId: deskStickers[0]!.id, senderName: '' },
@@ -804,6 +814,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         reportedMessageIds: state.reportedMessageIds,
         readMessageIds: state.readMessageIds,
         unlockedStationeryIds: state.unlockedStationeryIds,
+        unlockedDecorIds: state.unlockedDecorIds,
         supporterObjectChoice: state.supporterObjectChoice,
         stickerDraft: state.stickerDraft,
       }),

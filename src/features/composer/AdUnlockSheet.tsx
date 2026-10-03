@@ -1,25 +1,36 @@
 import { useEffect, useState } from 'react'
 import { BottomSheet, Button } from '@/design-system'
-import type { ComposerBackground } from './backgroundAssets'
 
 /** How long the prototype "ad" plays before the reward unlocks, in seconds. */
 const AD_SECONDS = 5
 
-type AdUnlockSheetProps = {
-  background: ComposerBackground | null
+export type AdUnlockItem = {
+  id: string
+  name: string
+  source?: string
+}
+
+type AdUnlockSheetProps<T extends AdUnlockItem> = {
+  item: T | null
+  /** What is being unlocked, e.g. '편지지' or '클립'. */
+  kindLabel?: string
+  /** 'contain' previews a cut-out (clip, tape); 'cover' a full sheet. */
+  previewFit?: 'cover' | 'contain'
   onClose: () => void
-  onUnlocked: (background: ComposerBackground) => void
+  onUnlocked: (item: T) => void
 }
 
 /**
  * Prototype rewarded-ad flow: a placeholder "ad" counts down, then the
  * stationery unlocks. No real ad network is called.
  */
-export function AdUnlockSheet({
-  background,
+export function AdUnlockSheet<T extends AdUnlockItem>({
+  item: background,
+  kindLabel = '편지지',
+  previewFit = 'cover',
   onClose,
   onUnlocked,
-}: AdUnlockSheetProps) {
+}: AdUnlockSheetProps<T>) {
   const [remaining, setRemaining] = useState(AD_SECONDS)
   const [playing, setPlaying] = useState(false)
 
@@ -40,12 +51,17 @@ export function AdUnlockSheet({
     <BottomSheet
       open={Boolean(background)}
       onClose={onClose}
-      title="광고 보고 편지지 열기"
-      description="광고 하나를 끝까지 보면 이 편지지를 계속 쓸 수 있어요."
+      title={`광고 보고 ${kindLabel} 열기`}
+      description={`광고 하나를 끝까지 보면 이 ${kindLabel}${hasBatchim(kindLabel) ? '을' : '를'} 계속 쓸 수 있어요.`}
     >
       {background && (
         <div className="ad-unlock">
-          <div className="ad-unlock__preview">
+          <div
+            className={[
+              'ad-unlock__preview',
+              previewFit === 'contain' ? 'ad-unlock__preview--contain' : '',
+            ].filter(Boolean).join(' ')}
+          >
             {background.source && (
               <img src={background.source} alt="" draggable={false} />
             )}
@@ -81,7 +97,7 @@ export function AdUnlockSheet({
 
           {finished ? (
             <Button variant="brand" fullWidth onClick={() => onUnlocked(background)}>
-              편지지 열기
+              {kindLabel} 열기
             </Button>
           ) : (
             <Button
@@ -97,4 +113,10 @@ export function AdUnlockSheet({
       )}
     </BottomSheet>
   )
+}
+
+/** Whether the last Hangul syllable ends in a consonant (을/를 choice). */
+function hasBatchim(word: string) {
+  const code = word.charCodeAt(word.length - 1) - 0xac00
+  return code >= 0 && code <= 11171 && code % 28 !== 0
 }
