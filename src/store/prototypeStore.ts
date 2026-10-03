@@ -64,6 +64,9 @@ type PrototypeState = {
   publicBlockedSupporters: string[]
   reportedMessageIds: string[]
   readMessageIds: string[]
+  /** Stationery templates unlocked by watching an ad (prototype). */
+  unlockedStationeryIds: string[]
+  unlockStationery: (backgroundId: string) => void
   supporterObjectChoice: SupporterObjectChoice
   stickerDraft: { stickerId: string; senderName: string }
   setSupporterObjectChoice: (choice: SupporterObjectChoice) => void
@@ -170,6 +173,13 @@ export const usePrototypeStore = create<PrototypeState>()(
       publicBlockedSupporters: [],
       reportedMessageIds: [],
       readMessageIds: [],
+      unlockedStationeryIds: [],
+      unlockStationery: (backgroundId) =>
+        set((state) => ({
+          unlockedStationeryIds: state.unlockedStationeryIds.includes(backgroundId)
+            ? state.unlockedStationeryIds
+            : [...state.unlockedStationeryIds, backgroundId],
+        })),
       supporterObjectChoice: 'letter',
       stickerDraft: { stickerId: deskStickers[0]!.id, senderName: '' },
       setSupporterObjectChoice: (supporterObjectChoice) =>
@@ -793,6 +803,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         publicBlockedSupporters: state.publicBlockedSupporters,
         reportedMessageIds: state.reportedMessageIds,
         readMessageIds: state.readMessageIds,
+        unlockedStationeryIds: state.unlockedStationeryIds,
         supporterObjectChoice: state.supporterObjectChoice,
         stickerDraft: state.stickerDraft,
       }),

@@ -585,3 +585,66 @@
   letter-spacing: -.02em;
   word-break: keep-all;
 }
+
+/* Charm shown front-first; tapping flips it over to the message */
+.message-viewer__charm {
+  min-height: 520px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 22px;
+  perspective: 900px;
+}
+
+.message-viewer__charm-button {
+  position: relative;
+  width: min(62vw, 230px);
+  height: auto;
+  aspect-ratio: 300 / 443;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 340ms cubic-bezier(.5, 0, .9, .5);
+}
+
+.message-viewer__charm-button .desk-object__visual {
+  width: 100%;
+  height: 100%;
+}
+
+.message-viewer__charm-button--flipping {
+  transform: rotateY(90deg) scale(.96);
+}
+
+.message-viewer__charm-hint {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: 14px;
+}
+
+/* The card arrives as the back face, finishing the flip */
+.message-viewer--from-charm .message-viewer__pages {
+  animation: message-viewer-flip-in 380ms cubic-bezier(.1, .5, .5, 1) both;
+  transform-origin: center;
+}
+
+@keyframes message-viewer-flip-in {
+  from {
+    transform: perspective(900px) rotateY(-90deg) scale(.96);
+  }
+  to {
+    transform: perspective(900px) rotateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .message-viewer__charm-button {
+    transition: none;
+  }
+
+  .message-viewer--from-charm .message-viewer__pages {
+    animation: none;
+  }
+}

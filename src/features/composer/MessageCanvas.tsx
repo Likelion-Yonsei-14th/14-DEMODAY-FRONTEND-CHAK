@@ -16,7 +16,11 @@ import type {
   PositionedAsset,
   TextElement,
 } from '@/types'
-import { getComposerBackground } from './backgroundAssets'
+import {
+  getComposerBackground,
+  getTextBounds,
+  type TextBounds,
+} from './backgroundAssets'
 import { getTextAppearance } from './fonts/fontRegistry'
 import { WordArtGraphic } from './wordArt/wordArtAssets'
 import { getStickerAsset } from './stickerAssets'
@@ -72,6 +76,7 @@ export function MessageCanvas({
   const background = getComposerBackground(
     draft.backgroundAssetId,
   )
+  const textBounds = getTextBounds(background)
   const backgroundPhoto =
     draft.photoElements.find(
       (photo) => photo.role === 'background',
@@ -240,10 +245,24 @@ export function MessageCanvas({
           />
         ))}
 
+        {background.textArea && (
+          <div
+            className="message-canvas__text-area"
+            style={{
+              top: `${background.textArea.top}%`,
+              right: `${background.textArea.right}%`,
+              bottom: `${background.textArea.bottom}%`,
+              left: `${background.textArea.left}%`,
+            }}
+            aria-hidden
+          />
+        )}
+
         {draft.textElements.map((element) => (
           <CanvasTextElement
             key={element.id}
             element={element}
+            bounds={textBounds}
             canvasRef={canvasRef}
             selected={
               selectedId === element.id
@@ -283,6 +302,7 @@ export function MessageCanvas({
 
 type CanvasTextElementProps = {
   element: TextElement
+  bounds: TextBounds
   canvasRef:
     React.RefObject<HTMLDivElement | null>
   selected: boolean
@@ -295,6 +315,7 @@ type CanvasTextElementProps = {
 
 function CanvasTextElement({
   element,
+  bounds,
   canvasRef,
   selected,
   onSelect,
@@ -430,14 +451,9 @@ function CanvasTextElement({
     }
     const width = element.width ?? 76
     const halfWidth = width / 2
-    const minX = Math.min(
-      50,
-      halfWidth + 2,
-    )
-    const maxX = Math.max(
-      50,
-      100 - halfWidth - 2,
-    )
+    const centre = (bounds.left + bounds.right) / 2
+    const minX = Math.min(centre, bounds.left + halfWidth)
+    const maxX = Math.max(centre, bounds.right - halfWidth)
 
     const onPointerMove = (
       moveEvent: PointerEvent,
@@ -457,7 +473,7 @@ function CanvasTextElement({
 
       onMove(
         clamp(x, minX, maxX),
-        clamp(y, 6, 94),
+        clamp(y, bounds.top + 4, bounds.bottom - 4),
       )
     }
 
@@ -558,13 +574,14 @@ function CanvasTextElement({
       pinchStart.width *
         (currentDistance / pinchStart.distance),
       28,
-      94,
+      bounds.right - bounds.left,
     )
     const halfWidth = width / 2
+    const centre = (bounds.left + bounds.right) / 2
     const x = clamp(
       pinchStart.x,
-      Math.min(50, halfWidth + 2),
-      Math.max(50, 100 - halfWidth - 2),
+      Math.min(centre, bounds.left + halfWidth),
+      Math.max(centre, bounds.right - halfWidth),
     )
 
     onResize(width, x)

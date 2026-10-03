@@ -24,7 +24,8 @@ import {
 } from '@/features/desk/dailyAvailability'
 import { useReadModeNow } from '@/features/desk/useReadModeNow'
 import { OriginalMessageRenderer } from './OriginalMessageRenderer'
-import { mergeSupportMessages } from './seededMessages'
+import { DeskObjectVisual } from '@/features/desk/DeskObjectLayer'
+import { mergeSupportMessages, seededDeskObjects } from './seededMessages'
 import {
   getDeskSticker,
   getSupportMessageAvailability,
@@ -71,6 +72,8 @@ export function MessageViewerPage() {
   )
   const markMessageRead = usePrototypeStore((state) => state.markMessageRead)
   const pageScrollerRef = useRef<HTMLDivElement>(null)
+  // A designed charm is shown front-first; flipping it reveals the message.
+  const [charmPhase, setCharmPhase] = useState<'front' | 'flipping' | 'revealed'>('front')
   const [activePageIndex, setActivePageIndex] = useState(0)
   const [replyOptionsOpen, setReplyOptionsOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
@@ -80,6 +83,13 @@ export function MessageViewerPage() {
     [storedMessages],
   )
   const message = messages.find((item) => item.id === messageId)
+  const charmObject = [...seededDeskObjects, ...currentDesk.objects].find(
+    (object) =>
+      object.messageId === messageId &&
+      object.representationType === 'charm' &&
+      Boolean(object.assetId),
+  )
+  const showCharmFront = Boolean(charmObject) && charmPhase !== 'revealed'
   const state = location.state as ReaderLocationState | null
   const supporterView =
     state?.from === 'support-desk' ||
@@ -152,11 +162,13 @@ export function MessageViewerPage() {
       (!classroomView || classroomOwner) &&
       messageId &&
       availability?.available &&
-      reachedReadPoint
+      reachedReadPoint &&
+      !showCharmFront
     ) {
       markMessageRead(messageId)
     }
   }, [
+    showCharmFront,
     activePageIndex,
     availability?.available,
     lastPageIndex,
@@ -170,6 +182,7 @@ export function MessageViewerPage() {
 
   useEffect(() => {
     setActivePageIndex(0)
+    setCharmPhase('front')
 
     const scroller = pageScrollerRef.current
     if (!scroller) return
@@ -469,7 +482,46 @@ export function MessageViewerPage() {
         />
       }
     >
-      <main className="message-viewer">
+      <main
+        className={[
+          'message-viewer',
+          charmObject && charmPhase === 'revealed'
+            ? 'message-viewer--from-charm'
+            : '',
+        ].filter(Boolean).join(' ')}
+      >
+        {showCharmFront && charmObject ? (
+          <section className="message-viewer__charm" aria-label="부적">
+            <button
+              type="button"
+              className={[
+                'message-viewer__charm-button',
+                charmPhase === 'flipping'
+                  ? 'message-viewer__charm-button--flipping'
+                  : '',
+              ].filter(Boolean).join(' ')}
+              aria-label="부적 뒤집어서 응원 보기"
+              disabled={charmPhase === 'flipping'}
+              onClick={() => {
+                setCharmPhase('flipping')
+                window.setTimeout(() => setCharmPhase('revealed'), 340)
+              }}
+            >
+              <DeskObjectVisual
+                type="charm"
+                assetId={charmObject.assetId}
+                material={charmObject.material}
+                charmPhrase={charmObject.charmPhrase}
+                gems={charmObject.gems}
+                seed={charmObject.id}
+              />
+            </button>
+            <p className="message-viewer__charm-hint">
+              부적을 눌러 뒤집어 보세요
+            </p>
+          </section>
+        ) : (
+        <>
         <div
           ref={pageScrollerRef}
           className="message-viewer__pages"
@@ -642,6 +694,8 @@ export function MessageViewerPage() {
               )}
             </section>
           )}
+        </>
+        )}
       </main>
 
       <BottomSheet

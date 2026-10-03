@@ -1232,3 +1232,64 @@
   align-items: center;
   gap: 2px;
 }
+
+/* Seats in the locker bank that no classmate has taken yet */
+.classroom-map__locker-button--empty .locker-mini__photo {
+  filter: saturate(.55) brightness(.9);
+  opacity: .78;
+}
+
+.classroom-map__all-lockers {
+  position: absolute;
+  z-index: 3;
+  right: 1.5%;
+  top: 30%;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 253, 248, .92);
+  color: var(--color-content-primary);
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(30, 20, 10, .25);
+  cursor: pointer;
+}
+
+.classroom-lockers-sheet {
+  display: grid;
+  gap: 16px;
+}
+
+.classroom-lockers-sheet__grid {
+  max-height: 46dvh;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 14px 10px;
+  padding: 4px 2px;
+}
+
+.classroom-lockers-sheet__item {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-content-primary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.classroom-lockers-sheet__item .locker-mini {
+  width: 44px;
+}
+
+.classroom-lockers-sheet__item .locker-mini__name {
+  font-size: 7px;
+}

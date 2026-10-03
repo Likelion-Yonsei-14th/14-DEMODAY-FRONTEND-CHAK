@@ -25,6 +25,8 @@ import {
   type ComposerBackground,
 } from './backgroundAssets'
 import type { ComposerTool } from './ComposerDock'
+import { AdUnlockSheet } from './AdUnlockSheet'
+import { usePrototypeStore } from '@/store/prototypeStore'
 import {
   composerStickers,
   getStickerAsset,
@@ -105,6 +107,23 @@ export function ComposerToolTray({
   const basicBackgrounds = composerBackgrounds.filter(
     (background) => background.group === 'basic',
   )
+  const stationeryBackgrounds = composerBackgrounds.filter(
+    (background) => background.group === 'stationery',
+  )
+  // Stationery templates stay locked until the supporter watches an ad.
+  const unlockedStationeryIds = usePrototypeStore(
+    (state) => state.unlockedStationeryIds,
+  )
+  const unlockStationery = usePrototypeStore(
+    (state) => state.unlockStationery,
+  )
+  const [adBackground, setAdBackground] =
+    useState<ComposerBackground | null>(null)
+  const lockedStationeryIds = new Set(
+    stationeryBackgrounds
+      .filter((background) => !unlockedStationeryIds.includes(background.id))
+      .map((background) => background.id),
+  )
   const graphicBackgrounds = composerBackgrounds.filter(
     (background) => background.group === 'graphic',
   )
@@ -117,6 +136,28 @@ export function ComposerToolTray({
       {tool === 'background' && (
         <>
           <ToolTrayHeader title="배경" />
+          <BackgroundRow
+            label="편지지"
+            backgrounds={stationeryBackgrounds}
+            selectedId={draft.backgroundAssetId}
+            lockedIds={lockedStationeryIds}
+            onSelect={onBackgroundChange}
+            onLockedSelect={(id) =>
+              setAdBackground(
+                stationeryBackgrounds.find((background) => background.id === id) ??
+                  null,
+              )
+            }
+          />
+          <AdUnlockSheet
+            background={adBackground}
+            onClose={() => setAdBackground(null)}
+            onUnlocked={(background) => {
+              unlockStationery(background.id)
+              onBackgroundChange(background.id)
+              setAdBackground(null)
+            }}
+          />
           <BackgroundRow
             label="기본"
             backgrounds={basicBackgrounds}
@@ -763,12 +804,16 @@ function BackgroundRow({
   label,
   backgrounds,
   selectedId,
+  lockedIds,
   onSelect,
+  onLockedSelect,
 }: {
   label: string
   backgrounds: ComposerBackground[]
   selectedId: string
+  lockedIds?: Set<string>
   onSelect: (id: string) => void
+  onLockedSelect?: (id: string) => void
 }) {
   return (
     <div className="composer-background-section">
@@ -789,9 +834,19 @@ function BackgroundRow({
               selectedId === background.id
                 ? 'composer-bg-item--selected'
                 : '',
+              lockedIds?.has(background.id)
+                ? 'composer-bg-item--locked'
+                : '',
             ].filter(Boolean).join(' ')}
+            aria-label={
+              lockedIds?.has(background.id)
+                ? `${background.name} (광고 보고 열기)`
+                : background.name
+            }
             onClick={() =>
-              onSelect(background.id)
+              lockedIds?.has(background.id)
+                ? onLockedSelect?.(background.id)
+                : onSelect(background.id)
             }
             aria-pressed={
               selectedId === background.id
@@ -827,6 +882,11 @@ function BackgroundRow({
                   ),
                 ].filter(Boolean).join(' ')}
               />
+            )}
+            {lockedIds?.has(background.id) && (
+              <span className="composer-bg-item__lock" aria-hidden>
+                AD
+              </span>
             )}
             <span>{background.name}</span>
           </button>

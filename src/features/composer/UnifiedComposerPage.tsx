@@ -13,6 +13,11 @@ import {
   IconButton,
   useFeedback,
 } from '@/design-system'
+import {
+  fitTextElementToBounds,
+  getComposerBackground,
+  getTextBounds,
+} from './backgroundAssets'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import type {
@@ -168,7 +173,13 @@ export function UnifiedComposerPage() {
 
     updatePage((current) => ({
       ...current,
-      textElements: [...current.textElements, nextText],
+      textElements: [
+        ...current.textElements,
+        fitTextElementToBounds(
+          nextText,
+          getTextBounds(getComposerBackground(current.backgroundAssetId)),
+        ),
+      ],
     }))
     setSelectedLayerId(id)
     setTool('text')
@@ -585,9 +596,18 @@ export function UnifiedComposerPage() {
             selectedText={selectedText}
             selectedPhoto={selectedPhoto}
             selectedSticker={selectedSticker}
-            onBackgroundChange={(backgroundAssetId) =>
-              updatePage({ backgroundAssetId })
-            }
+            onBackgroundChange={(backgroundAssetId) => {
+              // Keep existing text inside the new template's writing area
+              const bounds = getTextBounds(
+                getComposerBackground(backgroundAssetId),
+              )
+              updatePage({
+                backgroundAssetId,
+                textElements: page.textElements.map((element) =>
+                  fitTextElementToBounds(element, bounds),
+                ),
+              })
+            }}
             onTextAdd={addTextElement}
             onTextSelect={(id) => {
               setSelectedLayerId(id)

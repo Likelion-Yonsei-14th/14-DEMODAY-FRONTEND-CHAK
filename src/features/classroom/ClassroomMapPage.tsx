@@ -3,12 +3,20 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
+  LayoutGrid,
   MessageCircleMore,
   Settings,
   Sparkles,
 } from 'lucide-react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
-import { AppBar, IconButton } from '@/design-system'
+import {
+  AppBar,
+  BottomSheet,
+  Button,
+  IconButton,
+  useFeedback,
+} from '@/design-system'
+import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -19,6 +27,10 @@ import './Classroom.css'
 /** classroom-day/night.webp are 1344 × 576. */
 const CLASSROOM_PHOTO_RATIO = 1344 / 576
 
+/** Lockers drawn in the bank on the map; empty seats fill it up to the minimum. */
+const MAP_LOCKER_MIN = 6
+const MAP_LOCKER_MAX = 8
+
 const zoneLabels = ['칠판', '교실', '사물함'] as const
 
 export function ClassroomMapPage() {
@@ -27,6 +39,8 @@ export function ClassroomMapPage() {
   const classroom = usePrototypeStore((state) => state.classroom)
   const member = usePrototypeStore((state) => state.classroomMember)
   const [camera, setCamera] = useState(1)
+  const [allLockersOpen, setAllLockersOpen] = useState(false)
+  const { showToast } = useFeedback()
   const daypart = useDeskDaypart()
   const viewportRef = useRef<HTMLElement>(null)
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 })
@@ -66,6 +80,38 @@ export function ClassroomMapPage() {
   }
 
   const id = classroomId ?? classroom.id
+
+  // Keep my locker in the bank even when the class is bigger than the bank.
+  const otherLockers = classroom.lockers.filter(
+    (locker) => locker.id !== member.lockerId,
+  )
+  const myLocker = classroom.lockers.find(
+    (locker) => locker.id === member.lockerId,
+  )
+  const bankLockers = [
+    ...(myLocker ? [myLocker] : []),
+    ...otherLockers,
+  ].slice(0, MAP_LOCKER_MAX)
+  const emptySeats = Math.max(0, MAP_LOCKER_MIN - bankLockers.length)
+  const hiddenLockerCount = classroom.lockers.length - bankLockers.length
+
+  const inviteFriends = async () => {
+    const url = buildPrototypeShareUrl(`/prototype/classroom/${id}/join`)
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${classroom.name}에 들어와!`,
+          text: '이름만 적으면 내 사물함이 생겨요.',
+          url,
+        })
+      } else {
+        await navigator.clipboard.writeText(url)
+        showToast('초대 링크를 복사했어요.')
+      }
+    } catch {
+      // The share sheet was dismissed.
+    }
+  }
 
   return (
     <AppShell
@@ -169,10 +215,10 @@ export function ClassroomMapPage() {
             <div
               className="classroom-map__lockers"
               style={{
-                '--locker-count': Math.max(classroom.lockers.length, 3),
+                '--locker-count': bankLockers.length + emptySeats,
               } as React.CSSProperties}
             >
-              {classroom.lockers.map((locker) => (
+              {bankLockers.map((locker) => (
                 <button
                   type="button"
                   key={locker.id}
@@ -195,7 +241,28 @@ export function ClassroomMapPage() {
                   )}
                 </button>
               ))}
+              {Array.from({ length: emptySeats }, (_, index) => (
+                <button
+                  type="button"
+                  key={`empty-${index}`}
+                  className="classroom-map__locker-button classroom-map__locker-button--empty"
+                  aria-label="빈 사물함 · 친구 초대하기"
+                  onClick={inviteFriends}
+                >
+                  <LockerMiniDoor studentName="" />
+                </button>
+              ))}
             </div>
+
+            <button
+              type="button"
+              className="classroom-map__all-lockers"
+              onClick={() => setAllLockersOpen(true)}
+            >
+              <LayoutGrid size={14} aria-hidden />
+              사물함 전체 보기
+              {hiddenLockerCount > 0 && ` (+${hiddenLockerCount})`}
+            </button>
           </div>
 
           <button
@@ -218,6 +285,40 @@ export function ClassroomMapPage() {
             <ChevronRight size={24} aria-hidden />
           </button>
         </section>
+
+        <BottomSheet
+          open={allLockersOpen}
+          onClose={() => setAllLockersOpen(false)}
+          title={`${classroom.name} 사물함`}
+          description={`${classroom.lockers.length}명이 함께하고 있어요. 친구가 들어오면 사물함이 하나씩 늘어나요.`}
+        >
+          <div className="classroom-lockers-sheet">
+            <div className="classroom-lockers-sheet__grid">
+              {[...(myLocker ? [myLocker] : []), ...otherLockers].map((locker) => (
+                <button
+                  type="button"
+                  key={locker.id}
+                  className="classroom-lockers-sheet__item"
+                  onClick={() =>
+                    navigate(`/prototype/classroom/${id}/locker/${locker.id}`)
+                  }
+                >
+                  <LockerMiniDoor
+                    studentName={locker.studentName}
+                    active={locker.id === member.lockerId}
+                  />
+                  <span>
+                    {locker.studentName}
+                    {locker.id === member.lockerId ? ' (나)' : ''}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <Button variant="secondary" fullWidth onClick={inviteFriends}>
+              친구 초대하기
+            </Button>
+          </div>
+        </BottomSheet>
 
         <div className="classroom-map__position" aria-hidden>
           {zoneLabels.map((label, index) => (
