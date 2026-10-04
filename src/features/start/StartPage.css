@@ -150,3 +150,105 @@
   font-weight: 700;
   cursor: pointer;
 }
+
+/* Home for returning users: two doors, desk and class */
+.home-page-shell {
+  padding-inline: var(--page-gutter);
+}
+
+.home-page {
+  display: grid;
+  gap: 24px;
+  padding-block: 40px 32px;
+}
+
+.home-page__header {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.home-page__header h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.28;
+  letter-spacing: -.035em;
+}
+
+.home-page__doors {
+  display: grid;
+  gap: 12px;
+}
+
+.home-page__door {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    "icon title arrow"
+    "icon sub arrow";
+  align-items: center;
+  column-gap: 14px;
+  row-gap: 3px;
+  min-height: 96px;
+  padding: 18px 18px;
+  border: 0;
+  border-radius: 20px;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(30, 20, 10, .14);
+}
+
+.home-page__door--desk {
+  background: #c9573f;
+}
+
+.home-page__door--class {
+  background: #5d7a5d;
+}
+
+.home-page__door--empty {
+  background: #e7e1d8;
+  color: var(--color-content-secondary);
+  box-shadow: none;
+}
+
+.home-page__door-label {
+  grid-area: icon;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .22);
+}
+
+.home-page__door strong {
+  grid-area: title;
+  font-size: 19px;
+}
+
+.home-page__door > span:not(.home-page__door-label) {
+  grid-area: sub;
+  font-size: 13px;
+  opacity: .9;
+}
+
+.home-page__door svg:last-child {
+  grid-area: arrow;
+}
+
+.home-page__new {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 0;
+  background: none;
+  color: var(--color-content-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}

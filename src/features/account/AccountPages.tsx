@@ -29,20 +29,21 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
 
   if (authSession.status === 'authenticated') {
-    return <Navigate to="/account" replace />
+    return <Navigate to="/home" replace />
   }
 
+  // Returning users land on the two-door home; new sign-ups go to /start.
   const submit = (event: FormEvent) => {
     event.preventDefault()
     if (!email.trim() || !password) return
 
     signIn(email)
-    navigate('/account', { replace: true })
+    navigate('/home', { replace: true })
   }
 
   const continueWithGoogle = () => {
     signIn('jisu@gmail.com', 'google')
-    navigate('/account', { replace: true })
+    navigate('/home', { replace: true })
   }
 
   return (
@@ -346,7 +347,7 @@ export function SignupPage() {
     }
 
     signUp(displayName, email)
-    navigate('/account', { replace: true })
+    navigate('/start', { replace: true })
   }
 
   return (
