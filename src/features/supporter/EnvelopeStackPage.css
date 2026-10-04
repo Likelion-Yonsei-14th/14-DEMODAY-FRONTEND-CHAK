@@ -1,0 +1,970 @@
+.envelope-page-shell {
+  padding-inline: 0;
+  padding-bottom: 22px;
+  overflow: hidden;
+}
+
+.envelope-page {
+  min-height: calc(100dvh - 74px);
+  display: flex;
+  flex-direction: column;
+}
+
+.envelope-page__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px var(--page-gutter) 0;
+}
+
+.envelope-page__heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px var(--page-gutter) 2px;
+}
+
+.envelope-page__heading > div {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.envelope-page__heading h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.35;
+  letter-spacing: -.025em;
+}
+
+.envelope-page__position {
+  flex: none;
+  color: var(--color-content-tertiary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.envelope-stack__scroller {
+  position: relative;
+  height: min(62dvh, 550px);
+  min-height: 455px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
+.envelope-stack__scroller--opening {
+  overflow: hidden;
+}
+
+.envelope-stack__scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.envelope-stack__sticky {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 442px;
+  pointer-events: none;
+}
+
+.envelope-stack__deck {
+  position: relative;
+  width: 100%;
+  height: 442px;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.envelope-stack__track {
+  position: relative;
+  width: 1px;
+  margin-top: -442px;
+  pointer-events: none;
+}
+
+.envelope-stack__snap {
+  display: block;
+  scroll-snap-align: start;
+}
+
+.envelope-stack__track-tail {
+  display: block;
+  height: 34px;
+}
+
+.message-envelope {
+  --envelope-color: #f4eee3;
+  --envelope-flap-color: #faf6ee;
+  --envelope-pocket-color: #ede4d6;
+  --envelope-side-color: #e6dccd;
+  --envelope-pattern-color: #b9a99a;
+  --envelope-ink-color: #554c45;
+  --message-card-color: #fffaf4;
+  --envelope-y: 126px;
+  --envelope-x: 0px;
+  --envelope-rotate: 0deg;
+  --envelope-scale: 1;
+  --envelope-opacity: 1;
+
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: min(calc(100vw - 46px), 348px);
+  aspect-ratio: 1.47 / 1;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  opacity: var(--envelope-opacity);
+  transform:
+    translate3d(
+      calc(-50% + var(--envelope-x)),
+      var(--envelope-y),
+      0
+    )
+    rotate(var(--envelope-rotate))
+    scale(var(--envelope-scale));
+  transform-origin: center top;
+  pointer-events: auto;
+  cursor: pointer;
+  transition:
+    transform 480ms cubic-bezier(.22,.82,.22,1),
+    opacity 280ms ease,
+    filter 320ms ease;
+  will-change: transform;
+}
+
+.message-envelope__shadow {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  bottom: -9%;
+  height: 24%;
+  border-radius: 50%;
+  background: rgba(59, 43, 34, .17);
+  filter: blur(18px);
+  opacity: .54;
+  transform: scaleX(.86);
+  transition:
+    opacity 280ms ease,
+    transform 480ms cubic-bezier(.22,.82,.22,1);
+}
+
+.message-envelope__body {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  border-radius: 18px;
+  transform-style: preserve-3d;
+  isolation: isolate;
+}
+
+.message-envelope__back {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--envelope-color), #5f5148 14%);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 18% 9%, rgba(255,255,255,.4), transparent 36%),
+    linear-gradient(145deg, rgba(255,255,255,.14), transparent 56%),
+    var(--envelope-color);
+  box-shadow:
+    0 13px 29px rgba(72, 52, 41, .11),
+    inset 0 1px 0 rgba(255,255,255,.52);
+}
+
+.message-envelope__back::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: .16;
+  background:
+    radial-gradient(circle at 23% 19%, rgba(82,63,52,.24) 0 .7px, transparent .9px),
+    radial-gradient(circle at 67% 64%, rgba(255,255,255,.7) 0 .8px, transparent 1px);
+  background-size: 21px 17px, 27px 23px;
+  pointer-events: none;
+}
+
+.message-envelope--active .message-envelope__back {
+  box-shadow:
+    0 29px 56px rgba(72,52,41,.19),
+    0 7px 18px rgba(72,52,41,.08),
+    inset 0 1px 0 rgba(255,255,255,.58);
+}
+
+.message-envelope__pattern {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 18px;
+  color: var(--envelope-pattern-color);
+  pointer-events: none;
+}
+
+.message-envelope--pattern-solid .message-envelope__pattern {
+  opacity: 0;
+}
+
+.message-envelope--pattern-dot .message-envelope__pattern {
+  background:
+    radial-gradient(circle, currentColor 0 3.2px, transparent 3.6px);
+  background-size: 28px 28px;
+  background-position: 4px 5px;
+  opacity: .42;
+}
+
+.message-envelope--pattern-thin-stripe .message-envelope__pattern {
+  background:
+    repeating-linear-gradient(
+      -12deg,
+      transparent 0 15px,
+      currentColor 15px 19px,
+      transparent 19px 34px
+    );
+  opacity: .34;
+}
+
+.message-envelope--pattern-wide-stripe .message-envelope__pattern {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      currentColor 0 24px,
+      transparent 24px 48px
+    );
+  opacity: .24;
+}
+
+.message-envelope--pattern-check .message-envelope__pattern {
+  background:
+    linear-gradient(currentColor 3px, transparent 3px),
+    linear-gradient(90deg, currentColor 3px, transparent 3px);
+  background-size: 32px 32px;
+  opacity: .23;
+}
+
+.message-envelope--pattern-wave .message-envelope__pattern {
+  background:
+    radial-gradient(
+      ellipse at 50% 0,
+      transparent 0 12px,
+      currentColor 12.5px 15px,
+      transparent 15.5px 29px
+    );
+  background-size: 42px 25px;
+  background-position: 0 6px;
+  opacity: .32;
+}
+
+.message-envelope--pattern-tiny-heart .message-envelope__pattern {
+  background:
+    radial-gradient(circle at 8px 9px, currentColor 0 4px, transparent 4.3px),
+    radial-gradient(circle at 14px 9px, currentColor 0 4px, transparent 4.3px),
+    conic-gradient(
+      from 45deg at 11px 11px,
+      transparent 0 25%,
+      currentColor 0 50%,
+      transparent 0 100%
+    );
+  background-size: 36px 32px;
+  opacity: .23;
+}
+
+
+.message-envelope--pattern-micro-dot .message-envelope__pattern {
+  background:
+    radial-gradient(circle, currentColor 0 1.6px, transparent 1.9px);
+  background-size: 15px 15px;
+  background-position: 2px 3px;
+  opacity: .34;
+}
+
+.message-envelope--pattern-big-dot .message-envelope__pattern {
+  background:
+    radial-gradient(circle, currentColor 0 8px, transparent 8.5px);
+  background-size: 48px 48px;
+  background-position: 6px 8px;
+  opacity: .28;
+}
+
+.message-envelope--pattern-diagonal-stripe .message-envelope__pattern {
+  background:
+    repeating-linear-gradient(
+      42deg,
+      currentColor 0 8px,
+      transparent 8px 24px
+    );
+  opacity: .28;
+}
+
+.message-envelope--pattern-candy-stripe .message-envelope__pattern {
+  background:
+    repeating-linear-gradient(
+      105deg,
+      currentColor 0 12px,
+      transparent 12px 31px
+    );
+  opacity: .3;
+}
+
+.message-envelope--pattern-plaid .message-envelope__pattern {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 20px,
+      currentColor 20px 24px,
+      transparent 24px 44px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 20px,
+      currentColor 20px 24px,
+      transparent 24px 44px
+    );
+  opacity: .25;
+}
+
+.message-envelope--pattern-star .message-envelope__pattern {
+  background:
+    conic-gradient(
+      from 45deg at 11px 11px,
+      transparent 0 12.5%,
+      currentColor 0 18%,
+      transparent 0 37.5%,
+      currentColor 0 43%,
+      transparent 0 62.5%,
+      currentColor 0 68%,
+      transparent 0 87.5%,
+      currentColor 0 93%,
+      transparent 0
+    );
+  background-size: 36px 36px;
+  opacity: .2;
+}
+
+.message-envelope--pattern-daisy .message-envelope__pattern {
+  background:
+    radial-gradient(circle at 15px 9px, currentColor 0 4px, transparent 4.4px),
+    radial-gradient(circle at 21px 15px, currentColor 0 4px, transparent 4.4px),
+    radial-gradient(circle at 15px 21px, currentColor 0 4px, transparent 4.4px),
+    radial-gradient(circle at 9px 15px, currentColor 0 4px, transparent 4.4px),
+    radial-gradient(circle at 15px 15px, rgba(255,255,255,.72) 0 3px, transparent 3.4px);
+  background-size: 42px 42px;
+  opacity: .23;
+}
+
+.message-envelope--pattern-clover .message-envelope__pattern {
+  background:
+    radial-gradient(circle at 12px 11px, currentColor 0 4px, transparent 4.4px),
+    radial-gradient(circle at 20px 11px, currentColor 0 4px, transparent 4.4px),
+    radial-gradient(circle at 12px 19px, currentColor 0 4px, transparent 4.4px),
+    radial-gradient(circle at 20px 19px, currentColor 0 4px, transparent 4.4px);
+  background-size: 44px 44px;
+  opacity: .2;
+}
+
+.message-envelope--pattern-diamond .message-envelope__pattern {
+  background:
+    linear-gradient(45deg, transparent 45%, currentColor 46% 54%, transparent 55%),
+    linear-gradient(-45deg, transparent 45%, currentColor 46% 54%, transparent 55%);
+  background-size: 28px 28px;
+  opacity: .18;
+}
+
+.message-envelope--pattern-notebook .message-envelope__pattern {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 25px,
+      currentColor 25px 27px
+    ),
+    linear-gradient(
+      90deg,
+      transparent 0 14%,
+      currentColor 14% 15%,
+      transparent 15% 100%
+    );
+  opacity: .19;
+}
+
+.message-envelope--pattern-border .message-envelope__pattern {
+  inset: 10px;
+  border: 4px solid currentColor;
+  border-radius: 12px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      currentColor 0 8px,
+      transparent 8px 16px
+    ) top / 100% 3px no-repeat,
+    repeating-linear-gradient(
+      90deg,
+      currentColor 0 8px,
+      transparent 8px 16px
+    ) bottom / 100% 3px no-repeat;
+  opacity: .38;
+}
+
+.message-envelope__peek {
+  position: absolute;
+  z-index: 2;
+  left: 9%;
+  right: 9%;
+  top: 17%;
+  height: 76%;
+  display: block;
+  overflow: hidden;
+  border: 1px solid rgba(102,80,67,.08);
+  border-radius: 15px 15px 6px 6px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.42), transparent 48%),
+    var(--message-card-color);
+  box-shadow: 0 4px 14px rgba(72,52,41,.09);
+  opacity: 0;
+  transform: translateY(55%) scale(.96);
+  transition:
+    transform 520ms cubic-bezier(.2,.75,.2,1),
+    opacity 160ms ease;
+}
+
+.message-envelope__peek-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .97;
+}
+
+.message-envelope__peek-surface {
+  position: absolute;
+  left: 17%;
+  right: 17%;
+  top: 32%;
+  display: grid;
+  gap: 9px;
+  opacity: .36;
+}
+
+.message-envelope__peek-line {
+  height: 5px;
+  border-radius: 999px;
+  background:
+    color-mix(in srgb, var(--envelope-ink-color), transparent 72%);
+}
+
+.message-envelope__peek-line:last-child {
+  width: 62%;
+}
+
+.message-envelope__side-fold {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+}
+
+.message-envelope__side-fold--left {
+  clip-path: polygon(0 25%, 51% 67%, 0 100%);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.22), transparent 52%),
+    var(--envelope-side-color);
+}
+
+.message-envelope__side-fold--right {
+  clip-path: polygon(100% 25%, 49% 67%, 100% 100%);
+  background:
+    linear-gradient(215deg, rgba(255,255,255,.16), transparent 52%),
+    color-mix(in srgb, var(--envelope-side-color), #000 2%);
+}
+
+.message-envelope__front {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  clip-path: polygon(0 100%, 0 72%, 50% 48%, 100% 72%, 100% 100%);
+  background:
+    linear-gradient(155deg, rgba(255,255,255,.2), transparent 44%),
+    var(--envelope-pocket-color);
+  border-radius: 0 0 18px 18px;
+  pointer-events: none;
+}
+
+.message-envelope__front::after {
+  content: '';
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: 49%;
+  height: 1px;
+  background: rgba(97,76,64,.12);
+  box-shadow: 0 2px 5px rgba(67,49,41,.05);
+}
+
+.message-envelope__flap {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  border-radius: 18px 18px 0 0;
+  clip-path: polygon(0 0, 100% 0, 50% 64%);
+  background:
+    linear-gradient(160deg, rgba(255,255,255,.42), transparent 47%),
+    var(--envelope-flap-color);
+  transform-origin: 50% 0;
+  transform: rotateX(0deg);
+  backface-visibility: visible;
+  filter: drop-shadow(0 5px 4px rgba(73,53,43,.12));
+  transition: transform 540ms cubic-bezier(.2,.72,.2,1);
+}
+
+.message-envelope__flap::after {
+  content: '';
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 35.5%;
+  height: 1px;
+  background: rgba(92,72,60,.11);
+  transform: rotate(0.1deg);
+}
+
+.message-envelope__flap-inner {
+  position: absolute;
+  inset: 0;
+  clip-path: inherit;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0) 0 72%,
+      rgba(92,72,60,.055) 100%
+    );
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.message-envelope__meta {
+  position: absolute;
+  z-index: 8;
+  left: 18px;
+  right: 18px;
+  bottom: 14px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--envelope-ink-color);
+}
+
+.message-envelope__from {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -.015em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.message-envelope__time {
+  flex: none;
+  font-size: 10px;
+  font-weight: 650;
+  opacity: .68;
+}
+
+.message-envelope__new {
+  position: absolute;
+  z-index: 9;
+  left: 16px;
+  top: 14px;
+  min-width: 31px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.58);
+  color: var(--envelope-ink-color);
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .06em;
+  box-shadow: 0 2px 7px rgba(72,52,41,.06);
+  backdrop-filter: blur(5px);
+}
+
+.message-envelope__private {
+  position: absolute;
+  z-index: 9;
+  right: 15px;
+  top: 13px;
+  width: 25px;
+  height: 25px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+  background: rgba(255,255,255,.36);
+  color: var(--envelope-ink-color);
+  backdrop-filter: blur(5px);
+}
+
+.message-envelope--read .message-envelope__body {
+  filter: saturate(.93);
+}
+
+.message-envelope--active {
+  filter: saturate(1.04);
+}
+
+.message-envelope--active .message-envelope__shadow {
+  opacity: .72;
+  transform: scaleX(.97);
+}
+
+.message-envelope--deemphasized {
+  opacity: .13 !important;
+  filter: blur(1.4px) saturate(.72);
+  transform:
+    translate3d(
+      calc(-50% + var(--envelope-x)),
+      calc(var(--envelope-y) + 24px),
+      -90px
+    )
+    rotate(var(--envelope-rotate))
+    scale(calc(var(--envelope-scale) * .92));
+}
+
+.message-envelope--opening {
+  z-index: 230 !important;
+  animation:
+    envelope-focus 1120ms cubic-bezier(.22,.8,.2,1) both;
+}
+
+.message-envelope--opening .message-envelope__shadow {
+  animation:
+    envelope-shadow-open 1120ms ease both;
+}
+
+.message-envelope--opening .message-envelope__flap {
+  animation:
+    envelope-flap-unfold 500ms 220ms cubic-bezier(.18,.76,.18,1) forwards;
+}
+
+.message-envelope--opening .message-envelope__flap-inner {
+  animation:
+    envelope-flap-inner-reveal 260ms 350ms ease forwards;
+}
+
+.message-envelope--opening .message-envelope__peek {
+  animation:
+    envelope-card-rise 500ms 585ms cubic-bezier(.18,.8,.18,1) forwards;
+}
+
+.message-envelope--opening .message-envelope__front,
+.message-envelope--opening .message-envelope__side-fold {
+  animation:
+    envelope-pocket-settle 1120ms ease both;
+}
+
+.message-envelope--opening .message-envelope__meta,
+.message-envelope--opening .message-envelope__new,
+.message-envelope--opening .message-envelope__private {
+  animation:
+    envelope-meta-fade 220ms 180ms ease forwards;
+}
+
+.envelope-history-toggle {
+  align-self: center;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px auto 0;
+  padding: 0 13px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-base);
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    opacity 160ms ease,
+    background 160ms ease;
+}
+
+.envelope-history-toggle:active:not(:disabled) {
+  transform: scale(.97);
+}
+
+.envelope-history-toggle:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+.envelope-page__empty {
+  min-height: 360px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  padding: 32px;
+  color: var(--color-content-secondary);
+  text-align: center;
+}
+
+.envelope-page__empty > span {
+  font-size: 36px;
+}
+
+.envelope-page__empty strong {
+  color: var(--color-content-primary);
+  font-size: 15px;
+}
+
+.envelope-page__empty p {
+  max-width: 270px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 19px;
+}
+
+@keyframes envelope-focus {
+  0% {
+    transform:
+      translate3d(-50%, var(--envelope-y), 0)
+      rotate(var(--envelope-rotate))
+      scale(1);
+  }
+  19% {
+    transform:
+      translate3d(-50%, 118px, 18px)
+      rotate(0deg)
+      scale(1.035);
+  }
+  64% {
+    transform:
+      translate3d(-50%, 107px, 34px)
+      rotate(0deg)
+      scale(1.055);
+  }
+  100% {
+    transform:
+      translate3d(-50%, 92px, 42px)
+      rotate(0deg)
+      scale(1.07);
+  }
+}
+
+@keyframes envelope-shadow-open {
+  0% {
+    opacity: .72;
+    transform: scaleX(.97);
+  }
+  55% {
+    opacity: .48;
+    transform: scaleX(.89);
+  }
+  100% {
+    opacity: .22;
+    transform: scaleX(.7) translateY(17px);
+  }
+}
+
+@keyframes envelope-flap-unfold {
+  0% {
+    transform: rotateX(0deg) translateZ(0);
+    filter: drop-shadow(0 5px 4px rgba(73,53,43,.12));
+  }
+  22% {
+    transform: rotateX(18deg) translateZ(2px);
+    filter: drop-shadow(0 8px 5px rgba(73,53,43,.1));
+  }
+  68% {
+    transform: rotateX(151deg) translateZ(3px);
+    filter: drop-shadow(0 2px 3px rgba(73,53,43,.05));
+  }
+  88% {
+    transform: rotateX(178deg) translateZ(1px);
+  }
+  100% {
+    transform: rotateX(172deg) translateZ(0);
+    filter: drop-shadow(0 1px 2px rgba(73,53,43,.04));
+  }
+}
+
+@keyframes envelope-flap-inner-reveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes envelope-card-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(55%) scale(.96);
+  }
+  12% {
+    opacity: .2;
+  }
+  38% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+    transform: translateY(-14%) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-10%) scale(1);
+  }
+}
+
+@keyframes envelope-pocket-settle {
+  0%, 68% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(12px);
+    opacity: .82;
+  }
+}
+
+@keyframes envelope-meta-fade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .message-envelope,
+  .message-envelope__flap,
+  .message-envelope__flap-inner,
+  .message-envelope__peek,
+  .message-envelope__front,
+  .message-envelope__side-fold,
+  .message-envelope__meta,
+  .message-envelope__new,
+  .message-envelope__private {
+    transition-duration: 1ms;
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}
+
+
+.message-envelope__peek-art--photo {
+  object-fit: cover;
+  transform-origin: center;
+}
+
+.message-envelope__peek-floating {
+  position: absolute;
+  z-index: 3;
+  left: 13%;
+  top: 24%;
+  width: 44%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 5px 12px rgba(68,49,38,.14);
+}
+
+.message-envelope__peek-floating img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.message-envelope__peek-floating--white {
+  padding: 4px;
+  background: rgba(255,255,255,.95);
+}
+
+.message-envelope__peek-floating--polaroid {
+  aspect-ratio: 4 / 3.8;
+  padding: 4px 4px 12px;
+  background: #fffdf9;
+}
+
+.message-envelope__peek-surface {
+  z-index: 4;
+}
+
+
+.message-envelope__peek-floating {
+  background: transparent;
+}
+
+.message-envelope__peek-floating--white {
+  padding: 4px;
+  background: rgba(255,255,255,.95);
+}
+
+.message-envelope__peek-floating--polaroid {
+  padding: 4px 4px 12px;
+  background: #fffdf9;
+}
+
+
+.message-envelope__peek-pages {
+  position: absolute;
+  z-index: 6;
+  right: 10px;
+  top: 9px;
+  min-width: 27px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.76);
+  color: var(--envelope-ink-color);
+  font-size: 8px;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(65,49,39,.07);
+  backdrop-filter: blur(4px);
+}
+
+
+.message-envelope--locked .message-envelope__body {
+  filter: saturate(.72) brightness(.98);
+}
+
+.message-envelope__locked {
+  position: absolute;
+  z-index: 9;
+  left: 16px;
+  top: 14px;
+  min-height: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: rgba(67, 62, 56, .84);
+  color: #fffdf8;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  box-shadow: 0 2px 8px rgba(72,52,41,.1);
+  backdrop-filter: blur(5px);
+}
+
+.message-envelope--opening .message-envelope__locked {
+  animation: envelope-meta-fade 220ms 180ms ease forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .message-envelope__locked {
+    transition-duration: 1ms;
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}

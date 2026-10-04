@@ -1,0 +1,910 @@
+import { create } from 'zustand'
+import type { LockerDecor } from '@/features/classroom/lockerDecor'
+import { persist } from 'zustand/middleware'
+import {
+  emptyComposerDraft,
+  emptyDeskCreationDraft,
+  mockClassroom,
+  mockCurrentUser,
+  mockDesk,
+} from '@/prototype/mock/initialState'
+import { getComposerBackground } from '@/features/composer/backgroundAssets'
+import { getFirstCardPage } from '@/features/composer/messagePages'
+import {
+  resolveDeskObjectType,
+  resolveDeskZone,
+  resolveInitialPlacement,
+} from '@/features/supporter/supporterFlow'
+import {
+  deskStickers,
+  type SupporterObjectChoice,
+} from '@/features/supporter/deskStickers'
+import type {
+  AuthProvider,
+  AuthSession,
+  BlackboardEntry,
+  CharmMaterial,
+  DeskGem,
+  Classroom,
+  ClassroomMember,
+  Desk,
+  DeskCreationDraft,
+  DeskObjectType,
+  DeskPlacement,
+  Message,
+  MessageDraft,
+  MessageReaction,
+  MessageReply,
+  OwnerSettings,
+  PrototypeUser,
+  ReadMode,
+  SupporterSettings,
+} from '@/types'
+
+type ClaimState = 'unclaimed' | 'claiming' | 'claimed'
+
+type PrototypeState = {
+  debugMode: boolean
+  currentUser: PrototypeUser
+  authSession: AuthSession
+  currentDesk: Desk
+  messages: Message[]
+  composerDraft: MessageDraft
+  deskCreationDraft: DeskCreationDraft
+  claimReadMode: ReadMode
+  claimState: ClaimState
+  claimBacklogDeferred: boolean
+  classroom: Classroom
+  classroomMember: ClassroomMember | null
+  ownerSettings: OwnerSettings
+  messageReplies: MessageReply[]
+  messageReactions: Partial<Record<string, MessageReaction>>
+  supporterIdentityName: string | null
+  supporterSettings: SupporterSettings
+  publicHiddenMessageIds: string[]
+  publicBlockedSupporters: string[]
+  reportedMessageIds: string[]
+  readMessageIds: string[]
+  /** Stationery templates unlocked by watching an ad (prototype). */
+  unlockedStationeryIds: string[]
+  unlockStationery: (backgroundId: string) => void
+  /** Clips and washi tapes unlocked by watching an ad (prototype). */
+  unlockedDecorIds: string[]
+  unlockDecor: (assetId: string) => void
+  /** Messages the desk owner tidied off the desk into the basket. */
+  basketMessageIds: string[]
+  /** Light and paint each locker owner bought, by locker id. */
+  lockerDecor: Record<string, LockerDecor>
+  saveLockerDecor: (lockerId: string, decor: LockerDecor) => void
+  moveToBasket: (messageIds: string[]) => void
+  supporterObjectChoice: SupporterObjectChoice
+  stickerDraft: { stickerId: string; senderName: string }
+  setSupporterObjectChoice: (choice: SupporterObjectChoice) => void
+  setStickerDraft: (patch: Partial<{ stickerId: string; senderName: string }>) => void
+  placeSticker: (placement: DeskPlacement) => void
+  placeStickerInLocker: (lockerId: string, placement: DeskPlacement) => void
+  setDebugMode: (value: boolean) => void
+  signIn: (email: string, provider?: AuthProvider) => void
+  signUp: (displayName: string, email: string) => void
+  signOut: () => void
+  deleteAccount: () => void
+  setDeskReadMode: (readMode: ReadMode) => void
+  updateOwnerSettings: (patch: Partial<OwnerSettings>) => void
+  toggleBlockedSupporter: (senderName: string) => void
+  connectRoom: (code: string) => void
+  endRoom: () => void
+  sendMessageReply: (reply: Omit<MessageReply, 'id' | 'createdAt'>) => void
+  reactToMessage: (
+    messageId: string,
+    reaction: MessageReaction,
+  ) => void
+  hidePublicMessage: (messageId: string) => void
+  blockPublicSupporter: (senderName: string) => void
+  reportMessage: (messageId: string) => void
+  deleteOwnPublicMessage: (messageId: string) => void
+  updateSupporterSettings: (
+    patch: Partial<SupporterSettings>,
+  ) => void
+  setComposerDraft: (draft: MessageDraft) => void
+  resetComposerDraft: () => void
+  setDeskCreationDraft: (patch: Partial<DeskCreationDraft>) => void
+  resetDeskCreationDraft: () => void
+  createDeskFromDraft: () => void
+  beginClaim: () => void
+  setClaimReadMode: (readMode: ReadMode) => void
+  completeClaim: () => void
+  setClaimBacklogDeferred: (value: boolean) => void
+  clearClaimBacklogDeferred: () => void
+  addMessage: (message: Message) => void
+  createClassroom: (name: string) => string
+  joinClassroom: (displayName: string) => string
+  addBlackboardEntry: (
+    entry: Pick<BlackboardEntry, 'text' | 'drawingDataUrl'>,
+  ) => void
+  updateClassroomSettings: (
+    patch: Partial<Pick<Classroom, 'name' | 'dailyUnlockTime'>>,
+  ) => void
+  regenerateClassroomInviteCode: () => void
+  updateClassroomMember: (
+    patch: Partial<Pick<ClassroomMember, 'displayName' | 'pushEnabled'>>,
+  ) => void
+  leaveClassroom: () => void
+  placeComposerMessageInLocker: (
+    lockerId: string,
+    placement?: DeskPlacement,
+    representationType?: DeskObjectType,
+    objectColor?: string,
+    charm?: { assetId: string; material: CharmMaterial },
+  ) => void
+  placeComposerMessage: (
+    placement?: DeskPlacement,
+    representationType?: DeskObjectType,
+    objectColor?: string,
+    charm?: {
+      assetId: string
+      material: CharmMaterial
+      charmPhrase?: string
+    },
+    gems?: DeskGem[],
+  ) => void
+  markMessageRead: (messageId: string) => void
+  setClaimState: (state: ClaimState) => void
+}
+
+export const usePrototypeStore = create<PrototypeState>()(
+  persist(
+    (set) => ({
+      debugMode: false,
+      currentUser: mockCurrentUser,
+      authSession: { status: 'anonymous' },
+      currentDesk: mockDesk,
+      messages: [],
+      composerDraft: emptyComposerDraft,
+      deskCreationDraft: emptyDeskCreationDraft,
+      claimReadMode: mockDesk.readMode,
+      claimState: 'claimed',
+      claimBacklogDeferred: false,
+      classroom: mockClassroom,
+      classroomMember: null,
+      ownerSettings: {
+        publicFeedEnabled: true,
+        pushEnabled: true,
+        roomClosed: false,
+        blockedSupporters: [],
+        connectedRooms: [],
+      },
+      messageReplies: [],
+      messageReactions: {},
+      supporterIdentityName: null,
+      supporterSettings: {
+        defaultNickname: '',
+        revealAfterExam: false,
+        pushEnabled: true,
+      },
+      publicHiddenMessageIds: [],
+      publicBlockedSupporters: [],
+      reportedMessageIds: [],
+      readMessageIds: [],
+      unlockedStationeryIds: [],
+      unlockStationery: (backgroundId) =>
+        set((state) => ({
+          unlockedStationeryIds: state.unlockedStationeryIds.includes(backgroundId)
+            ? state.unlockedStationeryIds
+            : [...state.unlockedStationeryIds, backgroundId],
+        })),
+      lockerDecor: {},
+      saveLockerDecor: (lockerId, decor) =>
+        set((state) => ({
+          lockerDecor: { ...state.lockerDecor, [lockerId]: decor },
+        })),
+      basketMessageIds: [],
+      moveToBasket: (messageIds) =>
+        set((state) => ({
+          basketMessageIds: [
+            ...state.basketMessageIds,
+            ...messageIds.filter(
+              (id) => !state.basketMessageIds.includes(id),
+            ),
+          ],
+        })),
+      unlockedDecorIds: [],
+      unlockDecor: (assetId) =>
+        set((state) => ({
+          unlockedDecorIds: state.unlockedDecorIds.includes(assetId)
+            ? state.unlockedDecorIds
+            : [...state.unlockedDecorIds, assetId],
+        })),
+      supporterObjectChoice: 'letter',
+      stickerDraft: { stickerId: deskStickers[0]!.id, senderName: '' },
+      setSupporterObjectChoice: (supporterObjectChoice) =>
+        set({ supporterObjectChoice }),
+      setStickerDraft: (patch) =>
+        set((state) => ({ stickerDraft: { ...state.stickerDraft, ...patch } })),
+      placeSticker: (placement) =>
+        set((state) => {
+          const stamp = Date.now().toString(36)
+          const messageId = `message-${stamp}`
+          const senderName =
+            state.stickerDraft.senderName.trim() ||
+            state.supporterSettings.defaultNickname.trim() ||
+            '익명의 친구'
+
+          // A sticker is stored as a message with no content so every desk
+          // object still maps to exactly one message.
+          const message: Message = {
+            ...emptyComposerDraft,
+            id: messageId,
+            kind: 'sticker',
+            stickerId: state.stickerDraft.stickerId,
+            visibility: 'private',
+            senderName,
+            recipientDeskId: state.currentDesk.id,
+            status: 'sent',
+            createdAt: new Date().toISOString(),
+          }
+
+          return {
+            messages: [...state.messages, message],
+            supporterIdentityName: senderName,
+            currentDesk: {
+              ...state.currentDesk,
+              objects: [
+                ...state.currentDesk.objects,
+                {
+                  id: `desk-object-${stamp}`,
+                  messageId,
+                  representationType: 'sticker',
+                  assetId: state.stickerDraft.stickerId,
+                  zone: resolveDeskZone(state.currentDesk.objects.length),
+                  order: state.currentDesk.objects.length,
+                  ...placement,
+                  zIndex: state.currentDesk.objects.length + 30,
+                },
+              ],
+            },
+          }
+        }),
+      placeStickerInLocker: (lockerId, placement) =>
+        set((state) => {
+          const locker = state.classroom.lockers.find(
+            (item) => item.id === lockerId,
+          )
+          if (!locker) return state
+
+          const stamp = Date.now().toString(36)
+          const messageId = `classroom-message-${stamp}`
+          const senderName =
+            state.classroomMember?.displayName?.trim() ||
+            state.supporterSettings.defaultNickname.trim() ||
+            '친구'
+
+          const message: Message = {
+            ...emptyComposerDraft,
+            id: messageId,
+            kind: 'sticker',
+            stickerId: state.stickerDraft.stickerId,
+            visibility: 'private',
+            senderName,
+            recipientDeskId: locker.id,
+            status: 'sent',
+            createdAt: new Date().toISOString(),
+          }
+
+          return {
+            messages: [...state.messages, message],
+            supporterIdentityName: senderName,
+            classroom: {
+              ...state.classroom,
+              lockers: state.classroom.lockers.map((item) =>
+                item.id === lockerId
+                  ? {
+                      ...item,
+                      messageIds: [...item.messageIds, messageId],
+                      objects: [
+                        ...item.objects,
+                        {
+                          id: `locker-object-${stamp}`,
+                          messageId,
+                          representationType: 'sticker',
+                          assetId: state.stickerDraft.stickerId,
+                          zone: resolveDeskZone(item.objects.length),
+                          order: item.objects.length,
+                          locked: false,
+                          ...placement,
+                          zIndex: item.objects.length + 10,
+                        },
+                      ],
+                    }
+                  : item,
+              ),
+            },
+          }
+        }),
+      setDebugMode: (debugMode) => set({ debugMode }),
+      signIn: (email, provider = 'password') =>
+        set({
+          authSession: {
+            status: 'authenticated',
+            email: email.trim() || 'jisu@example.com',
+            provider,
+          },
+        }),
+      signUp: (displayName, email) =>
+        set((state) => ({
+          currentUser: {
+            ...state.currentUser,
+            displayName: displayName.trim() || state.currentUser.displayName,
+          },
+          authSession: {
+            status: 'authenticated',
+            email: email.trim() || 'jisu@example.com',
+            provider: 'password',
+          },
+        })),
+      signOut: () =>
+        set({
+          authSession: { status: 'anonymous' },
+        }),
+      deleteAccount: () =>
+        set({
+          currentUser: mockCurrentUser,
+          authSession: { status: 'anonymous' },
+        }),
+      setDeskReadMode: (readMode) =>
+        set((state) => ({
+          currentDesk: {
+            ...state.currentDesk,
+            readMode,
+          },
+        })),
+      updateOwnerSettings: (patch) =>
+        set((state) => ({
+          ownerSettings: {
+            ...state.ownerSettings,
+            ...patch,
+          },
+        })),
+      toggleBlockedSupporter: (senderName) =>
+        set((state) => ({
+          ownerSettings: {
+            ...state.ownerSettings,
+            blockedSupporters: state.ownerSettings.blockedSupporters.includes(
+              senderName,
+            )
+              ? state.ownerSettings.blockedSupporters.filter(
+                  (name) => name !== senderName,
+                )
+              : [
+                  ...state.ownerSettings.blockedSupporters,
+                  senderName,
+                ],
+          },
+        })),
+      connectRoom: (code) =>
+        set((state) => {
+          const normalized = code.trim().toUpperCase()
+          if (!normalized) return state
+          if (
+            state.ownerSettings.connectedRooms.some(
+              (room) => room.code === normalized,
+            )
+          ) {
+            return state
+          }
+
+          return {
+            ownerSettings: {
+              ...state.ownerSettings,
+              connectedRooms: [
+                ...state.ownerSettings.connectedRooms,
+                {
+                  id: `connected-${Date.now().toString(36)}`,
+                  name: `응원 공간 ${normalized}`,
+                  code: normalized,
+                },
+              ],
+            },
+          }
+        }),
+      endRoom: () =>
+        set((state) => ({
+          ownerSettings: {
+            ...state.ownerSettings,
+            roomClosed: true,
+          },
+        })),
+      sendMessageReply: (reply) =>
+        set((state) => ({
+          messageReplies: [
+            ...state.messageReplies,
+            {
+              ...reply,
+              id: `reply-${Date.now().toString(36)}`,
+              createdAt: new Date().toISOString(),
+            },
+          ],
+        })),
+      reactToMessage: (messageId, reaction) =>
+        set((state) => ({
+          messageReactions: {
+            ...state.messageReactions,
+            [messageId]:
+              state.messageReactions[messageId] === reaction
+                ? undefined
+                : reaction,
+          },
+        })),
+      hidePublicMessage: (messageId) =>
+        set((state) => ({
+          publicHiddenMessageIds: state.publicHiddenMessageIds.includes(
+            messageId,
+          )
+            ? state.publicHiddenMessageIds
+            : [...state.publicHiddenMessageIds, messageId],
+        })),
+      blockPublicSupporter: (senderName) =>
+        set((state) => ({
+          publicBlockedSupporters:
+            state.publicBlockedSupporters.includes(senderName)
+              ? state.publicBlockedSupporters
+              : [...state.publicBlockedSupporters, senderName],
+        })),
+      reportMessage: (messageId) =>
+        set((state) => ({
+          reportedMessageIds: state.reportedMessageIds.includes(
+            messageId,
+          )
+            ? state.reportedMessageIds
+            : [...state.reportedMessageIds, messageId],
+        })),
+      updateSupporterSettings: (patch) =>
+        set((state) => ({
+          supporterSettings: {
+            ...state.supporterSettings,
+            ...patch,
+          },
+          composerDraft:
+            typeof patch.defaultNickname === 'string'
+              ? {
+                  ...state.composerDraft,
+                  senderName: patch.defaultNickname,
+                }
+              : state.composerDraft,
+        })),
+      deleteOwnPublicMessage: (messageId) =>
+        set((state) => {
+          const message = state.messages.find(
+            (item) => item.id === messageId,
+          )
+          const ownMessage =
+            Boolean(message) &&
+            Boolean(state.supporterIdentityName) &&
+            message?.senderName === state.supporterIdentityName
+          const unread =
+            message?.status !== 'read' &&
+            !state.readMessageIds.includes(messageId)
+          const deletable =
+            ownMessage &&
+            message?.visibility === 'public' &&
+            unread
+
+          if (!deletable) return state
+
+          return {
+            messages: state.messages.filter(
+              (item) => item.id !== messageId,
+            ),
+            currentDesk: {
+              ...state.currentDesk,
+              objects: state.currentDesk.objects.filter(
+                (object) => object.messageId !== messageId,
+              ),
+            },
+            classroom: {
+              ...state.classroom,
+              lockers: state.classroom.lockers.map((locker) => ({
+                ...locker,
+                messageIds: locker.messageIds.filter(
+                  (id) => id !== messageId,
+                ),
+                objects: locker.objects.filter(
+                  (object) => object.messageId !== messageId,
+                ),
+              })),
+            },
+          }
+        }),
+      setComposerDraft: (composerDraft) => set({ composerDraft }),
+      resetComposerDraft: () =>
+        set((state) => ({
+          composerDraft: {
+            ...emptyComposerDraft,
+            senderName:
+              state.supporterSettings.defaultNickname ||
+              state.supporterIdentityName ||
+              '',
+          },
+        })),
+      setDeskCreationDraft: (patch) =>
+        set((state) => ({
+          deskCreationDraft: {
+            ...state.deskCreationDraft,
+            ...patch,
+          },
+        })),
+      resetDeskCreationDraft: () =>
+        set({ deskCreationDraft: emptyDeskCreationDraft }),
+      createDeskFromDraft: () =>
+        set((state) => {
+          const createdFor =
+            state.deskCreationDraft.createdFor ?? 'self'
+          const displayName =
+            createdFor === 'self'
+              ? state.currentUser.displayName
+              : state.deskCreationDraft.recipientDisplayName.trim() || '친구'
+          const claimStatus =
+            createdFor === 'self' ? 'claimed' : 'unclaimed'
+
+          return {
+            currentDesk: {
+              ...state.currentDesk,
+              ownerId:
+                createdFor === 'self'
+                  ? state.currentUser.id
+                  : undefined,
+              creatorId: state.currentUser.id,
+              displayName,
+              createdFor,
+              readMode: state.deskCreationDraft.readMode,
+              objects: [],
+              claimStatus,
+            },
+            messages: [],
+            readMessageIds: [],
+            basketMessageIds: [],
+            claimReadMode: state.deskCreationDraft.readMode,
+            claimState: claimStatus,
+            claimBacklogDeferred: false,
+          }
+        }),
+      beginClaim: () =>
+        set((state) => ({
+          claimReadMode: state.currentDesk.readMode,
+          claimState:
+            state.currentDesk.claimStatus === 'claimed'
+              ? 'claimed'
+              : 'claiming',
+        })),
+      setClaimReadMode: (claimReadMode) => set({ claimReadMode }),
+      completeClaim: () =>
+        set((state) => ({
+          currentDesk: {
+            ...state.currentDesk,
+            ownerId:
+              state.currentDesk.createdFor === 'other'
+                ? 'user-claimed-recipient-01'
+                : state.currentUser.id,
+            readMode: state.claimReadMode,
+            claimStatus: 'claimed',
+          },
+          claimState: 'claimed',
+        })),
+      setClaimBacklogDeferred: (claimBacklogDeferred) =>
+        set({ claimBacklogDeferred }),
+      clearClaimBacklogDeferred: () =>
+        set({ claimBacklogDeferred: false }),
+      addMessage: (message) =>
+        set((state) => ({ messages: [...state.messages, message] })),
+      createClassroom: (name) => {
+        const stamp = Date.now().toString(36)
+        const classroomId = `classroom-${stamp}`
+
+        set({
+          classroom: {
+            id: classroomId,
+            name: name.trim() || '우리 반',
+            blackboardMessageIds: [],
+            blackboardEntries: [],
+            lockers: [],
+            dailyUnlockTime: '22:00',
+            inviteCode: stamp.slice(-6).toUpperCase(),
+          },
+          classroomMember: null,
+        })
+
+        return classroomId
+      },
+      joinClassroom: (displayName) => {
+        const stamp = Date.now().toString(36)
+        const lockerId = `locker-${stamp}`
+        const normalizedName = displayName.trim() || '친구'
+
+        set((state) => ({
+          classroom: {
+            ...state.classroom,
+            lockers: [
+              ...state.classroom.lockers,
+              {
+                id: lockerId,
+                studentName: normalizedName,
+                messageIds: [],
+                objects: [],
+              },
+            ],
+          },
+          classroomMember: {
+            lockerId,
+            displayName: normalizedName,
+            pushEnabled: true,
+          },
+        }))
+
+        return lockerId
+      },
+      updateClassroomSettings: (patch) =>
+        set((state) => ({
+          classroom: {
+            ...state.classroom,
+            ...patch,
+          },
+        })),
+      regenerateClassroomInviteCode: () =>
+        set((state) => ({
+          classroom: {
+            ...state.classroom,
+            inviteCode: Date.now()
+              .toString(36)
+              .slice(-6)
+              .toUpperCase(),
+          },
+        })),
+      updateClassroomMember: (patch) =>
+        set((state) => {
+          if (!state.classroomMember) return state
+
+          const displayName =
+            typeof patch.displayName === 'string'
+              ? patch.displayName.trim() ||
+                state.classroomMember.displayName
+              : state.classroomMember.displayName
+
+          return {
+            classroomMember: {
+              ...state.classroomMember,
+              ...patch,
+              displayName,
+            },
+            classroom: {
+              ...state.classroom,
+              lockers: state.classroom.lockers.map((locker) =>
+                locker.id === state.classroomMember?.lockerId
+                  ? {
+                      ...locker,
+                      studentName: displayName,
+                    }
+                  : locker,
+              ),
+            },
+          }
+        }),
+      leaveClassroom: () =>
+        set({
+          classroomMember: null,
+        }),
+      addBlackboardEntry: (entry) =>
+        set((state) => {
+          const stamp = Date.now().toString(36)
+          const authorName =
+            state.classroomMember?.displayName ??
+            state.currentUser.displayName
+
+          return {
+            classroom: {
+              ...state.classroom,
+              blackboardEntries: [
+                ...state.classroom.blackboardEntries,
+                {
+                  id: `board-entry-${stamp}`,
+                  authorName,
+                  text: entry.text.trim(),
+                  drawingDataUrl: entry.drawingDataUrl,
+                  createdAt: new Date().toISOString(),
+                },
+              ],
+            },
+          }
+        }),
+      placeComposerMessageInLocker: (
+        lockerId,
+        placement,
+        selectedRepresentationType,
+        objectColor,
+        charm,
+      ) =>
+        set((state) => {
+          const locker = state.classroom.lockers.find(
+            (item) => item.id === lockerId,
+          )
+          if (!locker) return state
+
+          const stamp = Date.now().toString(36)
+          const messageId = `classroom-message-${stamp}`
+          const objectId = `locker-object-${stamp}`
+          const representationType =
+            selectedRepresentationType ??
+            resolveDeskObjectType(state.composerDraft)
+          const finalPlacement =
+            placement ??
+            resolveInitialPlacement(locker.objects.length)
+          const firstPage = getFirstCardPage(state.composerDraft)
+          const previewColor = getComposerBackground(
+            firstPage.backgroundAssetId,
+          ).tone
+          const senderName =
+            state.classroomMember?.displayName ??
+            state.composerDraft.senderName.trim() ??
+            '친구'
+
+          const message: Message = {
+            ...state.composerDraft,
+            id: messageId,
+            senderName: senderName || '친구',
+            recipientDeskId: locker.id,
+            status: 'sent',
+            createdAt: new Date().toISOString(),
+            previewColor,
+          }
+
+          return {
+            messages: [...state.messages, message],
+            supporterIdentityName: message.senderName,
+            classroom: {
+              ...state.classroom,
+              lockers: state.classroom.lockers.map((item) =>
+                item.id === lockerId
+                  ? {
+                      ...item,
+                      messageIds: [...item.messageIds, messageId],
+                      objects: [
+                        ...item.objects,
+                        {
+                          id: objectId,
+                          messageId,
+                          representationType,
+                          color: objectColor,
+                          ...(representationType === 'charm' && charm
+                            ? charm
+                            : {}),
+                          zone: resolveDeskZone(item.objects.length),
+                          order: item.objects.length,
+                          locked: false,
+                          ...finalPlacement,
+                          zIndex: item.objects.length + 10,
+                        },
+                      ],
+                    }
+                  : item,
+              ),
+            },
+            composerDraft: {
+              ...emptyComposerDraft,
+              senderName: state.supporterSettings.defaultNickname,
+            },
+          }
+        }),
+      placeComposerMessage: (
+        placement,
+        selectedRepresentationType,
+        objectColor,
+        charm,
+        gems,
+      ) =>
+        set((state) => {
+          const stamp = Date.now().toString(36)
+          const messageId = `message-${stamp}`
+          const objectId = `desk-object-${stamp}`
+          const representationType =
+            selectedRepresentationType ??
+            resolveDeskObjectType(state.composerDraft)
+          const zone = resolveDeskZone(state.currentDesk.objects.length)
+          const finalPlacement =
+            placement ?? resolveInitialPlacement(state.currentDesk.objects.length)
+          const firstPage = getFirstCardPage(state.composerDraft)
+          const previewColor = getComposerBackground(
+            firstPage.backgroundAssetId,
+          ).tone
+
+          const message: Message = {
+            ...state.composerDraft,
+            id: messageId,
+            senderName:
+              state.composerDraft.senderName.trim() || '익명의 친구',
+            recipientDeskId: state.currentDesk.id,
+            status: 'sent',
+            createdAt: new Date().toISOString(),
+            previewColor,
+          }
+
+          return {
+            messages: [...state.messages, message],
+            supporterIdentityName: message.senderName,
+            currentDesk: {
+              ...state.currentDesk,
+              objects: [
+                ...state.currentDesk.objects,
+                {
+                  id: objectId,
+                  messageId,
+                  representationType,
+                  color: objectColor,
+                  ...(representationType === 'charm' && charm ? charm : {}),
+                  ...(gems?.length ? { gems } : {}),
+                  zone,
+                  order: state.currentDesk.objects.length,
+                  locked: state.composerDraft.visibility === 'private',
+                  ...finalPlacement,
+                  zIndex: state.currentDesk.objects.length + 30,
+                },
+              ],
+            },
+            composerDraft: {
+              ...emptyComposerDraft,
+              senderName: state.supporterSettings.defaultNickname,
+            },
+          }
+        }),
+      markMessageRead: (messageId) =>
+        set((state) => {
+          const nextIds = state.readMessageIds.includes(messageId)
+            ? state.readMessageIds
+            : [...state.readMessageIds, messageId]
+
+          return {
+            readMessageIds: nextIds,
+            messages: state.messages.map((message) =>
+              message.id === messageId
+                ? {
+                    ...message,
+                    status: 'read',
+                    readAt: message.readAt ?? new Date().toISOString(),
+                  }
+                : message,
+            ),
+          }
+        }),
+      setClaimState: (claimState) => set({ claimState }),
+    }),
+    {
+      name: 'eun-demoday-prototype',
+      partialize: (state) => ({
+        debugMode: state.debugMode,
+        currentUser: state.currentUser,
+        authSession: state.authSession,
+        currentDesk: state.currentDesk,
+        messages: state.messages,
+        composerDraft: state.composerDraft,
+        deskCreationDraft: state.deskCreationDraft,
+        claimReadMode: state.claimReadMode,
+        claimState: state.claimState,
+        claimBacklogDeferred: state.claimBacklogDeferred,
+        classroom: state.classroom,
+        classroomMember: state.classroomMember,
+        ownerSettings: state.ownerSettings,
+        messageReplies: state.messageReplies,
+        messageReactions: state.messageReactions,
+        supporterIdentityName: state.supporterIdentityName,
+        supporterSettings: state.supporterSettings,
+        publicHiddenMessageIds: state.publicHiddenMessageIds,
+        publicBlockedSupporters: state.publicBlockedSupporters,
+        reportedMessageIds: state.reportedMessageIds,
+        readMessageIds: state.readMessageIds,
+        unlockedStationeryIds: state.unlockedStationeryIds,
+        unlockedDecorIds: state.unlockedDecorIds,
+        basketMessageIds: state.basketMessageIds,
+        lockerDecor: state.lockerDecor,
+        supporterObjectChoice: state.supporterObjectChoice,
+        stickerDraft: state.stickerDraft,
+      }),
+    },
+  ),
+)
