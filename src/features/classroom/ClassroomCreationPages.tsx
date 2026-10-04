@@ -9,6 +9,7 @@ import {
   Navigate,
   useNavigate,
   useParams,
+  useSearchParams,
 } from 'react-router-dom'
 import {
   AppBar,
@@ -45,8 +46,10 @@ export function ClassroomCreatePage() {
   const create = () => {
     if (!name.trim()) return
     const classroomId = createClassroom(name)
+    // The creator makes their own locker first, so the class isn't empty
+    // when the first friend opens the link.
     navigate(
-      `/prototype/classroom/${classroomId}/complete`,
+      `/prototype/classroom/${classroomId}/join?from=create`,
       { replace: true },
     )
   }
@@ -113,6 +116,7 @@ export function ClassroomCreateCompletePage() {
   const { showToast } = useFeedback()
   const { classroomId } = useParams()
   const classroom = usePrototypeStore((state) => state.classroom)
+  const member = usePrototypeStore((state) => state.classroomMember)
   const id = classroomId ?? classroom.id
 
   const share = async () => {
@@ -142,15 +146,27 @@ export function ClassroomCreateCompletePage() {
       surface="base"
       contentClassName="classroom-form-shell"
       fixedAction={
-        <Button
-          variant="brand"
-          fullWidth
-          onClick={() =>
-            navigate(`/prototype/classroom/${id}/join`)
-          }
-        >
-          나도 들어가기
-        </Button>
+        member ? (
+          <Button
+            variant="brand"
+            fullWidth
+            onClick={() =>
+              navigate(`/prototype/classroom/${id}/map`, { replace: true })
+            }
+          >
+            교실로 들어가기
+          </Button>
+        ) : (
+          <Button
+            variant="brand"
+            fullWidth
+            onClick={() =>
+              navigate(`/prototype/classroom/${id}/join?from=create`)
+            }
+          >
+            내 사물함 만들러 가기
+          </Button>
+        )
       }
     >
       <main className="classroom-form classroom-form--complete">
@@ -164,7 +180,9 @@ export function ClassroomCreateCompletePage() {
             친구들을 불러볼까요?
           </h1>
           <p>
-            같은 링크로 들어오면 칠판을 함께 채우고, 각자 이름으로 사물함이 생겨요.
+            {member
+              ? `${member.displayName}님 사물함이 먼저 자리를 잡았어요. 같은 링크로 들어온 친구마다 이름표 붙은 사물함이 하나씩 생겨요.`
+              : '같은 링크로 들어오면 칠판을 함께 채우고, 각자 이름으로 사물함이 생겨요.'}
           </p>
         </section>
 
@@ -184,6 +202,8 @@ export function ClassroomCreateCompletePage() {
 export function ClassroomJoinPage() {
   const navigate = useNavigate()
   const { classroomId } = useParams()
+  const [searchParams] = useSearchParams()
+  const creating = searchParams.get('from') === 'create'
   const classroom = usePrototypeStore((state) => state.classroom)
   const joinClassroom = usePrototypeStore(
     (state) => state.joinClassroom,
@@ -194,8 +214,9 @@ export function ClassroomJoinPage() {
     if (!name.trim()) return
     joinClassroom(name)
 
+    // The creator shares the link next; everyone else goes to the class.
     navigate(
-      `/prototype/classroom/${classroomId ?? classroom.id}/map`,
+      `/prototype/classroom/${classroomId ?? classroom.id}/${creating ? 'complete' : 'map'}`,
       { replace: true },
     )
   }
@@ -223,20 +244,35 @@ export function ClassroomJoinPage() {
           disabled={!name.trim()}
           onClick={join}
         >
-          들어가기
+          {creating ? '내 사물함 만들기' : '들어가기'}
         </Button>
       }
     >
       <main className="classroom-form">
         <section className="classroom-form__heading">
-          <h1>
-            여기서는 어떤 이름으로
-            <br />
-            불리면 될까요?
-          </h1>
-          <p>
-            입력한 이름으로 내 사물함이 하나 생겨요.
-          </p>
+          {creating ? (
+            <>
+              <h1>
+                친구들을 부르기 전에
+                <br />
+                내 사물함부터 만들어요.
+              </h1>
+              <p>
+                입력한 이름이 사물함 이름표에 적혀요. 친구가 들어왔을 때 반이 비어 보이지 않아요.
+              </p>
+            </>
+          ) : (
+            <>
+              <h1>
+                여기서는 어떤 이름으로
+                <br />
+                불리면 될까요?
+              </h1>
+              <p>
+                입력한 이름으로 내 사물함이 하나 생겨요.
+              </p>
+            </>
+          )}
         </section>
 
         <TextField
