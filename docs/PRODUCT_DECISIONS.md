@@ -1,0 +1,236 @@
+# Product / UX decisions
+
+This document tracks the latest decisions that the code prototype must prioritize over older Figma flow explorations.
+
+## Prototype scope
+
+- Core experience flows and the account lifecycle are implemented as clickable code prototypes.
+- Authentication screens simulate state only; real credentials, OAuth, sessions, and backend persistence remain production implementation work.
+- The code prototype is an interactive UX specification, not a production backend.
+
+## Account / authentication
+
+- The service remains usable without login for browsing and leaving encouragements.
+- Account screens exist so users can understand how they would return to their saved spaces across visits.
+- Prototype flows include:
+  - email login
+  - email signup
+  - Google login mock
+  - password reset mock
+  - account page
+  - logout
+  - account deletion and completion
+- Google is the primary social-login prototype. Kakao login remains optional follow-up scope.
+- New sign-ups land on `/start`. Returning users land on `/home` with two doors, “내 책상 가기” and “우리 반 가기”; a door the user doesn't have yet explains that instead of navigating.
+- No production authentication or OAuth credentials are included in the prototype.
+
+## Personal Desk
+
+- The home experience is the user’s study desk, not a card feed.
+- Messages appear as physical-looking desk objects.
+- Primary reading path: Desk Object → Common Reader.
+- Card/envelope lists are secondary navigation only.
+- Unread messages are visually discoverable on the desk.
+- Daily / Time Capsule availability will be expressed through the object state rather than a separate content feed.
+
+### Desk objects, basket and monetization (2026-10-04)
+
+- Before the composer, a supporter chooses what to leave: a letter, a charm or a sticker. A sticker skips the composer; it carries no message and only the owner sees who left it.
+- Charms come as a free flat sticker or a paid acrylic 3D charm (50원). The phrase on the charm is editable (max 8 characters). The owner sees the charm first and flips it to read the message.
+- Rhinestone gems decorate an object at 5원 each (max 12 loose gems) or as a shape set priced at gem count × 5원.
+- The desk placement area is the open wood of the desk photo (x 15–90%, y 21–80%); objects stay fully inside it.
+- When not even a memo card fits, the owner can move every read cheer into a basket for free. Unread and still-locked cheers stay on the desk. Reopening a cheer from the basket costs one rewarded ad every time.
+- A self-made desk owner asks friends for cheers with “친구에게 응원 부탁하기”, in the toolbar of their desk and as a card when the desk is empty. The share text is written in the owner's own voice.
+- All payments and ads are prototype mocks.
+
+## Unified Composer
+
+- Stationery templates unlock after one rewarded ad and keep text inside their writing area.
+- Clips and washi tapes can be attached to a letter. Some of each unlock after one rewarded ad.
+
+There is no upfront mode choice for "한 줄 / 사진 / 꾸미기 / 편지".
+
+One editor provides:
+
+- 배경
+- 글자
+- 문구 (Word Art)
+- 스티커
+- 사진
+
+A supporter can start typing immediately and add only the elements they need.
+
+### Message idea assist
+
+- The composer includes a low-friction entry for supporters who do not know what to write.
+- The feature suggests **topics and questions**, not a finished encouragement message.
+- Suggestions should help recall:
+  - a recent funny moment
+  - a shared photo or memory
+  - what the recipient may be doing now
+  - something to do together after the exam
+  - one short thing the supporter genuinely wants to say
+- Selecting a suggestion never inserts text into the message automatically.
+- The selected question remains as a temporary writing prompt while the supporter writes in their own words.
+- Prototype suggestions are deterministic. Production AI generation can later use relationship, memory, and D-day context.
+
+## Card pages
+
+- All message cards use the standard 4:5 canvas.
+- A single message can contain **up to 3 card pages**.
+- The add-card entry point stays visible; overflow is not the only way to create another page.
+- Text is never split automatically across pages.
+- No page reorder is required for the current MVP.
+- A newly added page inherits:
+  - the current page background
+  - the last text element’s style
+- A newly added page does **not** inherit:
+  - actual text content
+  - stickers
+  - Word Art
+  - photos
+- Each page stores its own background, text, stickers, Word Art, and photos.
+- Composer and Recipient Reader must share rendering geometry/styles so authored output is preserved.
+
+## Canvas interaction
+
+- Body text can be freely positioned.
+- Word Art, stickers, and floating photos can be moved/scaled/rotated within product limits.
+- Background images and user photo backgrounds are allowed.
+- Floating layers share one z-order model.
+- The selected object type controls which editing tool is active.
+
+## Asset model
+
+Asset capability data may describe interaction behavior such as:
+
+- movable
+- scalable
+- rotatable
+
+Background types:
+
+- scalable
+- repeatable
+- fixed
+- photo
+
+The current product model uses standard 4:5 cards only, with up to 3 pages per message.
+
+## Desk creation / ownership
+
+- A desk can be created by the test-taker or by another supporter.
+- Self-created desks begin as claimed.
+- Supporter-created desks begin as unclaimed.
+- The recipient can claim the desk later.
+- Before completing claim, the recipient can confirm or change the read mode.
+- After claim, the original creator should have the same control level as an ordinary supporter.
+
+## Reactions / replies
+
+- Reading an encouragement can end with a lightweight emoji reaction.
+- The owner can send a **one-way reply** to a specific encouragement.
+- In Daily mode, the owner can instead send one common reply to the unique supporters in that day's opening batch.
+- A supporter who sent multiple messages in the batch receives the common reply once.
+- Replies do not create chat threads or nested conversations.
+- Supporters see replies as:
+  - “내가 남긴 이야기”
+  - “OO님의 답장”
+- The reply screen has no “reply again” action. The only continuation is starting a **new encouragement**.
+- Visitors viewing public encouragements can react, hide a message, report it, or hide that supporter.
+- Supporter settings include:
+  - default nickname for future encouragements
+  - per-message nickname override in the composer
+  - consent to show the nickname in the post-exam Reveal
+  - reply push notifications
+  - login/account entry
+- A supporter can delete **their own public encouragement only before the recipient has opened it**.
+- Once the recipient has read a public encouragement, deletion is no longer available.
+- Public → private editing is not supported after sending.
+
+## Owner / creator management
+
+- The desk owner can manage:
+  - Daily / Time Capsule opening schedule
+  - whether public encouragements can be viewed by visitors
+  - new-encouragement notifications
+  - supporter invite link
+  - hidden / blocked supporters
+  - connecting another separately created room by code
+  - ending new encouragement intake while keeping existing messages readable
+- Blocking a supporter hides that supporter’s encouragements from the owner desk and envelope list.
+- Connected rooms remain separate. Connecting does not merge rooms or messages.
+- Before Claim, the creator can manage the owner/share links, connection code, and initial opening schedule.
+- After Claim, creator management ends and the creator returns to ordinary supporter permissions.
+
+## Read modes
+
+User-facing copy describes the outcome rather than exposing internal mode names.
+
+Internal modes:
+
+- `daily`: open the day’s messages at a configured daily time.
+- `time-capsule`: keep messages locked until a configured date/time.
+
+## Class / group mode
+
+- The mode is for a high-school class, study group, friend group, or another small community preparing for the exam together.
+- Entry copy describes the situation and desired action rather than asking users to understand product-internal terms such as “personal desk” vs. “group space.”
+- The creator is assumed to be one of the members; no creator-role question is required.
+- Member names are not collected when the space is created.
+- A shared link opens the group space; each visitor enters their own name or nickname and gets one locker.
+- There is no separate Claim flow for lockers.
+- The main experience is a horizontally explorable 2D classroom map rather than a menu of feature buttons.
+- Users move left/right through the classroom and interact directly with the blackboard and lockers in the scene.
+- Blackboard:
+  - shared/public by default
+  - visible immediately
+  - supports short text and freehand chalk drawing
+- Locker:
+  - one locker per member
+  - uses the existing Unified Composer for personal encouragements
+  - the placement destination is the inside of the locker instead of the personal desk
+  - public encouragements may be viewed by other visitors
+  - private encouragements can only be opened by the locker owner
+  - the locker owner reads incoming encouragements on Daily mode only
+- Locker Object → Common Reader reuses the same card renderer and reader behavior as Personal Desk.
+- Classroom settings:
+  - the first member of a newly created group acts as Admin
+  - Admin can edit the group name, Daily locker unlock time, regenerate the invite code, and share the invite link
+  - every member can edit their display name and push preference
+  - non-Admin members can leave the group
+- After the exam, Class Wrapped summarizes the **group record**, not individual performance:
+  - total encouragement volume
+  - blackboard activity
+  - frequent words and emoji from public content
+  - shareable aggregate card
+- Class Wrapped never ranks members or identifies who received the most support.
+- The class creator makes their own locker before sharing the invite link, so the class is never empty when the first friend arrives.
+- Leaving something in a locker starts with letter / charm / sticker. The locker composer offers plain and stationery backgrounds only (no graphic backgrounds).
+- Locker stickers: free stars, bows and hanging garlands; paid felt pennants for 18 Seoul universities (150원 each).
+- The locker charm is a university-goods acrylic keyring (Yonsei, Korea, SNU × six generic shapes), acrylic only, 150원 each.
+- University goods use only the school name and a colour close to the school colour; no emblems, mascots or logo lettering.
+- The locker owner can buy a hanging light (200원 once, shape swaps free afterwards) and paint the inside or outside in white, black, pastel pink or pastel blue (200원 per coat). The decorated locker is visible to classmates, and outside paint also shows on the classroom map.
+- Private locker message content is excluded from Class Wrapped analysis and sharing.
+
+## Post-exam Wrapped / benefits
+
+- After the exam, the owner can move through:
+  - completion home (“정말 수고했어요”)
+  - intro summary
+  - AI-reconstructed encouragement themes / emotions / repeated expressions / representative sentence
+  - nickname reveal for supporters who consented to be shown
+  - full personal record across messages, friends, photos, and participation days
+  - share image that uses aggregate statistics and does not expose original message text
+- Wrapped is non-competitive. It should never rank users by how many messages or friends they had.
+- The final Wrapped screen can lead into student benefits.
+- Benefits prototype includes:
+  - category-based benefit list
+  - benefit detail with partner, period, condition, and use CTA
+  - coupon save / on-site presentation / use completion
+
+## Design principle
+
+> UI는 깨끗하게, 콘텐츠는 살아있게.
+
+The service shell is calm, premium, and restrained. User-created content can be hand-drawn, playful, meme-like, colorful, and intentionally personal.
