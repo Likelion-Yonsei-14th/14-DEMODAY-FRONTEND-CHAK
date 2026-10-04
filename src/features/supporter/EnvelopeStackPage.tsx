@@ -32,6 +32,7 @@ export function EnvelopeStackPage() {
   const location = useLocation()
   const { showToast } = useFeedback()
   const scrollerRef = useRef<HTMLDivElement>(null)
+  const settleTimeoutRef = useRef<number | null>(null)
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const ownerSettings = usePrototypeStore((state) => state.ownerSettings)
   const storedMessages = usePrototypeStore((state) => state.messages)
@@ -110,9 +111,21 @@ export function EnvelopeStackPage() {
   )
 
   useEffect(() => {
+    if (settleTimeoutRef.current !== null) {
+      window.clearTimeout(settleTimeoutRef.current)
+    }
     setActiveIndex(0)
     scrollerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }, [readMode.type, showHistory])
+
+  useEffect(
+    () => () => {
+      if (settleTimeoutRef.current !== null) {
+        window.clearTimeout(settleTimeoutRef.current)
+      }
+    },
+    [],
+  )
 
   const activeMessage = messages[activeIndex]
 
@@ -205,14 +218,29 @@ export function EnvelopeStackPage() {
             onScroll={(event) => {
               if (openingId) return
 
+              const scroller = event.currentTarget
               const next = Math.min(
                 messages.length - 1,
                 Math.max(
                   0,
-                  Math.round(event.currentTarget.scrollTop / SCROLL_STEP),
+                  Math.round(scroller.scrollTop / SCROLL_STEP),
                 ),
               )
               setActiveIndex(next)
+
+              // There is no native scroll-snap here (see the CSS for why),
+              // so settle the raw scroll position onto the card it
+              // resolved to once the gesture stops, instead of leaving it
+              // wherever a fling happened to land.
+              if (settleTimeoutRef.current !== null) {
+                window.clearTimeout(settleTimeoutRef.current)
+              }
+              settleTimeoutRef.current = window.setTimeout(() => {
+                scroller.scrollTo({
+                  top: next * SCROLL_STEP,
+                  behavior: 'smooth',
+                })
+              }, 120)
             }}
           >
             <div className="envelope-stack__sticky">
