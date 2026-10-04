@@ -16,6 +16,10 @@ import {
   TextField,
   useFeedback,
 } from '@/design-system'
+import {
+  ASK_FOR_CHEERS_LABEL,
+  shareMyDeskLink,
+} from '@/features/owner/shareMyDesk'
 import { AppShell } from '@/layout/AppShell'
 import {
   DEFAULT_CAPSULE_UNLOCK_AT,
@@ -373,9 +377,9 @@ export function DeskCreateCompletePage() {
               variant="secondary"
               fullWidth
               leadingIcon={<Share2 size={18} aria-hidden />}
-              onClick={() => share('support')}
+              onClick={() => shareMyDeskLink(showToast)}
             >
-              응원 링크 보내기
+              {ASK_FOR_CHEERS_LABEL}
             </Button>
           ) : (
             <>

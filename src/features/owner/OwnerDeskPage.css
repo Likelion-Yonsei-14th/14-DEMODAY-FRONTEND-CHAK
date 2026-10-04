@@ -281,3 +281,40 @@
   flex: none;
   white-space: nowrap;
 }
+
+/* Ask friends for cheers: toolbar pill and the empty-desk card */
+.owner-desk__toolbar {
+  align-items: center;
+  gap: 8px;
+}
+
+.owner-desk__ask {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 253, 248, .92);
+  color: var(--color-content-primary);
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(30, 20, 10, .12);
+  cursor: pointer;
+}
+
+.owner-desk__quiet {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #fff6e8;
+  box-shadow: inset 0 0 0 1px rgba(205, 160, 110, .35);
+}
+
+.owner-desk__quiet p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}

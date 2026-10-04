@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ArrowLeft, Settings } from 'lucide-react'
+import { ArrowLeft, Settings, Share2 } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   AppBar,
@@ -9,6 +9,7 @@ import {
 } from '@/design-system'
 import { isDeskFull } from '@/features/supporter/supporterFlow'
 import { DeskBasketSheet } from './DeskBasketSheet'
+import { ASK_FOR_CHEERS_LABEL, shareMyDeskLink } from './shareMyDesk'
 import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
 import { DeskScene } from '@/features/desk/DeskScene'
 import { AppShell } from '@/layout/AppShell'
@@ -238,6 +239,15 @@ export function OwnerDeskPage() {
     >
       <main className="owner-desk">
         <section className="owner-desk__toolbar">
+          <button
+            type="button"
+            className="owner-desk__ask"
+            aria-label={ASK_FOR_CHEERS_LABEL}
+            onClick={() => shareMyDeskLink(showToast)}
+          >
+            <Share2 size={15} aria-hidden />
+            응원 부탁
+          </button>
           <OwnerViewToggle mode="desk" />
         </section>
 
@@ -278,6 +288,21 @@ export function OwnerDeskPage() {
             )}
           </h2>
         </section>
+
+        {allObjects.length === 0 && (
+          <section className="owner-desk__quiet">
+            <p>아직 책상이 조용해요. 친구에게 응원을 부탁해 볼까요?</p>
+            <Button
+              variant="brand"
+              size="m"
+              fullWidth
+              leadingIcon={<Share2 size={17} aria-hidden />}
+              onClick={() => shareMyDeskLink(showToast)}
+            >
+              {ASK_FOR_CHEERS_LABEL}
+            </Button>
+          </section>
+        )}
 
         {deskFull && (
           <section className="owner-desk__full">
