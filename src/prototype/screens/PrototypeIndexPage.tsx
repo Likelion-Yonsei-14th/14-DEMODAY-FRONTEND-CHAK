@@ -1,0 +1,190 @@
+import { ChevronRight, Layers3 } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { AppBar, StatusBadge } from '@/design-system'
+import { AppShell } from '@/layout/AppShell'
+import './prototype.css'
+
+const routes = [
+  {
+    path: '/start',
+    title: 'Service Start',
+    description: '서비스 최초 진입 → 응원 책상 만들기',
+    phase: 'LIVE',
+  },
+  {
+    path: '/auth/login',
+    title: 'Account',
+    description: '비로그인 이용 → 로그인/회원가입 → 계정 → 로그아웃/탈퇴',
+    phase: 'LIVE',
+  },
+  {
+    path: '/prototype/create',
+    title: 'Desk Creation',
+    description: '본인/주변인 선택 → 읽기 방식 설정 → 응원 책상 생성',
+    phase: 'LIVE',
+  },
+  {
+    path: '/prototype/support/jisu',
+    title: 'Supporter Core',
+    description: '친구로 방문 → 응원 만들기 → 책상에 직접 놓고 가기',
+    phase: 'LIVE',
+  },
+  {
+    path: '/prototype/my/desk',
+    title: 'Owner Desk',
+    description: '수험생 본인 · 책상 오브젝트 열람 ↔ 봉투 Stack 전환 · Common Reader',
+    phase: 'LIVE',
+  },
+  {
+    path: '/prototype/composer',
+    title: 'Unified Composer Spec',
+    description: '배경 · 글자 · 문구 · 스티커 · 사진 편집 + 응원 소재/질문 제안',
+    phase: 'LIVE',
+  },
+  {
+    path: '/prototype/reader',
+    title: 'Common Reader',
+    description: 'Desk/Locker 오브젝트를 눌렀을 때 열리는 공통 Reader',
+    phase: 'LIVE',
+  },
+  {
+    path: '/prototype/support/jisu/replies',
+    title: 'Reply Flow',
+    description: '개별/오늘의 공통 답장 · Supporter 받은 답장 · 새 이야기로 재진입',
+    phase: 'LIVE',
+  },
+  {
+    path: '/prototype/my/settings',
+    title: 'Owner Settings',
+    description: '열기 방식 · 공개/알림 · 초대 · 차단 · 다른 공간 연결 · 응원 종료',
+    phase: 'LIVE',
+  },
+  {
+    path: '/prototype/manage',
+    title: 'Creator Management',
+    description: 'Claim 전 링크·연결 코드·초기 설정 관리 → Claim 후 Supporter 전환',
+    phase: 'LIVE',
+  },
+  {
+    path: '/prototype/claim',
+    title: 'Creator / Claim',
+    description: '친구가 먼저 만든 Desk를 실제 수험생이 소유권 이전',
+    phase: 'LIVE',
+  },
+  {
+    path: '/prototype/classroom',
+    title: 'Classroom',
+    description: '교실 맵 탐색 · 함께 쓰는 칠판 · 학생별 사물함 · Daily 열람',
+    phase: 'LIVE',
+  },
+  {
+    path: '/prototype/classroom/classroom-3-2/wrapped',
+    title: 'Class Wrapped',
+    description: '반 전체 응원 총량 · 자주 남은 말/이모지 · 비경쟁 공동 기록 · 공유',
+    phase: 'LIVE',
+  },
+  {
+    path: '/prototype/wrapped',
+    title: 'Post-exam Wrapped',
+    description: '수능 종료 → AI 응원 기록 → 친구 Reveal → 전체 기록 → 공유 → 혜택·쿠폰',
+    phase: 'LIVE',
+  },
+]
+
+const qaStates = [
+  {
+    path: '/prototype/my/desk?daily=before',
+    title: 'Daily · 열리기 전',
+    description: '오늘 묶음이 아직 잠겨 있는 상태',
+  },
+  {
+    path: '/prototype/my/desk?daily=after',
+    title: 'Daily · 열린 뒤',
+    description: '오늘 묶음이 활성화된 상태',
+  },
+  {
+    path: '/prototype/my/desk?capsule=before',
+    title: '한 번에 열어보기 · 열리기 전',
+    description: '모아둔 응원이 모두 잠긴 상태',
+  },
+  {
+    path: '/prototype/my/desk?capsule=after',
+    title: '한 번에 열어보기 · 열린 뒤',
+    description: '모아둔 응원이 한 번에 활성화된 상태',
+  },
+]
+
+export function PrototypeIndexPage() {
+  return (
+    <AppShell
+      surface="base"
+      appBar={<AppBar title="Prototype" trailing={<StatusBadge tone="brand">QA</StatusBadge>} />}
+    >
+      <div className="prototype-index">
+        <section className="prototype-index__hero">
+          <span className="prototype-index__icon"><Layers3 size={22} aria-hidden /></span>
+          <p className="prototype-index__eyebrow">INTERACTIVE UX SPEC</p>
+          <h2>전체 서비스 플로우를<br />코드로 연결합니다.</h2>
+          <p>
+            서비스 진입부터 계정, 개인 응원, 반별 응원까지 주요 흐름을 실제로 눌러볼 수 있는
+            프로토타입으로 연결합니다.
+          </p>
+        </section>
+
+        <Link className="prototype-system-link" to="/system">
+          <span>
+            <strong>Design System</strong>
+            <small>토큰과 공통 컴포넌트 확인하기</small>
+          </span>
+          <ChevronRight size={20} aria-hidden />
+        </Link>
+
+        <section className="prototype-index__routes" aria-labelledby="prototype-routes-title">
+          <header>
+            <h3 id="prototype-routes-title">Core flows</h3>
+            <p>실제 사용자 흐름과 주요 상태를 바로 확인합니다.</p>
+          </header>
+          <div className="prototype-route-list">
+            {routes.map((route) => (
+              <Link className="prototype-route-card" to={route.path} key={route.path}>
+                <span className="prototype-route-card__copy">
+                  <span className="prototype-route-card__meta">{route.phase}</span>
+                  <strong>{route.title}</strong>
+                  <small>{route.description}</small>
+                </span>
+                <ChevronRight size={20} aria-hidden />
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="prototype-index__routes" aria-labelledby="prototype-qa-title">
+          <header>
+            <h3 id="prototype-qa-title">QA states</h3>
+            <p>시간을 기다리지 않고 열람 상태를 바로 비교합니다.</p>
+          </header>
+          <div className="prototype-route-list">
+            {qaStates.map((state) => (
+              <Link className="prototype-route-card" to={state.path} key={state.path}>
+                <span className="prototype-route-card__copy">
+                  <span className="prototype-route-card__meta">QA</span>
+                  <strong>{state.title}</strong>
+                  <small>{state.description}</small>
+                </span>
+                <ChevronRight size={20} aria-hidden />
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <aside className="prototype-index__note">
+          <strong>현재 원칙</strong>
+          <p>
+            Desk는 살짝 위에서 내려다보는 2.5D 일러스트 공간으로 구현합니다. 구조 UI는 차분하게,
+            친구가 남기는 메시지 오브젝트는 더 컬러풀하고 장난스럽게 표현합니다.
+          </p>
+        </aside>
+      </div>
+    </AppShell>
+  )
+}

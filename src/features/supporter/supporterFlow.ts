@@ -1,0 +1,299 @@
+import { getMessagePages } from '@/features/composer/messagePages'
+import type {
+  DeskObject,
+  DeskObjectType,
+  DeskPlacement,
+  DeskZone,
+  MessageDraft,
+} from '@/types'
+
+export const selectableDeskObjectTypes: DeskObjectType[] = [
+  'memo',
+  'letter',
+  'photo-card',
+  'poster-card',
+  'charm',
+]
+
+export const deskObjectToneOptions = [
+  // Slightly aged early-2000s stationery colors: still saturated enough to
+  // pop on wood, softened by paper texture and light rather than muting.
+  { id: 'coral', label: '토마토', color: '#D8644A' },
+  { id: 'butter', label: '버터', color: '#EDCB62' },
+  { id: 'sage', label: '클로버', color: '#3E9A62' },
+  { id: 'sky', label: '코발트', color: '#4F72C4' },
+  { id: 'cream', label: '크림', color: '#F1E6CC' },
+  { id: 'pink', label: '핑크', color: '#DD7D95' },
+  { id: 'lilac', label: '포도', color: '#7D5BA6' },
+] as const
+
+export function resolveDeskObjectType(draft: MessageDraft): DeskObjectType {
+  const pages = getMessagePages(draft)
+
+  if (pages.some((page) => page.photoElements.length > 0)) {
+    return 'photo-card'
+  }
+
+  const expressiveAssets = pages.reduce(
+    (total, page) =>
+      total + page.wordArtElements.length + page.stickerElements.length,
+    0,
+  )
+
+  if (expressiveAssets >= 3) return 'poster-card'
+  if (pages.length > 1) return 'letter'
+
+  return 'memo'
+}
+
+const placementOrder: DeskZone[] = ['center', 'left', 'right', 'front', 'back']
+
+export function resolveDeskZone(existingCount: number): DeskZone {
+  const index = existingCount % placementOrder.length
+  return placementOrder[index] ?? 'center'
+}
+
+const placementPresets: DeskPlacement[] = [
+  { x: 52, y: 54, rotation: -2, scale: 1 },
+  { x: 29, y: 59, rotation: 3, scale: 1 },
+  { x: 73, y: 58, rotation: -3, scale: 1 },
+  { x: 40, y: 45, rotation: 2, scale: 0.98 },
+  { x: 64, y: 68, rotation: 1, scale: 0.98 },
+]
+
+export function resolveInitialPlacement(existingCount: number): DeskPlacement {
+  const index = existingCount % placementPresets.length
+  return placementPresets[index] ?? placementPresets[0]!
+}
+
+export function resolveAvailablePlacement(
+  existingObjects: DeskObject[],
+  draftType: DeskObjectType = 'memo',
+): DeskPlacement {
+  const startIndex = existingObjects.length % placementPresets.length
+
+  for (let offset = 0; offset < placementPresets.length; offset += 1) {
+    const index = (startIndex + offset) % placementPresets.length
+    const candidate = placementPresets[index]
+
+    if (
+      candidate &&
+      isPlacementValid(candidate, existingObjects, draftType)
+    ) {
+      return candidate
+    }
+  }
+
+  const open = findOpenPlacement(existingObjects, draftType)
+  if (open) return open
+
+  const fallbackCandidates: DeskPlacement[] = [
+    { x: 50, y: 70, rotation: -1, scale: .96 },
+    { x: 20, y: 68, rotation: 2, scale: .94 },
+    { x: 80, y: 68, rotation: -2, scale: .94 },
+  ]
+
+  return (
+    fallbackCandidates.find((candidate) =>
+      isPlacementValid(candidate, existingObjects, draftType),
+    ) ??
+    fallbackCandidates[0]!
+  )
+}
+
+export function resolveObjectPlacement(object: DeskObject): DeskPlacement {
+  if (typeof object.x === 'number' && typeof object.y === 'number') {
+    return {
+      x: object.x,
+      y: object.y,
+      rotation: object.rotation ?? 0,
+      scale: object.scale ?? 1,
+    }
+  }
+
+  const fallbackByZone: Record<DeskZone, DeskPlacement> = {
+    left: { x: 24, y: 50, rotation: -3, scale: 1 },
+    center: { x: 52, y: 49, rotation: 2, scale: 1 },
+    right: { x: 77, y: 50, rotation: 3, scale: 1 },
+    back: { x: 61, y: 42, rotation: -2, scale: 0.96 },
+    front: { x: 41, y: 55, rotation: 2, scale: 1 },
+  }
+
+  return fallbackByZone[object.zone]
+}
+
+type Rect = {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+/**
+ * Where objects may sit on the desk photo, in % of the scene: the open wood
+ * between the books, laptop, cups and pencil case.
+ */
+export const DESK_PLACEMENT_AREA = {
+  left: 15,
+  right: 90,
+  top: 21,
+  bottom: 80,
+} as const
+
+// The desk photos keep their clutter outside DESK_PLACEMENT_AREA, so nothing
+// static blocks placement.
+const STATIC_DECOR_RECTS: Rect[] = []
+
+const objectSizeByType: Record<
+  DeskObjectType,
+  { width: number; height: number }
+> = {
+  memo: { width: 20, height: 14 },
+  letter: { width: 21, height: 13 },
+  'photo-card': { width: 17, height: 20 },
+  'poster-card': { width: 18, height: 22 },
+  charm: { width: 15, height: 19 },
+  ticket: { width: 21, height: 11 },
+  'generic-card': { width: 20, height: 14 },
+  sticker: { width: 13, height: 13 },
+}
+
+/** Keeps the whole object, not just its centre, inside the placement area. */
+export function clampPlacement(
+  placement: DeskPlacement,
+  draftType: DeskObjectType = 'memo',
+): DeskPlacement {
+  const size = objectSizeByType[draftType] ?? objectSizeByType.memo
+  const scale = clamp(placement.scale, 0.9, 1.08)
+  const halfWidth = (size.width * scale) / 2
+  const halfHeight = (size.height * scale) / 2
+  const area = DESK_PLACEMENT_AREA
+
+  return {
+    ...placement,
+    x: clamp(placement.x, area.left + halfWidth, area.right - halfWidth),
+    y: clamp(placement.y, area.top + halfHeight, area.bottom - halfHeight),
+    rotation: clamp(placement.rotation, -7, 7),
+    scale,
+  }
+}
+
+/** Grid of spots across the placement area, centre rows first. */
+const gridCandidates: DeskPlacement[] = (() => {
+  const columns = [52, 36, 68, 22, 82]
+  const rows = [52, 40, 64, 30, 74]
+  const tilts = [-3, 2, -1, 3, -2]
+  return rows.flatMap((y, row) =>
+    columns.map((x, column) => ({
+      x,
+      y,
+      rotation: tilts[(row + column) % tilts.length] ?? 0,
+      scale: 1,
+    })),
+  )
+})()
+
+/** A free spot for a new object, or null when the desk is full. */
+export function findOpenPlacement(
+  existingObjects: DeskObject[],
+  draftType: DeskObjectType = 'memo',
+): DeskPlacement | null {
+  for (const candidate of gridCandidates) {
+    const placement = clampPlacement(candidate, draftType)
+    if (isPlacementValid(placement, existingObjects, draftType)) {
+      return placement
+    }
+  }
+  return null
+}
+
+/** The desk is full when not even a small memo card has room left. */
+export function isDeskFull(existingObjects: DeskObject[]) {
+  return findOpenPlacement(existingObjects, 'memo') === null
+}
+
+export function isPlacementValid(
+  placement: DeskPlacement,
+  existingObjects: DeskObject[],
+  draftType: DeskObjectType = 'memo',
+): boolean {
+  const draftSize =
+    objectSizeByType[draftType] ??
+    objectSizeByType.memo
+
+  const draftRect = centeredRect(
+    placement.x,
+    placement.y,
+    draftSize.width * placement.scale,
+    draftSize.height * placement.scale,
+  )
+
+  const occupiedRects = [
+    ...STATIC_DECOR_RECTS.map((rect) =>
+      centeredRect(rect.x, rect.y, rect.width, rect.height),
+    ),
+    ...existingObjects.map((object) => {
+      const position = resolveObjectPlacement(object)
+      const size =
+        objectSizeByType[object.representationType] ??
+        objectSizeByType.memo
+
+      return centeredRect(
+        position.x,
+        position.y,
+        size.width * position.scale,
+        size.height * position.scale,
+      )
+    }),
+  ]
+
+  return occupiedRects.every((existingRect) => {
+    const intersection = intersectionArea(draftRect, existingRect)
+    const existingArea = existingRect.width * existingRect.height
+
+    if (existingArea <= 0) return true
+    return intersection / existingArea < 0.68
+  })
+}
+
+function centeredRect(
+  centerX: number,
+  centerY: number,
+  width: number,
+  height: number,
+): Rect {
+  return {
+    x: centerX - width / 2,
+    y: centerY - height / 2,
+    width,
+    height,
+  }
+}
+
+function intersectionArea(a: Rect, b: Rect) {
+  const width = Math.max(
+    0,
+    Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x),
+  )
+  const height = Math.max(
+    0,
+    Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y),
+  )
+
+  return width * height
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max)
+}
+
+export const deskObjectLabels: Record<DeskObjectType, string> = {
+  memo: '작은 메모 카드',
+  'photo-card': '사진 카드',
+  charm: '행운 부적',
+  'poster-card': '응원 포스터',
+  letter: '편지',
+  ticket: '약속 티켓',
+  'generic-card': '응원 카드',
+  sticker: '스티커',
+}

@@ -1,0 +1,215 @@
+.prototype-index,
+.prototype-placeholder-page {
+  display: grid;
+  gap: 28px;
+  padding-top: 24px;
+  padding-bottom: 56px;
+}
+
+.prototype-index__hero {
+  display: grid;
+  gap: 10px;
+}
+
+.prototype-index__icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+  border-radius: 16px;
+  background: var(--color-brand-soft);
+  color: #9b4f3d;
+  box-shadow: var(--highlight-inset);
+}
+
+.prototype-index__eyebrow {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.prototype-index__hero h2 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.24;
+  letter-spacing: -.035em;
+}
+
+.prototype-index__hero > p:last-child {
+  margin: 2px 0 0;
+  color: var(--color-content-secondary);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.prototype-system-link,
+.prototype-route-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-base);
+  color: var(--color-content-primary);
+  box-shadow: var(--highlight-inset);
+}
+
+.prototype-system-link {
+  min-height: 78px;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+}
+
+.prototype-system-link > span,
+.prototype-route-card__copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.prototype-system-link strong,
+.prototype-route-card strong {
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.prototype-system-link small,
+.prototype-route-card small {
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.prototype-index__routes {
+  display: grid;
+  gap: 13px;
+}
+
+.prototype-index__routes > header {
+  display: grid;
+  gap: 4px;
+}
+
+.prototype-index__routes h3,
+.prototype-placeholder-page__decisions h3 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 27px;
+  letter-spacing: -.015em;
+}
+
+.prototype-index__routes header p {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.prototype-route-list {
+  display: grid;
+  gap: 9px;
+}
+
+.prototype-route-card {
+  min-height: 92px;
+  padding: 15px 16px;
+  border-radius: var(--radius-lg);
+  transition: transform var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard);
+}
+
+.prototype-route-card:active {
+  transform: scale(.995);
+}
+
+.prototype-route-card__meta {
+  color: var(--color-brand-pressed);
+  font-size: 10px;
+  line-height: 15px;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+.prototype-index__note {
+  padding: 17px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-subtle);
+}
+
+.prototype-index__note strong {
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.prototype-index__note p {
+  margin: 6px 0 0;
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  line-height: 19px;
+}
+
+.prototype-placeholder-page__card {
+  display: grid;
+  gap: 12px;
+  padding: 22px 20px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-base);
+  box-shadow: var(--shadow-card);
+}
+
+.prototype-placeholder-page__card h2 {
+  margin: 2px 0 0;
+  font-size: 27px;
+  line-height: 36px;
+  letter-spacing: -.03em;
+}
+
+.prototype-placeholder-page__card p {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.prototype-placeholder-page__decisions {
+  display: grid;
+  gap: 13px;
+}
+
+.prototype-placeholder-page__decisions ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.prototype-placeholder-page__decisions li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-base);
+  color: var(--color-content-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.prototype-placeholder-page__decisions li svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--color-success);
+}
+
+.prototype-placeholder-page__footnote {
+  margin: 0;
+  padding: 0 2px;
+  color: var(--color-content-tertiary);
+  font-size: 11px;
+  line-height: 18px;
+}

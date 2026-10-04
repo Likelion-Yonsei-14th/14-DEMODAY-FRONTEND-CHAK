@@ -1,0 +1,16 @@
+/*
+ * Prototype webfont loading.
+ * Naver / Clova Nanum fonts are used under Naver's open font license.
+ * Handwriting CDN wrappers are pinned @kfonts packages for prototype delivery.
+ * For production, prefer self-hosting the official Naver releases.
+ */
+@import url('https://unpkg.com/@kfonts/nanum-handwritting-gim-yu-iche@0.2.0/index.css');
+@import url('https://unpkg.com/@kfonts/nanum-handwritting-sonpyeonjiche@0.2.0/index.css');
+@import url('https://unpkg.com/@kfonts/nanum-handwritting-baleunhipi@0.2.0/index.css');
+@import url('https://unpkg.com/@kfonts/nanum-handwritting-junghagsaeng@0.2.0/index.css');
+@import url('https://unpkg.com/@kfonts/nanum-handwritting-jalhago-iss-eo@0.2.0/index.css');
+@import url('https://unpkg.com/@kfonts/nanum-handwritting-jeong-eunche@0.2.0/index.css');
+@import url('https://unpkg.com/@kfonts/nanum-handwritting-yeonjiche@0.2.0/index.css');
+@import url('https://unpkg.com/@kfonts/nanum-handwritting-hanasongeul-ssi@0.2.0/index.css');
+@import url('https://hangeul.pstatic.net/hangeul_static/css/nanum-square-neo.css');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css');
