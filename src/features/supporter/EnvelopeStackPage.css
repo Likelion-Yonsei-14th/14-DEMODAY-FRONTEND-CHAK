@@ -45,14 +45,27 @@
 }
 
 .envelope-stack__scroller {
+  --envelope-stack-height: max(min(62dvh, 550px), 455px);
+
+  /*
+   * No native `scroll-snap-type` here. The invisible track below exists
+   * only to give this element the right scrollable distance (n * 130px
+   * of travel) - its items don't sit at the pixel offsets their index
+   * implies, because the sticky deck above is shorter than this
+   * scroller's own height. Native "snap-align: start" would therefore
+   * snap to the wrong, geometrically-nearest offset instead of the one
+   * EnvelopeStackPage's index math expects, which on a real trackpad/
+   * mouse scroll (enough distance to trigger a snap) collapses onto a
+   * single reachable point regardless of which card you meant to land
+   * on. Settling on the right card is done in JS instead (see the
+   * scroll handler's debounced scrollTo), using the same index*130
+   * arithmetic as everywhere else.
+   */
   position: relative;
-  height: min(62dvh, 550px);
-  min-height: 455px;
+  height: var(--envelope-stack-height);
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: none;
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
 }
 
 .envelope-stack__scroller--opening {
@@ -80,15 +93,23 @@
 }
 
 .envelope-stack__track {
+  /*
+   * The deck above is a fixed 442px tall, but the scroller itself can be
+   * taller than that (up to 550px). Pulling the track up by only the
+   * deck's height leaves part of the scroller's own height uncounted as
+   * scrollable distance, so the last cards become unreachable. Pull up by
+   * the deck height plus one scroll step and tail, minus the scroller's
+   * actual height, so each card still maps to exactly SCROLL_STEP (130px)
+   * of scroll regardless of viewport height.
+   */
   position: relative;
   width: 1px;
-  margin-top: -442px;
+  margin-top: calc(var(--envelope-stack-height) - 442px - 130px - 34px);
   pointer-events: none;
 }
 
 .envelope-stack__snap {
   display: block;
-  scroll-snap-align: start;
 }
 
 .envelope-stack__track-tail {
