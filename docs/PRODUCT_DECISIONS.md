@@ -21,7 +21,6 @@ This document tracks the latest decisions that the code prototype must prioritiz
   - logout
   - account deletion and completion
 - Google is the primary social-login prototype. Kakao login remains optional follow-up scope.
-- New sign-ups land on `/start`. Returning users land on `/home` with two doors, “내 책상 가기” and “우리 반 가기”; a door the user doesn't have yet explains that instead of navigating.
 - No production authentication or OAuth credentials are included in the prototype.
 
 ## Personal Desk
@@ -33,20 +32,7 @@ This document tracks the latest decisions that the code prototype must prioritiz
 - Unread messages are visually discoverable on the desk.
 - Daily / Time Capsule availability will be expressed through the object state rather than a separate content feed.
 
-### Desk objects, basket and monetization (2026-10-04)
-
-- Before the composer, a supporter chooses what to leave: a letter, a charm or a sticker. A sticker skips the composer; it carries no message and only the owner sees who left it.
-- Charms come as a free flat sticker or a paid acrylic 3D charm (50원). The phrase on the charm is editable (max 8 characters). The owner sees the charm first and flips it to read the message.
-- Rhinestone gems decorate an object at 5원 each (max 12 loose gems) or as a shape set priced at gem count × 5원.
-- The desk placement area is the open wood of the desk photo (x 15–90%, y 21–80%); objects stay fully inside it.
-- When not even a memo card fits, the owner can move every read cheer into a basket for free. Unread and still-locked cheers stay on the desk. Reopening a cheer from the basket costs one rewarded ad every time.
-- A self-made desk owner asks friends for cheers with “친구에게 응원 부탁하기”, in the toolbar of their desk and as a card when the desk is empty. The share text is written in the owner's own voice.
-- All payments and ads are prototype mocks.
-
 ## Unified Composer
-
-- Stationery templates unlock after one rewarded ad and keep text inside their writing area.
-- Clips and washi tapes can be attached to a letter. Some of each unlock after one rewarded ad.
 
 There is no upfront mode choice for "한 줄 / 사진 / 꾸미기 / 편지".
 
@@ -205,12 +191,6 @@ Internal modes:
   - frequent words and emoji from public content
   - shareable aggregate card
 - Class Wrapped never ranks members or identifies who received the most support.
-- The class creator makes their own locker before sharing the invite link, so the class is never empty when the first friend arrives.
-- Leaving something in a locker starts with letter / charm / sticker. The locker composer offers plain and stationery backgrounds only (no graphic backgrounds).
-- Locker stickers: free stars, bows and hanging garlands; paid felt pennants for 18 Seoul universities (150원 each).
-- The locker charm is a university-goods acrylic keyring (Yonsei, Korea, SNU × six generic shapes), acrylic only, 150원 each.
-- University goods use only the school name and a colour close to the school colour; no emblems, mascots or logo lettering.
-- The locker owner can buy a hanging light (200원 once, shape swaps free afterwards) and paint the inside or outside in white, black, pastel pink or pastel blue (200원 per coat). The decorated locker is visible to classmates, and outside paint also shows on the classroom map.
 - Private locker message content is excluded from Class Wrapped analysis and sharing.
 
 ## Post-exam Wrapped / benefits
