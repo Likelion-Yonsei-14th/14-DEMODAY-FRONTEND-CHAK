@@ -1371,10 +1371,17 @@
   scroll-padding-inline: 10px;
 }
 
-.composer-font-list::before,
-.composer-bg-list::before,
-.composer-photo-strip::before,
-.composer-word-art-list::before {
+/*
+ * Flex-only: a tiny leading spacer item for the inline-start edge room,
+ * sized via `flex`. The other rails (font/bg/word-art lists) are CSS
+ * Grid (`grid-auto-flow: column`), where `flex` has no effect and the
+ * pseudo still gets auto-placed as a real, full-size grid track -
+ * landing before or after the real items unpredictably and throwing
+ * their first card out of alignment with everything below them.
+ * `padding-left`/`scroll-padding-left` above already give those grids
+ * the same edge room without a phantom item.
+ */
+.composer-photo-strip::before {
   content: '';
   width: 1px;
   flex: 0 0 1px;
@@ -1902,23 +1909,8 @@
   font-weight: 700;
 }
 
-.ad-unlock__player {
-  position: relative;
-  overflow: hidden;
-  min-height: 132px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  background: repeating-linear-gradient(45deg, #2f2c28 0 12px, #36322d 12px 24px);
-  color: rgba(255, 255, 255, .86);
-  font-size: 14px;
-  font-weight: 700;
-}
-
 .ad-unlock__badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
+  display: inline-block;
   padding: 2px 6px;
   border-radius: 4px;
   background: #ffc21a;
@@ -1927,19 +1919,112 @@
   font-weight: 900;
 }
 
-.ad-unlock__progress {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 4px;
-  background: #ffc21a;
-  transition: width 1s linear;
-}
-
 .ad-unlock__note {
   margin: 0;
   color: var(--color-content-tertiary);
   font-size: 12px;
+}
+
+/* Full-screen rewarded-ad takeover (see AdUnlockSheet) */
+.ad-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  justify-content: center;
+  background: rgba(10, 9, 8, .92);
+  animation: ad-fullscreen-in 220ms ease;
+}
+
+.ad-fullscreen__frame {
+  position: relative;
+  width: min(100%, 430px);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #1c1a17;
+  color: rgba(255, 255, 255, .92);
+}
+
+.ad-fullscreen__topbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(14px, env(safe-area-inset-top)) 16px 10px;
+}
+
+.ad-fullscreen__topbar .ds-icon-button {
+  color: inherit;
+}
+
+.ad-fullscreen__timer {
+  min-width: 40px;
+  padding: 4px 9px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, .12);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.ad-fullscreen__stage {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+  background: repeating-linear-gradient(45deg, #2f2c28 0 12px, #36322d 12px 24px);
+}
+
+.ad-fullscreen__stage-copy {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, .78);
+}
+
+.ad-fullscreen__preview {
+  width: 128px;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .4);
+}
+
+.ad-fullscreen__name {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.ad-fullscreen__progress-track {
+  flex: none;
+  height: 4px;
+  background: rgba(255, 255, 255, .14);
+}
+
+.ad-fullscreen__progress {
+  display: block;
+  height: 100%;
+  background: #ffc21a;
+  transition: width 1s linear;
+}
+
+.ad-fullscreen__footer {
+  flex: none;
+  display: grid;
+  gap: 10px;
+  padding: 16px 16px max(16px, env(safe-area-inset-bottom));
+}
+
+.ad-fullscreen__footer .ad-unlock__note {
+  color: rgba(255, 255, 255, .56);
+  text-align: center;
+}
+
+@keyframes ad-fullscreen-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Clips and washi tape rows in the sticker tool */
