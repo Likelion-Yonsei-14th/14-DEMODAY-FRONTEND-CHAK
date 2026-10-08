@@ -578,7 +578,10 @@ export function ClassroomLockerPlacementPage() {
           className="placement-object-picker"
           aria-label="사물함에 놓을 형태"
         >
-          {selectableDeskObjectTypes.map((type) => (
+          {/* 부적 is its own (paid) choice in lockers, not a letter shape */}
+          {selectableDeskObjectTypes
+            .filter((type) => type !== 'charm')
+            .map((type) => (
             <button
               type="button"
               key={type}
