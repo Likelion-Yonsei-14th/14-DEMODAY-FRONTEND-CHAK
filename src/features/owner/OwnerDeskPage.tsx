@@ -28,6 +28,9 @@ import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { OwnerViewToggle } from './OwnerViewToggle'
 import './OwnerDeskPage.css'
 
+/** Matches the clear-the-desk animation's transition duration (see DeskObjectLayer.css). */
+const OPEN_ANIMATION_MS = 760
+
 export function OwnerDeskPage() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -208,7 +211,7 @@ export function OwnerDeskPage() {
           state: { from: 'owner-desk' },
         },
       )
-    }, 360)
+    }, OPEN_ANIMATION_MS)
   }
 
   return (

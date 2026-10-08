@@ -5,6 +5,9 @@
   overflow: hidden;
   background: #8a5a35;
   isolation: isolate;
+  transition:
+    transform 760ms var(--ease-emphasized),
+    filter 760ms ease;
 }
 
 .desk-scene__photo {
@@ -68,6 +71,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .desk-scene,
   .desk-scene__photo {
     transition: none;
   }

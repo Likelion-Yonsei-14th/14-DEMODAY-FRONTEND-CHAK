@@ -510,31 +510,48 @@
 
 .desk-object--opening {
   z-index: 180 !important;
+  transition:
+    left 760ms var(--ease-emphasized),
+    top 760ms var(--ease-emphasized),
+    transform 760ms var(--ease-emphasized),
+    filter 500ms ease;
   transform:
-    translate(-50%, -56%)
+    translate(-50%, -54%)
     rotate(0deg)
-    scale(calc(var(--desk-object-scale) * 1.16));
-  filter: brightness(1.04) saturate(1.05);
+    scale(calc(var(--desk-object-scale) * 2.3));
+  filter: brightness(1.05) saturate(1.08);
 }
 
 .desk-object--opening .desk-object__visual {
   filter:
-    drop-shadow(0 16px 18px rgba(73,48,35,.25))
+    drop-shadow(0 22px 26px rgba(73,48,35,.3))
     drop-shadow(0 0 0 rgba(0,0,0,0));
 }
 
+/*
+ * Everything else on the desk scatters off toward whichever side it was
+ * already leaning (see `clearPlacement`) and fades out, so the desk reads
+ * as cleared rather than merely dimmed while the opened one takes over.
+ */
 .desk-object--deemphasized {
-  opacity: .34;
-  filter: saturate(.75);
+  opacity: 0;
+  filter: saturate(.6);
+  transition:
+    left 640ms var(--ease-emphasized),
+    top 640ms var(--ease-emphasized),
+    transform 640ms var(--ease-emphasized),
+    opacity 560ms ease,
+    filter 560ms ease;
   transform:
     translate(-50%, -50%)
     rotate(var(--desk-object-rotation))
-    scale(calc(var(--desk-object-scale) * .96));
+    scale(calc(var(--desk-object-scale) * .7));
 }
 
 @media (prefers-reduced-motion: reduce) {
   .desk-object--opening,
   .desk-object--deemphasized {
+    transition: none;
     transform:
       translate(-50%, -50%)
       rotate(var(--desk-object-rotation))

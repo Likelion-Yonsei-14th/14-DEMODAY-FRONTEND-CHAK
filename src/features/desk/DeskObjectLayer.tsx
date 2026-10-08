@@ -80,6 +80,14 @@ export function DeskObjectLayer({
         const deemphasized = Boolean(
           openingMessageId && openingMessageId !== object.messageId,
         )
+        // While one object opens, every other cheer scatters off its own
+        // side of the desk instead of just fading in place - the desk reads
+        // as cleared, not just dimmed.
+        const displayPlacement = opening
+          ? { ...placement, x: 50, y: 44 }
+          : deemphasized
+            ? clearPlacement(placement)
+            : placement
 
         return (
           <button
@@ -98,8 +106,8 @@ export function DeskObjectLayer({
               deemphasized ? 'desk-object--deemphasized' : '',
             ].filter(Boolean).join(' ')}
             style={{
-              left: `${placement.x}%`,
-              top: `${placement.y}%`,
+              left: `${displayPlacement.x}%`,
+              top: `${displayPlacement.y}%`,
               zIndex: object.zIndex ?? object.order + 10,
               '--desk-object-color': previewColor,
               '--desk-object-rotation': `${placement.rotation}deg`,
@@ -177,6 +185,22 @@ export function DeskObjectLayer({
       )}
     </div>
   )
+}
+
+/**
+ * Pushes a placement further out along the direction it's already leaning
+ * from desk-center, so it clears the visible area instead of just shrinking
+ * where it stands.
+ */
+function clearPlacement(placement: DeskPlacement): DeskPlacement {
+  const dx = placement.x - 50
+  const dy = placement.y - 50
+
+  return {
+    ...placement,
+    x: placement.x + (dx >= 0 ? 55 : -55),
+    y: placement.y + (dy >= 0 ? 55 : -55),
+  }
 }
 
 const DESK_ASSET_PATH = '/assets/desk'
