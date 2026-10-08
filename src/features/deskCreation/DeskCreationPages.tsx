@@ -16,6 +16,7 @@ import {
   TextField,
   useFeedback,
 } from '@/design-system'
+import { getCapsuleMinDate } from '@/features/csat/csatSchedule'
 import {
   ASK_FOR_CHEERS_LABEL,
   shareMyDeskLink,
@@ -297,6 +298,7 @@ export function DeskCreateReadModePage() {
               <input
                 className="desk-create__native-input"
                 type="date"
+                min={getCapsuleMinDate()}
                 value={capsule.date}
                 onChange={(event) =>
                   setDraft({
