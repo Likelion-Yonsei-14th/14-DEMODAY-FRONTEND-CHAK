@@ -129,6 +129,48 @@ export const router = createBrowserRouter([
         element: <DeskCreateCompletePage />,
       },
 
+      // Canonical supporter desk routes, keyed by supporter token (the
+      // backend looks a desk up by this). `/prototype/support/jisu*` below
+      // stays mounted at the same components so old links keep working,
+      // but every link this app generates now points here.
+      { path: '/desk/:supporterToken', element: <SupportDeskPage /> },
+      {
+        path: '/desk/:supporterToken/compose',
+        element: <UnifiedComposerPage />,
+      },
+      {
+        path: '/desk/:supporterToken/sticker',
+        element: <StickerPickPage />,
+      },
+      {
+        path: '/desk/:supporterToken/placement',
+        element: <PlacementPreviewPage />,
+      },
+      {
+        path: '/desk/:supporterToken/complete',
+        element: <SupportCompletePage />,
+      },
+      {
+        path: '/desk/:supporterToken/cards',
+        element: <Navigate to="/prototype/my/desk/cards" replace />,
+      },
+      {
+        path: '/desk/:supporterToken/message/:messageId',
+        element: <MessageViewerPage />,
+      },
+      {
+        path: '/desk/:supporterToken/replies',
+        element: <SupporterRepliesPage />,
+      },
+      {
+        path: '/desk/:supporterToken/sent',
+        element: <SentMessagesPage />,
+      },
+      {
+        path: '/desk/:supporterToken/settings',
+        element: <SupporterSettingsPage />,
+      },
+
       { path: '/prototype/support/jisu', element: <SupportDeskPage /> },
       {
         path: '/prototype/support/jisu/compose',

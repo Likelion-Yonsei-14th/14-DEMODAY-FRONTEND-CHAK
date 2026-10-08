@@ -21,6 +21,7 @@ import {
 import { getStickerAsset } from './stickerAssets'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import type {
   MessageVisibility,
   PhotoElement,
@@ -66,7 +67,11 @@ const IDEA_PROMPT_SETS = [
 
 export function UnifiedComposerPage() {
   const navigate = useNavigate()
-  const { classroomId, lockerId } = useParams()
+  const {
+    classroomId,
+    lockerId,
+    supporterToken = DEFAULT_SUPPORTER_TOKEN,
+  } = useParams()
   const { showToast } = useFeedback()
   const draft = usePrototypeStore((state) => state.composerDraft)
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
@@ -80,10 +85,10 @@ export function UnifiedComposerPage() {
     classroomLocker?.studentName ?? currentDesk.displayName
   const backPath = classroomMode
     ? `/prototype/classroom/${classroomId}/locker/${lockerId}`
-    : '/prototype/support/jisu'
+    : supporterPath(supporterToken)
   const placementPath = classroomMode
     ? `/prototype/classroom/${classroomId}/locker/${lockerId}/placement`
-    : '/prototype/support/jisu/placement'
+    : supporterPath(supporterToken, '/placement')
   const [tool, setTool] = useState<ComposerTool>('background')
   const [visibilityOpen, setVisibilityOpen] = useState(false)
   const [ideaOpen, setIdeaOpen] = useState(false)

@@ -1,9 +1,10 @@
+import { useMemo, useState } from 'react'
 import {
   ArrowLeft,
   LockKeyhole,
   Trash2,
 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
   AppBar,
   Button,
@@ -11,10 +12,19 @@ import {
 } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import './SentMessagesPage.css'
+
+/**
+ * Matches the backend's page/size list shape (`content` + `hasNext`) one
+ * page at a time, even though this still reads the full local array -
+ * swapping this for a real paginated fetch later only touches this hook.
+ */
+const PAGE_SIZE = 10
 
 export function SentMessagesPage() {
   const navigate = useNavigate()
+  const { supporterToken = DEFAULT_SUPPORTER_TOKEN } = useParams()
   const identity = usePrototypeStore(
     (state) => state.supporterIdentityName,
   )
@@ -26,16 +36,29 @@ export function SentMessagesPage() {
   const deleteOwnPublicMessage = usePrototypeStore(
     (state) => state.deleteOwnPublicMessage,
   )
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
-  const ownMessages = identity
-    ? messages
-        .filter((message) => message.senderName === identity)
-        .sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() -
-            new Date(a.createdAt).getTime(),
-        )
-    : []
+  const ownMessages = useMemo(
+    () =>
+      identity
+        ? messages
+            .filter((message) => message.senderName === identity)
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime(),
+            )
+        : [],
+    [identity, messages],
+  )
+
+  const page = useMemo(
+    () => ({
+      content: ownMessages.slice(0, visibleCount),
+      hasNext: ownMessages.length > visibleCount,
+    }),
+    [ownMessages, visibleCount],
+  )
 
   return (
     <AppShell
@@ -49,7 +72,7 @@ export function SentMessagesPage() {
               label="책상으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() =>
-                navigate('/prototype/support/jisu')
+                navigate(supporterPath(supporterToken))
               }
             />
           }
@@ -64,7 +87,7 @@ export function SentMessagesPage() {
               usePrototypeStore
                 .getState()
                 .resetComposerDraft()
-              navigate('/prototype/support/jisu/compose')
+              navigate(supporterPath(supporterToken, '/compose'))
             }}
           >
             응원 하나 더 쓰기
@@ -79,7 +102,7 @@ export function SentMessagesPage() {
           </section>
         ) : (
           <div className="sent-messages__list">
-            {ownMessages.map((message) => {
+            {page.content.map((message) => {
               const read =
                 message.status === 'read' ||
                 readMessageIds.includes(message.id)
@@ -150,6 +173,18 @@ export function SentMessagesPage() {
                 </article>
               )
             })}
+
+            {page.hasNext && (
+              <Button
+                variant="secondary"
+                fullWidth
+                onClick={() =>
+                  setVisibleCount((count) => count + PAGE_SIZE)
+                }
+              >
+                더 보기
+              </Button>
+            )}
           </div>
         )}
       </main>

@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
   AppBar,
   AssetTile,
@@ -9,11 +9,13 @@ import {
 } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import { deskStickers } from './deskStickers'
 import './supporterFlow.css'
 
 export function StickerPickPage() {
   const navigate = useNavigate()
+  const { supporterToken = DEFAULT_SUPPORTER_TOKEN } = useParams()
   const recipientName = usePrototypeStore(
     (state) => state.currentDesk.displayName,
   )
@@ -34,7 +36,7 @@ export function StickerPickPage() {
             <IconButton
               label={`${recipientName}님의 책상으로 돌아가기`}
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate('/prototype/support/jisu')}
+              onClick={() => navigate(supporterPath(supporterToken))}
             />
           }
         />
@@ -43,7 +45,7 @@ export function StickerPickPage() {
         <Button
           variant="brand"
           fullWidth
-          onClick={() => navigate('/prototype/support/jisu/placement')}
+          onClick={() => navigate(supporterPath(supporterToken, '/placement'))}
         >
           책상에 붙이러 가기
         </Button>

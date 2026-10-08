@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, Eye, Gem, LockKeyhole, Move } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
   AppBar,
   BottomSheet,
@@ -17,6 +17,7 @@ import {
 } from '@/features/desk/DeskObjectLayer'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import type {
   CharmMaterial,
   DeskGem,
@@ -50,6 +51,7 @@ const cardObjectTypes: DeskObjectType[] = ['letter', 'charm']
 
 export function PlacementPreviewPage() {
   const navigate = useNavigate()
+  const { supporterToken = DEFAULT_SUPPORTER_TOKEN } = useParams()
   const sceneRef = useRef<HTMLDivElement>(null)
   const draft = usePrototypeStore((state) => state.composerDraft)
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
@@ -217,7 +219,7 @@ export function PlacementPreviewPage() {
           gems,
         )
       }
-      navigate('/prototype/support/jisu/complete', { replace: true })
+      navigate(supporterPath(supporterToken, '/complete'), { replace: true })
     }, 520)
   }
 
@@ -236,9 +238,10 @@ export function PlacementPreviewPage() {
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() =>
                 navigate(
-                  stickerMode
-                    ? '/prototype/support/jisu/sticker'
-                    : '/prototype/support/jisu/compose',
+                  supporterPath(
+                    supporterToken,
+                    stickerMode ? '/sticker' : '/compose',
+                  ),
                 )
               }
             />

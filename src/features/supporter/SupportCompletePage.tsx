@@ -1,15 +1,17 @@
 import { Check, Share2 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Button, useFeedback } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { DeskObjectVisual } from '@/features/desk/DeskObjectLayer'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
+import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import { deskObjectLabels } from './supporterFlow'
 import './supporterFlow.css'
 
 export function SupportCompletePage() {
   const navigate = useNavigate()
+  const { supporterToken = DEFAULT_SUPPORTER_TOKEN } = useParams()
   const { showToast } = useFeedback()
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const messages = usePrototypeStore((state) => state.messages)
@@ -22,7 +24,7 @@ export function SupportCompletePage() {
   const stickerPlaced = latestObject?.representationType === 'sticker'
 
   const shareDesk = async () => {
-    const shareUrl = buildPrototypeShareUrl('/prototype/support/jisu')
+    const shareUrl = buildPrototypeShareUrl(supporterPath(supporterToken))
 
     try {
       if (navigator.share) {
@@ -49,7 +51,7 @@ export function SupportCompletePage() {
         <Button
           variant="brand"
           fullWidth
-          onClick={() => navigate('/prototype/support/jisu')}
+          onClick={() => navigate(supporterPath(supporterToken))}
         >
           {recipientName}님의 책상으로 돌아가기
         </Button>

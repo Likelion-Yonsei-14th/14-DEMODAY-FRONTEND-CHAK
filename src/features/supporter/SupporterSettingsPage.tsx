@@ -6,7 +6,7 @@ import {
   Sparkles,
   UserRound,
 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
   AppBar,
   Button,
@@ -16,10 +16,12 @@ import {
 } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import './SupporterSettingsPage.css'
 
 export function SupporterSettingsPage() {
   const navigate = useNavigate()
+  const { supporterToken = DEFAULT_SUPPORTER_TOKEN } = useParams()
   const { showToast } = useFeedback()
   const authSession = usePrototypeStore((state) => state.authSession)
   const supporterIdentityName = usePrototypeStore(
@@ -56,7 +58,7 @@ export function SupporterSettingsPage() {
               label="책상으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() =>
-                navigate('/prototype/support/jisu')
+                navigate(supporterPath(supporterToken))
               }
             />
           }
