@@ -13,6 +13,7 @@ import {
   ChoiceCard,
   IconButton,
 } from '@/design-system'
+import { getCapsuleMinDate } from '@/features/csat/csatSchedule'
 import { AppShell } from '@/layout/AppShell'
 import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
 import { DeskScene } from '@/features/desk/DeskScene'
@@ -289,6 +290,7 @@ export function ClaimReadModePage() {
               <input
                 className="claim-flow__native-input"
                 type="date"
+                min={getCapsuleMinDate()}
                 value={capsule.date}
                 onChange={(event) =>
                   setReadMode({
