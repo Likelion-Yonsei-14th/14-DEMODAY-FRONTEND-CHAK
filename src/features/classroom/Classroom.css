@@ -1477,17 +1477,17 @@
 
 /* Chalk sits in the part of the board the centre camera stop shows */
 .classroom-map__chalk {
-  inset: 12% 45% 14% 28%;
+  inset: 14% 40% 14% 33%;
   transform: none;
   font-family: var(--font-hand);
 }
 
 .classroom-map__notes {
   position: absolute;
-  top: 10%;
-  bottom: 14%;
-  left: 57%;
-  width: 15%;
+  top: 27%;
+  bottom: 12%;
+  left: 63%;
+  width: 9.5%;
   display: grid;
   align-content: start;
   gap: 8%;
@@ -1495,11 +1495,11 @@
 
 .classroom-map__note {
   position: relative;
-  padding: 6% 8%;
+  padding: 6% 6%;
   background: var(--note-color);
   color: #4a3426;
   font-family: var(--font-hand);
-  font-size: clamp(10px, 2.1vh, 14px);
+  font-size: clamp(8px, 1.5vh, 11px);
   line-height: 1.25;
   text-align: center;
   word-break: keep-all;
@@ -1581,3 +1581,84 @@
   font-size: 10px;
   opacity: .7;
 }
+
+/* Date and D-day in chalk at the board's right corner, above the notes */
+.classroom-map__chalk-date {
+  position: absolute;
+  top: 6%;
+  left: 63%;
+  color: rgba(245, 226, 138, .9);
+  font-family: var(--font-hand);
+  font-size: clamp(10px, 1.9vh, 13px);
+  line-height: 1.35;
+  text-align: left;
+  pointer-events: none;
+}
+
+/* ---- Cubby cabinet doors on the right wall (illustration v6) ---- */
+.classroom-map__cabinet {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Each door is a full-world button clipped to the door's perspective quad */
+.classroom-map__cubby {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: var(--cubby-paint, transparent);
+  opacity: .82;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background-color 160ms ease, filter 160ms ease;
+}
+
+.classroom-map__cubby:hover,
+.classroom-map__cubby:focus-visible {
+  background-color: var(--cubby-paint, rgba(255, 246, 214, .28));
+  outline: none;
+}
+
+.classroom-map__cubby--mine {
+  background-color: var(--cubby-paint, rgba(255, 236, 160, .3));
+  animation: classroom-cubby-glow 2.4s ease-in-out infinite;
+}
+
+@keyframes classroom-cubby-glow {
+  50% {
+    filter: brightness(1.12);
+  }
+}
+
+.classroom-map__cubby-name {
+  position: absolute;
+  z-index: 3;
+  padding: .12em .5em;
+  border: 1.5px solid #4a3426;
+  border-radius: 3px;
+  background: #fffaf0;
+  color: #2f2219;
+  /* bold sans so a name stays readable at map size */
+  font-family: inherit;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  font-size: clamp(8px, 1.5vh, 11px);
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.classroom-map__cubby-name--mine {
+  background: #fff1b8;
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .classroom-map__cubby--mine {
+    animation: none;
+  }
+}
+

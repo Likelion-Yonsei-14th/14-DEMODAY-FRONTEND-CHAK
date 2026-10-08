@@ -21,6 +21,8 @@ import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { getTodaysBoardQuotes } from './boardQuotes'
+import { CABINET_CELLS, cabinetCells } from './classroomCabinet'
+import { getLockerPaint } from './lockerDecor'
 import { LockerMiniDoor } from './LockerScene'
 import { useDeskDaypart } from '@/features/desk/useDeskDaypart'
 import './Classroom.css'
@@ -28,9 +30,8 @@ import './Classroom.css'
 /** classroom-day/night.webp are 1344 × 576. */
 const CLASSROOM_PHOTO_RATIO = 1344 / 576
 
-/** Lockers drawn in the bank on the map; empty seats fill it up to the minimum. */
-const MAP_LOCKER_MIN = 6
-const MAP_LOCKER_MAX = 8
+/** One locker per door of the cabinet drawn on the right wall; the rest are empty seats. */
+const MAP_LOCKER_MAX = CABINET_CELLS
 
 const zoneLabels = ['창가', '칠판', '사물함'] as const
 
@@ -94,7 +95,6 @@ export function ClassroomMapPage() {
     ...(myLocker ? [myLocker] : []),
     ...otherLockers,
   ].slice(0, MAP_LOCKER_MAX)
-  const emptySeats = Math.max(0, MAP_LOCKER_MIN - bankLockers.length)
   const hiddenLockerCount = classroom.lockers.length - bankLockers.length
 
   const inviteFriends = async () => {
@@ -189,6 +189,16 @@ export function ClassroomMapPage() {
                 )
               }
             >
+              {/* Like a real board: today's date and the D-day in the corner */}
+              <span className="classroom-map__chalk-date">
+                {new Intl.DateTimeFormat('ko-KR', {
+                  month: 'long',
+                  day: 'numeric',
+                  weekday: 'short',
+                }).format(new Date())}
+                <br />
+                {getCsatDdayLabel().replace('수능까지 ', '수능 ')}
+              </span>
               <span className="classroom-map__chalk">
                 <span className="classroom-map__chalk-title">
                   수능까지 같이 가자!
@@ -225,47 +235,62 @@ export function ClassroomMapPage() {
               </span>
             </button>
 
-            <div
-              className="classroom-map__lockers"
-              style={{
-                '--locker-count': bankLockers.length + emptySeats,
-              } as React.CSSProperties}
-            >
-              {bankLockers.map((locker) => (
-                <button
-                  type="button"
-                  key={locker.id}
-                  className="classroom-map__locker-button"
-                  aria-label={`${locker.studentName}의 사물함`}
-                  onClick={() =>
-                    navigate(
-                      `/prototype/classroom/${id}/locker/${locker.id}`,
-                    )
-                  }
-                >
-                  <LockerMiniDoor
-                    studentName={locker.studentName}
-                    active={locker.id === member.lockerId}
-                    paint={lockerDecor[locker.id]?.outside}
+            {/* Doors of the cubby cabinet drawn on the right wall */}
+            <div className="classroom-map__cabinet">
+              {cabinetCells.map((cell, index) => {
+                const locker = bankLockers[index]
+                const mine = locker?.id === member.lockerId
+                const paint = locker ? lockerDecor[locker.id]?.outside : undefined
+
+                return (
+                  <button
+                    type="button"
+                    key={locker?.id ?? `empty-${index}`}
+                    className={[
+                      'classroom-map__cubby',
+                      locker ? '' : 'classroom-map__cubby--empty',
+                      mine ? 'classroom-map__cubby--mine' : '',
+                    ].filter(Boolean).join(' ')}
+                    style={{
+                      clipPath: cell.clipPath,
+                      '--cubby-paint': paint ? getLockerPaint(paint).swatch : undefined,
+                    } as React.CSSProperties}
+                    aria-label={
+                      locker
+                        ? `${locker.studentName}의 사물함`
+                        : '빈 사물함 · 친구 초대하기'
+                    }
+                    onClick={() =>
+                      locker
+                        ? navigate(`/prototype/classroom/${id}/locker/${locker.id}`)
+                        : inviteFriends()
+                    }
                   />
-                  {locker.id === member.lockerId && (
-                    <span className="classroom-map__mine">
-                      내 사물함
-                    </span>
-                  )}
-                </button>
-              ))}
-              {Array.from({ length: emptySeats }, (_, index) => (
-                <button
-                  type="button"
-                  key={`empty-${index}`}
-                  className="classroom-map__locker-button classroom-map__locker-button--empty"
-                  aria-label="빈 사물함 · 친구 초대하기"
-                  onClick={inviteFriends}
-                >
-                  <LockerMiniDoor studentName="" />
-                </button>
-              ))}
+                )
+              })}
+              {cabinetCells.map((cell, index) => {
+                const locker = bankLockers[index]
+                if (!locker) return null
+                const mine = locker.id === member.lockerId
+
+                return (
+                  <span
+                    key={`label-${locker.id}`}
+                    className={[
+                      'classroom-map__cubby-name',
+                      mine ? 'classroom-map__cubby-name--mine' : '',
+                    ].filter(Boolean).join(' ')}
+                    style={{
+                      left: cell.labelLeft,
+                      top: cell.labelTop,
+                      transform: `translate(-50%, -50%) rotate(${cell.labelAngle}deg)`,
+                    }}
+                    aria-hidden
+                  >
+                    {mine ? `★ ${locker.studentName}` : locker.studentName}
+                  </span>
+                )
+              })}
             </div>
 
             <button
