@@ -25,6 +25,7 @@ import {
 } from '@/features/supporter/seededMessages'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import type { Message } from '@/types'
 import './ReplyPages.css'
 
@@ -244,6 +245,7 @@ export function MessageReplyPage() {
 
 export function SupporterRepliesPage() {
   const navigate = useNavigate()
+  const { supporterToken = DEFAULT_SUPPORTER_TOKEN } = useParams()
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const identity = usePrototypeStore(
     (state) => state.supporterIdentityName,
@@ -283,7 +285,7 @@ export function SupporterRepliesPage() {
               label="책상으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() =>
-                navigate('/prototype/support/jisu')
+                navigate(supporterPath(supporterToken))
               }
             />
           }
@@ -298,7 +300,7 @@ export function SupporterRepliesPage() {
               usePrototypeStore
                 .getState()
                 .resetComposerDraft()
-              navigate('/prototype/support/jisu/compose')
+              navigate(supporterPath(supporterToken, '/compose'))
             }}
           >
             {currentDesk.displayName}님에게 응원 하나 더 쓰기

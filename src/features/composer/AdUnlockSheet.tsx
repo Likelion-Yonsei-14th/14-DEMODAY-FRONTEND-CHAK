@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { BottomSheet, Button, IconButton } from '@/design-system'
+import { createSessionId } from '@/prototype/ids'
 
 /** How long the prototype "ad" plays before the reward unlocks, in seconds. */
 const AD_SECONDS = 5
@@ -21,7 +22,12 @@ type AdUnlockSheetProps<T extends AdUnlockItem> = {
   /** Replaces the default "keep using it" copy. */
   description?: string
   onClose: () => void
-  onUnlocked: (item: T) => void
+  /**
+   * `adSessionId` is a fresh id minted when this ad impression started
+   * (one per play, never reused) - pass it along once a real ad-event API
+   * exists so the impression it reports matches the one that was shown.
+   */
+  onUnlocked: (item: T, adSessionId: string) => void
 }
 
 /**
@@ -39,10 +45,12 @@ export function AdUnlockSheet<T extends AdUnlockItem>({
 }: AdUnlockSheetProps<T>) {
   const [remaining, setRemaining] = useState(AD_SECONDS)
   const [playing, setPlaying] = useState(false)
+  const [sessionId, setSessionId] = useState<string | null>(null)
 
   useEffect(() => {
     setRemaining(AD_SECONDS)
     setPlaying(false)
+    setSessionId(null)
   }, [background?.id])
 
   useEffect(() => {
@@ -67,7 +75,7 @@ export function AdUnlockSheet<T extends AdUnlockItem>({
 
   const finished = playing && remaining <= 0
 
-  if (playing && background) {
+  if (playing && background && sessionId) {
     return createPortal(
       <AdFullscreenPlayer
         item={background}
@@ -75,7 +83,7 @@ export function AdUnlockSheet<T extends AdUnlockItem>({
         remaining={remaining}
         finished={finished}
         onClose={onClose}
-        onUnlocked={() => onUnlocked(background)}
+        onUnlocked={() => onUnlocked(background, sessionId)}
       />,
       document.body,
     )
@@ -109,7 +117,14 @@ export function AdUnlockSheet<T extends AdUnlockItem>({
             전체 화면으로 광고 하나를 끝까지 보면 열려요.
           </p>
 
-          <Button variant="brand" fullWidth onClick={() => setPlaying(true)}>
+          <Button
+            variant="brand"
+            fullWidth
+            onClick={() => {
+              setSessionId(createSessionId())
+              setPlaying(true)
+            }}
+          >
             광고 보기
           </Button>
         </div>

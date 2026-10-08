@@ -2,6 +2,7 @@ import { ChevronRight, Layers3 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { AppBar, StatusBadge } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
+import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import './prototype.css'
 
 const routes = [
@@ -24,7 +25,7 @@ const routes = [
     phase: 'LIVE',
   },
   {
-    path: '/prototype/support/jisu',
+    path: supporterPath(DEFAULT_SUPPORTER_TOKEN),
     title: 'Supporter Core',
     description: '친구로 방문 → 응원 만들기 → 책상에 직접 놓고 가기',
     phase: 'LIVE',
@@ -48,7 +49,7 @@ const routes = [
     phase: 'LIVE',
   },
   {
-    path: '/prototype/support/jisu/replies',
+    path: supporterPath(DEFAULT_SUPPORTER_TOKEN, '/replies'),
     title: 'Reply Flow',
     description: '개별/오늘의 공통 답장 · Supporter 받은 답장 · 새 이야기로 재진입',
     phase: 'LIVE',

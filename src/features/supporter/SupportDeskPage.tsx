@@ -6,13 +6,14 @@ import {
   Share2,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { AppBar, Button, IconButton, useFeedback } from '@/design-system'
 import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
 import { DeskScene } from '@/features/desk/DeskScene'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
+import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import {
   mergeSupportMessages,
@@ -24,6 +25,7 @@ import './SupportDeskPage.css'
 
 export function SupportDeskPage() {
   const navigate = useNavigate()
+  const { supporterToken = DEFAULT_SUPPORTER_TOKEN } = useParams()
   const { showToast } = useFeedback()
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const storedMessages = usePrototypeStore((state) => state.messages)
@@ -100,13 +102,13 @@ export function SupportDeskPage() {
       return
     }
 
-    navigate(`/prototype/support/jisu/message/${messageId}`, {
+    navigate(supporterPath(supporterToken, `/message/${messageId}`), {
       state: { from: 'support-desk' },
     })
   }
 
   const shareDesk = async () => {
-    const url = buildPrototypeShareUrl('/prototype/support/jisu')
+    const url = buildPrototypeShareUrl(supporterPath(supporterToken))
 
     try {
       if (navigator.share) {
@@ -152,7 +154,7 @@ export function SupportDeskPage() {
                   }
                   icon={<MessageCircleMore size={20} aria-hidden />}
                   onClick={() =>
-                    navigate('/prototype/support/jisu/replies')
+                    navigate(supporterPath(supporterToken, '/replies'))
                   }
                 />
               )}
@@ -160,7 +162,7 @@ export function SupportDeskPage() {
                 label="내 응원 설정"
                 icon={<Settings size={20} aria-hidden />}
                 onClick={() =>
-                  navigate('/prototype/support/jisu/settings')
+                  navigate(supporterPath(supporterToken, '/settings'))
                 }
               />
             </div>
@@ -185,9 +187,10 @@ export function SupportDeskPage() {
                 setSupporterObjectChoice(choice)
                 setChoiceOpen(false)
                 navigate(
-                  choice === 'sticker'
-                    ? '/prototype/support/jisu/sticker'
-                    : '/prototype/support/jisu/compose',
+                  supporterPath(
+                    supporterToken,
+                    choice === 'sticker' ? '/sticker' : '/compose',
+                  ),
                 )
               }}
             />
@@ -243,7 +246,7 @@ export function SupportDeskPage() {
                 type="button"
                 className="support-desk__share"
                 onClick={() =>
-                  navigate('/prototype/support/jisu/sent')
+                  navigate(supporterPath(supporterToken, '/sent'))
                 }
               >
                 <Send size={15} aria-hidden />

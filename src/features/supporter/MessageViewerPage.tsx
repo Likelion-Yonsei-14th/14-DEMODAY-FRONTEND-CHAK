@@ -18,6 +18,7 @@ import {
 import { getMessagePages } from '@/features/composer/messagePages'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import {
   formatUnlockAt,
   resolvePreviewReadMode,
@@ -47,7 +48,12 @@ export function MessageViewerPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { showToast } = useFeedback()
-  const { messageId, classroomId, lockerId } = useParams()
+  const {
+    messageId,
+    classroomId,
+    lockerId,
+    supporterToken = DEFAULT_SUPPORTER_TOKEN,
+  } = useParams()
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const classroom = usePrototypeStore((state) => state.classroom)
   const classroomMember = usePrototypeStore(
@@ -251,7 +257,7 @@ export function MessageViewerPage() {
     }
 
     if (supporterView) {
-      navigate('/prototype/support/jisu')
+      navigate(supporterPath(supporterToken))
       return
     }
 

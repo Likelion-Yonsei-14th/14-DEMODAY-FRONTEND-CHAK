@@ -29,6 +29,7 @@ import {
 } from '@/features/desk/readModeUtils'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
+import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import type { ReadMode } from '@/types'
 import './DeskCreation.css'
 
@@ -303,7 +304,7 @@ export function DeskCreateCompletePage() {
     const url =
       kind === 'owner'
         ? buildPrototypeShareUrl('/prototype/claim')
-        : buildPrototypeShareUrl('/prototype/support/jisu')
+        : buildPrototypeShareUrl(supporterPath(DEFAULT_SUPPORTER_TOKEN))
     const title =
       kind === 'owner'
         ? `${desk.displayName}님의 응원 책상`
@@ -344,7 +345,7 @@ export function DeskCreateCompletePage() {
           <Button
             variant="brand"
             fullWidth
-            onClick={() => navigate('/prototype/support/jisu')}
+            onClick={() => navigate(supporterPath(DEFAULT_SUPPORTER_TOKEN))}
           >
             {desk.displayName}님의 책상 보기
           </Button>
