@@ -262,10 +262,12 @@ export function MessageViewerPage() {
       return
     }
 
+    // Only the envelope list sends readers back to the list; everything
+    // else (desk objects, charms, links) goes back to the desk
     const path =
-      state?.from === 'owner-desk' || state?.from === 'desk'
-        ? '/prototype/my/desk'
-        : '/prototype/my/desk/cards'
+      state?.from === 'owner-cards'
+        ? '/prototype/my/desk/cards'
+        : '/prototype/my/desk'
 
     navigate(`${path}${location.search}`)
   }

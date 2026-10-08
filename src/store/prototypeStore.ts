@@ -102,6 +102,11 @@ type PrototypeState = {
   moveToBasket: (messageIds: string[]) => void
   supporterObjectChoice: SupporterObjectChoice
   stickerDraft: { stickerId: string; senderName: string }
+  /** Charm picked before writing the cheer (desk design or university keyring). */
+  charmDraft: { assetId: string; material: CharmMaterial; phrase: string }
+  setCharmDraft: (
+    patch: Partial<{ assetId: string; material: CharmMaterial; phrase: string }>,
+  ) => void
   setSupporterObjectChoice: (choice: SupporterObjectChoice) => void
   setStickerDraft: (patch: Partial<{ stickerId: string; senderName: string }>) => void
   placeSticker: (placement: DeskPlacement) => void
@@ -264,6 +269,9 @@ export const usePrototypeStore = create<PrototypeState>()(
       },
       supporterObjectChoice: 'letter',
       stickerDraft: { stickerId: deskStickers[0]!.id, senderName: '' },
+      charmDraft: { assetId: 'charm-yeot', material: 'flat', phrase: '' },
+      setCharmDraft: (patch) =>
+        set((state) => ({ charmDraft: { ...state.charmDraft, ...patch } })),
       setSupporterObjectChoice: (supporterObjectChoice) =>
         set({ supporterObjectChoice }),
       setStickerDraft: (patch) =>
@@ -1027,6 +1035,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         ...(isApiEnabled ? {} : { basketMessageIds: state.basketMessageIds }),
         lockerDecor: state.lockerDecor,
         supporterObjectChoice: state.supporterObjectChoice,
+        charmDraft: state.charmDraft,
         stickerDraft: state.stickerDraft,
       }),
     },
