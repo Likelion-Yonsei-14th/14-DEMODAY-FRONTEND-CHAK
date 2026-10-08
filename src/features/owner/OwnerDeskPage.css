@@ -50,12 +50,17 @@
   overflow: hidden;
   border-block: 1px solid rgba(205,185,166,.36);
   background: #f6ecdf;
-  transition: filter 240ms ease;
 }
 
+/*
+ * The desk photo itself zooms in and dims/blurs as an object opens - with
+ * no separate layer for the surrounding clutter (it's baked into one
+ * photo), this reads as "everything pulls back" without moving anything
+ * individually. Transition duration lives on `.desk-scene` itself.
+ */
 .owner-desk__scene-wrap--opening .desk-scene {
-  filter: brightness(.94) saturate(.88);
-  transition: filter 240ms ease;
+  transform: scale(1.12);
+  filter: brightness(.74) saturate(.7) blur(3px);
 }
 
 .owner-desk__summary {
