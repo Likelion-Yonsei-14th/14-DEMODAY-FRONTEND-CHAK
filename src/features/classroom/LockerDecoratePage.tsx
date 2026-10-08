@@ -3,12 +3,12 @@ import { ArrowLeft, Ban } from 'lucide-react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import {
   AppBar,
-  BottomSheet,
   Button,
   IconButton,
   useFeedback,
 } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
+import { PaymentSheet } from '@/features/payment/PaymentSheet'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import {
   LOCKER_DECOR_PRICE,
@@ -208,38 +208,19 @@ export function LockerDecoratePage() {
         {paintRow('바깥 페인트', 'outside', false)}
       </main>
 
-      <BottomSheet
+      <PaymentSheet
         open={paymentOpen}
-        onClose={() => setPaymentOpen(false)}
-        title="이대로 결제하고 적용할까요?"
         description="꾸민 사물함은 반 친구들에게도 그대로 보여요."
-      >
-        <div className="charm-payment">
-          {charges.map((charge) => (
-            <div key={charge.key} className="charm-payment__row">
-              <span>{charge.label}</span>
-              <strong>{charge.price}원</strong>
-            </div>
-          ))}
-          <div className="charm-payment__row charm-payment__row--total">
-            <span>합계</span>
-            <strong>{total}원</strong>
-          </div>
-          <p className="charm-payment__note">
-            프로토타입이라 실제 결제는 되지 않아요.
-          </p>
-          <Button
-            variant="brand"
-            fullWidth
-            onClick={() => {
-              setPaymentOpen(false)
-              apply()
-            }}
-          >
-            {total}원 결제하기
-          </Button>
-        </div>
-      </BottomSheet>
+        items={charges.map((charge) => ({
+          label: charge.label,
+          amount: charge.price,
+        }))}
+        onClose={() => setPaymentOpen(false)}
+        onConfirm={() => {
+          setPaymentOpen(false)
+          apply()
+        }}
+      />
     </AppShell>
   )
 }

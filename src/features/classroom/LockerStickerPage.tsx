@@ -4,11 +4,11 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import {
   AppBar,
   AssetTile,
-  BottomSheet,
   Button,
   IconButton,
 } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
+import { PaymentSheet } from '@/features/payment/PaymentSheet'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import {
   getLockerSticker,
@@ -119,38 +119,18 @@ export function LockerStickerPickPage() {
         ))}
       </main>
 
-      <BottomSheet
-        open={paymentOpen}
-        onClose={() => setPaymentOpen(false)}
-        title="이대로 결제하고 붙일까요?"
-        description="대학 깃발은 사물함 안에 걸려서 친구의 목표를 응원해요."
-      >
-        {selected && (
-          <div className="charm-payment">
-            <div className="charm-payment__row">
-              <span>대학 깃발 · {selected.name}</span>
-              <strong>{price}원</strong>
-            </div>
-            <div className="charm-payment__row charm-payment__row--total">
-              <span>합계</span>
-              <strong>{price}원</strong>
-            </div>
-            <p className="charm-payment__note">
-              프로토타입이라 실제 결제는 되지 않아요.
-            </p>
-            <Button
-              variant="brand"
-              fullWidth
-              onClick={() => {
-                setPaymentOpen(false)
-                goPlace()
-              }}
-            >
-              {price}원 결제하기
-            </Button>
-          </div>
-        )}
-      </BottomSheet>
+      {selected && (
+        <PaymentSheet
+          open={paymentOpen}
+          description="대학 깃발은 사물함 안에 걸려서 친구의 목표를 응원해요."
+          items={[{ label: `대학 깃발 · ${selected.name}`, amount: price }]}
+          onClose={() => setPaymentOpen(false)}
+          onConfirm={() => {
+            setPaymentOpen(false)
+            goPlace()
+          }}
+        />
+      )}
     </AppShell>
   )
 }
