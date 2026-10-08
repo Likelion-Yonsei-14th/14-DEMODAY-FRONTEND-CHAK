@@ -3,7 +3,6 @@ import { ArrowLeft, Eye, Gem, LockKeyhole, Move } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   AppBar,
-  BottomSheet,
   Button,
   IconButton,
   TextField,
@@ -44,6 +43,7 @@ import {
 } from './charmDesigns'
 import { GEM_PRICE, countGemCost } from './gems'
 import { GemDecoratorSheet } from './GemDecoratorSheet'
+import { PaymentSheet } from '@/features/payment/PaymentSheet'
 import './supporterFlow.css'
 
 // Letter and charm both carry a written message; stickers have their own flow.
@@ -544,46 +544,23 @@ export function PlacementPreviewPage() {
         </section>
       </main>
 
-      <BottomSheet
+      <PaymentSheet
         open={paymentOpen}
-        onClose={() => setPaymentOpen(false)}
-        title="이대로 결제하고 놓을까요?"
         description="반짝이는 꾸미기는 책상 위에서 더 눈에 띄어요."
-      >
-        <div className="charm-payment">
-          {acrylicCost > 0 && (
-            <div className="charm-payment__row">
-              <span>{finalCharmPhrase} 부적 · 아크릴 3D</span>
-              <strong>{acrylicCost}원</strong>
-            </div>
-          )}
-          {gemCost > 0 && (
-            <div className="charm-payment__row">
-              <span>
-                보석 스티커 {gems.length}개 × {GEM_PRICE}원
-              </span>
-              <strong>{gemCost}원</strong>
-            </div>
-          )}
-          <div className="charm-payment__row charm-payment__row--total">
-            <span>합계</span>
-            <strong>{totalCost}원</strong>
-          </div>
-          <p className="charm-payment__note">
-            프로토타입이라 실제 결제는 되지 않아요.
-          </p>
-          <Button
-            variant="brand"
-            fullWidth
-            onClick={() => {
-              setPaidAmount(totalCost)
-              setPaymentOpen(false)
-            }}
-          >
-            {totalCost}원 결제하기
-          </Button>
-        </div>
-      </BottomSheet>
+        items={[
+          ...(acrylicCost > 0
+            ? [{ label: `${finalCharmPhrase} 부적 · 아크릴 3D`, amount: acrylicCost }]
+            : []),
+          ...(gemCost > 0
+            ? [{ label: `보석 스티커 ${gems.length}개 × ${GEM_PRICE}원`, amount: gemCost }]
+            : []),
+        ]}
+        onClose={() => setPaymentOpen(false)}
+        onConfirm={() => {
+          setPaidAmount(totalCost)
+          setPaymentOpen(false)
+        }}
+      />
 
       {!stickerMode && (
         <GemDecoratorSheet

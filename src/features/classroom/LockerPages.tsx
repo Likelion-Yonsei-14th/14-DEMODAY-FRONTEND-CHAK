@@ -18,7 +18,6 @@ import {
 } from 'react-router-dom'
 import {
   AppBar,
-  BottomSheet,
   Button,
   IconButton,
   useFeedback,
@@ -26,6 +25,7 @@ import {
 import { getComposerBackground } from '@/features/composer/backgroundAssets'
 import { getFirstCardPage } from '@/features/composer/messagePages'
 import { formatUnlockAt } from '@/features/desk/dailyAvailability'
+import { PaymentSheet } from '@/features/payment/PaymentSheet'
 import {
   getDeskSticker,
   getSupportMessageAvailability,
@@ -693,36 +693,16 @@ export function ClassroomLockerPlacementPage() {
         </section>
       </main>
 
-      <BottomSheet
+      <PaymentSheet
         open={paymentOpen}
-        onClose={() => setPaymentOpen(false)}
-        title="이대로 결제하고 놓을까요?"
         description="대학 굿즈 부적은 아크릴 키링으로만 만들어요."
-      >
-        <div className="charm-payment">
-          <div className="charm-payment__row">
-            <span>{charmLabel} · 아크릴</span>
-            <strong>{UNIVERSITY_CHARM_PRICE}원</strong>
-          </div>
-          <div className="charm-payment__row charm-payment__row--total">
-            <span>합계</span>
-            <strong>{UNIVERSITY_CHARM_PRICE}원</strong>
-          </div>
-          <p className="charm-payment__note">
-            프로토타입이라 실제 결제는 되지 않아요.
-          </p>
-          <Button
-            variant="brand"
-            fullWidth
-            onClick={() => {
-              setPaymentOpen(false)
-              finish(true)
-            }}
-          >
-            {UNIVERSITY_CHARM_PRICE}원 결제하기
-          </Button>
-        </div>
-      </BottomSheet>
+        items={[{ label: `${charmLabel} · 아크릴`, amount: UNIVERSITY_CHARM_PRICE }]}
+        onClose={() => setPaymentOpen(false)}
+        onConfirm={() => {
+          setPaymentOpen(false)
+          finish(true)
+        }}
+      />
     </AppShell>
   )
 }
