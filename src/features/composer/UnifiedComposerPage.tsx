@@ -10,6 +10,7 @@ import {
   AppBar,
   BottomSheet,
   Button,
+  Dialog,
   IconButton,
   useFeedback,
 } from '@/design-system'
@@ -74,6 +75,7 @@ export function UnifiedComposerPage() {
   } = useParams()
   const { showToast } = useFeedback()
   const draft = usePrototypeStore((state) => state.composerDraft)
+  const authSession = usePrototypeStore((state) => state.authSession)
   const currentDesk = usePrototypeStore((state) => state.currentDesk)
   const classroom = usePrototypeStore((state) => state.classroom)
   const setComposerDraft = usePrototypeStore((state) => state.setComposerDraft)
@@ -94,6 +96,10 @@ export function UnifiedComposerPage() {
   const [ideaOpen, setIdeaOpen] = useState(false)
   const [ideaSetIndex, setIdeaSetIndex] = useState(0)
   const [ideaPrompt, setIdeaPrompt] = useState<string | null>(null)
+  const [pendingGuestPhoto, setPendingGuestPhoto] = useState<{
+    file: File
+    role: 'floating' | 'background'
+  } | null>(null)
   const page = getActiveCardPage(draft)
   const pages = getMessagePages(draft)
   const activePageId = draft.activePageId ?? page.id
@@ -312,7 +318,29 @@ export function UnifiedComposerPage() {
     })
   }
 
+  const totalPhotoCount = pages.reduce(
+    (sum, cardPage) => sum + cardPage.photoElements.length,
+    0,
+  )
+
   const addPhoto = async (
+    file: File,
+    role: 'floating' | 'background',
+  ) => {
+    // Nudge guests toward signing in before the second photo - a signed-out
+    // session has nowhere durable to keep uploads, so warn before it bites.
+    if (
+      authSession.status === 'anonymous' &&
+      totalPhotoCount >= 1
+    ) {
+      setPendingGuestPhoto({ file, role })
+      return
+    }
+
+    await commitPhoto(file, role)
+  }
+
+  const commitPhoto = async (
     file: File,
     role: 'floating' | 'background',
   ) => {
@@ -740,6 +768,32 @@ export function UnifiedComposerPage() {
         onContinue={() => {
           setVisibilityOpen(false)
           navigate(placementPath)
+        }}
+      />
+
+      <Dialog
+        open={Boolean(pendingGuestPhoto)}
+        onClose={() => setPendingGuestPhoto(null)}
+        title="로그인하지 않고 계속할까요?"
+        description="로그인하지 않고 작업하면, 사진이 잘 저장되지 않을 수 있어요."
+        secondaryAction={{
+          label: '계속 작업하기',
+          onClick: () => {
+            if (pendingGuestPhoto) {
+              void commitPhoto(
+                pendingGuestPhoto.file,
+                pendingGuestPhoto.role,
+              )
+            }
+            setPendingGuestPhoto(null)
+          },
+        }}
+        primaryAction={{
+          label: '로그인하기',
+          onClick: () => {
+            setPendingGuestPhoto(null)
+            navigate('/auth/login')
+          },
         }}
       />
     </>
