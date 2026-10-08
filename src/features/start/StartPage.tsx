@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { LogIn, UserRound, UsersRound } from 'lucide-react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { ChoiceCard } from '@/design-system'
 import {
   getCsatDateLabel,
@@ -28,12 +28,6 @@ export function StartPage() {
     [],
   )
 
-  // /start is the new-signup landing; a returning, already-logged-in
-  // visitor should land on the two-door /home instead (see LoginPage).
-  if (authSession.status === 'authenticated') {
-    return <Navigate to="/home" replace />
-  }
-
   const startPersonal = () => {
     resetDeskCreationDraft()
     navigate('/prototype/create')
@@ -57,10 +51,18 @@ export function StartPage() {
           <button
             type="button"
             className="start-page__account"
-            onClick={() => navigate('/auth/login')}
+            onClick={() =>
+              navigate(
+                authSession.status === 'authenticated'
+                  ? '/account'
+                  : '/auth/login',
+              )
+            }
           >
             <LogIn size={15} aria-hidden />
-            로그인
+            {authSession.status === 'authenticated'
+              ? '내 계정'
+              : '로그인'}
           </button>
         </header>
 

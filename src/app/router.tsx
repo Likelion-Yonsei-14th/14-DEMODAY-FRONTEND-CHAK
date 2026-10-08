@@ -85,12 +85,30 @@ import {
   ReaderPage,
 } from '@/prototype/screens/flowPages'
 import { SystemPage } from '@/system/SystemPage'
+import { usePrototypeStore } from '@/store/prototypeStore'
+
+/**
+ * Only the bare entry point (`/`) branches on auth - a signed-in visitor
+ * lands on the two-door /home, everyone else on the /start landing. Once
+ * on a specific route (e.g. /start itself, reached from "새 책상이나 반
+ * 만들기"), that route stays reachable regardless of auth state.
+ */
+function EntryRedirect() {
+  const authSession = usePrototypeStore((state) => state.authSession)
+
+  return (
+    <Navigate
+      to={authSession.status === 'authenticated' ? '/home' : '/start'}
+      replace
+    />
+  )
+}
 
 export const router = createBrowserRouter([
   {
     element: <App />,
     children: [
-      { index: true, element: <Navigate to="/start" replace /> },
+      { index: true, element: <EntryRedirect /> },
       { path: '/start', element: <StartPage /> },
       { path: '/home', element: <HomePage /> },
       { path: '/auth/login', element: <LoginPage /> },
