@@ -20,6 +20,7 @@ import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import { getTodaysBoardQuotes } from './boardQuotes'
 import { LockerMiniDoor } from './LockerScene'
 import { useDeskDaypart } from '@/features/desk/useDeskDaypart'
 import './Classroom.css'
@@ -31,7 +32,7 @@ const CLASSROOM_PHOTO_RATIO = 1344 / 576
 const MAP_LOCKER_MIN = 6
 const MAP_LOCKER_MAX = 8
 
-const zoneLabels = ['칠판', '교실', '사물함'] as const
+const zoneLabels = ['창가', '칠판', '사물함'] as const
 
 export function ClassroomMapPage() {
   const navigate = useNavigate()
@@ -193,7 +194,7 @@ export function ClassroomMapPage() {
                   수능까지 같이 가자!
                 </span>
                 {classroom.blackboardEntries
-                  .slice(-4)
+                  .slice(-3)
                   .map((entry) => (
                     <span
                       key={entry.id}
@@ -203,15 +204,26 @@ export function ClassroomMapPage() {
                     </span>
                   ))}
               </span>
+              {/* Today's curated quotes, taped to the board as paper notes */}
+              <span className="classroom-map__notes">
+                {getTodaysBoardQuotes().map((quote, index) => (
+                  <span
+                    key={quote.id}
+                    className="classroom-map__note"
+                    style={{
+                      '--note-color': quote.paper,
+                      '--note-tilt': `${index % 2 ? 3 : -3}deg`,
+                    } as React.CSSProperties}
+                  >
+                    {quote.text}
+                  </span>
+                ))}
+              </span>
               <span className="classroom-map__interaction">
                 <MessageCircleMore size={15} aria-hidden />
                 칠판 보기
               </span>
             </button>
-
-            <div className="classroom-map__banner">
-              오늘 한 만큼이면 충분해
-            </div>
 
             <div
               className="classroom-map__lockers"
