@@ -191,10 +191,15 @@ export function SupportDeskPage() {
               onChoose={(choice: SupporterObjectChoice) => {
                 setSupporterObjectChoice(choice)
                 setChoiceOpen(false)
+                // A charm is picked first, then the cheer is written into it
                 navigate(
                   supporterPath(
                     supporterToken,
-                    choice === 'sticker' ? '/sticker' : '/compose',
+                    choice === 'sticker'
+                      ? '/sticker'
+                      : choice === 'charm'
+                        ? '/charm'
+                        : '/compose',
                   ),
                 )
               }}
