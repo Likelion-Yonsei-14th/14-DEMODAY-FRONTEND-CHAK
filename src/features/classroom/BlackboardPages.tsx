@@ -17,6 +17,7 @@ import {
 } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import { getTodaysBoardQuotes } from './boardQuotes'
 import './Classroom.css'
 
 const chalkColors = [
@@ -80,6 +81,23 @@ export function BlackboardPage() {
       <main className="blackboard-page">
         <section className="blackboard-board" aria-label="친구들이 함께 쓰는 칠판">
           <div className="blackboard-board__surface">
+            {/* Today's curated quotes, taped along the top of the board */}
+            <div className="blackboard-board__notes">
+              {getTodaysBoardQuotes().map((quote, index) => (
+                <article
+                  key={quote.id}
+                  className="blackboard-note"
+                  style={{
+                    '--note-color': quote.paper,
+                    transform: `rotate(${index % 2 ? 2.5 : -3}deg)`,
+                  } as React.CSSProperties}
+                >
+                  <p>{quote.text}</p>
+                  <span>— {quote.source}</span>
+                </article>
+              ))}
+            </div>
+
             {classroom.blackboardEntries.length === 0 ? (
               <p className="blackboard-board__empty">
                 첫 응원을 칠판에 남겨보세요.

@@ -1466,3 +1466,118 @@
   border-radius: 999px;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12);
 }
+
+/* ---- Chalkboard on the front wall (illustration v4, closer camera) ---- */
+.classroom-map__blackboard {
+  left: 21.5%;
+  top: 19%;
+  width: 57.1%;
+  height: 32.1%;
+}
+
+/* Chalk sits in the part of the board the centre camera stop shows */
+.classroom-map__chalk {
+  inset: 12% 45% 14% 28%;
+  transform: none;
+  font-family: var(--font-hand);
+}
+
+.classroom-map__notes {
+  position: absolute;
+  top: 10%;
+  bottom: 14%;
+  left: 57%;
+  width: 15%;
+  display: grid;
+  align-content: start;
+  gap: 8%;
+}
+
+.classroom-map__note {
+  position: relative;
+  padding: 6% 8%;
+  background: var(--note-color);
+  color: #4a3426;
+  font-family: var(--font-hand);
+  font-size: clamp(10px, 2.1vh, 14px);
+  line-height: 1.25;
+  text-align: center;
+  word-break: keep-all;
+  border: 1.5px solid #4a3426;
+  border-radius: 2px;
+  transform: rotate(var(--note-tilt, -2deg));
+  box-shadow: 1px 2px 0 rgba(30, 20, 10, .18);
+}
+
+/* a strip of masking tape across the top of each note */
+.classroom-map__note::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 34%;
+  height: 11px;
+  background: url('/assets/desk/tape-cream.webp') center / 100% 100% no-repeat;
+  transform: translateX(-50%) rotate(-4deg);
+}
+
+.classroom-map__interaction {
+  right: auto;
+  left: 50%;
+  bottom: -16%;
+  transform: translateX(-50%);
+}
+
+/* ---- Board page: chalk cheers + taped paper quotes ---- */
+.blackboard-entry p {
+  font-family: var(--font-hand);
+  font-weight: 500;
+  font-size: 17px;
+}
+
+.blackboard-board__notes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 18px 14px;
+  margin-bottom: 26px;
+}
+
+.blackboard-note {
+  position: relative;
+  width: 42%;
+  max-width: 170px;
+  display: grid;
+  gap: 6px;
+  padding: 16px 12px 10px;
+  border: 1.5px solid #4a3426;
+  border-radius: 2px;
+  background: var(--note-color);
+  color: #4a3426;
+  text-align: center;
+  box-shadow: 2px 3px 0 rgba(20, 12, 4, .22);
+}
+
+.blackboard-note::before {
+  content: '';
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 46%;
+  height: 16px;
+  background: url('/assets/desk/tape-cream.webp') center / 100% 100% no-repeat;
+  transform: translateX(-50%) rotate(-4deg);
+}
+
+.blackboard-note p {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-size: 16px;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+
+.blackboard-note span {
+  font-size: 10px;
+  opacity: .7;
+}
