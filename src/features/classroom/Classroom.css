@@ -314,7 +314,7 @@
   position: relative;
   display: block;
   width: 100%;
-  aspect-ratio: 150 / 493;
+  aspect-ratio: 240 / 249;
 }
 
 .locker-mini__photo {
@@ -326,10 +326,10 @@
 /* Written on the paper in the locker's name-card holder */
 .locker-mini__name {
   position: absolute;
-  left: 36.5%;
-  width: 26%;
-  top: 14%;
-  height: 3%;
+  left: 39.7%;
+  width: 19.7%;
+  top: 17.2%;
+  height: 6.1%;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -1662,3 +1662,41 @@
   }
 }
 
+/* ---- Locker page: bigger cubby, owner tools right underneath ---- */
+.classroom-locker-page .locker-v2 {
+  width: min(110%, 480px);
+  margin-inline: -5%;
+  justify-self: center;
+}
+
+.classroom-locker-page__owner {
+  display: grid;
+  gap: 12px;
+}
+
+.classroom-locker-page__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.classroom-locker-page__stats span {
+  display: grid;
+  gap: 2px;
+  padding: 12px 8px;
+  border-radius: 14px;
+  background: var(--color-surface-secondary, #f5f1ea);
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  text-align: center;
+}
+
+.classroom-locker-page__stats strong {
+  color: var(--color-content-primary);
+  font-size: 17px;
+}
+
+.locker-mini__name {
+  font-family: inherit;
+  font-weight: 800;
+}

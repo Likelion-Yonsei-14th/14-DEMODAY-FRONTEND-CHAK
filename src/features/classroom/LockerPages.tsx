@@ -224,20 +224,7 @@ export function ClassroomLockerPage() {
         />
       }
       fixedAction={
-        owner ? (
-          <Button
-            variant="secondary"
-            fullWidth
-            leadingIcon={<Paintbrush size={17} aria-hidden />}
-            onClick={() =>
-              navigate(
-                `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/decorate`,
-              )
-            }
-          >
-            사물함 꾸미기 · 조명, 페인트
-          </Button>
-        ) : open ? (
+        !owner && open ? (
           <Button
             variant="brand"
             fullWidth
@@ -303,6 +290,38 @@ export function ClassroomLockerPage() {
           <p className="classroom-locker-page__daily-note">
             오늘 받은 응원은 오후 {formatHour(classroom.dailyUnlockTime)}에 열려요.
           </p>
+        )}
+
+        {/* The owner's tools sit right under the locker, not at the screen bottom */}
+        {owner && (
+          <section className="classroom-locker-page__owner" aria-label="내 사물함">
+            <div className="classroom-locker-page__stats">
+              <span>
+                <strong>{visibleLocker.objects.length}</strong>
+                받은 응원
+              </span>
+              <span>
+                <strong>{unreadCount}</strong>
+                새 응원
+              </span>
+              <span>
+                <strong>오후 {formatHour(classroom.dailyUnlockTime)}</strong>
+                열리는 시간
+              </span>
+            </div>
+            <Button
+              variant="secondary"
+              fullWidth
+              leadingIcon={<Paintbrush size={17} aria-hidden />}
+              onClick={() =>
+                navigate(
+                  `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/decorate`,
+                )
+              }
+            >
+              사물함 꾸미기 · 조명, 페인트
+            </Button>
+          </section>
         )}
       </main>
     </AppShell>
