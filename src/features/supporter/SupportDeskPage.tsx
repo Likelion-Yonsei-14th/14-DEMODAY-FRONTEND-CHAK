@@ -8,7 +8,10 @@ import {
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { AppBar, Button, IconButton, useFeedback } from '@/design-system'
-import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
+import {
+  DESK_OPEN_ANIMATION_MS,
+  DeskObjectLayer,
+} from '@/features/desk/DeskObjectLayer'
 import { DeskScene } from '@/features/desk/DeskScene'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -40,6 +43,7 @@ export function SupportDeskPage() {
     (state) => state.setSupporterObjectChoice,
   )
   const [choiceOpen, setChoiceOpen] = useState(false)
+  const [openingMessageId, setOpeningMessageId] = useState<string | null>(null)
   const publicHiddenMessageIds = usePrototypeStore(
     (state) => state.publicHiddenMessageIds,
   )
@@ -84,6 +88,8 @@ export function SupportDeskPage() {
   const recipientName = currentDesk.displayName
 
   const openObject = (messageId: string) => {
+    if (openingMessageId) return
+
     const message = messages.find((item) => item.id === messageId)
     if (!message) return
 
@@ -102,9 +108,13 @@ export function SupportDeskPage() {
       return
     }
 
-    navigate(supporterPath(supporterToken, `/message/${messageId}`), {
-      state: { from: 'support-desk' },
-    })
+    setOpeningMessageId(messageId)
+
+    window.setTimeout(() => {
+      navigate(supporterPath(supporterToken, `/message/${messageId}`), {
+        state: { from: 'support-desk' },
+      })
+    }, DESK_OPEN_ANIMATION_MS)
   }
 
   const shareDesk = async () => {
@@ -225,12 +235,18 @@ export function SupportDeskPage() {
           )}
         </section>
 
-        <div className="support-desk__scene-wrap">
+        <div
+          className={[
+            'support-desk__scene-wrap',
+            openingMessageId ? 'support-desk__scene-wrap--opening' : '',
+          ].filter(Boolean).join(' ')}
+        >
           <DeskScene ownerName={`${recipientName}님`} />
           <DeskObjectLayer
             objects={objects}
             messages={messages}
             onObjectClick={openObject}
+            openingMessageId={openingMessageId}
             showUnreadState={false}
           />
         </div>

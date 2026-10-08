@@ -20,6 +20,13 @@ import { parseUniversityCharmId } from '@/features/classroom/universities'
 import { useDeskDaypart } from './useDeskDaypart'
 import './DeskObjectLayer.css'
 
+/**
+ * How long the "clear the desk" open animation runs before whatever
+ * triggered it (usually a route change) should actually happen - matches
+ * the transition durations on `--opening`/`--deemphasized` below.
+ */
+export const DESK_OPEN_ANIMATION_MS = 760
+
 type DraftObject = {
   representationType: DeskObjectType
   assetId?: string

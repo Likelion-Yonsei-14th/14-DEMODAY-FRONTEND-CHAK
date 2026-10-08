@@ -178,6 +178,28 @@
   transform: scale(.96);
 }
 
+/*
+ * Clears off its own corner along with every other cheer while one opens -
+ * same spirit as `clearPlacement` in DeskObjectLayer.tsx, just hand-tuned
+ * since the basket isn't a desk object and sits on right/bottom instead
+ * of left/top.
+ */
+.owner-desk__basket--deemphasized {
+  right: -55%;
+  bottom: -45%;
+  opacity: 0;
+  transition:
+    right 640ms var(--ease-emphasized),
+    bottom 640ms var(--ease-emphasized),
+    opacity 560ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .owner-desk__basket--deemphasized {
+    transition: none;
+  }
+}
+
 .owner-desk__basket img {
   /* Take on the photo's warm window light */
   filter: sepia(.14) brightness(.96);

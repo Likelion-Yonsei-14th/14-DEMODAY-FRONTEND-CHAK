@@ -10,7 +10,10 @@ import {
 import { isDeskFull } from '@/features/supporter/supporterFlow'
 import { DeskBasketSheet } from './DeskBasketSheet'
 import { ASK_FOR_CHEERS_LABEL, shareMyDeskLink } from './shareMyDesk'
-import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
+import {
+  DESK_OPEN_ANIMATION_MS,
+  DeskObjectLayer,
+} from '@/features/desk/DeskObjectLayer'
 import { DeskScene } from '@/features/desk/DeskScene'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -27,9 +30,6 @@ import {
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { OwnerViewToggle } from './OwnerViewToggle'
 import './OwnerDeskPage.css'
-
-/** Matches the clear-the-desk animation's transition duration (see DeskObjectLayer.css). */
-const OPEN_ANIMATION_MS = 760
 
 export function OwnerDeskPage() {
   const navigate = useNavigate()
@@ -211,7 +211,7 @@ export function OwnerDeskPage() {
           state: { from: 'owner-desk' },
         },
       )
-    }, OPEN_ANIMATION_MS)
+    }, DESK_OPEN_ANIMATION_MS)
   }
 
   return (
@@ -356,7 +356,10 @@ export function OwnerDeskPage() {
           />
           <button
             type="button"
-            className="owner-desk__basket"
+            className={[
+              'owner-desk__basket',
+              openingMessageId ? 'owner-desk__basket--deemphasized' : '',
+            ].filter(Boolean).join(' ')}
             aria-label={`바구니 열기, ${basketObjects.length}개 들어 있어요`}
             onClick={() => setBasketOpen(true)}
           >
