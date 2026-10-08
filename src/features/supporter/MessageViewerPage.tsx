@@ -94,10 +94,10 @@ export function MessageViewerPage() {
     ...currentDesk.objects,
     ...classroom.lockers.flatMap((locker) => locker.objects),
   ].find(
+    // Every charm opens front-first, designed or a plain paper tag
     (object) =>
       object.messageId === messageId &&
-      object.representationType === 'charm' &&
-      Boolean(object.assetId),
+      object.representationType === 'charm',
   )
   const showCharmFront = Boolean(charmObject) && charmPhase !== 'revealed'
   const state = location.state as ReaderLocationState | null
@@ -518,14 +518,26 @@ export function MessageViewerPage() {
                 window.setTimeout(() => setCharmPhase('revealed'), 340)
               }}
             >
-              <DeskObjectVisual
-                type="charm"
-                assetId={charmObject.assetId}
-                material={charmObject.material}
-                charmPhrase={charmObject.charmPhrase}
-                gems={charmObject.gems}
-                seed={charmObject.id}
-              />
+              <span
+                className={[
+                  'message-viewer__charm-visual',
+                  charmObject.assetId ? '' : 'desk-object--charm',
+                ].filter(Boolean).join(' ')}
+                style={
+                  charmObject.color
+                    ? ({ '--desk-object-color': charmObject.color } as React.CSSProperties)
+                    : undefined
+                }
+              >
+                <DeskObjectVisual
+                  type="charm"
+                  assetId={charmObject.assetId}
+                  material={charmObject.material}
+                  charmPhrase={charmObject.charmPhrase}
+                  gems={charmObject.gems}
+                  seed={charmObject.id}
+                />
+              </span>
             </button>
             <p className="message-viewer__charm-hint">
               부적을 눌러 뒤집어 보세요
