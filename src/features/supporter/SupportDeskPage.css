@@ -58,6 +58,13 @@
   background: #ece8e0;
 }
 
+/* Same "desk clears, clicked cheer takes over" treatment as the owner's
+   own desk - see DeskObjectLayer.css for the per-object animation. */
+.support-desk__scene-wrap--opening .desk-scene {
+  transform: scale(1.12);
+  filter: brightness(.74) saturate(.7) blur(3px);
+}
+
 .support-desk__meta {
   display: flex;
   align-items: center;
