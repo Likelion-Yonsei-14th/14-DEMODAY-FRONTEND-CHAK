@@ -34,6 +34,7 @@ import {
 import type {
   AuthProvider,
   AuthSession,
+  LastLogin,
   BlackboardEntry,
   CharmMaterial,
   DeskGem,
@@ -68,6 +69,8 @@ type PrototypeState = {
   debugMode: boolean
   currentUser: PrototypeUser
   authSession: AuthSession
+  /** Survives sign-out so the welcome screen can offer the same way back in. */
+  lastLogin: LastLogin | null
   currentDesk: Desk
   messages: Message[]
   composerDraft: MessageDraft
@@ -88,7 +91,7 @@ type PrototypeState = {
   publicBlockedSupporters: string[]
   reportedMessageIds: string[]
   readMessageIds: string[]
-  /** Stationery templates unlocked by watching an ad (prototype). */
+  /** Stationery templates bought with 찰떡. */
   unlockedStationeryIds: string[]
   unlockStationery: (backgroundId: string, adSessionId?: string) => void
   /** Clips and washi tapes unlocked by watching an ad (prototype). */
@@ -195,6 +198,7 @@ export const usePrototypeStore = create<PrototypeState>()(
       debugMode: false,
       currentUser: mockCurrentUser,
       authSession: { status: 'anonymous' },
+      lastLogin: null,
       currentDesk: mockDesk,
       messages: [],
       composerDraft: emptyComposerDraft,
@@ -377,27 +381,27 @@ export const usePrototypeStore = create<PrototypeState>()(
           }
         }),
       setDebugMode: (debugMode) => set({ debugMode }),
-      signIn: (email, provider = 'password') =>
+      signIn: (email, provider = 'password') => {
+        const login = { email: email.trim() || 'jisu@example.com', provider }
         set({
-          authSession: {
-            status: 'authenticated',
-            email: email.trim() || 'jisu@example.com',
-            provider,
-          },
-        }),
-      signInWithServer: (user) =>
+          authSession: { status: 'authenticated', ...login },
+          lastLogin: login,
+        })
+      },
+      signInWithServer: (user) => {
+        const login = {
+          email: user.email ?? '',
+          provider: user.provider === 'GOOGLE' ? 'google' : 'kakao',
+        } as const
         set((state) => ({
           currentUser: {
             ...state.currentUser,
             displayName: user.displayName || state.currentUser.displayName,
           },
-          authSession: {
-            status: 'authenticated',
-            email: user.email ?? '',
-            provider: user.provider === 'GOOGLE' ? 'google' : 'kakao',
-            userId: user.id,
-          },
-        })),
+          authSession: { status: 'authenticated', ...login, userId: user.id },
+          lastLogin: login,
+        }))
+      },
       signUp: (displayName, email) =>
         set((state) => ({
           currentUser: {
@@ -406,6 +410,10 @@ export const usePrototypeStore = create<PrototypeState>()(
           },
           authSession: {
             status: 'authenticated',
+            email: email.trim() || 'jisu@example.com',
+            provider: 'password',
+          },
+          lastLogin: {
             email: email.trim() || 'jisu@example.com',
             provider: 'password',
           },
@@ -418,6 +426,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         set({
           currentUser: mockCurrentUser,
           authSession: { status: 'anonymous' },
+          lastLogin: null,
         }),
       setDeskReadMode: (readMode) => {
         set((state) => ({
@@ -1010,6 +1019,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         debugMode: state.debugMode,
         currentUser: state.currentUser,
         authSession: state.authSession,
+        lastLogin: state.lastLogin,
         // With a backend these are server data and are reloaded on entry.
         ...(isApiEnabled
           ? {}

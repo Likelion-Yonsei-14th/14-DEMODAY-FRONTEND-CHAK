@@ -9,6 +9,7 @@ import {
 import {
   Link,
   Navigate,
+  useLocation,
   useNavigate,
 } from 'react-router-dom'
 import {
@@ -33,9 +34,14 @@ import './AccountPages.css'
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const authSession = usePrototypeStore((state) => state.authSession)
+  const lastLogin = usePrototypeStore((state) => state.lastLogin)
   const signIn = usePrototypeStore((state) => state.signIn)
-  const [email, setEmail] = useState('')
+  // The welcome screen passes the last email along for "이메일로 계속하기".
+  const [email, setEmail] = useState(
+    (location.state as { email?: string } | null)?.email ?? '',
+  )
   const [password, setPassword] = useState('')
   // Set when a guest was sent here from a purchase; both the submit and the
   // signed-in redirect below (which renders first) must agree on it.
@@ -73,7 +79,7 @@ export function LoginPage() {
             <IconButton
               label="처음으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate('/start')}
+              onClick={() => navigate('/')}
             />
           }
         />
@@ -99,6 +105,9 @@ export function LoginPage() {
         {isApiEnabled && (
           <Button variant="brand" fullWidth onClick={startKakaoLogin}>
             카카오로 계속하기
+            {lastLogin?.provider === 'kakao' && (
+              <span className="account-auth__recent">최근 사용</span>
+            )}
           </Button>
         )}
 
@@ -114,11 +123,17 @@ export function LoginPage() {
               G
             </span>
             Google로 계속하기
+            {lastLogin?.provider === 'google' && (
+              <span className="account-auth__recent">최근 사용</span>
+            )}
           </Button>
         )}
 
         <div className="account-auth__divider" aria-hidden>
-          <span>또는</span>
+          <span>
+            또는 이메일로
+            {lastLogin?.provider === 'password' && ' · 최근 사용'}
+          </span>
         </div>
 
         <form className="account-auth__form" onSubmit={submit}>
@@ -197,9 +212,9 @@ export function ResetPasswordPage() {
           title="비밀번호 재설정"
           leading={
             <IconButton
-              label="로그인으로 돌아가기"
+              label="처음으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate('/auth/login')}
+              onClick={() => navigate('/')}
             />
           }
         />
@@ -391,9 +406,9 @@ export function SignupPage() {
           title="회원가입"
           leading={
             <IconButton
-              label="로그인으로 돌아가기"
+              label="처음으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate('/auth/login')}
+              onClick={() => navigate('/')}
             />
           }
         />
