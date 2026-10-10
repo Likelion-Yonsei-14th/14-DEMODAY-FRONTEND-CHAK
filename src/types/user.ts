@@ -12,6 +12,12 @@ export type PrototypeUser = {
 
 export type AuthProvider = 'password' | 'google' | 'kakao'
 
+/** How this device last signed in, kept after sign-out to suggest it again. */
+export type LastLogin = {
+  email: string
+  provider: AuthProvider
+}
+
 export type AuthSession =
   | {
       status: 'anonymous'
