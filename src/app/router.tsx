@@ -28,6 +28,7 @@ import { SentMessagesPage } from '@/features/supporter/SentMessagesPage'
 import { SupporterSettingsPage } from '@/features/supporter/SupporterSettingsPage'
 import { StartPage } from '@/features/start/StartPage'
 import { HomePage } from '@/features/start/HomePage'
+import { OwnerDeskGate, SupporterDeskGate } from '@/api/DeskGates'
 import { KakaoCallbackPage } from '@/features/account/KakaoCallbackPage'
 import {
   AccountPage,
@@ -153,42 +154,24 @@ export const router = createBrowserRouter([
       // backend looks a desk up by this). `/prototype/support/jisu*` below
       // stays mounted at the same components so old links keep working,
       // but every link this app generates now points here.
-      { path: '/desk/:supporterToken', element: <SupportDeskPage /> },
       {
-        path: '/desk/:supporterToken/compose',
-        element: <UnifiedComposerPage />,
-      },
-      {
-        path: '/desk/:supporterToken/sticker',
-        element: <StickerPickPage />,
-      },
-      {
-        path: '/desk/:supporterToken/placement',
-        element: <PlacementPreviewPage />,
-      },
-      {
-        path: '/desk/:supporterToken/complete',
-        element: <SupportCompletePage />,
-      },
-      {
-        path: '/desk/:supporterToken/cards',
-        element: <Navigate to="/prototype/my/desk/cards" replace />,
-      },
-      {
-        path: '/desk/:supporterToken/message/:messageId',
-        element: <MessageViewerPage />,
-      },
-      {
-        path: '/desk/:supporterToken/replies',
-        element: <SupporterRepliesPage />,
-      },
-      {
-        path: '/desk/:supporterToken/sent',
-        element: <SentMessagesPage />,
-      },
-      {
-        path: '/desk/:supporterToken/settings',
-        element: <SupporterSettingsPage />,
+        path: '/desk/:supporterToken',
+        element: <SupporterDeskGate />,
+        children: [
+          { index: true, element: <SupportDeskPage /> },
+          { path: 'compose', element: <UnifiedComposerPage /> },
+          { path: 'sticker', element: <StickerPickPage /> },
+          { path: 'placement', element: <PlacementPreviewPage /> },
+          { path: 'complete', element: <SupportCompletePage /> },
+          {
+            path: 'cards',
+            element: <Navigate to="/prototype/my/desk/cards" replace />,
+          },
+          { path: 'message/:messageId', element: <MessageViewerPage /> },
+          { path: 'replies', element: <SupporterRepliesPage /> },
+          { path: 'sent', element: <SentMessagesPage /> },
+          { path: 'settings', element: <SupporterSettingsPage /> },
+        ],
       },
 
       { path: '/prototype/support/jisu', element: <SupportDeskPage /> },
@@ -209,30 +192,34 @@ export const router = createBrowserRouter([
         element: <SupportCompletePage />,
       },
 
-      { path: '/prototype/my/desk', element: <OwnerDeskPage /> },
-      { path: '/prototype/my/desk/cards', element: <EnvelopeStackPage /> },
-      { path: '/prototype/my/settings', element: <DeskSettingsPage /> },
       {
-        path: '/prototype/my/settings/blocked',
-        element: <BlockedSupportersPage />,
+        element: <OwnerDeskGate />,
+        children: [
+          { path: '/prototype/my/desk', element: <OwnerDeskPage /> },
+          { path: '/prototype/my/desk/cards', element: <EnvelopeStackPage /> },
+          { path: '/prototype/my/settings', element: <DeskSettingsPage /> },
+          {
+            path: '/prototype/my/settings/blocked',
+            element: <BlockedSupportersPage />,
+          },
+          {
+            path: '/prototype/my/settings/connect',
+            element: <ConnectRoomsPage />,
+          },
+          {
+            path: '/prototype/my/settings/end',
+            element: <EndRoomPage />,
+          },
+          {
+            path: '/prototype/my/message/:messageId',
+            element: <MessageViewerPage />,
+          },
+          {
+            path: '/prototype/my/message/:messageId/reply',
+            element: <MessageReplyPage />,
+          },
+        ],
       },
-      {
-        path: '/prototype/my/settings/connect',
-        element: <ConnectRoomsPage />,
-      },
-      {
-        path: '/prototype/my/settings/end',
-        element: <EndRoomPage />,
-      },
-      {
-        path: '/prototype/my/message/:messageId',
-        element: <MessageViewerPage />,
-      },
-      {
-        path: '/prototype/my/message/:messageId/reply',
-        element: <MessageReplyPage />,
-      },
-
       {
         path: '/prototype/desk',
         element: <Navigate to="/prototype/my/desk" replace />,

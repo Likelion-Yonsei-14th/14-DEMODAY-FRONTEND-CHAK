@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import type { LockerDecor } from '@/features/classroom/lockerDecor'
 import { persist } from 'zustand/middleware'
+import { isApiEnabled } from '@/api/config'
+import { basketOwnerMessages, markOwnerMessageRead } from '@/api/desks'
 import {
   emptyComposerDraft,
   emptyDeskCreationDraft,
@@ -29,6 +31,7 @@ import type {
   ClassroomMember,
   Desk,
   DeskCreationDraft,
+  DeskObject,
   DeskObjectType,
   DeskPlacement,
   Message,
@@ -42,6 +45,14 @@ import type {
 } from '@/types'
 
 type ClaimState = 'unclaimed' | 'claiming' | 'claimed'
+
+export type HydratedDesk = {
+  desk: Desk
+  messages: Message[]
+  readMessageIds: string[]
+  basketMessageIds: string[]
+  ownerSettings?: Partial<OwnerSettings>
+}
 
 type PrototypeState = {
   debugMode: boolean
@@ -149,12 +160,16 @@ type PrototypeState = {
     gems?: DeskGem[],
   ) => void
   markMessageRead: (messageId: string) => void
+  /** Replaces the desk view with data loaded from the backend. */
+  hydrateDesk: (payload: HydratedDesk) => void
+  /** Adds a message the backend just accepted to the current desk. */
+  appendServerMessage: (message: Message, object: DeskObject) => void
   setClaimState: (state: ClaimState) => void
 }
 
 export const usePrototypeStore = create<PrototypeState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       debugMode: false,
       currentUser: mockCurrentUser,
       authSession: { status: 'anonymous' },
@@ -199,7 +214,16 @@ export const usePrototypeStore = create<PrototypeState>()(
           lockerDecor: { ...state.lockerDecor, [lockerId]: decor },
         })),
       basketMessageIds: [],
-      moveToBasket: (messageIds) =>
+      moveToBasket: (messageIds) => {
+        if (isApiEnabled) {
+          const deliveryIds = get()
+            .messages.filter((message) => messageIds.includes(message.id))
+            .flatMap((message) => (message.deliveryId ? [message.deliveryId] : []))
+          if (deliveryIds.length > 0) {
+            // Local state updates optimistically; the next desk load reconciles.
+            void basketOwnerMessages(deliveryIds).catch(() => undefined)
+          }
+        }
         set((state) => ({
           basketMessageIds: [
             ...state.basketMessageIds,
@@ -207,7 +231,8 @@ export const usePrototypeStore = create<PrototypeState>()(
               (id) => !state.basketMessageIds.includes(id),
             ),
           ],
-        })),
+        }))
+      },
       unlockedDecorIds: [],
       unlockDecor: (assetId) =>
         set((state) => ({
@@ -867,7 +892,32 @@ export const usePrototypeStore = create<PrototypeState>()(
             },
           }
         }),
-      markMessageRead: (messageId) =>
+      hydrateDesk: ({ desk, messages, readMessageIds, basketMessageIds, ownerSettings }) =>
+        set((state) => ({
+          currentDesk: desk,
+          messages,
+          readMessageIds,
+          basketMessageIds,
+          ownerSettings: { ...state.ownerSettings, ...ownerSettings },
+        })),
+      appendServerMessage: (message, object) =>
+        set((state) => ({
+          messages: [...state.messages, message],
+          supporterIdentityName: message.senderName,
+          currentDesk: {
+            ...state.currentDesk,
+            objects: [...state.currentDesk.objects, object],
+          },
+        })),
+      markMessageRead: (messageId) => {
+        if (isApiEnabled) {
+          const deliveryId = get().messages.find(
+            (message) => message.id === messageId,
+          )?.deliveryId
+          if (deliveryId && !get().readMessageIds.includes(messageId)) {
+            void markOwnerMessageRead(deliveryId).catch(() => undefined)
+          }
+        }
         set((state) => {
           const nextIds = state.readMessageIds.includes(messageId)
             ? state.readMessageIds
@@ -885,7 +935,8 @@ export const usePrototypeStore = create<PrototypeState>()(
                 : message,
             ),
           }
-        }),
+        })
+      },
       setClaimState: (claimState) => set({ claimState }),
     }),
     {
@@ -894,8 +945,10 @@ export const usePrototypeStore = create<PrototypeState>()(
         debugMode: state.debugMode,
         currentUser: state.currentUser,
         authSession: state.authSession,
-        currentDesk: state.currentDesk,
-        messages: state.messages,
+        // With a backend these are server data and are reloaded on entry.
+        ...(isApiEnabled
+          ? {}
+          : { currentDesk: state.currentDesk, messages: state.messages }),
         composerDraft: state.composerDraft,
         deskCreationDraft: state.deskCreationDraft,
         claimReadMode: state.claimReadMode,
@@ -911,10 +964,10 @@ export const usePrototypeStore = create<PrototypeState>()(
         publicHiddenMessageIds: state.publicHiddenMessageIds,
         publicBlockedSupporters: state.publicBlockedSupporters,
         reportedMessageIds: state.reportedMessageIds,
-        readMessageIds: state.readMessageIds,
+        ...(isApiEnabled ? {} : { readMessageIds: state.readMessageIds }),
         unlockedStationeryIds: state.unlockedStationeryIds,
         unlockedDecorIds: state.unlockedDecorIds,
-        basketMessageIds: state.basketMessageIds,
+        ...(isApiEnabled ? {} : { basketMessageIds: state.basketMessageIds }),
         lockerDecor: state.lockerDecor,
         supporterObjectChoice: state.supporterObjectChoice,
         stickerDraft: state.stickerDraft,
