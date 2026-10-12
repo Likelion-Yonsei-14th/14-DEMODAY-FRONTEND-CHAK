@@ -103,7 +103,8 @@ export function MessageViewerPage() {
   const state = location.state as ReaderLocationState | null
   const supporterView =
     state?.from === 'support-desk' ||
-    location.pathname.startsWith('/prototype/support/')
+    location.pathname.startsWith('/prototype/support/') ||
+    location.pathname.startsWith('/desk/')
   const classroomLocker = classroom.lockers.find(
     (locker) => locker.id === lockerId,
   )

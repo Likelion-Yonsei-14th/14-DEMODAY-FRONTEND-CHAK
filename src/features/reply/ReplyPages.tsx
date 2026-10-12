@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import {
   ArrowLeft,
   MessageCircleMore,
@@ -23,6 +23,9 @@ import { isStickerMessage } from '@/features/supporter/deskStickers'
 import {
   mergeSupportMessages,
 } from '@/features/supporter/seededMessages'
+import { fetchSentMessages } from '@/api/community'
+import { isApiEnabled } from '@/api/config'
+import { cardPreviewText } from '@/api/mappers'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
@@ -257,9 +260,28 @@ export function SupporterRepliesPage() {
     () => mergeSupportMessages(storedMessages),
     [storedMessages],
   )
+  // With a backend the replies are already limited to my own letters, and my
+  // letters are fetched for the "내가 쓴 응원" preview.
+  const [serverPreviews, setServerPreviews] = useState<Map<string, string>>(new Map())
+  useEffect(() => {
+    if (!isApiEnabled) return
+    fetchSentMessages(0, 100)
+      .then((slice) =>
+        setServerPreviews(
+          new Map(slice.content.map((m) => [String(m.messageId), cardPreviewText(m.card)])),
+        ),
+      )
+      .catch(() => undefined)
+  }, [])
+
   const received = useMemo(
     () =>
-      identity
+      isApiEnabled
+        ? [...replies].sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          )
+        : identity
         ? replies
             .filter((reply) =>
               reply.targetSenderNames.includes(identity),
@@ -292,7 +314,7 @@ export function SupporterRepliesPage() {
         />
       }
       fixedAction={
-        identity ? (
+        identity || isApiEnabled ? (
           <Button
             variant="brand"
             fullWidth
@@ -318,6 +340,9 @@ export function SupporterRepliesPage() {
           </section>
         ) : (
           received.map((reply) => {
+            const serverSource = reply.targetMessageIds
+              .map((id) => serverPreviews.get(id))
+              .find(Boolean)
             const source = reply.targetMessageIds
               .map((id) =>
                 messages.find((message) => message.id === id),
@@ -329,10 +354,10 @@ export function SupporterRepliesPage() {
 
             return (
               <article className="received-reply" key={reply.id}>
-                {source && (
+                {(serverSource || source) && (
                   <div className="received-reply__mine">
                     <span>내가 쓴 응원</span>
-                    <p>{messagePreview(source)}</p>
+                    <p>{serverSource ?? (source ? messagePreview(source) : '')}</p>
                   </div>
                 )}
                 <div className="received-reply__answer">
@@ -369,6 +394,8 @@ function getReplyTargets(
   const sourceUnlockAt = getMessageAvailability(
     readMode,
     source.createdAt,
+    new Date(),
+    source.unlockAt,
   ).unlockAt
 
   if (!sourceUnlockAt) return [source]
@@ -381,6 +408,8 @@ function getReplyTargets(
     const unlockAt = getMessageAvailability(
       readMode,
       message.createdAt,
+      new Date(),
+      message.unlockAt,
     ).unlockAt
 
     if (
