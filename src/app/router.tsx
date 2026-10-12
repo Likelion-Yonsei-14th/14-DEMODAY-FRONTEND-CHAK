@@ -28,6 +28,7 @@ import { SentMessagesPage } from '@/features/supporter/SentMessagesPage'
 import { SupporterSettingsPage } from '@/features/supporter/SupporterSettingsPage'
 import { StartPage } from '@/features/start/StartPage'
 import { HomePage } from '@/features/start/HomePage'
+import { KakaoCallbackPage } from '@/features/account/KakaoCallbackPage'
 import {
   AccountPage,
   DeleteAccountCompletePage,
@@ -112,6 +113,7 @@ export const router = createBrowserRouter([
       { path: '/start', element: <StartPage /> },
       { path: '/home', element: <HomePage /> },
       { path: '/auth/login', element: <LoginPage /> },
+      { path: '/auth/kakao/callback', element: <KakaoCallbackPage /> },
       { path: '/auth/signup', element: <SignupPage /> },
       {
         path: '/auth/reset-password',

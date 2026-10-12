@@ -10,7 +10,7 @@ export type PrototypeUser = {
   role: UserRole
 }
 
-export type AuthProvider = 'password' | 'google'
+export type AuthProvider = 'password' | 'google' | 'kakao'
 
 export type AuthSession =
   | {
@@ -20,6 +20,8 @@ export type AuthSession =
       status: 'authenticated'
       email: string
       provider: AuthProvider
+      /** Set when the session comes from the real backend. */
+      userId?: number
     }
 
 

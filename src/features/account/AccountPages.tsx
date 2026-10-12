@@ -17,6 +17,8 @@ import {
   IconButton,
   TextField,
 } from '@/design-system'
+import { logout as logoutFromServer, startKakaoLogin } from '@/api/auth'
+import { isApiEnabled } from '@/api/config'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import './AccountPages.css'
@@ -74,6 +76,12 @@ export function LoginPage() {
             로그인하지 않아도 응원을 남기고 둘러볼 수 있어요.
           </p>
         </section>
+
+        {isApiEnabled && (
+          <Button variant="brand" fullWidth onClick={startKakaoLogin}>
+            카카오로 계속하기
+          </Button>
+        )}
 
         <Button
           variant="secondary"
@@ -440,6 +448,10 @@ export function AccountPage() {
   }
 
   const logout = () => {
+    if (isApiEnabled) {
+      // Fire and forget: local sign-out must not wait on (or fail with) the network.
+      void logoutFromServer().catch(() => undefined)
+    }
     signOut()
     navigate('/start', { replace: true })
   }

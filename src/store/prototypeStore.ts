@@ -85,6 +85,7 @@ type PrototypeState = {
   placeStickerInLocker: (lockerId: string, placement: DeskPlacement) => void
   setDebugMode: (value: boolean) => void
   signIn: (email: string, provider?: AuthProvider) => void
+  signInWithServer: (user: { id: number; displayName: string; email: string | null }) => void
   signUp: (displayName: string, email: string) => void
   signOut: () => void
   deleteAccount: () => void
@@ -329,6 +330,19 @@ export const usePrototypeStore = create<PrototypeState>()(
             provider,
           },
         }),
+      signInWithServer: (user) =>
+        set((state) => ({
+          currentUser: {
+            ...state.currentUser,
+            displayName: user.displayName || state.currentUser.displayName,
+          },
+          authSession: {
+            status: 'authenticated',
+            email: user.email ?? '',
+            provider: 'kakao',
+            userId: user.id,
+          },
+        })),
       signUp: (displayName, email) =>
         set((state) => ({
           currentUser: {
