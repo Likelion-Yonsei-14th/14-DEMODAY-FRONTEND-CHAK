@@ -53,6 +53,8 @@ export type Message = MessageDraft & {
   kind?: MessageKind
   stickerId?: string
   recipientDeskId: string
+  /** Backend delivery id; only present for the desk owner's received messages. */
+  deliveryId?: number
   status: MessageStatus
   createdAt: string
   readAt?: string

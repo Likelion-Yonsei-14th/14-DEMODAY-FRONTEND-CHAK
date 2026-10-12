@@ -15,6 +15,9 @@ import {
   DeskObjectVisual,
 } from '@/features/desk/DeskObjectLayer'
 import { AppShell } from '@/layout/AppShell'
+import { isApiEnabled } from '@/api/config'
+import { sendErrorMessage, sendToServer } from '@/api/send'
+import { useFeedback } from '@/design-system/overlays'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import type {
@@ -83,6 +86,7 @@ export function PlacementPreviewPage() {
   )
   const stickerMode = objectChoice === 'sticker'
   const [placing, setPlacing] = useState(false)
+  const { showToast } = useFeedback()
   const [dragging, setDragging] = useState(false)
 
   const [objectType, setObjectType] = useState<DeskObjectType>(objectChoice)
@@ -200,6 +204,32 @@ export function PlacementPreviewPage() {
       return
     }
     setPlacing(true)
+
+    if (isApiEnabled) {
+      sendToServer({
+        supporterToken,
+        stickerMode,
+        objectType,
+        objectColor,
+        placement,
+        charm: charmMode
+          ? {
+              assetId: charmDesignId,
+              material: charmMaterial,
+              charmPhrase: finalCharmPhrase,
+            }
+          : undefined,
+        gems,
+      })
+        .then(() => {
+          navigate(supporterPath(supporterToken, '/complete'), { replace: true })
+        })
+        .catch((error: unknown) => {
+          setPlacing(false)
+          showToast(sendErrorMessage(error))
+        })
+      return
+    }
 
     window.setTimeout(() => {
       if (stickerMode) {

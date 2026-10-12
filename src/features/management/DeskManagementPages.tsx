@@ -30,7 +30,8 @@ import {
 import { mergeSupportMessages } from '@/features/supporter/seededMessages'
 import { AppShell } from '@/layout/AppShell'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
-import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
+import { getOwnSupporterToken } from '@/prototype/ownSupporterToken'
+import { supporterPath } from '@/prototype/supporterRoute'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import type { ReadMode } from '@/types'
 import './DeskManagementPages.css'
@@ -73,7 +74,7 @@ export function DeskSettingsPage() {
   }
 
   const share = async () => {
-    const url = buildPrototypeShareUrl(supporterPath(DEFAULT_SUPPORTER_TOKEN))
+    const url = buildPrototypeShareUrl(supporterPath(getOwnSupporterToken()))
 
     try {
       if (navigator.share) {
@@ -500,7 +501,7 @@ export function CreatorManagementPage() {
     const path =
       kind === 'owner'
         ? '/prototype/claim'
-        : supporterPath(DEFAULT_SUPPORTER_TOKEN)
+        : supporterPath(getOwnSupporterToken())
     const url = buildPrototypeShareUrl(path)
 
     try {
@@ -531,7 +532,7 @@ export function CreatorManagementPage() {
               <IconButton
                 label="책상으로 돌아가기"
                 icon={<ArrowLeft size={21} aria-hidden />}
-                onClick={() => navigate(supporterPath(DEFAULT_SUPPORTER_TOKEN))}
+                onClick={() => navigate(supporterPath(getOwnSupporterToken()))}
               />
             }
           />
@@ -552,7 +553,7 @@ export function CreatorManagementPage() {
           <Button
             variant="brand"
             fullWidth
-            onClick={() => navigate(supporterPath(DEFAULT_SUPPORTER_TOKEN))}
+            onClick={() => navigate(supporterPath(getOwnSupporterToken()))}
           >
             {desk.displayName}님의 책상으로 가기
           </Button>
@@ -572,7 +573,7 @@ export function CreatorManagementPage() {
             <IconButton
               label="책상으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate(supporterPath(DEFAULT_SUPPORTER_TOKEN))}
+              onClick={() => navigate(supporterPath(getOwnSupporterToken()))}
             />
           }
         />

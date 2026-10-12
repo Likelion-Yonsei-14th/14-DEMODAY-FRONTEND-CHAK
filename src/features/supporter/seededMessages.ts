@@ -1,3 +1,4 @@
+import { isApiEnabled } from '@/api/config'
 import type { DeskObject, Message } from '@/types'
 
 function localIso(daysAgo: number, hour: number, minute: number) {
@@ -268,7 +269,8 @@ export const seededSupportMessages: Message[] = [
 ]
 
 export function mergeSupportMessages(messages: Message[]) {
-  const merged = [...seededSupportMessages, ...messages]
+  // With a backend there is no fake demo data.
+  const merged = isApiEnabled ? [...messages] : [...seededSupportMessages, ...messages]
   const unique = new Map(merged.map((message) => [message.id, message]))
 
   return [...unique.values()].sort(
@@ -289,7 +291,7 @@ export function isToday(createdAt: string) {
 }
 
 
-export const seededDeskObjects: DeskObject[] = [
+export const seededDeskObjects: DeskObject[] = isApiEnabled ? [] : [
   {
     id: 'seed-object-minji',
     messageId: 'seed-message-minji',
