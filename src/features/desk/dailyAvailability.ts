@@ -58,7 +58,15 @@ export function getMessageAvailability(
   mode: ReadMode,
   createdAt: string,
   now = new Date(),
+  /** The backend's own unlock time. A letter it already opened stays open
+   *  even if the desk's read mode is changed afterwards. */
+  serverUnlockAt?: string,
 ): MessageAvailability {
+  if (serverUnlockAt) {
+    const unlockAt = new Date(serverUnlockAt)
+    return { available: now.getTime() >= unlockAt.getTime(), unlockAt }
+  }
+
   if (mode.type === 'time-capsule') {
     const unlockAt = new Date(mode.unlockAt)
 

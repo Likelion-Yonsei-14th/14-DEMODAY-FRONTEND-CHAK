@@ -79,6 +79,7 @@ export function EnvelopeStackPage() {
             readMode,
             message.createdAt,
             now,
+            message.unlockAt,
           ),
         ]),
       ),
