@@ -89,6 +89,8 @@ export type Desk = {
   readMode: ReadMode
   objects: DeskObject[]
   claimStatus: 'unclaimed' | 'claimed'
+  /** Share-link token from the backend (absent in prototype mode). */
+  supporterToken?: string
 }
 
 
