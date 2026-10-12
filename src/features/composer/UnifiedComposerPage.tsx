@@ -96,10 +96,8 @@ export function UnifiedComposerPage() {
   const [ideaOpen, setIdeaOpen] = useState(false)
   const [ideaSetIndex, setIdeaSetIndex] = useState(0)
   const [ideaPrompt, setIdeaPrompt] = useState<string | null>(null)
-  const [pendingGuestPhoto, setPendingGuestPhoto] = useState<{
-    file: File
-    role: 'floating' | 'background'
-  } | null>(null)
+  // Signed-out visitors cannot attach photos at all; this explains why.
+  const [guestPhotoBlocked, setGuestPhotoBlocked] = useState(false)
   const page = getActiveCardPage(draft)
   const pages = getMessagePages(draft)
   const activePageId = draft.activePageId ?? page.id
@@ -318,22 +316,14 @@ export function UnifiedComposerPage() {
     })
   }
 
-  const totalPhotoCount = pages.reduce(
-    (sum, cardPage) => sum + cardPage.photoElements.length,
-    0,
-  )
-
   const addPhoto = async (
     file: File,
     role: 'floating' | 'background',
   ) => {
-    // Nudge guests toward signing in before the second photo - a signed-out
-    // session has nowhere durable to keep uploads, so warn before it bites.
-    if (
-      authSession.status === 'anonymous' &&
-      totalPhotoCount >= 1
-    ) {
-      setPendingGuestPhoto({ file, role })
+    // Photos are for signed-in users only: a signed-out session has nowhere
+    // durable to keep them (the backend rejects photo cards from guests too).
+    if (authSession.status === 'anonymous') {
+      setGuestPhotoBlocked(true)
       return
     }
 
@@ -772,26 +762,18 @@ export function UnifiedComposerPage() {
       />
 
       <Dialog
-        open={Boolean(pendingGuestPhoto)}
-        onClose={() => setPendingGuestPhoto(null)}
-        title="로그인하지 않고 계속할까요?"
-        description="로그인하지 않고 작업하면, 사진이 잘 저장되지 않을 수 있어요."
+        open={guestPhotoBlocked}
+        onClose={() => setGuestPhotoBlocked(false)}
+        title="사진은 로그인 후에 올릴 수 있어요"
+        description="로그인하지 않으면 사진을 첨부할 수 없어요. 로그인하고 사진을 추가해 보세요."
         secondaryAction={{
-          label: '계속 작업하기',
-          onClick: () => {
-            if (pendingGuestPhoto) {
-              void commitPhoto(
-                pendingGuestPhoto.file,
-                pendingGuestPhoto.role,
-              )
-            }
-            setPendingGuestPhoto(null)
-          },
+          label: '닫기',
+          onClick: () => setGuestPhotoBlocked(false),
         }}
         primaryAction={{
           label: '로그인하기',
           onClick: () => {
-            setPendingGuestPhoto(null)
+            setGuestPhotoBlocked(false)
             navigate('/auth/login')
           },
         }}

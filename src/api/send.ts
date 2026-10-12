@@ -84,6 +84,8 @@ export function sendErrorMessage(error: unknown): string {
       return '이 책상은 지금 새로운 응원을 받고 있지 않아요.'
     case 'INVALID_CARD_PAYLOAD':
       return '카드 내용이 너무 크거나 올바르지 않아요. 사진이나 스티커를 줄여 주세요.'
+    case 'GUEST_IMAGE_NOT_ALLOWED':
+      return '사진은 로그인 후에 첨부할 수 있어요. 로그인하거나 사진을 빼고 보내주세요.'
     case 'PAYMENT_REQUIRED':
     case 'ORDER_ALREADY_USED':
       return '결제 정보를 확인할 수 없어요. 결제를 다시 진행해주세요.'
