@@ -158,8 +158,8 @@ export function ComposerToolTray({
           <AdUnlockSheet
             item={adBackground}
             onClose={() => setAdBackground(null)}
-            onUnlocked={(background) => {
-              unlockStationery(background.id)
+            onUnlocked={(background, adSessionId) => {
+              unlockStationery(background.id, adSessionId)
               onBackgroundChange(background.id)
               setAdBackground(null)
             }}
@@ -535,8 +535,8 @@ function StickerTool({
         kindLabel={adAsset?.group === 'tape' ? '테이프' : '클립'}
         previewFit="contain"
         onClose={() => setAdAsset(null)}
-        onUnlocked={(asset) => {
-          unlockDecor(asset.id)
+        onUnlocked={(asset, adSessionId) => {
+          unlockDecor(asset.id, adSessionId)
           onAdd(asset.id)
           setAdAsset(null)
         }}

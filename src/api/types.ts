@@ -57,6 +57,7 @@ export type ApiPublicDesk = {
 
 export type ApiOwnerDesk = ApiPublicDesk & {
   supporterToken: string
+  pushEnabled: boolean
   createdAt: string
   updatedAt: string
 }
@@ -93,6 +94,8 @@ export type ApiOwnerMessage = {
 }
 
 export type ApiSendMessageRequest = {
+  /** A paid order that covers acrylic charms / gems used by this letter. */
+  paymentOrderId?: number
   nickname?: string
   kind: 'CARD' | 'STICKER'
   visibility: ApiVisibility
@@ -118,4 +121,78 @@ export type ApiDeskWrite = {
   capsuleUnlockAt: string | null
   publicFeedEnabled?: boolean
   defaultMessageVisibility?: ApiVisibility
+}
+
+// ---------- community ----------
+
+export type ApiReaction = 'HEART' | 'TEARY' | 'CLAP'
+export type ApiReplyScope = 'SINGLE' | 'DAILY'
+
+export type ApiReply = {
+  id: number
+  scope: ApiReplyScope
+  sourceMessageId: number | null
+  targetMessageIds: number[]
+  targetSenderNames: string[]
+  ownerName: string
+  text: string
+  createdAt: string
+}
+
+export type ApiSupporter = {
+  deliveryId: number
+  displayName: string
+  messageCount: number
+  blocked: boolean
+  blockId: number | null
+}
+
+export type ApiSentMessage = {
+  messageId: number
+  deskName: string | null
+  supporterToken: string | null
+  kind: 'CARD' | 'STICKER'
+  visibility: ApiVisibility
+  status: 'SENT' | 'READ'
+  deletable: boolean
+  schemaVersion: number
+  card: ApiCard
+  object: ApiDeskObject | null
+  unlockAt: string | null
+  readAt: string | null
+  createdAt: string
+}
+
+// ---------- payments & unlocks ----------
+
+export type ApiProductCode =
+  | 'CHARM_ACRYLIC'
+  | 'GEM'
+  | 'UNIVERSITY_CHARM'
+  | 'PENNANT'
+  | 'LOCKER_BULB'
+  | 'LOCKER_PAINT'
+
+export type ApiOrder = {
+  orderId: number
+  status: 'CREATED' | 'PAID' | 'CANCELED'
+  totalAmount: number
+  consumed: boolean
+  items: { code: ApiProductCode; ref: string | null; quantity: number; unitPrice: number; amount: number }[]
+  createdAt: string
+  paidAt: string | null
+}
+
+export type ApiUnlockCategory = 'STATIONERY' | 'DECOR'
+export type ApiUnlock = { category: ApiUnlockCategory; assetId: string }
+
+export type ApiAdvertisement = {
+  id: number
+  title: string
+  creativeUrl: string
+  destinationUrl: string
+  placement: string
+  startsAt: string
+  endsAt: string
+  active: boolean
 }

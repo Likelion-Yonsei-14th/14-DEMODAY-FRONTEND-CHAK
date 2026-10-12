@@ -18,6 +18,7 @@ export type SendToServerInput = {
   placement: DeskPlacement
   charm?: { assetId: string; material: CharmMaterial; charmPhrase?: string }
   gems?: DeskGem[]
+  paymentOrderId?: number
 }
 
 /**
@@ -56,6 +57,7 @@ export async function sendToServer(input: SendToServerInput): Promise<void> {
         zIndex,
         charm: input.charm,
         gems: input.gems,
+        paymentOrderId: input.paymentOrderId,
       })
 
   const created = await sendMessage(input.supporterToken, request)
@@ -82,6 +84,9 @@ export function sendErrorMessage(error: unknown): string {
       return '이 책상은 지금 새로운 응원을 받고 있지 않아요.'
     case 'INVALID_CARD_PAYLOAD':
       return '카드 내용이 너무 크거나 올바르지 않아요. 사진이나 스티커를 줄여 주세요.'
+    case 'PAYMENT_REQUIRED':
+    case 'ORDER_ALREADY_USED':
+      return '결제 정보를 확인할 수 없어요. 결제를 다시 진행해주세요.'
     case 'TOO_MANY_EVENTS':
       return '요청이 너무 많아요. 잠시 후 다시 시도해주세요.'
     default:

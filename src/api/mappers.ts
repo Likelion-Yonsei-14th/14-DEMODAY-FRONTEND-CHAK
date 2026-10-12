@@ -1,4 +1,5 @@
 import type {
+  ApiReply,
   ApiDeskObject,
   ApiDeskWrite,
   ApiOwnerDesk,
@@ -21,6 +22,7 @@ import type {
   DeskZone,
   Message,
   MessageDraft,
+  MessageReply,
   ReadMode,
 } from '@/types'
 
@@ -121,6 +123,7 @@ type CommonMessage = {
   card: { pages: unknown[] } | null
   object: ApiDeskObject | null
   createdAt: string
+  unlockAt: string
 }
 
 function buildMessage(
@@ -150,6 +153,7 @@ function buildMessage(
       : {}),
     recipientDeskId: deskId,
     createdAt: common.createdAt,
+    unlockAt: common.unlockAt,
     ...(first ? { previewColor: getComposerBackground(first.backgroundAssetId).tone } : {}),
     ...extra,
   }
@@ -238,12 +242,14 @@ export type SendLetterInput = {
   zIndex: number
   charm?: { assetId: string; material: CharmMaterial; charmPhrase?: string }
   gems?: DeskGem[]
+  paymentOrderId?: number
 }
 
 export function letterRequest(input: SendLetterInput): ApiSendMessageRequest {
   const { draft, placement } = input
   return {
     nickname: input.nickname,
+    ...(input.paymentOrderId ? { paymentOrderId: input.paymentOrderId } : {}),
     kind: 'CARD',
     visibility: draft.visibility === 'public' ? 'PUBLIC' : 'PRIVATE',
     schemaVersion: 1,
@@ -297,4 +303,25 @@ export function stickerRequest(input: SendStickerInput): ApiSendMessageRequest {
       metadata: { zone: input.zone, order: input.order },
     },
   }
+}
+
+// ---------- replies ----------
+
+export function replyFromApi(reply: ApiReply): MessageReply {
+  return {
+    id: String(reply.id),
+    scope: reply.scope === 'DAILY' ? 'daily' : 'single',
+    sourceMessageId: String(reply.sourceMessageId ?? reply.targetMessageIds[0] ?? ''),
+    targetMessageIds: reply.targetMessageIds.map(String),
+    targetSenderNames: reply.targetSenderNames,
+    ownerName: reply.ownerName,
+    text: reply.text,
+    createdAt: reply.createdAt,
+  }
+}
+
+/** First line of text on the first page of a card, for list previews. */
+export function cardPreviewText(card: { pages: unknown[] } | null): string {
+  const first = card?.pages?.[0] as { textElements?: { text?: string }[] } | undefined
+  return first?.textElements?.[0]?.text ?? ''
 }

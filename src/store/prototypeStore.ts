@@ -3,6 +3,16 @@ import type { LockerDecor } from '@/features/classroom/lockerDecor'
 import { persist } from 'zustand/middleware'
 import { isApiEnabled } from '@/api/config'
 import { basketOwnerMessages, markOwnerMessageRead } from '@/api/desks'
+import type { ApiSupporter } from '@/api/types'
+import { scheduleDeskSettingsSync } from '@/api/deskSync'
+import {
+  syncOwnDelete,
+  syncReaction,
+  syncReply,
+  syncReport,
+  syncRoomClosed,
+  syncUnlock,
+} from '@/api/communitySync'
 import {
   emptyComposerDraft,
   emptyDeskCreationDraft,
@@ -69,6 +79,8 @@ type PrototypeState = {
   classroomMember: ClassroomMember | null
   ownerSettings: OwnerSettings
   messageReplies: MessageReply[]
+  /** Everyone who left a letter on the owner's desk, with their hidden state (backend mode). */
+  ownerSupporters: ApiSupporter[]
   messageReactions: Partial<Record<string, MessageReaction>>
   supporterIdentityName: string | null
   supporterSettings: SupporterSettings
@@ -78,10 +90,10 @@ type PrototypeState = {
   readMessageIds: string[]
   /** Stationery templates unlocked by watching an ad (prototype). */
   unlockedStationeryIds: string[]
-  unlockStationery: (backgroundId: string) => void
+  unlockStationery: (backgroundId: string, adSessionId?: string) => void
   /** Clips and washi tapes unlocked by watching an ad (prototype). */
   unlockedDecorIds: string[]
-  unlockDecor: (assetId: string) => void
+  unlockDecor: (assetId: string, adSessionId?: string) => void
   /** Messages the desk owner tidied off the desk into the basket. */
   basketMessageIds: string[]
   /** Light and paint each locker owner bought, by locker id. */
@@ -190,6 +202,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         connectedRooms: [],
       },
       messageReplies: [],
+      ownerSupporters: [],
       messageReactions: {},
       supporterIdentityName: null,
       supporterSettings: {
@@ -202,12 +215,14 @@ export const usePrototypeStore = create<PrototypeState>()(
       reportedMessageIds: [],
       readMessageIds: [],
       unlockedStationeryIds: [],
-      unlockStationery: (backgroundId) =>
+      unlockStationery: (backgroundId, adSessionId) => {
+        syncUnlock('STATIONERY', backgroundId, adSessionId)
         set((state) => ({
           unlockedStationeryIds: state.unlockedStationeryIds.includes(backgroundId)
             ? state.unlockedStationeryIds
             : [...state.unlockedStationeryIds, backgroundId],
-        })),
+        }))
+      },
       lockerDecor: {},
       saveLockerDecor: (lockerId, decor) =>
         set((state) => ({
@@ -234,12 +249,14 @@ export const usePrototypeStore = create<PrototypeState>()(
         }))
       },
       unlockedDecorIds: [],
-      unlockDecor: (assetId) =>
+      unlockDecor: (assetId, adSessionId) => {
+        syncUnlock('DECOR', assetId, adSessionId)
         set((state) => ({
           unlockedDecorIds: state.unlockedDecorIds.includes(assetId)
             ? state.unlockedDecorIds
             : [...state.unlockedDecorIds, assetId],
-        })),
+        }))
+      },
       supporterObjectChoice: 'letter',
       stickerDraft: { stickerId: deskStickers[0]!.id, senderName: '' },
       setSupporterObjectChoice: (supporterObjectChoice) =>
@@ -389,20 +406,37 @@ export const usePrototypeStore = create<PrototypeState>()(
           currentUser: mockCurrentUser,
           authSession: { status: 'anonymous' },
         }),
-      setDeskReadMode: (readMode) =>
+      setDeskReadMode: (readMode) => {
         set((state) => ({
           currentDesk: {
             ...state.currentDesk,
             readMode,
           },
-        })),
-      updateOwnerSettings: (patch) =>
+        }))
+        scheduleDeskSettingsSync(() => ({
+          desk: get().currentDesk,
+          settings: get().ownerSettings,
+        }))
+      },
+      updateOwnerSettings: (patch) => {
         set((state) => ({
           ownerSettings: {
             ...state.ownerSettings,
             ...patch,
           },
-        })),
+        }))
+        if (typeof patch.roomClosed === 'boolean') syncRoomClosed(patch.roomClosed)
+        if (
+          'publicFeedEnabled' in patch ||
+          'pushEnabled' in patch ||
+          'defaultMessageVisibility' in patch
+        ) {
+          scheduleDeskSettingsSync(() => ({
+            desk: get().currentDesk,
+            settings: get().ownerSettings,
+          }))
+        }
+      },
       toggleBlockedSupporter: (senderName) =>
         set((state) => ({
           ownerSettings: {
@@ -445,34 +479,49 @@ export const usePrototypeStore = create<PrototypeState>()(
             },
           }
         }),
-      endRoom: () =>
+      endRoom: () => {
         set((state) => ({
           ownerSettings: {
             ...state.ownerSettings,
             roomClosed: true,
           },
-        })),
-      sendMessageReply: (reply) =>
+        }))
+        syncRoomClosed(true)
+      },
+      sendMessageReply: (reply) => {
+        const localId = `reply-${Date.now().toString(36)}`
         set((state) => ({
           messageReplies: [
             ...state.messageReplies,
             {
               ...reply,
-              id: `reply-${Date.now().toString(36)}`,
+              id: localId,
               createdAt: new Date().toISOString(),
             },
           ],
-        })),
-      reactToMessage: (messageId, reaction) =>
+        }))
+        // With a backend the reply is saved there; a failure takes the local copy back.
+        void syncReply(reply).then((saved) => {
+          if (isApiEnabled) {
+            set((state) => ({
+              messageReplies: saved
+                ? state.messageReplies.map((item) => (item.id === localId ? saved : item))
+                : state.messageReplies.filter((item) => item.id !== localId),
+            }))
+          }
+        })
+      },
+      reactToMessage: (messageId, reaction) => {
+        const next =
+          get().messageReactions[messageId] === reaction ? undefined : reaction
         set((state) => ({
           messageReactions: {
             ...state.messageReactions,
-            [messageId]:
-              state.messageReactions[messageId] === reaction
-                ? undefined
-                : reaction,
+            [messageId]: next,
           },
-        })),
+        }))
+        syncReaction(messageId, next)
+      },
       hidePublicMessage: (messageId) =>
         set((state) => ({
           publicHiddenMessageIds: state.publicHiddenMessageIds.includes(
@@ -488,14 +537,16 @@ export const usePrototypeStore = create<PrototypeState>()(
               ? state.publicBlockedSupporters
               : [...state.publicBlockedSupporters, senderName],
         })),
-      reportMessage: (messageId) =>
+      reportMessage: (messageId) => {
         set((state) => ({
           reportedMessageIds: state.reportedMessageIds.includes(
             messageId,
           )
             ? state.reportedMessageIds
             : [...state.reportedMessageIds, messageId],
-        })),
+        }))
+        syncReport(messageId)
+      },
       updateSupporterSettings: (patch) =>
         set((state) => ({
           supporterSettings: {
@@ -528,6 +579,7 @@ export const usePrototypeStore = create<PrototypeState>()(
             unread
 
           if (!deletable) return state
+          syncOwnDelete(messageId)
 
           return {
             messages: state.messages.filter(
