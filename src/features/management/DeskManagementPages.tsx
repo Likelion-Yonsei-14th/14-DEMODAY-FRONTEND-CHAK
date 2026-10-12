@@ -30,6 +30,9 @@ import {
 import { mergeSupportMessages } from '@/features/supporter/seededMessages'
 import { AppShell } from '@/layout/AppShell'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
+import { loadOwnerDesk } from '@/api/ownerLoader'
+import { blockSupporter, unblockSupporter } from '@/api/community'
+import { isApiEnabled } from '@/api/config'
 import { getOwnSupporterToken } from '@/prototype/ownSupporterToken'
 import { supporterPath } from '@/prototype/supporterRoute'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -274,17 +277,43 @@ export function BlockedSupportersPage() {
     (state) => state.toggleBlockedSupporter,
   )
 
+  const ownerSupporters = usePrototypeStore((state) => state.ownerSupporters)
+  const { showToast } = useFeedback()
+  const [busyName, setBusyName] = useState<string | null>(null)
+
   const supporters = useMemo(
     () =>
-      Array.from(
-        new Set(
-          mergeSupportMessages(storedMessages).map(
-            (message) => message.senderName,
-          ),
-        ),
-      ).sort((a, b) => a.localeCompare(b, 'ko')),
-    [storedMessages],
+      isApiEnabled
+        ? ownerSupporters.map((supporter) => supporter.displayName)
+        : Array.from(
+            new Set(
+              mergeSupportMessages(storedMessages).map(
+                (message) => message.senderName,
+              ),
+            ),
+          ).sort((a, b) => a.localeCompare(b, 'ko')),
+    [ownerSupporters, storedMessages],
   )
+
+  // With a backend, hiding is saved there and the desk is reloaded so the
+  // hidden friend's letters disappear from the list.
+  const toggleOnServer = async (name: string) => {
+    const supporter = ownerSupporters.find((item) => item.displayName === name)
+    if (!supporter || busyName) return
+    setBusyName(name)
+    try {
+      if (supporter.blocked && supporter.blockId !== null) {
+        await unblockSupporter(supporter.blockId)
+      } else {
+        await blockSupporter(supporter.deliveryId)
+      }
+      await loadOwnerDesk()
+    } catch {
+      showToast('변경하지 못했어요. 잠시 후 다시 시도해주세요.')
+    } finally {
+      setBusyName(null)
+    }
+  }
 
   return (
     <AppShell
@@ -311,8 +340,9 @@ export function BlockedSupportersPage() {
 
         <div className="desk-settings__people">
           {supporters.map((name) => {
-            const blocked =
-              settings.blockedSupporters.includes(name)
+            const blocked = isApiEnabled
+              ? Boolean(ownerSupporters.find((item) => item.displayName === name)?.blocked)
+              : settings.blockedSupporters.includes(name)
 
             return (
               <div className="desk-settings__person" key={name}>
@@ -327,7 +357,10 @@ export function BlockedSupportersPage() {
                       ? 'desk-settings__person-action desk-settings__person-action--blocked'
                       : 'desk-settings__person-action'
                   }
-                  onClick={() => toggleBlocked(name)}
+                  disabled={busyName === name}
+                  onClick={() =>
+                    isApiEnabled ? toggleOnServer(name) : toggleBlocked(name)
+                  }
                 >
                   {blocked ? '숨김 해제' : '숨기기'}
                 </button>

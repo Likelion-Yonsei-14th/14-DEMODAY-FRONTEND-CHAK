@@ -1,18 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Navigate, Outlet, useParams } from 'react-router-dom'
-import {
-  fetchMyDesk,
-  fetchOwnerMessages,
-  fetchPublicDesk,
-  fetchPublicMessages,
-} from '@/api/desks'
+import { fetchRepliesToMe } from '@/api/community'
+import { loadOwnerDesk, loadReactions } from '@/api/ownerLoader'
+import { fetchPublicDesk, fetchPublicMessages } from '@/api/desks'
 import { ApiError } from '@/api/client'
 import { isApiEnabled } from '@/api/config'
-import {
-  deskFromApi,
-  ownerMessagesFromApi,
-  publicMessagesFromApi,
-} from '@/api/mappers'
+import { deskFromApi, publicMessagesFromApi, replyFromApi } from '@/api/mappers'
 import { usePrototypeStore } from '@/store/prototypeStore'
 
 type LoadState = 'loading' | 'ready' | 'not-found' | 'error'
@@ -51,6 +44,18 @@ export function SupporterDeskGate() {
           },
         })
         setState('ready')
+
+        // Replies to my letters and my own reactions load after the desk is shown.
+        void Promise.all([
+          fetchRepliesToMe().catch(() => []),
+          loadReactions(mapped.messages.map((message) => message.id)),
+        ]).then(([replies, reactions]) => {
+          if (cancelled) return
+          usePrototypeStore.setState({
+            messageReplies: replies.map(replyFromApi),
+            messageReactions: reactions,
+          })
+        })
       })
       .catch((error: unknown) => {
         if (cancelled) return
@@ -86,22 +91,9 @@ export function OwnerDeskGate() {
     let cancelled = false
     setState('loading')
 
-    fetchMyDesk()
-      .then(async (desk) => {
-        const items = await fetchOwnerMessages()
+    loadOwnerDesk(() => cancelled)
+      .then(() => {
         if (cancelled) return
-        const store = usePrototypeStore.getState()
-        const mapped = ownerMessagesFromApi(items, String(desk.id))
-        store.hydrateDesk({
-          desk: deskFromApi(desk, store.currentDesk, mapped.objects, desk.supporterToken),
-          messages: mapped.messages,
-          readMessageIds: mapped.readMessageIds,
-          basketMessageIds: mapped.basketMessageIds,
-          ownerSettings: {
-            publicFeedEnabled: desk.publicFeedEnabled,
-            roomClosed: desk.roomClosed,
-          },
-        })
         setState('ready')
       })
       .catch((error: unknown) => {

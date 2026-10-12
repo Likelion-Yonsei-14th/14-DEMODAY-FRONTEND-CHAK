@@ -102,6 +102,8 @@ export type ConnectedRoom = {
 
 export type OwnerSettings = {
   publicFeedEnabled: boolean
+  /** Visibility a new letter gets when its sender does not choose (backend setting). */
+  defaultMessageVisibility?: 'public' | 'private'
   pushEnabled: boolean
   roomClosed: boolean
   blockedSupporters: string[]

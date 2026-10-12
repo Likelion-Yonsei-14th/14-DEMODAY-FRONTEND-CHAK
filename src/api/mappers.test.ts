@@ -76,6 +76,7 @@ describe('message mapping', () => {
       recipientDeskId: '1',
     })
     expect(messages[0]!.pages?.[0]?.textElements[0]?.text).toBe('화이팅')
+    expect(messages[0]!.unlockAt).toBe('2026-01-01T00:00:00Z')
     expect(messages[0]!.pages?.[0]?.stickerElements).toEqual([])
     expect(objects[0]).toMatchObject({
       messageId: '7',

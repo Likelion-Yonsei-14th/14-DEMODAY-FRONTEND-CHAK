@@ -1,5 +1,6 @@
 import { useEffect, useState, type PropsWithChildren } from 'react'
 import { restoreSession } from '@/api/auth'
+import { fetchUnlocks } from '@/api/community'
 import { isApiEnabled } from '@/api/config'
 import { usePrototypeStore } from '@/store/prototypeStore'
 
@@ -29,7 +30,21 @@ export function AuthBootstrap({ children }: PropsWithChildren) {
         // Network failure: keep the current state and let the next request retry.
       })
       .finally(() => {
-        if (!cancelled) setReady(true)
+        if (cancelled) return
+        setReady(true)
+        // Stationery and decor unlocked by watching ads (members and guests).
+        fetchUnlocks()
+          .then((unlocks) => {
+            usePrototypeStore.setState({
+              unlockedStationeryIds: unlocks
+                .filter((unlock) => unlock.category === 'STATIONERY')
+                .map((unlock) => unlock.assetId),
+              unlockedDecorIds: unlocks
+                .filter((unlock) => unlock.category === 'DECOR')
+                .map((unlock) => unlock.assetId),
+            })
+          })
+          .catch(() => undefined)
       })
 
     return () => {
