@@ -34,6 +34,19 @@ load correctly instead of returning a Vercel 404.
 - Do not promote an unfinished Phase branch to Production just to review it.
 - Merge to `main` only after GitHub Actions passes lint, test, and build.
 
+## Backend API proxy
+
+`vercel.json` rewrites `/api/*` to the backend's CloudFront address, so the
+browser only ever talks to the frontend's own domain (same-site cookies, no
+CORS). Production builds call the same origin by default (`VITE_API_URL`
+unset = `/`). Functions in `api/` (e.g. `api/payments/confirm`) are served by
+Vercel first; every other `/api` path goes to the backend.
+
+- Set `VITE_API_URL=` (empty) to run a build on mock data without a backend.
+- Local dev: `VITE_API_URL=http://localhost:8080 npm run dev`.
+- Kakao login: `VITE_KAKAO_CLIENT_ID` plus the redirect URI
+  `https://<domain>/auth/kakao/callback` registered in Kakao Developers.
+
 ## Environment variables
 
 None are required for the current static prototype.
