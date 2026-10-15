@@ -29,7 +29,10 @@ import { SupporterSettingsPage } from '@/features/supporter/SupporterSettingsPag
 import { StartPage } from '@/features/start/StartPage'
 import { HomePage } from '@/features/start/HomePage'
 import { OwnerDeskGate, SupporterDeskGate } from '@/api/DeskGates'
-import { KakaoCallbackPage } from '@/features/account/KakaoCallbackPage'
+import {
+  GoogleCallbackPage,
+  KakaoCallbackPage,
+} from '@/features/account/OAuthCallbackPages'
 import {
   AccountPage,
   DeleteAccountCompletePage,
@@ -120,6 +123,7 @@ export const router = createBrowserRouter([
       { path: '/home', element: <HomePage /> },
       { path: '/auth/login', element: <LoginPage /> },
       { path: '/auth/kakao/callback', element: <KakaoCallbackPage /> },
+      { path: '/auth/google/callback', element: <GoogleCallbackPage /> },
       { path: '/auth/signup', element: <SignupPage /> },
       {
         path: '/auth/reset-password',
