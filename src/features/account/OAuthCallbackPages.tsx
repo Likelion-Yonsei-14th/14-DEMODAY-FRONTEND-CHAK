@@ -1,14 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { consumeKakaoState, loginWithKakao } from '@/api/auth'
+import { consumeOAuthState, loginWithGoogle, loginWithKakao, type OAuthProvider } from '@/api/auth'
 import { ApiError } from '@/api/client'
+import type { AuthTokenResponse } from '@/api/types'
 import { Button } from '@/design-system'
 import { takeLoginReturn } from '@/features/chaltteok/returnFlow'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 
-/** Kakao redirects here with ?code=...&state=...; we trade the code for a session. */
-export function KakaoCallbackPage() {
+const PROVIDERS: Record<
+  OAuthProvider,
+  { label: string; login: (code: string) => Promise<AuthTokenResponse>; invalidCode: string }
+> = {
+  kakao: { label: '카카오', login: loginWithKakao, invalidCode: 'INVALID_KAKAO_AUTH_CODE' },
+  google: { label: '구글', login: loginWithGoogle, invalidCode: 'INVALID_GOOGLE_AUTH_CODE' },
+}
+
+/** The provider redirects here with ?code=...&state=...; we trade the code for a session. */
+function OAuthCallbackPage({ provider }: { provider: OAuthProvider }) {
+  const { label, login, invalidCode } = PROVIDERS[provider]
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const signInWithServer = usePrototypeStore((state) => state.signInWithServer)
@@ -22,10 +32,10 @@ export function KakaoCallbackPage() {
 
     const code = params.get('code')
     const state = params.get('state')
-    const expectedState = consumeKakaoState()
+    const expectedState = consumeOAuthState(provider)
 
     if (params.get('error') || !code) {
-      setError('카카오 로그인이 취소되었어요.')
+      setError(`${label} 로그인이 취소되었어요.`)
       return
     }
     if (expectedState && state !== expectedState) {
@@ -33,19 +43,19 @@ export function KakaoCallbackPage() {
       return
     }
 
-    loginWithKakao(code)
+    login(code)
       .then((tokens) => {
         signInWithServer(tokens.user)
         navigate(takeLoginReturn() ?? '/home', { replace: true })
       })
       .catch((reason: unknown) => {
         setError(
-          reason instanceof ApiError && reason.code === 'INVALID_KAKAO_AUTH_CODE'
+          reason instanceof ApiError && reason.code === invalidCode
             ? '로그인 코드가 만료되었어요. 다시 시도해주세요.'
             : '로그인에 실패했어요. 잠시 후 다시 시도해주세요.',
         )
       })
-  }, [navigate, params, signInWithServer])
+  }, [invalidCode, label, login, navigate, params, provider, signInWithServer])
 
   return (
     <AppShell surface="base">
@@ -64,3 +74,6 @@ export function KakaoCallbackPage() {
     </AppShell>
   )
 }
+
+export const KakaoCallbackPage = () => <OAuthCallbackPage provider="kakao" />
+export const GoogleCallbackPage = () => <OAuthCallbackPage provider="google" />
