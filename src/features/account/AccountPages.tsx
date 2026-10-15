@@ -20,6 +20,14 @@ import {
 import { logout as logoutFromServer, startKakaoLogin } from '@/api/auth'
 import { isApiEnabled } from '@/api/config'
 import { AppShell } from '@/layout/AppShell'
+import { formatChaltteok } from '@/features/chaltteok/chaltteok'
+import { MockModeBadge } from '@/features/chaltteok/MockModeBadge'
+import {
+  clearLoginReturn,
+  peekLoginReturn,
+  safePath,
+} from '@/features/chaltteok/returnFlow'
+import { useChaltteokBalance } from '@/features/chaltteok/useChaltteokBalance'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import './AccountPages.css'
 
@@ -29,9 +37,13 @@ export function LoginPage() {
   const signIn = usePrototypeStore((state) => state.signIn)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  // Set when a guest was sent here from a purchase; both the submit and the
+  // signed-in redirect below (which renders first) must agree on it.
+  const [loginReturn] = useState(peekLoginReturn)
+  const returnPath = safePath(loginReturn?.path)
 
   if (authSession.status === 'authenticated') {
-    return <Navigate to="/home" replace />
+    return <Navigate to={returnPath ?? '/home'} replace />
   }
 
   // Returning users land on the two-door home; new sign-ups go to /start.
@@ -40,12 +52,14 @@ export function LoginPage() {
     if (!email.trim() || !password) return
 
     signIn(email)
-    navigate('/home', { replace: true })
+    clearLoginReturn()
+    navigate(returnPath ?? '/home', { replace: true })
   }
 
   const continueWithGoogle = () => {
     signIn('jisu@gmail.com', 'google')
-    navigate('/home', { replace: true })
+    clearLoginReturn()
+    navigate(returnPath ?? '/home', { replace: true })
   }
 
   return (
@@ -75,6 +89,11 @@ export function LoginPage() {
           <p>
             로그인하지 않아도 응원을 남기고 둘러볼 수 있어요.
           </p>
+          {loginReturn?.notice && (
+            <p className="account-auth__notice" role="status">
+              {loginReturn.notice}
+            </p>
+          )}
         </section>
 
         {isApiEnabled && (
@@ -343,9 +362,10 @@ export function SignupPage() {
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [returnPath] = useState(() => safePath(peekLoginReturn()?.path))
 
   if (authSession.status === 'authenticated') {
-    return <Navigate to="/account" replace />
+    return <Navigate to={returnPath ?? '/account'} replace />
   }
 
   const submit = (event: FormEvent) => {
@@ -355,7 +375,8 @@ export function SignupPage() {
     }
 
     signUp(displayName, email)
-    navigate('/start', { replace: true })
+    clearLoginReturn()
+    navigate(returnPath ?? '/start', { replace: true })
   }
 
   return (
@@ -442,6 +463,7 @@ export function AccountPage() {
   const currentUser = usePrototypeStore((state) => state.currentUser)
   const authSession = usePrototypeStore((state) => state.authSession)
   const signOut = usePrototypeStore((state) => state.signOut)
+  const { balance, failed } = useChaltteokBalance()
 
   if (authSession.status !== 'authenticated') {
     return <Navigate to="/auth/login" replace />
@@ -501,6 +523,30 @@ export function AccountPage() {
                 : '이메일'}
             </strong>
           </div>
+        </section>
+
+        <section className="account-section">
+          <h2 className="account-section__title">
+            찰떡
+            <MockModeBadge />
+          </h2>
+          <div className="account-info-row">
+            <span>보유 찰떡</span>
+            <strong>
+              {balance !== null
+                ? formatChaltteok(balance)
+                : failed
+                  ? '불러오지 못했어요'
+                  : '확인하는 중…'}
+            </strong>
+          </div>
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={() => navigate('/chaltteok/charge?returnTo=%2Faccount')}
+          >
+            찰떡 충전하기
+          </Button>
         </section>
 
         <section className="account-actions">

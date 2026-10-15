@@ -9,6 +9,8 @@ import {
 } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
 import { PaymentSheet } from '@/features/payment/PaymentSheet'
+import { formatChaltteok } from '@/features/chaltteok/chaltteok'
+import { useResumeState } from '@/features/chaltteok/returnFlow'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import {
   LOCKER_DECOR_PRICE,
@@ -24,6 +26,9 @@ import './Classroom.css'
 
 const EMPTY_DECOR: LockerDecor = {}
 
+// The unsaved decor picks, kept across a trip to the charge or login page.
+type LockerDecorResume = { draft: LockerDecor }
+
 /** The owner's paid locker upgrades: a hanging light and paint inside/out. */
 export function LockerDecoratePage() {
   const navigate = useNavigate()
@@ -36,7 +41,8 @@ export function LockerDecoratePage() {
     (state) => (lockerId && state.lockerDecor[lockerId]) || EMPTY_DECOR,
   )
   const saveLockerDecor = usePrototypeStore((state) => state.saveLockerDecor)
-  const [draft, setDraft] = useState<LockerDecor>(saved)
+  const resumed = useResumeState<LockerDecorResume>()
+  const [draft, setDraft] = useState<LockerDecor>(resumed?.draft ?? saved)
   const [open, setOpen] = useState(true)
   const [paymentOpen, setPaymentOpen] = useState(false)
   const locker = classroom.lockers.find((item) => item.id === lockerId)
@@ -63,7 +69,9 @@ export function LockerDecoratePage() {
       ...draft,
       bulbOwned: saved.bulbOwned || Boolean(draft.bulb),
     })
-    showToast(total > 0 ? `${total}원 결제하고 적용했어요.` : '사물함을 꾸몄어요.')
+    showToast(
+      total > 0 ? `${formatChaltteok(total)}으로 적용했어요.` : '사물함을 꾸몄어요.',
+    )
     navigate(lockerPath)
   }
 
@@ -75,7 +83,7 @@ export function LockerDecoratePage() {
     <section className="locker-decorate__section">
       <header className="locker-decorate__header">
         <strong>{label}</strong>
-        <span>칠할 때마다 {LOCKER_DECOR_PRICE}원</span>
+        <span>칠할 때마다 {formatChaltteok(LOCKER_DECOR_PRICE)}</span>
       </header>
       <div className="locker-decorate__swatches" role="list">
         <button
@@ -139,7 +147,7 @@ export function LockerDecoratePage() {
           disabled={!changed}
           onClick={() => (total > 0 ? setPaymentOpen(true) : apply())}
         >
-          {total > 0 ? `${total}원 결제하고 적용하기` : '적용하기'}
+          {total > 0 ? `${formatChaltteok(total)}으로 적용하기` : '적용하기'}
         </Button>
       }
     >
@@ -164,7 +172,7 @@ export function LockerDecoratePage() {
             <span>
               {saved.bulbOwned
                 ? '구매 완료 · 모양은 자유롭게 바꿔요'
-                : `${LOCKER_DECOR_PRICE}원 · 한 번 사면 모양은 자유롭게`}
+                : `${formatChaltteok(LOCKER_DECOR_PRICE)} · 한 번 사면 모양은 자유롭게`}
             </span>
           </header>
           <div className="locker-decorate__bulbs">
@@ -214,7 +222,10 @@ export function LockerDecoratePage() {
         items={charges.map((charge) => ({
           label: charge.label,
           amount: charge.price,
+          code: charge.key === 'bulb' ? 'LOCKER_BULB' : 'LOCKER_PAINT',
+          ref: charge.key === 'bulb' ? draft.bulb : draft[charge.key],
         }))}
+        resumeState={{ draft } satisfies LockerDecorResume}
         onClose={() => setPaymentOpen(false)}
         onConfirm={() => {
           setPaymentOpen(false)

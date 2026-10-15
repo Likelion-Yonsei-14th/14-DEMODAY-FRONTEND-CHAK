@@ -1,8 +1,6 @@
 import { apiFetch } from '@/api/client'
 import type {
   ApiAdvertisement,
-  ApiOrder,
-  ApiProductCode,
   ApiReaction,
   ApiReply,
   ApiReplyScope,
@@ -83,21 +81,6 @@ export const updateDeskSettings = (body: DeskSettingsBody) =>
 
 export const closeDesk = () => apiFetch('/api/desks/me/close', { method: 'POST' })
 export const openDesk = () => apiFetch('/api/desks/me/open', { method: 'POST' })
-
-// ---------- payments ----------
-
-export type OrderLine = { code: ApiProductCode; quantity?: number; ref?: string }
-
-/** Creates an order, then approves it (the backend's mock provider in dev). Returns the paid order. */
-export async function payForItems(items: OrderLine[]): Promise<ApiOrder> {
-  const order = await apiFetch<ApiOrder>('/api/public/payments/orders', {
-    method: 'POST',
-    body: { items },
-  })
-  return apiFetch<ApiOrder>(`/api/public/payments/orders/${order.orderId}/confirm`, {
-    method: 'POST',
-  })
-}
 
 // ---------- ad unlocks ----------
 
