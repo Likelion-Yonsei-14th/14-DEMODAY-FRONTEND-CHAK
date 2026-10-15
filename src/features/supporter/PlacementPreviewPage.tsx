@@ -15,6 +15,10 @@ import {
   DeskObjectVisual,
 } from '@/features/desk/DeskObjectLayer'
 import { AppShell } from '@/layout/AppShell'
+import { payForItems } from '@/api/community'
+import { isApiEnabled } from '@/api/config'
+import { sendErrorMessage, sendToServer } from '@/api/send'
+import { useFeedback } from '@/design-system/overlays'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import type {
@@ -83,6 +87,7 @@ export function PlacementPreviewPage() {
   )
   const stickerMode = objectChoice === 'sticker'
   const [placing, setPlacing] = useState(false)
+  const { showToast } = useFeedback()
   const [dragging, setDragging] = useState(false)
 
   const [objectType, setObjectType] = useState<DeskObjectType>(objectChoice)
@@ -104,6 +109,7 @@ export function PlacementPreviewPage() {
   const gemCost = countGemCost(gems)
   const totalCost = acrylicCost + gemCost
   const [paidAmount, setPaidAmount] = useState(0)
+  const [paidOrderId, setPaidOrderId] = useState<number | undefined>()
   const [paymentOpen, setPaymentOpen] = useState(false)
   const needsPayment = !stickerMode && totalCost > paidAmount
   const firstPage = getFirstCardPage(draft)
@@ -200,6 +206,33 @@ export function PlacementPreviewPage() {
       return
     }
     setPlacing(true)
+
+    if (isApiEnabled) {
+      sendToServer({
+        supporterToken,
+        stickerMode,
+        objectType,
+        objectColor,
+        placement,
+        charm: charmMode
+          ? {
+              assetId: charmDesignId,
+              material: charmMaterial,
+              charmPhrase: finalCharmPhrase,
+            }
+          : undefined,
+        gems,
+        paymentOrderId: paidOrderId,
+      })
+        .then(() => {
+          navigate(supporterPath(supporterToken, '/complete'), { replace: true })
+        })
+        .catch((error: unknown) => {
+          setPlacing(false)
+          showToast(sendErrorMessage(error))
+        })
+      return
+    }
 
     window.setTimeout(() => {
       if (stickerMode) {
@@ -557,8 +590,22 @@ export function PlacementPreviewPage() {
         ]}
         onClose={() => setPaymentOpen(false)}
         onConfirm={() => {
-          setPaidAmount(totalCost)
-          setPaymentOpen(false)
+          if (!isApiEnabled) {
+            setPaidAmount(totalCost)
+            setPaymentOpen(false)
+            return
+          }
+          // The server prices the order itself and approves it (a mock provider in dev).
+          payForItems([
+            ...(acrylicCost > 0 ? [{ code: 'CHARM_ACRYLIC' as const }] : []),
+            ...(gems.length > 0 ? [{ code: 'GEM' as const, quantity: gems.length }] : []),
+          ])
+            .then((order) => {
+              setPaidOrderId(order.orderId)
+              setPaidAmount(totalCost)
+              setPaymentOpen(false)
+            })
+            .catch(() => showToast('결제하지 못했어요. 잠시 후 다시 시도해주세요.'))
         }}
       />
 

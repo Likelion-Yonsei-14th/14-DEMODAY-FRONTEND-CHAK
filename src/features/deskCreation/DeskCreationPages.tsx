@@ -27,9 +27,14 @@ import {
   joinDateTime,
   splitDateTime,
 } from '@/features/desk/readModeUtils'
+import { ApiError } from '@/api/client'
+import { isApiEnabled } from '@/api/config'
+import { createMyDesk } from '@/api/desks'
+import { deskFromApi, readModeToApi } from '@/api/mappers'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
-import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
+import { getOwnSupporterToken } from '@/prototype/ownSupporterToken'
+import { supporterPath } from '@/prototype/supporterRoute'
 import type { ReadMode } from '@/types'
 import './DeskCreation.css'
 
@@ -150,6 +155,8 @@ export function DeskCreateReadModePage() {
   const draft = usePrototypeStore((state) => state.deskCreationDraft)
   const setDraft = usePrototypeStore((state) => state.setDeskCreationDraft)
   const createDesk = usePrototypeStore((state) => state.createDeskFromDraft)
+  const { showToast } = useFeedback()
+  const [saving, setSaving] = useState(false)
 
   const daily = draft.readMode.type === 'daily'
   const dailyTime =
@@ -180,9 +187,49 @@ export function DeskCreateReadModePage() {
     })
   }
 
-  const finish = () => {
-    createDesk()
-    navigate('/prototype/create/complete', { replace: true })
+  const finish = async () => {
+    if (!isApiEnabled) {
+      createDesk()
+      navigate('/prototype/create/complete', { replace: true })
+      return
+    }
+
+    const state = usePrototypeStore.getState()
+    if (state.authSession.status !== 'authenticated') {
+      navigate('/auth/login', { replace: true })
+      return
+    }
+    if (draft.createdFor === 'other') {
+      showToast('친구를 위한 책상 만들기는 아직 준비 중이에요.')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const created = await createMyDesk({
+        displayName: state.currentUser.displayName,
+        ...readModeToApi(draft.readMode),
+      })
+      state.hydrateDesk({
+        desk: deskFromApi(created, state.currentDesk, [], created.supporterToken),
+        messages: [],
+        readMessageIds: [],
+        basketMessageIds: [],
+        ownerSettings: {
+          publicFeedEnabled: created.publicFeedEnabled,
+          roomClosed: created.roomClosed,
+        },
+      })
+      navigate('/prototype/create/complete', { replace: true })
+    } catch (error) {
+      setSaving(false)
+      if (error instanceof ApiError && error.code === 'DESK_ALREADY_EXISTS') {
+        showToast('이미 만든 책상이 있어요. 내 책상으로 이동할게요.')
+        navigate('/prototype/my/desk', { replace: true })
+        return
+      }
+      showToast('책상을 만들지 못했어요. 잠시 후 다시 시도해주세요.')
+    }
   }
 
   const backPath =
@@ -195,7 +242,7 @@ export function DeskCreateReadModePage() {
       title="응원 책상 만들기"
       back={() => navigate(backPath)}
       action={
-        <Button variant="brand" fullWidth onClick={finish}>
+        <Button variant="brand" fullWidth loading={saving} onClick={finish}>
           책상 만들기
         </Button>
       }
@@ -304,7 +351,7 @@ export function DeskCreateCompletePage() {
     const url =
       kind === 'owner'
         ? buildPrototypeShareUrl('/prototype/claim')
-        : buildPrototypeShareUrl(supporterPath(DEFAULT_SUPPORTER_TOKEN))
+        : buildPrototypeShareUrl(supporterPath(getOwnSupporterToken()))
     const title =
       kind === 'owner'
         ? `${desk.displayName}님의 응원 책상`
@@ -345,7 +392,7 @@ export function DeskCreateCompletePage() {
           <Button
             variant="brand"
             fullWidth
-            onClick={() => navigate(supporterPath(DEFAULT_SUPPORTER_TOKEN))}
+            onClick={() => navigate(supporterPath(getOwnSupporterToken()))}
           >
             {desk.displayName}님의 책상 보기
           </Button>

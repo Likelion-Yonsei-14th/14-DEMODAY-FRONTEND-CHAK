@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { BottomSheet, Button, IconButton } from '@/design-system'
+import { reportAdCompleted, reportAdStart } from '@/api/ads'
 import { createSessionId } from '@/prototype/ids'
 
 /** How long the prototype "ad" plays before the reward unlocks, in seconds. */
@@ -46,6 +47,8 @@ export function AdUnlockSheet<T extends AdUnlockItem>({
   const [remaining, setRemaining] = useState(AD_SECONDS)
   const [playing, setPlaying] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  // Resolves once the ad's start/finish events reached the backend.
+  const reported = useRef<Promise<void>>(Promise.resolve())
 
   useEffect(() => {
     setRemaining(AD_SECONDS)
@@ -75,6 +78,12 @@ export function AdUnlockSheet<T extends AdUnlockItem>({
 
   const finished = playing && remaining <= 0
 
+  useEffect(() => {
+    if (!finished || !sessionId) return
+    const id = sessionId
+    reported.current = reported.current.then(() => reportAdCompleted(id, AD_SECONDS * 1000))
+  }, [finished, sessionId])
+
   if (playing && background && sessionId) {
     return createPortal(
       <AdFullscreenPlayer
@@ -83,7 +92,10 @@ export function AdUnlockSheet<T extends AdUnlockItem>({
         remaining={remaining}
         finished={finished}
         onClose={onClose}
-        onUnlocked={() => onUnlocked(background, sessionId)}
+        onUnlocked={() => {
+          // Unlock only after the backend has the "watched to the end" event.
+          void reported.current.then(() => onUnlocked(background, sessionId))
+        }}
       />,
       document.body,
     )
@@ -121,8 +133,10 @@ export function AdUnlockSheet<T extends AdUnlockItem>({
             variant="brand"
             fullWidth
             onClick={() => {
-              setSessionId(createSessionId())
+              const id = createSessionId()
+              setSessionId(id)
               setPlaying(true)
+              reported.current = reportAdStart(id)
             }}
           >
             광고 보기

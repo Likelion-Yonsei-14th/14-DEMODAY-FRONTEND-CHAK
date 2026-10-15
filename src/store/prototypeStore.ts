@@ -1,6 +1,18 @@
 import { create } from 'zustand'
 import type { LockerDecor } from '@/features/classroom/lockerDecor'
 import { persist } from 'zustand/middleware'
+import { isApiEnabled } from '@/api/config'
+import { basketOwnerMessages, markOwnerMessageRead } from '@/api/desks'
+import type { ApiSupporter } from '@/api/types'
+import { scheduleDeskSettingsSync } from '@/api/deskSync'
+import {
+  syncOwnDelete,
+  syncReaction,
+  syncReply,
+  syncReport,
+  syncRoomClosed,
+  syncUnlock,
+} from '@/api/communitySync'
 import {
   emptyComposerDraft,
   emptyDeskCreationDraft,
@@ -29,6 +41,7 @@ import type {
   ClassroomMember,
   Desk,
   DeskCreationDraft,
+  DeskObject,
   DeskObjectType,
   DeskPlacement,
   Message,
@@ -42,6 +55,14 @@ import type {
 } from '@/types'
 
 type ClaimState = 'unclaimed' | 'claiming' | 'claimed'
+
+export type HydratedDesk = {
+  desk: Desk
+  messages: Message[]
+  readMessageIds: string[]
+  basketMessageIds: string[]
+  ownerSettings?: Partial<OwnerSettings>
+}
 
 type PrototypeState = {
   debugMode: boolean
@@ -58,6 +79,8 @@ type PrototypeState = {
   classroomMember: ClassroomMember | null
   ownerSettings: OwnerSettings
   messageReplies: MessageReply[]
+  /** Everyone who left a letter on the owner's desk, with their hidden state (backend mode). */
+  ownerSupporters: ApiSupporter[]
   messageReactions: Partial<Record<string, MessageReaction>>
   supporterIdentityName: string | null
   supporterSettings: SupporterSettings
@@ -67,10 +90,10 @@ type PrototypeState = {
   readMessageIds: string[]
   /** Stationery templates unlocked by watching an ad (prototype). */
   unlockedStationeryIds: string[]
-  unlockStationery: (backgroundId: string) => void
+  unlockStationery: (backgroundId: string, adSessionId?: string) => void
   /** Clips and washi tapes unlocked by watching an ad (prototype). */
   unlockedDecorIds: string[]
-  unlockDecor: (assetId: string) => void
+  unlockDecor: (assetId: string, adSessionId?: string) => void
   /** Messages the desk owner tidied off the desk into the basket. */
   basketMessageIds: string[]
   /** Light and paint each locker owner bought, by locker id. */
@@ -85,6 +108,7 @@ type PrototypeState = {
   placeStickerInLocker: (lockerId: string, placement: DeskPlacement) => void
   setDebugMode: (value: boolean) => void
   signIn: (email: string, provider?: AuthProvider) => void
+  signInWithServer: (user: { id: number; displayName: string; email: string | null }) => void
   signUp: (displayName: string, email: string) => void
   signOut: () => void
   deleteAccount: () => void
@@ -148,12 +172,16 @@ type PrototypeState = {
     gems?: DeskGem[],
   ) => void
   markMessageRead: (messageId: string) => void
+  /** Replaces the desk view with data loaded from the backend. */
+  hydrateDesk: (payload: HydratedDesk) => void
+  /** Adds a message the backend just accepted to the current desk. */
+  appendServerMessage: (message: Message, object: DeskObject) => void
   setClaimState: (state: ClaimState) => void
 }
 
 export const usePrototypeStore = create<PrototypeState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       debugMode: false,
       currentUser: mockCurrentUser,
       authSession: { status: 'anonymous' },
@@ -174,6 +202,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         connectedRooms: [],
       },
       messageReplies: [],
+      ownerSupporters: [],
       messageReactions: {},
       supporterIdentityName: null,
       supporterSettings: {
@@ -186,19 +215,30 @@ export const usePrototypeStore = create<PrototypeState>()(
       reportedMessageIds: [],
       readMessageIds: [],
       unlockedStationeryIds: [],
-      unlockStationery: (backgroundId) =>
+      unlockStationery: (backgroundId, adSessionId) => {
+        syncUnlock('STATIONERY', backgroundId, adSessionId)
         set((state) => ({
           unlockedStationeryIds: state.unlockedStationeryIds.includes(backgroundId)
             ? state.unlockedStationeryIds
             : [...state.unlockedStationeryIds, backgroundId],
-        })),
+        }))
+      },
       lockerDecor: {},
       saveLockerDecor: (lockerId, decor) =>
         set((state) => ({
           lockerDecor: { ...state.lockerDecor, [lockerId]: decor },
         })),
       basketMessageIds: [],
-      moveToBasket: (messageIds) =>
+      moveToBasket: (messageIds) => {
+        if (isApiEnabled) {
+          const deliveryIds = get()
+            .messages.filter((message) => messageIds.includes(message.id))
+            .flatMap((message) => (message.deliveryId ? [message.deliveryId] : []))
+          if (deliveryIds.length > 0) {
+            // Local state updates optimistically; the next desk load reconciles.
+            void basketOwnerMessages(deliveryIds).catch(() => undefined)
+          }
+        }
         set((state) => ({
           basketMessageIds: [
             ...state.basketMessageIds,
@@ -206,14 +246,17 @@ export const usePrototypeStore = create<PrototypeState>()(
               (id) => !state.basketMessageIds.includes(id),
             ),
           ],
-        })),
+        }))
+      },
       unlockedDecorIds: [],
-      unlockDecor: (assetId) =>
+      unlockDecor: (assetId, adSessionId) => {
+        syncUnlock('DECOR', assetId, adSessionId)
         set((state) => ({
           unlockedDecorIds: state.unlockedDecorIds.includes(assetId)
             ? state.unlockedDecorIds
             : [...state.unlockedDecorIds, assetId],
-        })),
+        }))
+      },
       supporterObjectChoice: 'letter',
       stickerDraft: { stickerId: deskStickers[0]!.id, senderName: '' },
       setSupporterObjectChoice: (supporterObjectChoice) =>
@@ -329,6 +372,19 @@ export const usePrototypeStore = create<PrototypeState>()(
             provider,
           },
         }),
+      signInWithServer: (user) =>
+        set((state) => ({
+          currentUser: {
+            ...state.currentUser,
+            displayName: user.displayName || state.currentUser.displayName,
+          },
+          authSession: {
+            status: 'authenticated',
+            email: user.email ?? '',
+            provider: 'kakao',
+            userId: user.id,
+          },
+        })),
       signUp: (displayName, email) =>
         set((state) => ({
           currentUser: {
@@ -350,20 +406,37 @@ export const usePrototypeStore = create<PrototypeState>()(
           currentUser: mockCurrentUser,
           authSession: { status: 'anonymous' },
         }),
-      setDeskReadMode: (readMode) =>
+      setDeskReadMode: (readMode) => {
         set((state) => ({
           currentDesk: {
             ...state.currentDesk,
             readMode,
           },
-        })),
-      updateOwnerSettings: (patch) =>
+        }))
+        scheduleDeskSettingsSync(() => ({
+          desk: get().currentDesk,
+          settings: get().ownerSettings,
+        }))
+      },
+      updateOwnerSettings: (patch) => {
         set((state) => ({
           ownerSettings: {
             ...state.ownerSettings,
             ...patch,
           },
-        })),
+        }))
+        if (typeof patch.roomClosed === 'boolean') syncRoomClosed(patch.roomClosed)
+        if (
+          'publicFeedEnabled' in patch ||
+          'pushEnabled' in patch ||
+          'defaultMessageVisibility' in patch
+        ) {
+          scheduleDeskSettingsSync(() => ({
+            desk: get().currentDesk,
+            settings: get().ownerSettings,
+          }))
+        }
+      },
       toggleBlockedSupporter: (senderName) =>
         set((state) => ({
           ownerSettings: {
@@ -406,34 +479,49 @@ export const usePrototypeStore = create<PrototypeState>()(
             },
           }
         }),
-      endRoom: () =>
+      endRoom: () => {
         set((state) => ({
           ownerSettings: {
             ...state.ownerSettings,
             roomClosed: true,
           },
-        })),
-      sendMessageReply: (reply) =>
+        }))
+        syncRoomClosed(true)
+      },
+      sendMessageReply: (reply) => {
+        const localId = `reply-${Date.now().toString(36)}`
         set((state) => ({
           messageReplies: [
             ...state.messageReplies,
             {
               ...reply,
-              id: `reply-${Date.now().toString(36)}`,
+              id: localId,
               createdAt: new Date().toISOString(),
             },
           ],
-        })),
-      reactToMessage: (messageId, reaction) =>
+        }))
+        // With a backend the reply is saved there; a failure takes the local copy back.
+        void syncReply(reply).then((saved) => {
+          if (isApiEnabled) {
+            set((state) => ({
+              messageReplies: saved
+                ? state.messageReplies.map((item) => (item.id === localId ? saved : item))
+                : state.messageReplies.filter((item) => item.id !== localId),
+            }))
+          }
+        })
+      },
+      reactToMessage: (messageId, reaction) => {
+        const next =
+          get().messageReactions[messageId] === reaction ? undefined : reaction
         set((state) => ({
           messageReactions: {
             ...state.messageReactions,
-            [messageId]:
-              state.messageReactions[messageId] === reaction
-                ? undefined
-                : reaction,
+            [messageId]: next,
           },
-        })),
+        }))
+        syncReaction(messageId, next)
+      },
       hidePublicMessage: (messageId) =>
         set((state) => ({
           publicHiddenMessageIds: state.publicHiddenMessageIds.includes(
@@ -449,14 +537,16 @@ export const usePrototypeStore = create<PrototypeState>()(
               ? state.publicBlockedSupporters
               : [...state.publicBlockedSupporters, senderName],
         })),
-      reportMessage: (messageId) =>
+      reportMessage: (messageId) => {
         set((state) => ({
           reportedMessageIds: state.reportedMessageIds.includes(
             messageId,
           )
             ? state.reportedMessageIds
             : [...state.reportedMessageIds, messageId],
-        })),
+        }))
+        syncReport(messageId)
+      },
       updateSupporterSettings: (patch) =>
         set((state) => ({
           supporterSettings: {
@@ -489,6 +579,7 @@ export const usePrototypeStore = create<PrototypeState>()(
             unread
 
           if (!deletable) return state
+          syncOwnDelete(messageId)
 
           return {
             messages: state.messages.filter(
@@ -853,7 +944,32 @@ export const usePrototypeStore = create<PrototypeState>()(
             },
           }
         }),
-      markMessageRead: (messageId) =>
+      hydrateDesk: ({ desk, messages, readMessageIds, basketMessageIds, ownerSettings }) =>
+        set((state) => ({
+          currentDesk: desk,
+          messages,
+          readMessageIds,
+          basketMessageIds,
+          ownerSettings: { ...state.ownerSettings, ...ownerSettings },
+        })),
+      appendServerMessage: (message, object) =>
+        set((state) => ({
+          messages: [...state.messages, message],
+          supporterIdentityName: message.senderName,
+          currentDesk: {
+            ...state.currentDesk,
+            objects: [...state.currentDesk.objects, object],
+          },
+        })),
+      markMessageRead: (messageId) => {
+        if (isApiEnabled) {
+          const deliveryId = get().messages.find(
+            (message) => message.id === messageId,
+          )?.deliveryId
+          if (deliveryId && !get().readMessageIds.includes(messageId)) {
+            void markOwnerMessageRead(deliveryId).catch(() => undefined)
+          }
+        }
         set((state) => {
           const nextIds = state.readMessageIds.includes(messageId)
             ? state.readMessageIds
@@ -871,7 +987,8 @@ export const usePrototypeStore = create<PrototypeState>()(
                 : message,
             ),
           }
-        }),
+        })
+      },
       setClaimState: (claimState) => set({ claimState }),
     }),
     {
@@ -880,8 +997,10 @@ export const usePrototypeStore = create<PrototypeState>()(
         debugMode: state.debugMode,
         currentUser: state.currentUser,
         authSession: state.authSession,
-        currentDesk: state.currentDesk,
-        messages: state.messages,
+        // With a backend these are server data and are reloaded on entry.
+        ...(isApiEnabled
+          ? {}
+          : { currentDesk: state.currentDesk, messages: state.messages }),
         composerDraft: state.composerDraft,
         deskCreationDraft: state.deskCreationDraft,
         claimReadMode: state.claimReadMode,
@@ -897,10 +1016,10 @@ export const usePrototypeStore = create<PrototypeState>()(
         publicHiddenMessageIds: state.publicHiddenMessageIds,
         publicBlockedSupporters: state.publicBlockedSupporters,
         reportedMessageIds: state.reportedMessageIds,
-        readMessageIds: state.readMessageIds,
+        ...(isApiEnabled ? {} : { readMessageIds: state.readMessageIds }),
         unlockedStationeryIds: state.unlockedStationeryIds,
         unlockedDecorIds: state.unlockedDecorIds,
-        basketMessageIds: state.basketMessageIds,
+        ...(isApiEnabled ? {} : { basketMessageIds: state.basketMessageIds }),
         lockerDecor: state.lockerDecor,
         supporterObjectChoice: state.supporterObjectChoice,
         stickerDraft: state.stickerDraft,
