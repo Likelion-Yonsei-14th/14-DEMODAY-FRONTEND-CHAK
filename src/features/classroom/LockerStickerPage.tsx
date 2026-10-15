@@ -9,6 +9,7 @@ import {
 } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
 import { PaymentSheet } from '@/features/payment/PaymentSheet'
+import { formatChaltteok } from '@/features/chaltteok/chaltteok'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import {
   getLockerSticker,
@@ -64,7 +65,9 @@ export function LockerStickerPickPage() {
           disabled={!selected}
           onClick={() => (price > 0 ? setPaymentOpen(true) : goPlace())}
         >
-          {price > 0 ? `${price}원 결제하고 붙이러 가기` : '사물함에 붙이러 가기'}
+          {price > 0
+            ? `${formatChaltteok(price)}으로 붙이러 가기`
+            : '사물함에 붙이러 가기'}
         </Button>
       }
     >
@@ -123,7 +126,14 @@ export function LockerStickerPickPage() {
         <PaymentSheet
           open={paymentOpen}
           description="대학 깃발은 사물함 안에 걸려서 친구의 목표를 응원해요."
-          items={[{ label: `대학 깃발 · ${selected.name}`, amount: price }]}
+          items={[
+            {
+              label: `대학 깃발 · ${selected.name}`,
+              amount: price,
+              code: 'PENNANT',
+              ref: selected.id,
+            },
+          ]}
           onClose={() => setPaymentOpen(false)}
           onConfirm={() => {
             setPaymentOpen(false)
