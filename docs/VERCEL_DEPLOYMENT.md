@@ -36,11 +36,7 @@ load correctly instead of returning a Vercel 404.
 
 ## Environment variables
 
-Toss Payments 결제창 (see `.env.example`):
-
-- `VITE_TOSS_CLIENT_KEY`: client key. Unset → PaymentSheet stays a mock.
-- `TOSS_SECRET_KEY`: secret key for `api/payments/confirm` (결제 승인).
-  Server only — never prefix it with `VITE_`.
+None are required for the current static prototype.
 
 When auth, APIs, analytics, or external services are added, define variables in Vercel
 per environment rather than committing secrets to the repository.
