@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { consumeKakaoState, loginWithKakao } from '@/api/auth'
 import { ApiError } from '@/api/client'
 import { Button } from '@/design-system'
+import { takeLoginReturn } from '@/features/chaltteok/returnFlow'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 
@@ -35,7 +36,7 @@ export function KakaoCallbackPage() {
     loginWithKakao(code)
       .then((tokens) => {
         signInWithServer(tokens.user)
-        navigate('/home', { replace: true })
+        navigate(takeLoginReturn() ?? '/home', { replace: true })
       })
       .catch((reason: unknown) => {
         setError(

@@ -87,6 +87,11 @@ import {
   ReaderPage,
 } from '@/prototype/screens/flowPages'
 import { SystemPage } from '@/system/SystemPage'
+import { ChargePage } from '@/features/chaltteok/ChargePage'
+import {
+  ChargeFailPage,
+  ChargeSuccessPage,
+} from '@/features/chaltteok/ChargeResultPages'
 import { usePrototypeStore } from '@/store/prototypeStore'
 
 /**
@@ -364,6 +369,9 @@ export const router = createBrowserRouter([
         element: <OfferCouponPage />,
       },
       { path: '/system', element: <SystemPage /> },
+      { path: '/chaltteok/charge', element: <ChargePage /> },
+      { path: '/chaltteok/charge/success', element: <ChargeSuccessPage /> },
+      { path: '/chaltteok/charge/fail', element: <ChargeFailPage /> },
       { path: '*', element: <Navigate to="/start" replace /> },
     ],
   },

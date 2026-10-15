@@ -5,12 +5,15 @@ import type { ApiErrorBody, AuthTokenResponse } from '@/api/types'
 export class ApiError extends Error {
   readonly status: number
   readonly code: string
+  /** The whole error body, for codes that carry extra fields (e.g. INSUFFICIENT_CHALTTEOK). */
+  readonly body: Partial<ApiErrorBody> & Record<string, unknown>
 
-  constructor(status: number, body: Partial<ApiErrorBody>) {
+  constructor(status: number, body: Partial<ApiErrorBody> & Record<string, unknown>) {
     super(body.message ?? 'Request failed')
     this.name = 'ApiError'
     this.status = status
     this.code = body.code ?? 'UNKNOWN'
+    this.body = body
   }
 }
 

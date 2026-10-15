@@ -1,0 +1,123 @@
+.chaltteok-mock-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px dashed var(--color-warning);
+  border-radius: 999px;
+  background: var(--color-warning-soft);
+  color: var(--color-content-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.chaltteok-charge {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--page-gutter) var(--space-6);
+}
+
+.chaltteok-charge__balance {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+  font-size: 14px;
+  color: var(--color-content-secondary);
+}
+
+.chaltteok-charge__balance strong {
+  color: var(--color-content-primary);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.chaltteok-charge__need {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-warning-soft);
+  color: var(--color-content-primary);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.chaltteok-charge__options {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.chaltteok-charge__options h2 {
+  margin: 0 2px 2px;
+  font-size: 14px;
+  color: var(--color-content-primary);
+}
+
+.chaltteok-charge__widget {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.chaltteok-charge__status {
+  margin: 0;
+  color: var(--color-content-tertiary);
+  font-size: 13px;
+  text-align: center;
+}
+
+.chaltteok-result {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: 96px var(--page-gutter) var(--space-6);
+  text-align: center;
+}
+
+.chaltteok-result h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--color-content-primary);
+}
+
+.chaltteok-result p {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.chaltteok-result__code {
+  color: var(--color-content-tertiary);
+  font-size: 12px;
+}
+
+.chaltteok-result__mark {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  margin: var(--space-2) 0 6px;
+  border-radius: 50%;
+  background: var(--color-success-soft);
+  color: var(--color-success);
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.chaltteok-result__mark--error {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.chaltteok-result__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
