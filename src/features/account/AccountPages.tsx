@@ -17,8 +17,8 @@ import {
   IconButton,
   TextField,
 } from '@/design-system'
-import { logout as logoutFromServer, startKakaoLogin } from '@/api/auth'
-import { isApiEnabled } from '@/api/config'
+import { logout as logoutFromServer, startGoogleLogin, startKakaoLogin } from '@/api/auth'
+import { GOOGLE_CLIENT_ID, isApiEnabled } from '@/api/config'
 import { AppShell } from '@/layout/AppShell'
 import { formatChaltteok } from '@/features/chaltteok/chaltteok'
 import { MockModeBadge } from '@/features/chaltteok/MockModeBadge'
@@ -102,17 +102,20 @@ export function LoginPage() {
           </Button>
         )}
 
-        <Button
-          variant="secondary"
-          fullWidth
-          className="account-auth__google"
-          onClick={continueWithGoogle}
-        >
-          <span className="account-auth__google-mark" aria-hidden>
-            G
-          </span>
-          Google로 계속하기
-        </Button>
+        {/* With a backend, Google needs its client ID; without one, keep the prototype's mock sign-in. */}
+        {(!isApiEnabled || GOOGLE_CLIENT_ID) && (
+          <Button
+            variant="secondary"
+            fullWidth
+            className="account-auth__google"
+            onClick={isApiEnabled ? startGoogleLogin : continueWithGoogle}
+          >
+            <span className="account-auth__google-mark" aria-hidden>
+              G
+            </span>
+            Google로 계속하기
+          </Button>
+        )}
 
         <div className="account-auth__divider" aria-hidden>
           <span>또는</span>

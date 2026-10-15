@@ -17,6 +17,16 @@ export const isApiEnabled = rawApiUrl !== ''
 export const KAKAO_CLIENT_ID =
   (import.meta.env.VITE_KAKAO_CLIENT_ID as string | undefined) ?? ''
 
+export const GOOGLE_CLIENT_ID =
+  (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ?? ''
+
+export function getGoogleRedirectUri() {
+  return (
+    (import.meta.env.VITE_GOOGLE_REDIRECT_URI as string | undefined) ??
+    `${window.location.origin}/auth/google/callback`
+  )
+}
+
 export function getKakaoRedirectUri() {
   return (
     (import.meta.env.VITE_KAKAO_REDIRECT_URI as string | undefined) ??

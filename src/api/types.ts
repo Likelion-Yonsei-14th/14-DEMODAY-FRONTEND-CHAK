@@ -4,6 +4,8 @@ export type ApiUser = {
   email: string | null
   profileImageUrl: string | null
   admin: boolean
+  /** Which login the account was created with. */
+  provider?: 'KAKAO' | 'GOOGLE'
 }
 
 /**
