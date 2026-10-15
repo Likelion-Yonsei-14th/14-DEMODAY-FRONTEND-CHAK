@@ -48,12 +48,12 @@ export function isStickerMessage(message: Pick<Message, 'kind'> | undefined) {
 /** Stickers skip read-mode locks: they are visible as soon as they are placed. */
 export function getSupportMessageAvailability(
   mode: ReadMode,
-  message: Pick<Message, 'kind' | 'createdAt'>,
+  message: Pick<Message, 'kind' | 'createdAt' | 'unlockAt'>,
   now?: Date,
 ): MessageAvailability {
   if (isStickerMessage(message)) {
     return { available: true, unlockAt: null }
   }
 
-  return getMessageAvailability(mode, message.createdAt, now)
+  return getMessageAvailability(mode, message.createdAt, now, message.unlockAt)
 }

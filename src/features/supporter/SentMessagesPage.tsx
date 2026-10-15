@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ArrowLeft,
   LockKeyhole,
@@ -10,6 +10,11 @@ import {
   Button,
   IconButton,
 } from '@/design-system'
+import { deleteSentMessage, fetchSentMessages } from '@/api/community'
+import { isApiEnabled } from '@/api/config'
+import { cardPreviewText } from '@/api/mappers'
+import type { ApiSentMessage } from '@/api/types'
+import { useFeedback } from '@/design-system/overlays'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
@@ -21,6 +26,70 @@ import './SentMessagesPage.css'
  * swapping this for a real paginated fetch later only touches this hook.
  */
 const PAGE_SIZE = 10
+
+/** What one card in the list needs, whether it came from local state or the backend. */
+type SentItem = {
+  id: string
+  isSticker: boolean
+  isPublic: boolean
+  read: boolean
+  text: string
+  createdAt: string
+  /** Name of the desk it was left on. */
+  deskName: string | null
+}
+
+const fromServer = (message: ApiSentMessage): SentItem => ({
+  id: String(message.messageId),
+  isSticker: message.kind === 'STICKER',
+  isPublic: message.visibility === 'PUBLIC',
+  read: message.status === 'READ',
+  text: cardPreviewText(message.card),
+  createdAt: message.createdAt,
+  deskName: message.deskName,
+})
+
+/** The sender's own letters from the backend, loaded a page at a time. */
+function useServerSentMessages() {
+  const { showToast } = useFeedback()
+  const [items, setItems] = useState<SentItem[]>([])
+  const [hasNext, setHasNext] = useState(false)
+  const [page, setPage] = useState(0)
+  const [loading, setLoading] = useState(isApiEnabled)
+
+  const load = useCallback(
+    (target: number) => {
+      setLoading(true)
+      fetchSentMessages(target, PAGE_SIZE)
+        .then((slice) => {
+          setItems((previous) => [
+            ...(target === 0 ? [] : previous),
+            ...slice.content.map(fromServer),
+          ])
+          setHasNext(slice.hasNext)
+          setPage(target)
+        })
+        .catch(() => showToast('보낸 응원을 불러오지 못했어요.'))
+        .finally(() => setLoading(false))
+    },
+    [showToast],
+  )
+
+  useEffect(() => {
+    if (isApiEnabled) load(0)
+  }, [load])
+
+  const remove = async (id: string) => {
+    try {
+      await deleteSentMessage(Number(id))
+      setItems((previous) => previous.filter((item) => item.id !== id))
+    } catch {
+      showToast('삭제하지 못했어요. 이미 열어본 응원은 삭제할 수 없어요.')
+    }
+  }
+
+  return { items, hasNext, loading, loadMore: () => load(page + 1), remove }
+}
 
 export function SentMessagesPage() {
   const navigate = useNavigate()
@@ -37,8 +106,9 @@ export function SentMessagesPage() {
     (state) => state.deleteOwnPublicMessage,
   )
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const server = useServerSentMessages()
 
-  const ownMessages = useMemo(
+  const localItems = useMemo<SentItem[]>(
     () =>
       identity
         ? messages
@@ -48,17 +118,32 @@ export function SentMessagesPage() {
                 new Date(b.createdAt).getTime() -
                 new Date(a.createdAt).getTime(),
             )
+            .map((message) => ({
+              id: message.id,
+              isSticker: message.kind === 'sticker',
+              isPublic: message.visibility === 'public',
+              read:
+                message.status === 'read' ||
+                readMessageIds.includes(message.id),
+              text:
+                message.textElements[0]?.text ||
+                message.pages?.[0]?.textElements[0]?.text ||
+                '',
+              createdAt: message.createdAt,
+              deskName: currentDesk.displayName,
+            }))
         : [],
-    [identity, messages],
+    [currentDesk.displayName, identity, messages, readMessageIds],
   )
 
-  const page = useMemo(
-    () => ({
-      content: ownMessages.slice(0, visibleCount),
-      hasNext: ownMessages.length > visibleCount,
-    }),
-    [ownMessages, visibleCount],
-  )
+  const ownMessages = isApiEnabled ? server.items : localItems
+  const page = isApiEnabled
+    ? { content: server.items, hasNext: server.hasNext }
+    : {
+        content: localItems.slice(0, visibleCount),
+        hasNext: localItems.length > visibleCount,
+      }
+  const canWriteMore = isApiEnabled || Boolean(identity)
 
   return (
     <AppShell
@@ -79,7 +164,7 @@ export function SentMessagesPage() {
         />
       }
       fixedAction={
-        identity ? (
+        canWriteMore ? (
           <Button
             variant="brand"
             fullWidth
@@ -98,16 +183,13 @@ export function SentMessagesPage() {
       <main className="sent-messages">
         {ownMessages.length === 0 ? (
           <section className="sent-messages__empty">
-            <h1>아직 남긴 응원이 없어요.</h1>
+            <h1>{server.loading ? '불러오고 있어요...' : '아직 남긴 응원이 없어요.'}</h1>
           </section>
         ) : (
           <div className="sent-messages__list">
             {page.content.map((message) => {
-              const read =
-                message.status === 'read' ||
-                readMessageIds.includes(message.id)
-              const publicMessage =
-                message.visibility === 'public'
+              const read = message.read
+              const publicMessage = message.isPublic
               const deletable = publicMessage && !read
 
               return (
@@ -133,7 +215,7 @@ export function SentMessagesPage() {
                         )}
                         {publicMessage
                           ? '함께 보기'
-                          : `${currentDesk.displayName}님만 보기`}
+                          : `${message.deskName ?? currentDesk.displayName}님만 보기`}
                       </span>
                       <time>
                         {new Intl.DateTimeFormat('ko-KR', {
@@ -152,10 +234,9 @@ export function SentMessagesPage() {
                   </header>
 
                   <p>
-                    {message.kind === 'sticker' ? '스티커를 붙였어요.' : message.textElements[0]?.text ||
-                      message.pages?.[0]
-                        ?.textElements[0]?.text ||
-                      '마음을 담아 남긴 응원'}
+                    {message.isSticker
+                      ? '스티커를 붙였어요.'
+                      : message.text || '마음을 담아 남긴 응원'}
                   </p>
 
                   {deletable && (
@@ -163,7 +244,9 @@ export function SentMessagesPage() {
                       type="button"
                       className="sent-message-card__delete"
                       onClick={() =>
-                        deleteOwnPublicMessage(message.id)
+                        isApiEnabled
+                          ? server.remove(message.id)
+                          : deleteOwnPublicMessage(message.id)
                       }
                     >
                       <Trash2 size={14} aria-hidden />
@@ -179,7 +262,9 @@ export function SentMessagesPage() {
                 variant="secondary"
                 fullWidth
                 onClick={() =>
-                  setVisibleCount((count) => count + PAGE_SIZE)
+                  isApiEnabled
+                    ? server.loadMore()
+                    : setVisibleCount((count) => count + PAGE_SIZE)
                 }
               >
                 더 보기

@@ -53,6 +53,10 @@ export type Message = MessageDraft & {
   kind?: MessageKind
   stickerId?: string
   recipientDeskId: string
+  /** Backend delivery id; only present for the desk owner's received messages. */
+  deliveryId?: number
+  /** When the backend opens this letter; takes precedence over the read-mode calculation. */
+  unlockAt?: string
   status: MessageStatus
   createdAt: string
   readAt?: string
