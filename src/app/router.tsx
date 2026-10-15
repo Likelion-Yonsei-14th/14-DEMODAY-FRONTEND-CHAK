@@ -85,6 +85,10 @@ import {
   ReaderPage,
 } from '@/prototype/screens/flowPages'
 import { SystemPage } from '@/system/SystemPage'
+import {
+  PaymentFailPage,
+  PaymentSuccessPage,
+} from '@/features/payment/PaymentResultPages'
 import { usePrototypeStore } from '@/store/prototypeStore'
 
 /**
@@ -375,6 +379,8 @@ export const router = createBrowserRouter([
         element: <OfferCouponPage />,
       },
       { path: '/system', element: <SystemPage /> },
+      { path: '/payment/success', element: <PaymentSuccessPage /> },
+      { path: '/payment/fail', element: <PaymentFailPage /> },
       { path: '*', element: <Navigate to="/start" replace /> },
     ],
   },
