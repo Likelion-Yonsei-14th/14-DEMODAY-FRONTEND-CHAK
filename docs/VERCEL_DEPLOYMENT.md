@@ -49,6 +49,15 @@ Vercel first; every other `/api` path goes to the backend.
 
 ## Environment variables
 
+소셜 로그인 (see `.env.example`):
+
+- `VITE_KAKAO_CLIENT_ID`: Kakao REST API key. Redirect URI `https://<domain>/auth/kakao/callback`
+  must be registered in Kakao Developers.
+- `VITE_GOOGLE_CLIENT_ID`: Google OAuth client ID (Web application). Redirect URI
+  `https://<domain>/auth/google/callback` must be an Authorized redirect URI in Google Cloud
+  Console. The client secret belongs to the backend only. Without it the Google button is
+  hidden when a backend is configured.
+
 찰떡 결제 (see `.env.example`):
 
 - `VITE_CHALTTEOK_API`: `mock` (default; balance kept in the browser) or `server`
