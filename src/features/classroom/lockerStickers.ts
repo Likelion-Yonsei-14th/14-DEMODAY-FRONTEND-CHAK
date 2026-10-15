@@ -1,6 +1,6 @@
 import type { DeskSticker } from '@/features/supporter/deskStickers'
 
-/** One college pennant, prototype price in won. */
+/** One college pennant, price in 찰떡 (1원 = 1찰떡). */
 export const PENNANT_PRICE = 150
 
 export type LockerStickerGroup = 'star' | 'bow' | 'garland' | 'pennant'
@@ -108,7 +108,7 @@ export const lockerStickerGroups: {
   {
     id: 'pennant',
     label: '대학 깃발',
-    description: `목표 대학을 걸어줘요 · 개당 ${PENNANT_PRICE}원`,
+    description: `목표 대학을 걸어줘요 · 개당 ${PENNANT_PRICE}찰떡`,
   },
 ]
 

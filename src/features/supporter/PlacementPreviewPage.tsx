@@ -15,7 +15,6 @@ import {
   DeskObjectVisual,
 } from '@/features/desk/DeskObjectLayer'
 import { AppShell } from '@/layout/AppShell'
-import { payForItems } from '@/api/community'
 import { isApiEnabled } from '@/api/config'
 import { sendErrorMessage, sendToServer } from '@/api/send'
 import { useFeedback } from '@/design-system/overlays'
@@ -48,10 +47,23 @@ import {
 import { GEM_PRICE, countGemCost } from './gems'
 import { GemDecoratorSheet } from './GemDecoratorSheet'
 import { PaymentSheet } from '@/features/payment/PaymentSheet'
+import { formatChaltteok } from '@/features/chaltteok/chaltteok'
+import { useResumeState } from '@/features/chaltteok/returnFlow'
 import './supporterFlow.css'
 
 // Letter and charm both carry a written message; stickers have their own flow.
 const cardObjectTypes: DeskObjectType[] = ['letter', 'charm']
+
+// Picks kept across a trip to the charge or login page and back.
+type PlacementResume = {
+  objectType: DeskObjectType
+  charmDesignId: string
+  charmMaterial: CharmMaterial
+  charmPhrase: string
+  gems: DeskGem[]
+  objectColor: string
+  placement: DeskPlacement
+}
 
 export function PlacementPreviewPage() {
   const navigate = useNavigate()
@@ -90,18 +102,30 @@ export function PlacementPreviewPage() {
   const { showToast } = useFeedback()
   const [dragging, setDragging] = useState(false)
 
-  const [objectType, setObjectType] = useState<DeskObjectType>(objectChoice)
+  const resumed = useResumeState<PlacementResume>()
+  const [objectType, setObjectType] = useState<DeskObjectType>(
+    resumed?.objectType ?? objectChoice,
+  )
   const charmMode = !stickerMode && objectType === 'charm'
-  const [charmDesignId, setCharmDesignId] = useState(charmDesigns[0]!.id)
-  const [charmMaterial, setCharmMaterial] = useState<CharmMaterial>('flat')
+  const [charmDesignId, setCharmDesignId] = useState(
+    resumed?.charmDesignId ?? charmDesigns[0]!.id,
+  )
+  const [charmMaterial, setCharmMaterial] = useState<CharmMaterial>(
+    resumed?.charmMaterial ?? 'flat',
+  )
   // Empty means "use the design's recommended phrase".
-  const [charmPhrase, setCharmPhrase] = useState('')
+  const [charmPhrase, setCharmPhrase] = useState(resumed?.charmPhrase ?? '')
   const recommendedPhrase = getCharmDesign(charmDesignId).phrase
   const finalCharmPhrase = resolveCharmPhrase(charmDesignId, charmPhrase)
-  const [gems, setGems] = useState<DeskGem[]>([])
+  const [gems, setGems] = useState<DeskGem[]>(resumed?.gems ?? [])
   const [decoratorOpen, setDecoratorOpen] = useState(false)
   // Gem positions are relative to the object's box, so a new shape starts clean.
-  useEffect(() => setGems([]), [objectType])
+  const gemsShape = useRef(objectType)
+  useEffect(() => {
+    if (gemsShape.current === objectType) return
+    gemsShape.current = objectType
+    setGems([])
+  }, [objectType])
 
   // Prototype-only purchase: no payment details are collected.
   const acrylicCost =
@@ -115,7 +139,9 @@ export function PlacementPreviewPage() {
   const firstPage = getFirstCardPage(draft)
   const cardPreviewColor =
     getComposerBackground(firstPage.backgroundAssetId).tone
-  const [objectColor, setObjectColor] = useState(cardPreviewColor)
+  const [objectColor, setObjectColor] = useState(
+    resumed?.objectColor ?? cardPreviewColor,
+  )
   const toneChoices = [
     {
       id: 'card',
@@ -130,9 +156,12 @@ export function PlacementPreviewPage() {
     () => resolveAvailablePlacement(existingObjects, objectType),
     [existingObjects, objectType],
   )
-  const [placement, setPlacement] = useState<DeskPlacement>(initialPlacement)
-  const [lastValidPlacement, setLastValidPlacement] =
-    useState<DeskPlacement>(initialPlacement)
+  const [placement, setPlacement] = useState<DeskPlacement>(
+    resumed?.placement ?? initialPlacement,
+  )
+  const [lastValidPlacement, setLastValidPlacement] = useState<DeskPlacement>(
+    resumed?.placement ?? initialPlacement,
+  )
 
   const valid = isPlacementValid(
     placement,
@@ -292,7 +321,7 @@ export function PlacementPreviewPage() {
           {stickerMode
             ? '여기에 붙이기'
             : needsPayment
-              ? `${totalCost}원 결제하고 놓기`
+              ? `${formatChaltteok(totalCost)}으로 놓기`
               : '이대로 놓고 가기'}
         </Button>
       }
@@ -422,7 +451,7 @@ export function PlacementPreviewPage() {
             >
               {([
                 ['flat', '평면 스티커', '무료'],
-                ['acrylic', '아크릴 3D', `${ACRYLIC_CHARM_PRICE}원`],
+                ['acrylic', '아크릴 3D', formatChaltteok(ACRYLIC_CHARM_PRICE)],
               ] as const).map(([material, label, price]) => (
                 <button
                   type="button"
@@ -455,8 +484,8 @@ export function PlacementPreviewPage() {
             <span className="gem-entry__label">보석 스티커로 꾸미기</span>
             <span className="gem-entry__meta">
               {gems.length > 0
-                ? `보석 ${gems.length}개 · ${gemCost}원`
-                : `하나에 ${GEM_PRICE}원`}
+                ? `보석 ${gems.length}개 · ${formatChaltteok(gemCost)}`
+                : `하나에 ${formatChaltteok(GEM_PRICE)}`}
             </span>
           </button>
         )}
@@ -582,30 +611,42 @@ export function PlacementPreviewPage() {
         description="반짝이는 꾸미기는 책상 위에서 더 눈에 띄어요."
         items={[
           ...(acrylicCost > 0
-            ? [{ label: `${finalCharmPhrase} 부적 · 아크릴 3D`, amount: acrylicCost }]
+            ? [
+                {
+                  label: `${finalCharmPhrase} 부적 · 아크릴 3D`,
+                  amount: acrylicCost,
+                  code: 'CHARM_ACRYLIC' as const,
+                },
+              ]
             : []),
           ...(gemCost > 0
-            ? [{ label: `보석 스티커 ${gems.length}개 × ${GEM_PRICE}원`, amount: gemCost }]
+            ? [
+                {
+                  label: `보석 스티커 ${gems.length}개 × ${formatChaltteok(GEM_PRICE)}`,
+                  amount: gemCost,
+                  code: 'GEM' as const,
+                  quantity: gems.length,
+                },
+              ]
             : []),
         ]}
+        resumeState={
+          {
+            objectType,
+            charmDesignId,
+            charmMaterial,
+            charmPhrase,
+            gems,
+            objectColor,
+            placement,
+          } satisfies PlacementResume
+        }
         onClose={() => setPaymentOpen(false)}
-        onConfirm={() => {
-          if (!isApiEnabled) {
-            setPaidAmount(totalCost)
-            setPaymentOpen(false)
-            return
-          }
-          // The server prices the order itself and approves it (a mock provider in dev).
-          payForItems([
-            ...(acrylicCost > 0 ? [{ code: 'CHARM_ACRYLIC' as const }] : []),
-            ...(gems.length > 0 ? [{ code: 'GEM' as const, quantity: gems.length }] : []),
-          ])
-            .then((order) => {
-              setPaidOrderId(order.orderId)
-              setPaidAmount(totalCost)
-              setPaymentOpen(false)
-            })
-            .catch(() => showToast('결제하지 못했어요. 잠시 후 다시 시도해주세요.'))
+        onConfirm={(purchase) => {
+          // The send attaches this paid order as paymentOrderId ([제안] in the backend spec).
+          setPaidOrderId(purchase.orderId)
+          setPaidAmount(totalCost)
+          setPaymentOpen(false)
         }}
       />
 

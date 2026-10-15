@@ -26,6 +26,8 @@ import { getComposerBackground } from '@/features/composer/backgroundAssets'
 import { getFirstCardPage } from '@/features/composer/messagePages'
 import { formatUnlockAt } from '@/features/desk/dailyAvailability'
 import { PaymentSheet } from '@/features/payment/PaymentSheet'
+import { formatChaltteok } from '@/features/chaltteok/chaltteok'
+import { useResumeState } from '@/features/chaltteok/returnFlow'
 import {
   getDeskSticker,
   getSupportMessageAvailability,
@@ -58,6 +60,15 @@ import {
 import { ClassroomLockerScene } from './LockerScene'
 import '@/features/supporter/supporterFlow.css'
 import './Classroom.css'
+
+// Picks kept across a trip to the charge or login page and back.
+type LockerPlacementResume = {
+  schoolId: string
+  charmShape: UniversityCharmShape
+  objectType: DeskObjectType
+  objectColor: string
+  placement: DeskPlacement
+}
 
 export function ClassroomLockerPage() {
   const navigate = useNavigate()
@@ -264,7 +275,7 @@ export function ClassroomLockerPage() {
           types={['letter', 'charm', 'sticker']}
           charmPreviewAssetId={universityCharmId('yonsei', 'jersey')}
           descriptions={{
-            charm: `대학 굿즈 아크릴 키링에 응원을 담아요. 하나에 ${UNIVERSITY_CHARM_PRICE}원이에요.`,
+            charm: `대학 굿즈 아크릴 키링에 응원을 담아요. 하나에 ${formatChaltteok(UNIVERSITY_CHARM_PRICE)}이에요.`,
           }}
           onClose={() => setChoiceOpen(false)}
           onChoose={(choice) => {
@@ -324,8 +335,13 @@ export function ClassroomLockerPlacementPage() {
   const sticker = getDeskSticker(stickerId)
   // Locker charms are university goods: acrylic only, always paid
   const charmMode = objectChoice === 'charm'
-  const [schoolId, setSchoolId] = useState(charmUniversities[0]!.id)
-  const [charmShape, setCharmShape] = useState<UniversityCharmShape>('jersey')
+  const resumed = useResumeState<LockerPlacementResume>()
+  const [schoolId, setSchoolId] = useState(
+    resumed?.schoolId ?? charmUniversities[0]!.id,
+  )
+  const [charmShape, setCharmShape] = useState<UniversityCharmShape>(
+    resumed?.charmShape ?? 'jersey',
+  )
   const [paymentOpen, setPaymentOpen] = useState(false)
   const school = getUniversity(schoolId)
   const charmAssetId = universityCharmId(schoolId, charmShape)
@@ -342,18 +358,23 @@ export function ClassroomLockerPlacementPage() {
   )
   // Chose "편지" up front: start as a letter, other shapes stay one tap away
   const [objectType, setObjectType] = useState<DeskObjectType>(
-    objectChoice === 'letter' || objectChoice === 'charm'
-      ? objectChoice
-      : recommendedObjectType,
+    resumed?.objectType ??
+      (objectChoice === 'letter' || objectChoice === 'charm'
+        ? objectChoice
+        : recommendedObjectType),
   )
   const firstPage = getFirstCardPage(draft)
   const cardPreviewColor =
     getComposerBackground(firstPage.backgroundAssetId).tone
-  const [objectColor, setObjectColor] = useState(cardPreviewColor)
-  const [placement, setPlacement] = useState<DeskPlacement>(() =>
-    stickerMode
-      ? stickerLockerPlacement(sticker)
-      : lockerPlacement(locker?.objects.length ?? 0),
+  const [objectColor, setObjectColor] = useState(
+    resumed?.objectColor ?? cardPreviewColor,
+  )
+  const [placement, setPlacement] = useState<DeskPlacement>(
+    () =>
+      resumed?.placement ??
+      (stickerMode
+        ? stickerLockerPlacement(sticker)
+        : lockerPlacement(locker?.objects.length ?? 0)),
   )
   const [dragging, setDragging] = useState(false)
   const [placing, setPlacing] = useState(false)
@@ -475,7 +496,7 @@ export function ClassroomLockerPlacementPage() {
           {stickerMode
             ? '이대로 붙이고 가기'
             : charmMode
-              ? `${UNIVERSITY_CHARM_PRICE}원 결제하고 놓기`
+              ? `${formatChaltteok(UNIVERSITY_CHARM_PRICE)}으로 놓기`
               : '이대로 놓고 가기'}
         </Button>
       }
@@ -497,7 +518,7 @@ export function ClassroomLockerPlacementPage() {
           <section className="university-charm-picker" aria-label="대학 굿즈 부적">
             <div className="university-charm-picker__label">
               <strong>학교</strong>
-              <span>아크릴 키링 · {UNIVERSITY_CHARM_PRICE}원</span>
+              <span>아크릴 키링 · {formatChaltteok(UNIVERSITY_CHARM_PRICE)}</span>
             </div>
             <div className="university-charm-picker__schools" role="list">
               {charmUniversities.map((item) => (
@@ -666,13 +687,13 @@ export function ClassroomLockerPlacementPage() {
           {charmMode && (
             <div className="placement-preview__summary-row">
               <span>가격</span>
-              <strong>{UNIVERSITY_CHARM_PRICE}원 · 아크릴</strong>
+              <strong>{formatChaltteok(UNIVERSITY_CHARM_PRICE)} · 아크릴</strong>
             </div>
           )}
           {stickerMode && sticker.price ? (
             <div className="placement-preview__summary-row">
-              <span>결제</span>
-              <strong>{sticker.price}원 결제 완료</strong>
+              <span>구매</span>
+              <strong>{formatChaltteok(sticker.price)} 구매 완료</strong>
             </div>
           ) : null}
           <div className="placement-preview__summary-row">
@@ -696,7 +717,23 @@ export function ClassroomLockerPlacementPage() {
       <PaymentSheet
         open={paymentOpen}
         description="대학 굿즈 부적은 아크릴 키링으로만 만들어요."
-        items={[{ label: `${charmLabel} · 아크릴`, amount: UNIVERSITY_CHARM_PRICE }]}
+        items={[
+          {
+            label: `${charmLabel} · 아크릴`,
+            amount: UNIVERSITY_CHARM_PRICE,
+            code: 'UNIVERSITY_CHARM',
+            ref: charmAssetId,
+          },
+        ]}
+        resumeState={
+          {
+            schoolId,
+            charmShape,
+            objectType,
+            objectColor,
+            placement,
+          } satisfies LockerPlacementResume
+        }
         onClose={() => setPaymentOpen(false)}
         onConfirm={() => {
           setPaymentOpen(false)
