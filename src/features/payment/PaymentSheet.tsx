@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { ArrowLeft } from 'lucide-react'
 import { Button, IconButton } from '@/design-system'
-import { isTossEnabled, isTossTestMode, payWithToss } from './tossPayments'
 import './PaymentSheet.css'
 
 export type PaymentLineItem = {
@@ -28,10 +27,6 @@ type PaymentSheetProps = {
  * full-screen overlay, not a route: the caller (and whatever draft state
  * it's holding - gem picks, charm material, locker decor choices) stays
  * mounted underneath the whole time.
- *
- * With VITE_TOSS_CLIENT_KEY set, "결제하기" opens the Toss Payments card
- * window and `onConfirm` only runs once the payment is approved. On mobile
- * Toss redirects away, so the flow resumes on /payment/success instead.
  */
 export function PaymentSheet({
   open,
@@ -41,13 +36,6 @@ export function PaymentSheet({
   onClose,
   onConfirm,
 }: PaymentSheetProps) {
-  const [paying, setPaying] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!open) setError(null)
-  }, [open])
-
   useEffect(() => {
     if (!open) return
     const previousOverflow = document.body.style.overflow
@@ -69,27 +57,6 @@ export function PaymentSheet({
   if (!open) return null
 
   const total = items.reduce((sum, item) => sum + item.amount, 0)
-
-  const pay = async () => {
-    if (!isTossEnabled) {
-      onConfirm()
-      return
-    }
-    const [first] = items
-    const orderName =
-      items.length > 1 ? `${first?.label} 외 ${items.length - 1}건` : (first?.label ?? title)
-
-    setPaying(true)
-    setError(null)
-    try {
-      const outcome = await payWithToss({ orderName, amount: total })
-      if (outcome === 'paid') onConfirm()
-    } catch (payError) {
-      setError(payError instanceof Error ? payError.message : '결제에 실패했어요.')
-    } finally {
-      setPaying(false)
-    }
-  }
 
   return createPortal(
     <div
@@ -128,23 +95,13 @@ export function PaymentSheet({
             <strong>{total.toLocaleString()}원</strong>
           </div>
 
-          {error && (
-            <p className="payment-sheet__error" role="alert">
-              {error}
-            </p>
-          )}
-
           <p className="payment-sheet__note">
-            {!isTossEnabled
-              ? '프로토타입이라 실제 결제는 되지 않아요.'
-              : isTossTestMode
-                ? '토스페이먼츠 테스트 결제라 실제로 돈이 빠져나가지 않아요.'
-                : '토스페이먼츠로 안전하게 결제돼요.'}
+            프로토타입이라 실제 결제는 되지 않아요.
           </p>
         </div>
 
         <footer className="payment-sheet__footer">
-          <Button variant="brand" fullWidth disabled={paying} onClick={pay}>
+          <Button variant="brand" fullWidth onClick={onConfirm}>
             {total.toLocaleString()}원 결제하기
           </Button>
         </footer>
