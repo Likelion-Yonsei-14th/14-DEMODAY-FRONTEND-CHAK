@@ -235,7 +235,7 @@
   opacity: .9;
 }
 
-.home-page__door svg:last-child {
+.home-page__door > svg:last-child {
   grid-area: arrow;
 }
 

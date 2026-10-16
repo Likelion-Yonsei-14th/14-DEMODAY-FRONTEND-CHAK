@@ -229,13 +229,13 @@ export function ClassroomLockerPage() {
           <Button
             variant="secondary"
             fullWidth
+            leadingIcon={<Paintbrush size={17} aria-hidden />}
             onClick={() =>
               navigate(
                 `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/decorate`,
               )
             }
           >
-            <Paintbrush size={17} aria-hidden />
             사물함 꾸미기 · 조명, 페인트
           </Button>
         ) : open ? (
@@ -850,5 +850,5 @@ function clampLockerPlacement(
 function formatHour(value: string) {
   const [hourString = '22'] = value.split(':')
   const hour = Number(hourString)
-  return hour % 12 || 12
+  return `${hour % 12 || 12}시`
 }
