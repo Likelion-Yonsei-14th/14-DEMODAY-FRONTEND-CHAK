@@ -104,8 +104,8 @@ export function DeskBasketSheet({
             fullWidth
             disabled={tidyableCount === 0}
             onClick={onTidy}
+            leadingIcon={<Archive size={16} aria-hidden />}
           >
-            <Archive size={16} aria-hidden />
             {tidyableCount > 0
               ? `읽은 응원 ${tidyableCount}개 넣기 · 무료`
               : '넣을 수 있는 읽은 응원이 없어요'}
