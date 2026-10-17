@@ -23,7 +23,7 @@ export function PrototypePlaceholderPage({
         <AppBar
           title={title}
           leading={
-            <Link className="prototype-back-link" to="/prototype" aria-label="프로토타입 목록으로 돌아가기">
+            <Link className="prototype-back-link" to="/" aria-label="홈으로 돌아가기">
               <ArrowLeft size={21} aria-hidden />
             </Link>
           }

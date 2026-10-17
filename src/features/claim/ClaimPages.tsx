@@ -59,7 +59,7 @@ export function ClaimIntroPage() {
   return (
     <ClaimShell
       title="응원 책상 받기"
-      back={() => navigate('/prototype')}
+      back={() => navigate('/')}
       action={
         <Button variant="brand" fullWidth onClick={next}>
           {alreadyClaimed ? '내 책상 보기' : '내 응원 책상 받기'}
