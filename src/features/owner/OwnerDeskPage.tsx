@@ -225,9 +225,9 @@ export function OwnerDeskPage() {
           transparent
           leading={
             <IconButton
-              label="프로토타입 목록으로 돌아가기"
+              label="홈으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate('/prototype')}
+              onClick={() => navigate('/')}
             />
           }
           trailing={
