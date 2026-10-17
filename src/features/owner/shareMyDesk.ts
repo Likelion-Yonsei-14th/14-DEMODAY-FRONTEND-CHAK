@@ -1,4 +1,5 @@
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
+import { shareOrCopyLink } from '@/lib/shareLink'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { getOwnSupporterToken } from '@/prototype/ownSupporterToken'
 import { supporterPath } from '@/prototype/supporterRoute'
@@ -21,14 +22,9 @@ export async function shareMyDeskLink(
     ? `${dday}, 네 응원 하나면 버틸 수 있을 것 같아.`
     : '네 응원 하나면 버틸 수 있을 것 같아.'
 
-  try {
-    if (navigator.share) {
-      await navigator.share({ title, text, url })
-    } else {
-      await navigator.clipboard.writeText(url)
-      showToast('응원 링크를 복사했어요. 친구에게 붙여넣어 보내세요.')
-    }
-  } catch {
-    // The share sheet was dismissed.
-  }
+  await shareOrCopyLink(
+    { title, text, url },
+    showToast,
+    '응원 링크를 복사했어요. 친구에게 붙여넣어 보내세요.',
+  )
 }
