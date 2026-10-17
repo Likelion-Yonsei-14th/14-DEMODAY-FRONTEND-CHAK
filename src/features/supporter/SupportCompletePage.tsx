@@ -5,6 +5,7 @@ import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { DeskObjectVisual } from '@/features/desk/DeskObjectLayer'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
+import { shareOrCopyLink } from '@/lib/shareLink'
 import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import { deskObjectLabels } from './supporterFlow'
 import './supporterFlow.css'
@@ -26,21 +27,15 @@ export function SupportCompletePage() {
   const shareDesk = async () => {
     const shareUrl = buildPrototypeShareUrl(supporterPath(supporterToken))
 
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `${recipientName}님의 응원 책상`,
-          text: `${recipientName} 책상에 응원 하나 놓고 가줘!`,
-          url: shareUrl,
-        })
-        return
-      }
-
-      await navigator.clipboard.writeText(shareUrl)
-      showToast(`${recipientName}님의 책상 링크를 복사했어요.`)
-    } catch {
-      // 사용자가 공유 시트를 닫은 경우에는 별도 오류 메시지를 띄우지 않습니다.
-    }
+    await shareOrCopyLink(
+      {
+        title: `${recipientName}님의 응원 책상`,
+        text: `${recipientName} 책상에 응원 하나 놓고 가줘!`,
+        url: shareUrl,
+      },
+      showToast,
+      `${recipientName}님의 책상 링크를 복사했어요.`,
+    )
   }
 
   return (

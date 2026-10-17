@@ -8,6 +8,7 @@ import {
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { AppBar, Button, IconButton, useFeedback } from '@/design-system'
+import { shareOrCopyLink } from '@/lib/shareLink'
 import {
   DESK_OPEN_ANIMATION_MS,
   DeskObjectLayer,
@@ -120,21 +121,15 @@ export function SupportDeskPage() {
   const shareDesk = async () => {
     const url = buildPrototypeShareUrl(supporterPath(supporterToken))
 
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `${recipientName}님의 응원 책상`,
-          text: `${recipientName}님 책상에 응원 하나 놓고 가 주세요.`,
-          url,
-        })
-        return
-      }
-
-      await navigator.clipboard.writeText(url)
-      showToast('책상 링크를 복사했어요.')
-    } catch {
-      // 공유 시트를 닫은 경우에는 별도 오류를 노출하지 않습니다.
-    }
+    await shareOrCopyLink(
+      {
+        title: `${recipientName}님의 응원 책상`,
+        text: `${recipientName}님 책상에 응원 하나 놓고 가 주세요.`,
+        url,
+      },
+      showToast,
+      '책상 링크를 복사했어요.',
+    )
   }
 
   return (
