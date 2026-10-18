@@ -90,6 +90,12 @@ const routes = [
     description: '수능 종료 → AI 응원 기록 → 친구 Reveal → 전체 기록 → 공유 → 혜택·쿠폰',
     phase: 'LIVE',
   },
+  {
+    path: '/minigame/study-type',
+    title: 'Mini Game · 수험생 유형',
+    description: '2지선다 성향 테스트 → 수험생 유형 결과 → 링크·이미지 공유',
+    phase: 'LIVE',
+  },
 ]
 
 const qaStates = [
