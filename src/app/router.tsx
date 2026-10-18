@@ -95,6 +95,11 @@ import {
   ChargeFailPage,
   ChargeSuccessPage,
 } from '@/features/chaltteok/ChargeResultPages'
+import {
+  StudyTypeIntroPage,
+  StudyTypeResultPage,
+  StudyTypeTestPage,
+} from '@/features/minigame/studyType/StudyTypePages'
 import { usePrototypeStore } from '@/store/prototypeStore'
 
 /**
@@ -371,6 +376,12 @@ export const router = createBrowserRouter([
       {
         path: '/prototype/offers/:offerId/coupon',
         element: <OfferCouponPage />,
+      },
+      { path: '/minigame/study-type', element: <StudyTypeIntroPage /> },
+      { path: '/minigame/study-type/test', element: <StudyTypeTestPage /> },
+      {
+        path: '/minigame/study-type/result/:slug',
+        element: <StudyTypeResultPage />,
       },
       { path: '/system', element: <SystemPage /> },
       { path: '/chaltteok/charge', element: <ChargePage /> },

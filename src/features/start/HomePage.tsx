@@ -2,6 +2,7 @@ import { ChevronRight, Plus, UserRound, UsersRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useFeedback } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
+import { StudyTypeEntryCard } from '@/features/minigame/studyType/StudyTypeEntryCard'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import './StartPage.css'
@@ -79,6 +80,8 @@ export function HomePage() {
             <ChevronRight size={20} aria-hidden />
           </button>
         </div>
+
+        <StudyTypeEntryCard />
 
         <button
           type="button"
