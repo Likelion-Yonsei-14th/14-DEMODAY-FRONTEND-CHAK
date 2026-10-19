@@ -20,9 +20,9 @@ describe('CSAT schedule', () => {
     ).toBe('수능까지 D-48')
   })
 
-  it('uses the CSAT eve at 8 PM as the default capsule opening', () => {
+  it('opens the default capsule on exam day at 8 PM, after the exam', () => {
     expect(getDefaultCapsuleUnlockAt()).toBe(
-      '2026-11-18T20:00',
+      '2026-11-19T20:00',
     )
   })
 

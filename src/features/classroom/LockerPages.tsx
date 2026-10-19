@@ -39,9 +39,9 @@ import {
   UNIVERSITY_CHARM_PRICE,
   charmUniversities,
   getUniversity,
+  parseUniversityCharmId,
   universityCharmId,
   universityCharmShapes,
-  type UniversityCharmShape,
 } from './universities'
 import { useReadModeNow } from '@/features/desk/useReadModeNow'
 import { DeskObjectVisual } from '@/features/desk/DeskObjectLayer'
@@ -61,10 +61,9 @@ import { ClassroomLockerScene } from './LockerScene'
 import '@/features/supporter/supporterFlow.css'
 import './Classroom.css'
 
-// Picks kept across a trip to the charge or login page and back.
+// Picks kept across a trip to the charge or login page and back. The charm
+// itself lives in the store's charmDraft, picked before writing.
 type LockerPlacementResume = {
-  schoolId: string
-  charmShape: UniversityCharmShape
   objectType: DeskObjectType
   objectColor: string
   placement: DeskPlacement
@@ -225,20 +224,7 @@ export function ClassroomLockerPage() {
         />
       }
       fixedAction={
-        owner ? (
-          <Button
-            variant="secondary"
-            fullWidth
-            leadingIcon={<Paintbrush size={17} aria-hidden />}
-            onClick={() =>
-              navigate(
-                `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/decorate`,
-              )
-            }
-          >
-            사물함 꾸미기 · 조명, 페인트
-          </Button>
-        ) : open ? (
+        !owner && open ? (
           <Button
             variant="brand"
             fullWidth
@@ -289,7 +275,8 @@ export function ClassroomLockerPage() {
               return
             }
             store.resetComposerDraft()
-            navigate(`${lockerPath}/compose`)
+            // A charm is picked first, then the cheer is written into it
+            navigate(`${lockerPath}/${choice === 'charm' ? 'charm' : 'compose'}`)
           }}
         />
 
@@ -303,6 +290,38 @@ export function ClassroomLockerPage() {
           <p className="classroom-locker-page__daily-note">
             오늘 받은 응원은 오후 {formatHour(classroom.dailyUnlockTime)}에 열려요.
           </p>
+        )}
+
+        {/* The owner's tools sit right under the locker, not at the screen bottom */}
+        {owner && (
+          <section className="classroom-locker-page__owner" aria-label="내 사물함">
+            <div className="classroom-locker-page__stats">
+              <span>
+                <strong>{visibleLocker.objects.length}</strong>
+                받은 응원
+              </span>
+              <span>
+                <strong>{unreadCount}</strong>
+                새 응원
+              </span>
+              <span>
+                <strong>오후 {formatHour(classroom.dailyUnlockTime)}</strong>
+                열리는 시간
+              </span>
+            </div>
+            <Button
+              variant="secondary"
+              fullWidth
+              leadingIcon={<Paintbrush size={17} aria-hidden />}
+              onClick={() =>
+                navigate(
+                  `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/decorate`,
+                )
+              }
+            >
+              사물함 꾸미기 · 조명, 페인트
+            </Button>
+          </section>
         )}
       </main>
     </AppShell>
@@ -336,12 +355,12 @@ export function ClassroomLockerPlacementPage() {
   // Locker charms are university goods: acrylic only, always paid
   const charmMode = objectChoice === 'charm'
   const resumed = useResumeState<LockerPlacementResume>()
-  const [schoolId, setSchoolId] = useState(
-    resumed?.schoolId ?? charmUniversities[0]!.id,
-  )
-  const [charmShape, setCharmShape] = useState<UniversityCharmShape>(
-    resumed?.charmShape ?? 'jersey',
-  )
+  const charmDraft = usePrototypeStore((state) => state.charmDraft)
+  const pickedCharm =
+    parseUniversityCharmId(charmDraft.assetId) ??
+    parseUniversityCharmId(universityCharmId(charmUniversities[0]!.id, 'jersey'))!
+  const schoolId = pickedCharm.school.id
+  const charmShape = pickedCharm.shape
   const [paymentOpen, setPaymentOpen] = useState(false)
   const school = getUniversity(schoolId)
   const charmAssetId = universityCharmId(schoolId, charmShape)
@@ -515,60 +534,25 @@ export function ClassroomLockerPlacementPage() {
         </section>
 
         {charmMode && (
-          <section className="university-charm-picker" aria-label="대학 굿즈 부적">
-            <div className="university-charm-picker__label">
-              <strong>학교</strong>
-              <span>아크릴 키링 · {formatChaltteok(UNIVERSITY_CHARM_PRICE)}</span>
-            </div>
-            <div className="university-charm-picker__schools" role="list">
-              {charmUniversities.map((item) => (
-                <button
-                  type="button"
-                  key={item.id}
-                  className={[
-                    'university-charm-picker__school',
-                    item.id === schoolId
-                      ? 'university-charm-picker__school--selected'
-                      : '',
-                  ].filter(Boolean).join(' ')}
-                  style={{ '--school-color': item.color } as React.CSSProperties}
-                  aria-pressed={item.id === schoolId}
-                  onClick={() => setSchoolId(item.id)}
-                >
-                  {item.name.replace('대학교', '대')}
-                </button>
-              ))}
-            </div>
-            <div className="university-charm-picker__label">
-              <strong>모양</strong>
-            </div>
-            <div className="placement-object-picker university-charm-picker__shapes">
-              {universityCharmShapes.map((item) => (
-                <button
-                  type="button"
-                  key={item.id}
-                  className={[
-                    'placement-object-option',
-                    charmShape === item.id
-                      ? 'placement-object-option--selected'
-                      : '',
-                  ].filter(Boolean).join(' ')}
-                  aria-pressed={charmShape === item.id}
-                  onClick={() => setCharmShape(item.id)}
-                >
-                  <span
-                    className="placement-object-option__preview desk-object--charm"
-                    aria-hidden
-                  >
-                    <DeskObjectVisual
-                      type="charm"
-                      assetId={universityCharmId(schoolId, item.id)}
-                    />
-                  </span>
-                  <span>{item.label}</span>
-                </button>
-              ))}
-            </div>
+          <section className="charm-summary" aria-label="고른 부적">
+            <span className="charm-summary__preview desk-object--charm" aria-hidden>
+              <DeskObjectVisual type="charm" assetId={charmAssetId} />
+            </span>
+            <span className="charm-summary__text">
+              <strong>{charmLabel}</strong>
+              <span>아크릴 · {formatChaltteok(UNIVERSITY_CHARM_PRICE)}</span>
+            </span>
+            <button
+              type="button"
+              className="charm-summary__change"
+              onClick={() =>
+                navigate(
+                  `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/charm`,
+                )
+              }
+            >
+              바꾸기
+            </button>
           </section>
         )}
 
@@ -578,7 +562,10 @@ export function ClassroomLockerPlacementPage() {
           className="placement-object-picker"
           aria-label="사물함에 놓을 형태"
         >
-          {selectableDeskObjectTypes.map((type) => (
+          {/* 부적 is its own (paid) choice in lockers, not a letter shape */}
+          {selectableDeskObjectTypes
+            .filter((type) => type !== 'charm')
+            .map((type) => (
             <button
               type="button"
               key={type}
@@ -727,8 +714,6 @@ export function ClassroomLockerPlacementPage() {
         ]}
         resumeState={
           {
-            schoolId,
-            charmShape,
             objectType,
             objectColor,
             placement,

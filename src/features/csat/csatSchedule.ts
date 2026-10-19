@@ -23,11 +23,31 @@ export function getCsatDdayLabel(now = new Date()) {
   return '수능이 끝났어요'
 }
 
-export function getDefaultCapsuleUnlockAt() {
-  const date = getCsatExamDate()
-  date.setDate(date.getDate() - 1)
+/**
+ * A time capsule may only open after the exam: on exam day from 18:00
+ * (the last session ends at 17:45), or any later date.
+ */
+export const CAPSULE_EXAM_DAY_MIN_TIME = '18:00'
 
-  return `${formatDateInput(date)}T${DEFAULT_CAPSULE_TIME}`
+/** Earliest date a time capsule may open (YYYY-MM-DD) */
+export function getCapsuleMinDate() {
+  return formatDateInput(getCsatExamDate())
+}
+
+/** Exam day at 8 PM, right after the exam */
+export function getDefaultCapsuleUnlockAt() {
+  return `${getCapsuleMinDate()}T${DEFAULT_CAPSULE_TIME}`
+}
+
+/** Moves a capsule opening that falls before the exam is over to the earliest allowed time. */
+export function clampCapsuleUnlockAt(unlockAt: string) {
+  const minDate = getCapsuleMinDate()
+  const [date = minDate, time = DEFAULT_CAPSULE_TIME] = unlockAt.split('T')
+  if (date < minDate) return `${minDate}T${DEFAULT_CAPSULE_TIME}`
+  if (date === minDate && time < CAPSULE_EXAM_DAY_MIN_TIME) {
+    return `${minDate}T${CAPSULE_EXAM_DAY_MIN_TIME}`
+  }
+  return `${date}T${time}`
 }
 
 export function getCsatDateLabel() {
