@@ -1,7 +1,7 @@
 import { Mail } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { startGoogleLogin, startKakaoLogin } from '@/api/auth'
-import { isApiEnabled } from '@/api/config'
+import { isApiEnabled, isKakaoLoginEnabled } from '@/api/config'
 import { Button } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { AppShell } from '@/layout/AppShell'
@@ -31,7 +31,12 @@ function maskEmail(email: string) {
 export function WelcomePage() {
   const navigate = useNavigate()
   const authSession = usePrototypeStore((state) => state.authSession)
-  const lastLogin = usePrototypeStore((state) => state.lastLogin)
+  const storedLastLogin = usePrototypeStore((state) => state.lastLogin)
+  // While Kakao login is off, don't offer it as the way back in.
+  const lastLogin =
+    storedLastLogin?.provider === 'kakao' && !isKakaoLoginEnabled
+      ? null
+      : storedLastLogin
   const signIn = usePrototypeStore((state) => state.signIn)
 
   if (authSession.status === 'authenticated') {
