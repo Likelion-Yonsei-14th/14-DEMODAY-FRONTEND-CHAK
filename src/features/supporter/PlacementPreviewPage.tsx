@@ -5,7 +5,6 @@ import {
   AppBar,
   Button,
   IconButton,
-  TextField,
 } from '@/design-system'
 import { getComposerBackground } from '@/features/composer/backgroundAssets'
 import { getFirstCardPage } from '@/features/composer/messagePages'
@@ -21,7 +20,6 @@ import { useFeedback } from '@/design-system/overlays'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import type {
-  CharmMaterial,
   DeskGem,
   DeskObjectType,
   DeskPlacement,
@@ -39,7 +37,6 @@ import {
 } from './supporterFlow'
 import {
   ACRYLIC_CHARM_PRICE,
-  CHARM_PHRASE_MAX_LENGTH,
   charmDesigns,
   getCharmDesign,
   resolveCharmPhrase,
@@ -52,14 +49,9 @@ import { useResumeState } from '@/features/chaltteok/returnFlow'
 import './supporterFlow.css'
 
 // Letter and charm both carry a written message; stickers have their own flow.
-const cardObjectTypes: DeskObjectType[] = ['letter', 'charm']
-
-// Picks kept across a trip to the charge or login page and back.
+// Picks kept across a trip to the charge or login page and back. The charm
+// itself lives in the store's charmDraft, picked before writing.
 type PlacementResume = {
-  objectType: DeskObjectType
-  charmDesignId: string
-  charmMaterial: CharmMaterial
-  charmPhrase: string
   gems: DeskGem[]
   objectColor: string
   placement: DeskPlacement
@@ -103,19 +95,20 @@ export function PlacementPreviewPage() {
   const [dragging, setDragging] = useState(false)
 
   const resumed = useResumeState<PlacementResume>()
-  const [objectType, setObjectType] = useState<DeskObjectType>(
-    resumed?.objectType ?? objectChoice,
-  )
-  const charmMode = !stickerMode && objectType === 'charm'
-  const [charmDesignId, setCharmDesignId] = useState(
-    resumed?.charmDesignId ?? charmDesigns[0]!.id,
-  )
-  const [charmMaterial, setCharmMaterial] = useState<CharmMaterial>(
-    resumed?.charmMaterial ?? 'flat',
-  )
+  // The shape was decided before writing: a letter, or the charm picked first
+  const charmMode = objectChoice === 'charm'
+  const objectType: DeskObjectType = stickerMode
+    ? 'sticker'
+    : charmMode
+      ? 'charm'
+      : 'letter'
+  const charmDraft = usePrototypeStore((state) => state.charmDraft)
+  const charmDesignId = charmDesigns.some((design) => design.id === charmDraft.assetId)
+    ? charmDraft.assetId
+    : charmDesigns[0]!.id
+  const charmMaterial = charmDraft.material
   // Empty means "use the design's recommended phrase".
-  const [charmPhrase, setCharmPhrase] = useState(resumed?.charmPhrase ?? '')
-  const recommendedPhrase = getCharmDesign(charmDesignId).phrase
+  const charmPhrase = charmDraft.phrase
   const finalCharmPhrase = resolveCharmPhrase(charmDesignId, charmPhrase)
   const [gems, setGems] = useState<DeskGem[]>(resumed?.gems ?? [])
   const [decoratorOpen, setDecoratorOpen] = useState(false)
@@ -338,139 +331,33 @@ export function PlacementPreviewPage() {
           </p>
         </section>
 
-        {!stickerMode && (
-        <section
-          className="placement-object-picker placement-object-picker--two"
-          aria-label="책상에 놓을 형태"
-        >
-          {cardObjectTypes.map((type) => {
-            const selected = objectType === type
-
-            return (
-              <button
-                type="button"
-                key={type}
-                className={[
-                  'placement-object-option',
-                  selected
-                    ? 'placement-object-option--selected'
-                    : '',
-                ].filter(Boolean).join(' ')}
-                aria-pressed={selected}
-                onClick={() => setObjectType(type)}
-              >
-                <span
-                  className={[
-                    'placement-object-option__preview',
-                    `desk-object--${type}`,
-                  ].join(' ')}
-                  style={{
-                    '--desk-object-color': objectColor,
-                  } as React.CSSProperties}
-                  aria-hidden
-                >
-                  <DeskObjectVisual
-                    type={type}
-                    assetId={type === 'charm' ? charmDesignId : undefined}
-                    material={charmMaterial}
-                  />
-                </span>
-                <span>{deskObjectLabels[type]}</span>
-              </button>
-            )
-          })}
-        </section>
-        )}
-
         {charmMode && (
-          <section className="charm-picker" aria-label="부적 디자인과 재질">
-            <div className="charm-picker__designs">
-              {charmDesigns.map((design) => {
-                const selected = charmDesignId === design.id
-
-                return (
-                  <button
-                    type="button"
-                    key={design.id}
-                    className={[
-                      'charm-picker__design',
-                      selected ? 'charm-picker__design--selected' : '',
-                    ].filter(Boolean).join(' ')}
-                    aria-label={`${design.phrase} 부적`}
-                    aria-pressed={selected}
-                    onClick={() => setCharmDesignId(design.id)}
-                  >
-                    <span
-                      className="charm-picker__preview desk-object--charm"
-                      aria-hidden
-                    >
-                      <DeskObjectVisual
-                        type="charm"
-                        assetId={design.id}
-                        material="flat"
-                        seed={design.id}
-                      />
-                    </span>
-                    <span>{design.phrase}</span>
-                  </button>
-                )
-              })}
-            </div>
-
-            <div className="charm-phrase">
-              <TextField
-                id="charm-phrase"
-                label="부적에 적을 응원"
-                helper={`책상 위에 보여서 누구나 볼 수 있어요. 비워두면 '${recommendedPhrase}'(으)로 적혀요.`}
-                placeholder={`${recommendedPhrase}  ·  Tab으로 넣기`}
-                maxLength={CHARM_PHRASE_MAX_LENGTH}
-                value={charmPhrase}
-                onChange={(event) => setCharmPhrase(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Tab' && !event.shiftKey && !charmPhrase) {
-                    event.preventDefault()
-                    setCharmPhrase(recommendedPhrase)
-                  }
-                }}
+          <section className="charm-summary" aria-label="고른 부적">
+            <span className="charm-summary__preview desk-object--charm" aria-hidden>
+              <DeskObjectVisual
+                type="charm"
+                assetId={charmDesignId}
+                material={charmMaterial}
+                charmPhrase={finalCharmPhrase}
+                seed={charmDesignId}
               />
-              {charmPhrase !== recommendedPhrase && (
-                <button
-                  type="button"
-                  className="charm-phrase__suggestion"
-                  onClick={() => setCharmPhrase(recommendedPhrase)}
-                >
-                  추천 문구 넣기 · {recommendedPhrase}
-                </button>
-              )}
-            </div>
-
-            <div
-              className="charm-picker__materials"
-              role="radiogroup"
-              aria-label="재질"
+            </span>
+            <span className="charm-summary__text">
+              <strong>
+                {getCharmDesign(charmDesignId).name} 부적 ·{' '}
+                {charmMaterial === 'acrylic'
+                  ? `아크릴 3D ${formatChaltteok(ACRYLIC_CHARM_PRICE)}`
+                  : '평면 스티커 무료'}
+              </strong>
+              <span>“{finalCharmPhrase}”</span>
+            </span>
+            <button
+              type="button"
+              className="charm-summary__change"
+              onClick={() => navigate(supporterPath(supporterToken, '/charm'))}
             >
-              {([
-                ['flat', '평면 스티커', '무료'],
-                ['acrylic', '아크릴 3D', formatChaltteok(ACRYLIC_CHARM_PRICE)],
-              ] as const).map(([material, label, price]) => (
-                <button
-                  type="button"
-                  key={material}
-                  role="radio"
-                  aria-checked={charmMaterial === material}
-                  className={[
-                    'charm-picker__material',
-                    charmMaterial === material
-                      ? 'charm-picker__material--selected'
-                      : '',
-                  ].filter(Boolean).join(' ')}
-                  onClick={() => setCharmMaterial(material)}
-                >
-                  <strong>{label}</strong>
-                  <span>{price}</span>
-                </button>
-              ))}
-            </div>
+              바꾸기
+            </button>
           </section>
         )}
 
@@ -632,10 +519,6 @@ export function PlacementPreviewPage() {
         ]}
         resumeState={
           {
-            objectType,
-            charmDesignId,
-            charmMaterial,
-            charmPhrase,
             gems,
             objectColor,
             placement,

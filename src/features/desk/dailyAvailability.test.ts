@@ -120,7 +120,7 @@ describe('message availability', () => {
 
     expect(previewMode).toEqual({
       type: 'time-capsule',
-      unlockAt: '2026-11-18T20:00',
+      unlockAt: '2026-11-19T20:00',
     })
 
     expect(
@@ -129,7 +129,7 @@ describe('message availability', () => {
         '?capsule=before',
         new Date('2026-10-02T12:00:00'),
       ).getTime(),
-    ).toBe(new Date('2026-11-18T19:59:00').getTime())
+    ).toBe(new Date('2026-11-19T19:59:00').getTime())
 
     expect(
       resolveReadModeNow(
@@ -137,7 +137,7 @@ describe('message availability', () => {
         '?capsule=after',
         new Date('2026-10-02T12:00:00'),
       ).getTime(),
-    ).toBe(new Date('2026-11-18T20:01:00').getTime())
+    ).toBe(new Date('2026-11-19T20:01:00').getTime())
   })
 
   it('formats same-day and next-day unlock moments for the owner', () => {

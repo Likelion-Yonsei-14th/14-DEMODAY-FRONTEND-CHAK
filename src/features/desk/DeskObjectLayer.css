@@ -277,29 +277,31 @@
   left: 50%;
   top: 50%;
   width: 100%;
-  aspect-ratio: 300 / 434;
+  aspect-ratio: 316 / 436;
   max-height: 100%;
   container-type: inline-size;
   transform: translate(-50%, -50%);
 }
 
 .desk-object__visual--charm-acrylic .desk-object__charm {
-  aspect-ratio: 300 / 443;
+  aspect-ratio: 270 / 443;
 }
 
 .desk-object__charm-art {
   width: 100%;
   height: 100%;
   display: block;
+  /* Flat and acrylic art differ slightly in proportion; never stretch them */
+  object-fit: contain;
   pointer-events: none;
 }
 
 .desk-object__charm-phrase {
   position: absolute;
-  left: 14%;
-  right: 14%;
-  top: 74.5%;
-  height: 8.5%;
+  left: 16%;
+  right: 16%;
+  top: 74%;
+  height: 16%;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -313,8 +315,10 @@
 }
 
 .desk-object__visual--charm-acrylic .desk-object__charm-phrase {
-  top: 77.5%;
-  height: 7.5%;
+  left: 19%;
+  right: 19%;
+  top: 80%;
+  height: 12%;
 }
 
 /* Flat sticker charm: stuck flat on the wood, barely any lift */
