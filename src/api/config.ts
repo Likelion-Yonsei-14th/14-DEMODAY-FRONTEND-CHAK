@@ -17,6 +17,9 @@ export const isApiEnabled = rawApiUrl !== ''
 export const KAKAO_CLIENT_ID =
   (import.meta.env.VITE_KAKAO_CLIENT_ID as string | undefined) ?? ''
 
+// Kakao login is switched off until the Kakao business review is approved.
+export const isKakaoLoginEnabled = false
+
 export const GOOGLE_CLIENT_ID =
   (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ?? ''
 

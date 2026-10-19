@@ -19,7 +19,7 @@ import {
   TextField,
 } from '@/design-system'
 import { logout as logoutFromServer, startGoogleLogin, startKakaoLogin } from '@/api/auth'
-import { GOOGLE_CLIENT_ID, isApiEnabled } from '@/api/config'
+import { GOOGLE_CLIENT_ID, isApiEnabled, isKakaoLoginEnabled } from '@/api/config'
 import { AppShell } from '@/layout/AppShell'
 import { formatChaltteok } from '@/features/chaltteok/chaltteok'
 import { MockModeBadge } from '@/features/chaltteok/MockModeBadge'
@@ -102,7 +102,7 @@ export function LoginPage() {
           )}
         </section>
 
-        {isApiEnabled && (
+        {isApiEnabled && isKakaoLoginEnabled && (
           <Button variant="brand" fullWidth onClick={startKakaoLogin}>
             카카오로 계속하기
             {lastLogin?.provider === 'kakao' && (
