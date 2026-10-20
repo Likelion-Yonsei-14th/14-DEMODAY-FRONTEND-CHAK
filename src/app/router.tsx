@@ -93,6 +93,10 @@ import {
   ReaderPage,
 } from '@/prototype/screens/flowPages'
 import { SystemPage } from '@/system/SystemPage'
+import {
+  SneakyPhoneIntroPage,
+  SneakyPhonePlayPage,
+} from '@/features/minigame/sneakyPhone/SneakyPhonePages'
 import { ChargePage } from '@/features/chaltteok/ChargePage'
 import {
   ChargeFailPage,
@@ -132,6 +136,8 @@ export const router = createBrowserRouter([
         element: <DeleteAccountCompletePage />,
       },
       { path: '/prototype', element: <PrototypeIndexPage /> },
+      { path: '/minigame/sneaky-phone', element: <SneakyPhoneIntroPage /> },
+      { path: '/minigame/sneaky-phone/play', element: <SneakyPhonePlayPage /> },
 
       { path: '/prototype/create', element: <DeskCreateWhoPage /> },
       {

@@ -13,6 +13,12 @@ const routes = [
     phase: 'LIVE',
   },
   {
+    path: '/minigame/sneaky-phone',
+    title: 'Mini Game · 선생님 몰래 폰 하기',
+    description: '30초 야자 타이밍 게임 → 선생님 뒤돌기 예고 보고 숨기기 → 점수·최고 기록',
+    phase: 'LIVE',
+  },
+  {
     path: '/auth/login',
     title: 'Account',
     description: '비로그인 이용 → 로그인/회원가입 → 계정 → 로그아웃/탈퇴',
