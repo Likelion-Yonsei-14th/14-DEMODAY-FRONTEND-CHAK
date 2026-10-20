@@ -87,11 +87,18 @@ describe('study type mini game', () => {
     expect(document.body).not.toHaveTextContent(/\b(PSA|PSN|PFA|PFN|LSA|LSN|LFA|LFN)\b/)
   }, 20_000)
 
-  it('hides the question number and progress while answering', async () => {
+  it('shows the current question number and how many are left', async () => {
     renderAt('/minigame/study-type/test')
     await screen.findByRole('heading', { level: 2 })
-    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
-    expect(document.body).not.toHaveTextContent(/\/\s*21|Q\d+\./)
+    const progress = () => document.querySelector('.study-type-progress p')!
+    expect(progress()).toHaveTextContent('1 / 21번째 문항')
+    expect(progress()).toHaveTextContent('21문항 남았어요')
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0')
+
+    await answerCurrent(preferFirst)
+    expect(progress()).toHaveTextContent('2 / 21번째 문항')
+    expect(progress()).toHaveTextContent('20문항 남았어요')
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '1')
   })
 
   it('resumes after a refresh and lets an earlier answer be changed', async () => {

@@ -181,6 +181,8 @@ export function StudyTypeTestPage() {
   const question = storedId ? getQuestion(storedId) : undefined
   const isLast = index === total - 1
   const complete = isSessionComplete(session)
+  const answered = countAnswered(session)
+  const remaining = total - answered
 
   if (!question) return <Navigate to={STUDY_TYPE_PATH} replace />
 
@@ -233,6 +235,27 @@ export function StudyTypeTestPage() {
       }
     >
       <div className="study-type-test">
+        <div className="study-type-progress">
+          <p>
+            <span>
+              <strong>{index + 1}</strong> / {total}번째 문항
+            </span>
+            <span className="study-type-progress__left">
+              {remaining > 0 ? `${remaining}문항 남았어요` : '모두 답했어요'}
+            </span>
+          </p>
+          <div
+            className="study-type-progress__track"
+            role="progressbar"
+            aria-label="답한 문항 수"
+            aria-valuemin={0}
+            aria-valuemax={total}
+            aria-valuenow={answered}
+          >
+            <span style={{ width: `${(answered / total) * 100}%` }} />
+          </div>
+        </div>
+
         <section
           key={questionId}
           className="study-type-question"
