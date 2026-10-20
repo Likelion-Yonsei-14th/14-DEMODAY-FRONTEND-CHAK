@@ -2,6 +2,7 @@ import { ChevronRight, Plus, UserRound, UsersRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useFeedback } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
+import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import './StartPage.css'
@@ -88,6 +89,8 @@ export function HomePage() {
           <Plus size={15} aria-hidden />
           새 책상이나 반 만들기
         </button>
+
+        <MiniGameSection />
       </main>
     </AppShell>
   )
