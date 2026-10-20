@@ -65,8 +65,12 @@ import './GuessGod.css'
 /** Where "back to the service" goes: the entry route picks /home or /start. */
 const SERVICE_HOME = '/'
 
-/** Long enough to read as "grading", short enough not to be in the way. */
-const GRADING_MS = 1100
+/** Pause after submitting before question 1 is graded. */
+const REVEAL_START_MS = 400
+/** Gap between grading one question and the next. */
+const REVEAL_STEP_MS = 420
+/** How long the fully graded sheet stays up before the result page. */
+const REVEAL_HOLD_MS = 1000
 
 const CIRCLED: Record<Choice, string> = { 1: '①', 2: '②', 3: '③', 4: '④', 5: '⑤' }
 
@@ -221,11 +225,31 @@ function loadOrCreateGame() {
 export function GuessGodPlayPage() {
   const navigate = useNavigate()
   const [game, setGame] = useState<GuessGodGame>(loadOrCreateGame)
-  const [grading, setGrading] = useState(false)
+  /** How many questions have been graded on the sheet; null until submitted. */
+  const [revealed, setRevealed] = useState<number | null>(null)
   const submitting = useRef(false)
-  const gradingTimer = useRef<number | undefined>(undefined)
+  const rowRefs = useRef<Array<HTMLFieldSetElement | null>>([])
+  const grading = revealed !== null
 
-  useEffect(() => () => window.clearTimeout(gradingTimer.current), [])
+  const showResult = () =>
+    navigate(guessGodResultPath(game.score ?? 0), { replace: true })
+
+  useEffect(() => {
+    if (revealed === null) return
+    if (revealed > 0 && revealed <= QUESTION_COUNT) {
+      rowRefs.current[revealed - 1]?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
+    }
+    const timer =
+      revealed < QUESTION_COUNT
+        ? window.setTimeout(
+            () => setRevealed(revealed + 1),
+            revealed === 0 ? REVEAL_START_MS : REVEAL_STEP_MS,
+          )
+        : window.setTimeout(showResult, REVEAL_HOLD_MS)
+    return () => window.clearTimeout(timer)
+    // showResult only reads the submitted score, which is fixed once grading starts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealed])
 
   if (game.gameStatus === 'submitted' && !grading) {
     return <Navigate to={guessGodResultPath(game.score ?? 0)} replace />
@@ -234,6 +258,8 @@ export function GuessGodPlayPage() {
   const marked = countMarked(game)
   const remaining = QUESTION_COUNT - marked
   const locked = game.gameStatus !== 'playing'
+  const grades = grading ? gradeAnswers(game.answerKey, game.userAnswers) : []
+  const correctSoFar = grades.slice(0, revealed ?? 0).filter(Boolean).length
 
   const mark = (questionIndex: number, choice: Choice) => {
     if (submitting.current) return
@@ -250,11 +276,11 @@ export function GuessGodPlayPage() {
     const submitted = submitGame(game)
     saveGame(submitted)
     setGame(submitted)
-    setGrading(true)
-    gradingTimer.current = window.setTimeout(
-      () => navigate(guessGodResultPath(submitted.score ?? 0), { replace: true }),
-      prefersReducedMotion() ? 0 : GRADING_MS,
-    )
+    if (prefersReducedMotion()) {
+      navigate(guessGodResultPath(submitted.score ?? 0), { replace: true })
+      return
+    }
+    setRevealed(0)
   }
 
   return (
@@ -266,20 +292,28 @@ export function GuessGodPlayPage() {
         <div className="guess-god-submit">
           <p role="status">
             {grading
-              ? '채점하고 있어요...'
+              ? (revealed ?? 0) < QUESTION_COUNT
+                ? `채점하고 있어요... ${revealed ?? 0} / ${QUESTION_COUNT} · ${correctSoFar}문항 정답`
+                : `채점 완료! ${QUESTION_COUNT}문항 중 ${correctSoFar}문항 정답`
               : remaining > 0
                 ? `아직 ${remaining}문항이 남았어요`
                 : '모두 찍었어요! 이제 제출해 볼까요?'}
           </p>
-          <Button
-            variant="brand"
-            fullWidth
-            loading={grading}
-            disabled={remaining > 0}
-            onClick={submit}
-          >
-            OMR 제출하기
-          </Button>
+          {grading ? (
+            <Button key="skip" variant="brand" fullWidth onClick={showResult}>
+              바로 결과 보기
+            </Button>
+          ) : (
+            <Button
+              key="submit"
+              variant="brand"
+              fullWidth
+              disabled={remaining > 0}
+              onClick={submit}
+            >
+              OMR 제출하기
+            </Button>
+          )}
         </div>
       }
     >
@@ -311,19 +345,43 @@ export function GuessGodPlayPage() {
             <span>문번</span>
             <span>답란</span>
           </div>
-          {game.userAnswers.map((current, questionIndex) => (
+          {game.userAnswers.map((current, questionIndex) => {
+            const graded = grading && questionIndex < (revealed ?? 0)
+            const correct = grades[questionIndex]
+            return (
             <fieldset
               key={questionIndex}
-              className="guess-god-row"
+              ref={(node) => {
+                rowRefs.current[questionIndex] = node
+              }}
+              className={[
+                'guess-god-row',
+                graded ? (correct ? 'is-correct' : 'is-wrong') : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
               disabled={locked}
             >
               <legend className="guess-god-row__number">
                 {questionIndex + 1}
                 <span className="guess-god-sr-only">번 문항</span>
               </legend>
+              {graded && (
+                <span className="guess-god-row__verdict" aria-hidden />
+              )}
               <div className="guess-god-row__bubbles">
                 {CHOICES.map((choice) => (
-                  <label key={choice} className="guess-god-bubble">
+                  <label
+                    key={choice}
+                    className={[
+                      'guess-god-bubble',
+                      graded && choice === game.answerKey[questionIndex]
+                        ? 'guess-god-bubble--answer'
+                        : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                  >
                     <input
                       type="radio"
                       name={`guess-god-q${questionIndex + 1}`}
@@ -339,13 +397,8 @@ export function GuessGodPlayPage() {
                 ))}
               </div>
             </fieldset>
-          ))}
-          {grading && (
-            <div className="guess-god-sheet__grading" aria-hidden>
-              <PencilLine size={30} />
-              <span>채점 중</span>
-            </div>
-          )}
+            )
+          })}
         </section>
       </div>
     </AppShell>

@@ -43,6 +43,15 @@ function markAll(pick: (answer: number, index: number) => number) {
   key.forEach((answer, index) => fireEvent.click(bubble(index + 1, pick(answer, index))))
 }
 
+/** Each graded question schedules the next, so timers run one act at a time. */
+function finishGrading() {
+  for (let step = 0; step <= QUESTION_COUNT + 1; step += 1) {
+    act(() => {
+      vi.runOnlyPendingTimers()
+    })
+  }
+}
+
 const submitButton = () => screen.getByRole('button', { name: 'OMR 제출하기' })
 
 beforeEach(() => {
@@ -73,9 +82,7 @@ describe('guess god mini game', () => {
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '10')
 
     fireEvent.click(submitButton())
-    act(() => {
-      vi.runAllTimers()
-    })
+    finishGrading()
 
     expect(location.pathname).toBe('/minigame/guess-god/result/7')
     expect(screen.getByRole('heading', { name: '수능 찍기 장인' })).toBeInTheDocument()
@@ -97,6 +104,55 @@ describe('guess god mini game', () => {
     expect(screen.getByRole('button', { name: '이미지 저장하기' })).toBeInTheDocument()
   })
 
+  it('grades the sheet one question at a time from question 1', () => {
+    vi.useFakeTimers()
+    renderAt('/minigame/guess-god/play')
+    // Odd questions right, even ones wrong.
+    markAll((answer, index) => (index % 2 === 0 ? answer : (answer % 5) + 1))
+    const row = (question: number) => screen.getByRole('group', { name: `${question}번 문항` })
+
+    fireEvent.click(submitButton())
+    expect(row(1)).not.toHaveClass('is-correct')
+    expect(screen.getByRole('status')).toHaveTextContent('채점하고 있어요... 0 / 10')
+
+    act(() => {
+      vi.advanceTimersByTime(400)
+    })
+    expect(row(1)).toHaveClass('is-correct')
+    expect(row(2)).not.toHaveClass('is-wrong')
+
+    act(() => {
+      vi.advanceTimersByTime(420)
+    })
+    expect(row(2)).toHaveClass('is-wrong')
+    expect(row(3)).not.toHaveClass('is-correct')
+    expect(screen.getByRole('status')).toHaveTextContent('2 / 10 · 1문항 정답')
+    expect(location.pathname).toBe('/minigame/guess-god/play')
+
+    for (let step = 0; step < 8; step += 1) {
+      act(() => {
+        vi.advanceTimersByTime(420)
+      })
+    }
+    expect(screen.getByRole('status')).toHaveTextContent('채점 완료! 10문항 중 5문항 정답')
+    expect(location.pathname).toBe('/minigame/guess-god/play')
+
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+    expect(location.pathname).toBe('/minigame/guess-god/result/5')
+  })
+
+  it('can skip the grading animation straight to the result', () => {
+    vi.useFakeTimers()
+    renderAt('/minigame/guess-god/play')
+    markAll((answer) => answer)
+
+    fireEvent.click(submitButton())
+    fireEvent.click(screen.getByRole('button', { name: '바로 결과 보기' }))
+    expect(location.pathname).toBe('/minigame/guess-god/result/10')
+  })
+
   it('says how many are left and keeps the button off until all are marked', () => {
     renderAt('/minigame/guess-god/play')
     fireEvent.click(bubble(1, 3))
@@ -113,9 +169,11 @@ describe('guess god mini game', () => {
     const key = [...loadGame()!.answerKey]
     markAll((answer) => answer)
 
-    fireEvent.click(submitButton())
-    fireEvent.click(submitButton())
-    fireEvent.click(submitButton())
+    const button = submitButton()
+    fireEvent.click(button)
+    fireEvent.click(button)
+    fireEvent.click(button)
+    expect(screen.queryByRole('button', { name: 'OMR 제출하기' })).not.toBeInTheDocument()
     expect(bubble(1, 1)).toBeDisabled()
 
     const saved = loadGame()!
@@ -123,9 +181,7 @@ describe('guess god mini game', () => {
     expect(saved.answerKey).toEqual(key)
     expect(saved.score).toBe(QUESTION_COUNT)
 
-    act(() => {
-      vi.runAllTimers()
-    })
+    finishGrading()
     expect(location.pathname).toBe('/minigame/guess-god/result/10')
     expect(screen.getByRole('heading', { name: '전설의 찍신' })).toBeInTheDocument()
   })
@@ -163,9 +219,7 @@ describe('guess god mini game', () => {
     const play = renderAt('/minigame/guess-god/play')
     markAll(() => 1)
     fireEvent.click(submitButton())
-    act(() => {
-      vi.runAllTimers()
-    })
+    finishGrading()
     const score = loadGame()!.score!
     play.unmount()
 
@@ -184,9 +238,7 @@ describe('guess god mini game', () => {
     const firstId = loadGame()!.gameId
     markAll((answer) => answer)
     fireEvent.click(submitButton())
-    act(() => {
-      vi.runAllTimers()
-    })
+    finishGrading()
 
     fireEvent.click(screen.getByRole('button', { name: '다시 도전하기' }))
     expect(location.pathname).toBe('/minigame/guess-god/play')

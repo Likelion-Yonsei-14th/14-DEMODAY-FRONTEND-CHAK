@@ -213,6 +213,7 @@
 }
 
 .guess-god-row {
+  position: relative;
   display: flow-root;
   min-width: 0;
   margin: 0;
@@ -317,30 +318,67 @@
   }
 }
 
-.guess-god-sheet__grading {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  gap: var(--space-2);
-  background: color-mix(in srgb, #fffdf8 72%, transparent);
-  color: var(--omr-red);
-  font-size: var(--type-title-l-size);
-  font-weight: 800;
+/* Grading: rows are marked one by one, like a teacher's red pen. */
+.guess-god-row.is-correct,
+.guess-god-row.is-wrong {
+  animation: guess-god-row-flash .6s var(--ease-standard);
 }
 
-.guess-god-sheet__grading svg {
-  animation: guess-god-scribble .5s ease-in-out infinite alternate;
-}
-
-@keyframes guess-god-scribble {
+@keyframes guess-god-row-flash {
   from {
-    transform: translate(-10px, 4px) rotate(-12deg);
+    background: var(--omr-red-soft);
   }
   to {
-    transform: translate(10px, -4px) rotate(8deg);
+    background: transparent;
   }
+}
+
+/* A circle over the number for right, a slash for wrong. */
+.guess-god-row__verdict {
+  position: absolute;
+  top: 50%;
+  left: 26px;
+  pointer-events: none;
+  animation: guess-god-stamp .32s var(--ease-emphasized) both;
+}
+
+.guess-god-row.is-correct .guess-god-row__verdict {
+  width: 38px;
+  height: 38px;
+  margin: -19px 0 0 -19px;
+  border: 3px solid var(--omr-red);
+  border-radius: 50%;
+}
+
+.guess-god-row.is-wrong .guess-god-row__verdict {
+  width: 44px;
+  height: 3px;
+  margin: -1.5px 0 0 -22px;
+  border-radius: 2px;
+  background: var(--omr-red);
+  rotate: -55deg;
+}
+
+@keyframes guess-god-stamp {
+  from {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The key's answer gets a red ring, around the user's mark when they hit it. */
+.guess-god-bubble--answer .guess-god-bubble__mark {
+  outline: 2.5px solid var(--omr-red);
+  outline-offset: 3px;
+  animation: guess-god-mark var(--duration-slow) var(--ease-emphasized);
+}
+
+.guess-god-row.is-wrong .guess-god-bubble input:checked + .guess-god-bubble__mark {
+  opacity: .45;
 }
 
 .guess-god-submit {
@@ -690,7 +728,10 @@
 @media (prefers-reduced-motion: reduce) {
   .guess-god-bubble input:checked + .guess-god-bubble__mark,
   .guess-god-card__score,
-  .guess-god-sheet__grading svg {
+  .guess-god-row.is-correct,
+  .guess-god-row.is-wrong,
+  .guess-god-row__verdict,
+  .guess-god-bubble--answer .guess-god-bubble__mark {
     animation: none;
   }
 
