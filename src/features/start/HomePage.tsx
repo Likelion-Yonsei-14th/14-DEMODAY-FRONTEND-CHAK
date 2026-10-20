@@ -1,6 +1,7 @@
 import { ChevronRight, Plus, UserRound, UsersRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useFeedback } from '@/design-system'
+import { GradeDrawEntryCard } from '@/features/minigame/gradeDraw/GradeDrawEntryCard'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -78,6 +79,8 @@ export function HomePage() {
             <span>{hasClass ? classroom.name : '아직 참여한 반이 없어요'}</span>
             <ChevronRight size={20} aria-hidden />
           </button>
+
+          <GradeDrawEntryCard />
         </div>
 
         <button
