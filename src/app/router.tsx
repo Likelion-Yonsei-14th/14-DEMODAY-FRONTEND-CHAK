@@ -40,6 +40,12 @@ import {
 } from '@/features/account/OAuthCallbackPages'
 import { WelcomePage } from '@/features/start/WelcomePage'
 import {
+  GradeDrawIntroPage,
+  GradeDrawMyResultPage,
+  GradeDrawPlayPage,
+  GradeDrawResultPage,
+} from '@/features/minigame/gradeDraw/GradeDrawPages'
+import {
   AccountPage,
   DeleteAccountCompletePage,
   DeleteAccountPage,
@@ -119,6 +125,13 @@ export const router = createBrowserRouter([
       { index: true, element: <WelcomePage /> },
       { path: '/start', element: <StartPage /> },
       { path: '/home', element: <HomePage /> },
+      { path: '/minigame/grade-draw', element: <GradeDrawIntroPage /> },
+      { path: '/minigame/grade-draw/play', element: <GradeDrawPlayPage /> },
+      { path: '/minigame/grade-draw/result', element: <GradeDrawMyResultPage /> },
+      {
+        path: '/minigame/grade-draw/result/:grades',
+        element: <GradeDrawResultPage />,
+      },
       { path: '/auth/login', element: <LoginPage /> },
       { path: '/auth/kakao/callback', element: <KakaoCallbackPage /> },
       { path: '/auth/google/callback', element: <GoogleCallbackPage /> },
