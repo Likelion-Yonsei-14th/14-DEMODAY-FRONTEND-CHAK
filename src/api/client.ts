@@ -1,6 +1,7 @@
 import { API_URL } from '@/api/config'
 import { getAccessToken, setAccessToken } from '@/api/tokenStore'
 import type { ApiErrorBody, AuthTokenResponse } from '@/api/types'
+import { reportError } from '@/lib/errorReporter'
 
 export class ApiError extends Error {
   readonly status: number
@@ -41,20 +42,41 @@ async function send(path: string, options: RequestOptions, withToken: boolean) {
   const token = getAccessToken()
   if (withToken && token) headers.Authorization = `Bearer ${token}`
 
-  return fetch(buildUrl(path, options.query), {
-    method: options.method ?? 'GET',
-    headers,
-    // Required for the HttpOnly refresh cookie and the guest cookie.
-    credentials: 'include',
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
-  })
+  try {
+    return await fetch(buildUrl(path, options.query), {
+      method: options.method ?? 'GET',
+      headers,
+      // Required for the HttpOnly refresh cookie and the guest cookie.
+      credentials: 'include',
+      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    })
+  } catch (error) {
+    // The browser could not reach the server at all (no response).
+    reportError({
+      kind: 'network_error',
+      message: error instanceof Error ? error.message : 'Network request failed',
+      apiPath: path,
+    })
+    throw error
+  }
 }
 
 async function parse<T>(response: Response): Promise<T> {
   const text = await response.text()
   const data = text ? JSON.parse(text) : undefined
   if (!response.ok) {
-    throw new ApiError(response.status, (data ?? {}) as Partial<ApiErrorBody>)
+    const error = new ApiError(response.status, (data ?? {}) as Partial<ApiErrorBody>)
+    // 5xx means our server failed; 4xx are normal answers (wrong input, not logged in...).
+    if (response.status >= 500) {
+      reportError({
+        kind: 'api_error',
+        message: error.message,
+        apiPath: new URL(response.url || window.location.href, window.location.origin).pathname,
+        status: response.status,
+        code: error.code,
+      })
+    }
+    throw error
   }
   return data as T
 }

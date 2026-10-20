@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { RouteErrorPage } from '@/app/RouteErrorPage'
 import { App } from '@/app/App'
 import { UnifiedComposerPage } from '@/features/composer/UnifiedComposerPage'
 import { StickerPickPage } from '@/features/supporter/StickerPickPage'
@@ -126,6 +127,7 @@ import {
 export const router = createBrowserRouter([
   {
     element: <App />,
+    errorElement: <RouteErrorPage />,
     children: [
       { index: true, element: <WelcomePage /> },
       { path: '/start', element: <StartPage /> },
