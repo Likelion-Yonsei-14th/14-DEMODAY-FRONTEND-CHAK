@@ -1,4 +1,5 @@
 import { ChevronRight, Plus, UserRound, UsersRound } from 'lucide-react'
+import { SneakyPhoneEntryCard } from '@/features/minigame/sneakyPhone/SneakyPhoneEntryCard'
 import { useNavigate } from 'react-router-dom'
 import { useFeedback } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
@@ -35,6 +36,7 @@ export function HomePage() {
         </header>
 
         <div className="home-page__doors">
+          <SneakyPhoneEntryCard className="sneaky-entry--last" />
           <button
             type="button"
             className={[
