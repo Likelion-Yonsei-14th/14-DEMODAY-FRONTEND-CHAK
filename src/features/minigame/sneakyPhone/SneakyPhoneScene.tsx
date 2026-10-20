@@ -105,10 +105,13 @@ export function SneakyPhoneScene({
   phase,
   using,
   status,
+  countdown = null,
 }: {
   phase: TeacherPhase
   using: boolean
   status: GameStatus
+  /** 3, 2, 1 before the round starts; null once it is running. */
+  countdown?: number | null
 }) {
   const caught = status === 'caught'
   const bubble = caught ? '거기!' : BUBBLE_TEXT[phase]
@@ -144,6 +147,12 @@ export function SneakyPhoneScene({
         <DeskPhone using={using && status !== 'survived'} />
       </div>
       <div className="sneaky-scene__flash" aria-hidden />
+      {countdown !== null && (
+        <div className="sneaky-scene__countdown" role="status" aria-live="assertive">
+          <span key={countdown}>{countdown}</span>
+          <small>선생님이 돌아보기 전에 숨기세요!</small>
+        </div>
+      )}
     </div>
   )
 }
