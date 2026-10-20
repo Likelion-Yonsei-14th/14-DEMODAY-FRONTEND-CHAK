@@ -3,6 +3,7 @@ import {
   ALL_OUTCOMES,
   canSubmit,
   CHOICE_COUNT,
+  classifyMarkingStyle,
   clearGame,
   countMarked,
   createGame,
@@ -212,6 +213,44 @@ describe('probability', () => {
     expect(formatOdds(waysAtLeast(7))).toBe('약 1,157분의 1')
     expect(formatOdds(waysExactly(10))).toBe('9,765,625분의 1')
   })
+})
+
+describe('marking style', () => {
+  it('tells a single line from an even spread and anything else', () => {
+    expect(classifyMarkingStyle(Array(10).fill(3))).toBe('one-line')
+    expect(classifyMarkingStyle([1, 2, 3, 4, 5, 1, 2, 3, 4, 5])).toBe('spread')
+    expect(classifyMarkingStyle([5, 5, 4, 4, 3, 3, 2, 2, 1, 1])).toBe('spread')
+    expect(classifyMarkingStyle([1, 1, 1, 2, 3, 4, 5, 5, 5, 5])).toBe('mixed')
+    expect(classifyMarkingStyle([3, 3, 3, 3, 3, 3, 3, 3, 3, null])).toBe('mixed')
+  })
+
+  it('gives one line and an even spread exactly the same odds over every possible key', () => {
+    // Walks all 5^10 answer keys and counts scores for both markings.
+    const oneLine: Choice[] = Array(10).fill(3)
+    const spread: Choice[] = [1, 2, 3, 4, 5, 1, 2, 3, 4, 5]
+    const lineCounts = Array(11).fill(0)
+    const spreadCounts = Array(11).fill(0)
+    const key = Array<number>(10).fill(1)
+    for (let index = 0; index < ALL_OUTCOMES; index += 1) {
+      let lineScore = 0
+      let spreadScore = 0
+      for (let question = 0; question < 10; question += 1) {
+        if (key[question] === oneLine[question]) lineScore += 1
+        if (key[question] === spread[question]) spreadScore += 1
+      }
+      lineCounts[lineScore] += 1
+      spreadCounts[spreadScore] += 1
+      for (let digit = 0; digit < 10; digit += 1) {
+        if (key[digit]! < 5) {
+          key[digit]! += 1
+          break
+        }
+        key[digit] = 1
+      }
+    }
+    expect(spreadCounts).toEqual(lineCounts)
+    lineCounts.forEach((count, score) => expect(count).toBe(waysExactly(score)))
+  }, 30_000)
 })
 
 describe('storage', () => {

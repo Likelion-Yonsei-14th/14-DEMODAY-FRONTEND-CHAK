@@ -128,7 +128,26 @@ export function getGameResult(game: GuessGodGame): GuessGodResult | null {
   return game.score === null ? null : getGuessGodResult(game.score)
 }
 
+// ---------- marking style ----------
+
+/** 'one-line': the same number all the way down. 'spread': every number used equally (2 each). */
+export type MarkingStyle = 'one-line' | 'spread' | 'mixed'
+
+export function classifyMarkingStyle(marks: readonly Mark[]): MarkingStyle {
+  if (marks.length !== QUESTION_COUNT || marks.some((mark) => mark === null)) return 'mixed'
+  if (marks.every((mark) => mark === marks[0])) return 'one-line'
+  const perChoice = QUESTION_COUNT / CHOICE_COUNT
+  const spread = CHOICES.every(
+    (choice) => marks.filter((mark) => mark === choice).length === perChoice,
+  )
+  return spread ? 'spread' : 'mixed'
+}
+
 // ---------- probability (binomial, n = 10, p = 1/5) ----------
+
+// Every question's answer is drawn on its own with 1/5 odds, so any marking -
+// one line, an even spread or anything else - matches each question with
+// probability 1/5. The odds below therefore hold for every way of marking.
 
 /** 5^10: every possible answer key, equally likely. */
 export const ALL_OUTCOMES = CHOICE_COUNT ** QUESTION_COUNT
