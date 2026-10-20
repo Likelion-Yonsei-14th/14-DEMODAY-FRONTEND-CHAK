@@ -82,6 +82,46 @@
 }
 
 /* Question */
+.study-type-progress {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.study-type-progress p {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-label-l-size);
+  font-weight: 600;
+}
+
+.study-type-progress strong {
+  color: var(--color-content-primary);
+  font-size: var(--type-title-l-size);
+}
+
+.study-type-progress__left {
+  color: var(--color-content-tertiary);
+  font-size: var(--type-label-m-size);
+}
+
+.study-type-progress__track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-muted);
+}
+
+.study-type-progress__track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-brand);
+  transition: width var(--duration-normal) var(--ease-standard);
+}
+
 .study-type-test {
   display: grid;
   gap: var(--space-6);
