@@ -1,0 +1,700 @@
+/* 오늘의 찍신은 나야! - mini game screens */
+.guess-god-shell {
+  --omr-red: #c8432b;
+  --omr-red-soft: #fbe3dc;
+  padding-top: var(--space-2);
+}
+
+.guess-god-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.guess-god-tag {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 2px;
+  background: var(--label-lime);
+  color: var(--color-ink);
+  font-size: var(--type-caption-size);
+  font-weight: 800;
+  letter-spacing: .02em;
+  transform: rotate(-2deg);
+}
+
+.guess-god-disclaimer {
+  margin: 0;
+  color: var(--color-content-tertiary);
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-line);
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* Intro */
+.guess-god-intro {
+  display: grid;
+  gap: var(--space-6);
+  padding-block: var(--space-4) var(--space-6);
+}
+
+.guess-god-intro__art {
+  position: relative;
+  justify-self: center;
+  padding: var(--space-2) var(--space-6) 0;
+}
+
+.guess-god-intro__card {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 2px solid var(--omr-red);
+  border-radius: 4px;
+  background: #fffdf8;
+  box-shadow: var(--shadow-paper);
+  transform: rotate(-3deg);
+}
+
+.guess-god-intro__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.guess-god-intro__row span {
+  width: 18px;
+  color: var(--omr-red);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.guess-god-intro__row i {
+  width: 13px;
+  height: 18px;
+  border: 1.5px solid var(--omr-red);
+  border-radius: 999px;
+}
+
+.guess-god-intro__row i.is-filled {
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+}
+
+.guess-god-intro__pencil {
+  position: absolute;
+  right: -4px;
+  bottom: -14px;
+  color: var(--color-butter);
+  filter: drop-shadow(0 2px 2px rgba(40, 30, 20, .25));
+  transform: rotate(8deg);
+}
+
+.guess-god-intro__header {
+  display: grid;
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.guess-god-intro__header h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.3;
+  letter-spacing: -.04em;
+}
+
+.guess-god-intro__header p {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-line);
+  text-wrap: balance;
+  word-break: keep-all;
+}
+
+.guess-god-intro__header .guess-god-intro__subtitle {
+  margin-top: calc(var(--space-2) * -1);
+  color: var(--color-brand);
+  font-size: var(--type-title-m-size);
+  font-weight: 700;
+}
+
+.guess-god-intro__meta {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guess-god-intro__meta li {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-subtle);
+  color: var(--color-content-secondary);
+  font-size: var(--type-label-m-size);
+  font-weight: 700;
+}
+
+.guess-god-intro__actions {
+  display: grid;
+  gap: var(--space-3);
+}
+
+/* OMR sheet */
+.guess-god-play {
+  display: grid;
+  gap: var(--space-4);
+  padding-block: var(--space-2) var(--space-4);
+}
+
+.guess-god-progress {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.guess-god-progress p {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-label-l-size);
+  font-weight: 600;
+}
+
+.guess-god-progress strong {
+  color: var(--color-content-primary);
+  font-size: var(--type-title-l-size);
+}
+
+.guess-god-progress__track {
+  height: 10px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-muted);
+}
+
+.guess-god-progress__track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-brand);
+  transition: width var(--duration-normal) var(--ease-standard);
+}
+
+.guess-god-sheet {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid var(--omr-red);
+  border-radius: 6px;
+  background: #fffdf8;
+  box-shadow: var(--shadow-paper);
+}
+
+.guess-god-sheet__head {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  background: var(--omr-red);
+  color: #fff;
+  font-size: var(--type-label-m-size);
+  font-weight: 800;
+  letter-spacing: .2em;
+  text-align: center;
+}
+
+.guess-god-sheet__head span {
+  padding: 6px 0;
+}
+
+.guess-god-row {
+  display: flow-root;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--omr-red-soft);
+}
+
+.guess-god-row:nth-of-type(5n) {
+  border-bottom: 2px solid color-mix(in srgb, var(--omr-red) 45%, transparent);
+}
+
+.guess-god-row:last-of-type {
+  border-bottom: 0;
+}
+
+/* A floated legend is laid out like normal content, beside the bubbles. */
+.guess-god-row__number {
+  float: left;
+  width: 52px;
+  padding: 0;
+  line-height: 48px;
+  color: var(--omr-red);
+  font-size: var(--type-title-m-size);
+  font-weight: 800;
+  text-align: center;
+}
+
+.guess-god-row__bubbles {
+  margin-left: 52px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border-left: 1px solid var(--omr-red-soft);
+}
+
+.guess-god-bubble {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 48px;
+  cursor: pointer;
+}
+
+.guess-god-bubble input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.guess-god-bubble__mark {
+  width: 24px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--omr-red);
+  border-radius: 999px;
+  color: var(--omr-red);
+  font-size: 13px;
+  font-weight: 700;
+  transition:
+    background var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.guess-god-bubble:hover .guess-god-bubble__mark {
+  background: var(--omr-red-soft);
+}
+
+.guess-god-bubble input:checked + .guess-god-bubble__mark {
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-ink);
+  animation: guess-god-mark var(--duration-slow) var(--ease-emphasized);
+}
+
+.guess-god-bubble input:focus-visible + .guess-god-bubble__mark {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.guess-god-row:disabled .guess-god-bubble {
+  cursor: default;
+}
+
+.guess-god-row:disabled .guess-god-bubble:hover .guess-god-bubble__mark {
+  background: transparent;
+}
+
+.guess-god-row:disabled .guess-god-bubble input:checked + .guess-god-bubble__mark {
+  background: var(--color-ink);
+}
+
+@keyframes guess-god-mark {
+  from {
+    transform: scale(.6);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.guess-god-sheet__grading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-2);
+  background: color-mix(in srgb, #fffdf8 72%, transparent);
+  color: var(--omr-red);
+  font-size: var(--type-title-l-size);
+  font-weight: 800;
+}
+
+.guess-god-sheet__grading svg {
+  animation: guess-god-scribble .5s ease-in-out infinite alternate;
+}
+
+@keyframes guess-god-scribble {
+  from {
+    transform: translate(-10px, 4px) rotate(-12deg);
+  }
+  to {
+    transform: translate(10px, -4px) rotate(8deg);
+  }
+}
+
+.guess-god-submit {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.guess-god-submit p {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-label-m-size);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Result */
+.guess-god-result {
+  display: grid;
+  gap: var(--space-5);
+  padding-block: var(--space-2) var(--space-6);
+}
+
+.guess-god-card {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-5);
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 50% 24%, var(--guess-god-bg) 0 34%, transparent 74%),
+    var(--color-surface-base);
+  box-shadow: var(--shadow-paper);
+  text-align: center;
+}
+
+.guess-god-card__eyebrow {
+  color: var(--color-content-secondary);
+  font-size: var(--type-label-m-size);
+  font-weight: 600;
+}
+
+.guess-god-card__icon {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: var(--guess-god-accent);
+  color: #fff;
+  box-shadow: var(--shadow-paper);
+}
+
+.guess-god-card__score {
+  margin: var(--space-1) 0 0;
+  line-height: 1;
+  animation: guess-god-pop .5s var(--ease-emphasized) both;
+}
+
+.guess-god-card__score strong {
+  font-size: 76px;
+  font-weight: 800;
+  letter-spacing: -.04em;
+}
+
+.guess-god-card__score span {
+  color: var(--color-content-secondary);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+@keyframes guess-god-pop {
+  from {
+    opacity: 0;
+    transform: scale(.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.guess-god-card__count {
+  margin: 0;
+  font-size: var(--type-title-m-size);
+  font-weight: 700;
+}
+
+.guess-god-card h1 {
+  margin: var(--space-2) 0 0;
+  font-size: 28px;
+  line-height: 1.3;
+  letter-spacing: -.04em;
+  word-break: keep-all;
+}
+
+.guess-god-card__quote {
+  margin: 0;
+  color: var(--color-brand);
+  font-size: var(--type-title-m-size);
+  font-weight: 700;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.guess-god-card__description {
+  margin: var(--space-2) 0 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-body-s-size);
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.guess-god-card--legend {
+  outline: 3px solid var(--color-butter);
+  outline-offset: -8px;
+}
+
+.guess-god-card__confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.guess-god-card__confetti i {
+  position: absolute;
+  top: -12px;
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--color-butter);
+  opacity: 0;
+  animation: guess-god-confetti 1.6s var(--ease-standard) forwards;
+}
+
+.guess-god-card__confetti i:nth-child(3n) { background: var(--color-brand); }
+.guess-god-card__confetti i:nth-child(3n + 1) { background: var(--color-sky); }
+.guess-god-card__confetti i:nth-child(1) { left: 6%; animation-delay: .05s; }
+.guess-god-card__confetti i:nth-child(2) { left: 14%; animation-delay: .3s; }
+.guess-god-card__confetti i:nth-child(3) { left: 22%; animation-delay: .15s; }
+.guess-god-card__confetti i:nth-child(4) { left: 31%; animation-delay: .4s; }
+.guess-god-card__confetti i:nth-child(5) { left: 40%; animation-delay: .1s; }
+.guess-god-card__confetti i:nth-child(6) { left: 49%; animation-delay: .35s; }
+.guess-god-card__confetti i:nth-child(7) { left: 57%; animation-delay: .2s; }
+.guess-god-card__confetti i:nth-child(8) { left: 65%; animation-delay: .45s; }
+.guess-god-card__confetti i:nth-child(9) { left: 73%; animation-delay: .05s; }
+.guess-god-card__confetti i:nth-child(10) { left: 81%; animation-delay: .25s; }
+.guess-god-card__confetti i:nth-child(11) { left: 88%; animation-delay: .4s; }
+.guess-god-card__confetti i:nth-child(12) { left: 94%; animation-delay: .15s; }
+
+@keyframes guess-god-confetti {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(320px) rotate(300deg);
+  }
+}
+
+.guess-god-section {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: 6px;
+  background: var(--color-surface-base);
+  box-shadow: var(--shadow-paper);
+}
+
+.guess-god-section h2 {
+  margin: 0;
+  font-size: var(--type-title-l-size);
+  line-height: var(--type-title-l-line);
+  letter-spacing: -.02em;
+}
+
+.guess-god-section > p {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-line);
+}
+
+.guess-god-section > .guess-god-section__note {
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-line);
+}
+
+.guess-god-cta {
+  text-align: center;
+  background: var(--color-butter-soft);
+}
+
+.guess-god-table-wrap {
+  overflow-x: auto;
+}
+
+.guess-god-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-body-s-size);
+  text-align: center;
+}
+
+.guess-god-table th,
+.guess-god-table td {
+  padding: 7px 4px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.guess-god-table thead th {
+  color: var(--color-content-secondary);
+  font-size: var(--type-label-m-size);
+  font-weight: 700;
+}
+
+.guess-god-table tbody th {
+  color: var(--omr-red);
+  font-weight: 800;
+}
+
+.guess-god-table td {
+  font-size: 18px;
+}
+
+.guess-god-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.guess-god-table tr.is-correct {
+  background: color-mix(in srgb, var(--color-success-soft) 70%, transparent);
+}
+
+.guess-god-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--type-label-m-size);
+  font-weight: 800;
+}
+
+.is-correct .guess-god-verdict {
+  color: var(--color-success);
+}
+
+.is-wrong .guess-god-verdict {
+  color: var(--color-danger);
+}
+
+.guess-god-analysis {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guess-god-analysis li {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-subtle);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-line);
+  word-break: keep-all;
+}
+
+.guess-god-strategy {
+  display: grid;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.guess-god-strategy h3 {
+  margin: 0;
+  font-size: var(--type-title-m-size);
+  line-height: var(--type-title-m-line);
+}
+
+.guess-god-strategy > p {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-line);
+  word-break: keep-all;
+}
+
+.guess-god-strategy > p strong {
+  color: var(--color-content-primary);
+}
+
+.guess-god-strategy > .guess-god-strategy__note {
+  color: var(--color-content-tertiary);
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-line);
+}
+
+.guess-god-strategy__table td {
+  font-size: var(--type-body-s-size);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.guess-god-strategy__table tbody th {
+  color: var(--color-content-primary);
+  font-weight: 700;
+  text-align: left;
+}
+
+.guess-god-strategy__table tbody th small {
+  display: block;
+  color: var(--color-content-tertiary);
+  font-size: var(--type-caption-size);
+  font-weight: 500;
+}
+
+.guess-god-strategy__table thead th:first-child {
+  text-align: left;
+}
+
+.guess-god-strategy__table tr.is-mine {
+  background: color-mix(in srgb, var(--color-butter-soft) 70%, transparent);
+}
+
+.guess-god-result__actions {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+
+.guess-god-image-sheet {
+  display: grid;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+}
+
+.guess-god-image-sheet img {
+  width: min(100%, 300px);
+  justify-self: center;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-paper);
+  -webkit-touch-callout: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guess-god-bubble input:checked + .guess-god-bubble__mark,
+  .guess-god-card__score,
+  .guess-god-sheet__grading svg {
+    animation: none;
+  }
+
+  .guess-god-card__confetti {
+    display: none;
+  }
+}

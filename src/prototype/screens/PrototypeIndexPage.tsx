@@ -13,6 +13,12 @@ const routes = [
     phase: 'LIVE',
   },
   {
+    path: '/minigame/sneaky-phone',
+    title: 'Mini Game · 선생님 몰래 폰 하기',
+    description: '30초 야자 타이밍 게임 → 선생님 뒤돌기 예고 보고 숨기기 → 점수·최고 기록',
+    phase: 'LIVE',
+  },
+  {
     path: '/auth/login',
     title: 'Account',
     description: '비로그인 이용 → 로그인/회원가입 → 계정 → 로그아웃/탈퇴',
@@ -79,15 +85,33 @@ const routes = [
     phase: 'LIVE',
   },
   {
+    path: '/minigame/grade-draw',
+    title: 'Mini Game · 수능 운빨 뽑기',
+    description: '과목별 가중치 등급 뽑기 → 가상 수능 성적표 → 특별 칭호 → 링크·이미지 공유',
+    phase: 'LIVE',
+  },
+  {
     path: '/prototype/classroom/classroom-3-2/wrapped',
     title: 'Class Wrapped',
     description: '반 전체 응원 총량 · 자주 남은 말/이모지 · 비경쟁 공동 기록 · 공유',
     phase: 'LIVE',
   },
   {
+    path: '/minigame/guess-god',
+    title: 'Mini Game · 오늘의 찍신',
+    description: '5지선다 OMR 찍기 → 채점 → 찍신 칭호 · 확률 분석 → 링크·이미지 공유',
+    phase: 'LIVE',
+  },
+  {
     path: '/prototype/wrapped',
     title: 'Post-exam Wrapped',
     description: '수능 종료 → AI 응원 기록 → 친구 Reveal → 전체 기록 → 공유 → 혜택·쿠폰',
+    phase: 'LIVE',
+  },
+  {
+    path: '/minigame/study-type',
+    title: 'Mini Game · 수험생 유형',
+    description: '2지선다 성향 테스트 → 수험생 유형 결과 → 링크·이미지 공유',
     phase: 'LIVE',
   },
 ]

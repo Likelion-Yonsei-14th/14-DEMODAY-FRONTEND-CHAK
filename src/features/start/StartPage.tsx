@@ -12,6 +12,7 @@ import {
   mergeSupportMessages,
   seededDeskObjects,
 } from '@/features/supporter/seededMessages'
+import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import './StartPage.css'
@@ -101,6 +102,8 @@ export function StartPage() {
             onClick={() => navigate('/prototype/classroom/create')}
           />
         </section>
+
+        <MiniGameSection />
       </main>
     </AppShell>
   )

@@ -28,12 +28,23 @@ import { SentMessagesPage } from '@/features/supporter/SentMessagesPage'
 import { SupporterSettingsPage } from '@/features/supporter/SupporterSettingsPage'
 import { StartPage } from '@/features/start/StartPage'
 import { HomePage } from '@/features/start/HomePage'
+import {
+  GuessGodIntroPage,
+  GuessGodPlayPage,
+  GuessGodResultPage,
+} from '@/features/minigame/guessGod/GuessGodPages'
 import { OwnerDeskGate, SupporterDeskGate } from '@/api/DeskGates'
 import {
   GoogleCallbackPage,
   KakaoCallbackPage,
 } from '@/features/account/OAuthCallbackPages'
 import { WelcomePage } from '@/features/start/WelcomePage'
+import {
+  GradeDrawIntroPage,
+  GradeDrawMyResultPage,
+  GradeDrawPlayPage,
+  GradeDrawResultPage,
+} from '@/features/minigame/gradeDraw/GradeDrawPages'
 import {
   AccountPage,
   DeleteAccountCompletePage,
@@ -93,11 +104,20 @@ import {
   ReaderPage,
 } from '@/prototype/screens/flowPages'
 import { SystemPage } from '@/system/SystemPage'
+import {
+  SneakyPhoneIntroPage,
+  SneakyPhonePlayPage,
+} from '@/features/minigame/sneakyPhone/SneakyPhonePages'
 import { ChargePage } from '@/features/chaltteok/ChargePage'
 import {
   ChargeFailPage,
   ChargeSuccessPage,
 } from '@/features/chaltteok/ChargeResultPages'
+import {
+  StudyTypeIntroPage,
+  StudyTypeResultPage,
+  StudyTypeTestPage,
+} from '@/features/minigame/studyType/StudyTypePages'
 
 // Only the bare entry point (`/`) branches on auth: WelcomePage sends a
 // signed-in visitor to the two-door /home and shows everyone else the
@@ -109,6 +129,13 @@ export const router = createBrowserRouter([
       { index: true, element: <WelcomePage /> },
       { path: '/start', element: <StartPage /> },
       { path: '/home', element: <HomePage /> },
+      { path: '/minigame/grade-draw', element: <GradeDrawIntroPage /> },
+      { path: '/minigame/grade-draw/play', element: <GradeDrawPlayPage /> },
+      { path: '/minigame/grade-draw/result', element: <GradeDrawMyResultPage /> },
+      {
+        path: '/minigame/grade-draw/result/:grades',
+        element: <GradeDrawResultPage />,
+      },
       { path: '/auth/login', element: <LoginPage /> },
       { path: '/auth/kakao/callback', element: <KakaoCallbackPage /> },
       { path: '/auth/google/callback', element: <GoogleCallbackPage /> },
@@ -132,6 +159,8 @@ export const router = createBrowserRouter([
         element: <DeleteAccountCompletePage />,
       },
       { path: '/prototype', element: <PrototypeIndexPage /> },
+      { path: '/minigame/sneaky-phone', element: <SneakyPhoneIntroPage /> },
+      { path: '/minigame/sneaky-phone/play', element: <SneakyPhonePlayPage /> },
 
       { path: '/prototype/create', element: <DeskCreateWhoPage /> },
       {
@@ -369,10 +398,22 @@ export const router = createBrowserRouter([
         path: '/prototype/offers/:offerId/coupon',
         element: <OfferCouponPage />,
       },
+      { path: '/minigame/study-type', element: <StudyTypeIntroPage /> },
+      { path: '/minigame/study-type/test', element: <StudyTypeTestPage /> },
+      {
+        path: '/minigame/study-type/result/:slug',
+        element: <StudyTypeResultPage />,
+      },
       { path: '/system', element: <SystemPage /> },
       { path: '/chaltteok/charge', element: <ChargePage /> },
       { path: '/chaltteok/charge/success', element: <ChargeSuccessPage /> },
       { path: '/chaltteok/charge/fail', element: <ChargeFailPage /> },
+      { path: '/minigame/guess-god', element: <GuessGodIntroPage /> },
+      { path: '/minigame/guess-god/play', element: <GuessGodPlayPage /> },
+      {
+        path: '/minigame/guess-god/result/:score',
+        element: <GuessGodResultPage />,
+      },
       { path: '*', element: <Navigate to="/start" replace /> },
     ],
   },
