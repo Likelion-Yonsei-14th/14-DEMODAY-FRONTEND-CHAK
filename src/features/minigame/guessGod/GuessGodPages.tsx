@@ -451,14 +451,23 @@ const MARKING_STYLE_LABELS: Record<MarkingStyle, string> = {
   mixed: '자유롭게 찍기',
 }
 
-/** Same odds for both styles - the answer key gives each question 1/5 regardless of the mark. */
-function StrategyComparison({ score, style }: { score: number; style: MarkingStyle }) {
-  const oddsLabel = score === 0 ? '모두 틀릴 확률' : `${score}문항 이상 맞힐 확률`
-  const odds = formatOdds(score === 0 ? waysExactly(0) : waysAtLeast(score))
-  const rows: Array<{ style: MarkingStyle; name: string; example: string }> = [
-    { style: 'one-line', name: '한 줄로 찍기', example: '예: 10문항 모두 ③' },
-    { style: 'spread', name: '번호 나눠 찍기', example: '예: ①~⑤를 2개씩' },
-  ]
+/**
+ * Odds from 10 questions drawn at random out of the real 2022-2026 CSAT 국어(화법과
+ * 작문)·영어 odd-form answer keys. Real keys are balanced across ①-⑤, unlike this
+ * game's fully random key, so these are shown as past-exam figures only.
+ */
+const PAST_EXAM_STRATEGY_ODDS: Array<{
+  style: MarkingStyle
+  name: string
+  example: string
+  average: number
+  atLeastFour: string
+}> = [
+  { style: 'one-line', name: '한 줄로 찍기', example: '예: 10문항 모두 ③', average: 2, atLeastFour: '약 9.7%' },
+  { style: 'spread', name: '번호 나눠 찍기', example: '예: ①~⑤를 2개씩', average: 2, atLeastFour: '약 12.3%' },
+]
+
+function StrategyComparison({ style }: { style: MarkingStyle }) {
 
   return (
     <div className="guess-god-strategy">
@@ -472,26 +481,31 @@ function StrategyComparison({ score, style }: { score: number; style: MarkingSty
             <tr>
               <th scope="col">찍는 방식</th>
               <th scope="col">평균 정답</th>
-              <th scope="col">{oddsLabel}</th>
+              <th scope="col">4문항 이상 맞힐 확률</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
+            {PAST_EXAM_STRATEGY_ODDS.map((row) => (
               <tr key={row.style} className={row.style === style ? 'is-mine' : ''}>
                 <th scope="row">
                   {row.name}
                   <small>{row.example}</small>
                 </th>
-                <td>{EXPECTED_SCORE}문항</td>
-                <td>{odds}</td>
+                <td>{row.average}문항</td>
+                <td>{row.atLeastFour}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <p>
-        결과는 <strong>똑같아요.</strong> 이 게임의 정답표는 문항마다 1~5번이 같은
-        확률로 따로 뽑혀서, 어떤 번호를 어떻게 찍든 문항당 맞힐 확률은 20%예요.
+        평균 정답은 2문항으로 같지만, 실제 수능 기출에서는 번호를 나눠 찍었을 때
+        4문항 이상 맞힐 확률이 <strong>약 2.6%p 높았어요.</strong>
+      </p>
+      <p className="guess-god-strategy__note">
+        2022~2026학년도 수능 국어·영어 정답표를 기준으로, 10문항을 무작위로
+        선택했을 때의 확률이에요. 실제 시험에서 반드시 같은 결과가 나온다는 뜻은
+        아니에요.
       </p>
     </div>
   )
@@ -531,11 +545,11 @@ function LuckAnalysis({ score, game }: { score: number; game: GuessGodGame }) {
           )}
         </li>
       </ul>
-      <StrategyComparison score={score} style={classifyMarkingStyle(game.userAnswers)} />
       <p className="guess-god-section__note">
         실제 참여자 순위가 아니라, 5지선다를 무작위로 찍었을 때의 수학적
         확률이에요.
       </p>
+      <StrategyComparison style={classifyMarkingStyle(game.userAnswers)} />
     </section>
   )
 }
