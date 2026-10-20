@@ -1,13 +1,10 @@
 import { ChevronRight, Plus, UserRound, UsersRound } from 'lucide-react'
-import { SneakyPhoneEntryCard } from '@/features/minigame/sneakyPhone/SneakyPhoneEntryCard'
 import { useNavigate } from 'react-router-dom'
 import { useFeedback } from '@/design-system'
-import { GradeDrawEntryCard } from '@/features/minigame/gradeDraw/GradeDrawEntryCard'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
-import { StudyTypeEntryCard } from '@/features/minigame/studyType/StudyTypeEntryCard'
+import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
-import { GuessGodEntryCard } from '@/features/minigame/guessGod/GuessGodEntryCard'
 import './StartPage.css'
 
 /**
@@ -39,7 +36,6 @@ export function HomePage() {
         </header>
 
         <div className="home-page__doors">
-          <SneakyPhoneEntryCard className="sneaky-entry--last" />
           <button
             type="button"
             className={[
@@ -83,11 +79,7 @@ export function HomePage() {
             <span>{hasClass ? classroom.name : '아직 참여한 반이 없어요'}</span>
             <ChevronRight size={20} aria-hidden />
           </button>
-
-          <GradeDrawEntryCard />
         </div>
-
-        <StudyTypeEntryCard />
 
         <button
           type="button"
@@ -98,7 +90,7 @@ export function HomePage() {
           새 책상이나 반 만들기
         </button>
 
-        <GuessGodEntryCard />
+        <MiniGameSection />
       </main>
     </AppShell>
   )
