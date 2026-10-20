@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { LogIn, UserRound, UsersRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { ChoiceCard } from '@/design-system'
+import { GradeDrawEntryCard } from '@/features/minigame/gradeDraw/GradeDrawEntryCard'
 import {
   getCsatDateLabel,
   getCsatDdayLabel,
@@ -90,6 +91,7 @@ export function StartPage() {
         </div>
 
         <section className="start-page__choices" aria-label="응원을 모으는 방법">
+          <GradeDrawEntryCard className="grade-draw-entry--last" />
           <ChoiceCard
             title="한 사람에게 마음을 모아줄래요"
             description="나 또는 친구 한 명의 응원 책상을 만들고, 링크로 응원을 모아요."

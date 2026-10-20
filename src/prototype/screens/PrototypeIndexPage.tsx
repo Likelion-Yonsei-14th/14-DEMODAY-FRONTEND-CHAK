@@ -79,6 +79,12 @@ const routes = [
     phase: 'LIVE',
   },
   {
+    path: '/minigame/grade-draw',
+    title: 'Mini Game · 수능 운빨 뽑기',
+    description: '과목별 가중치 등급 뽑기 → 가상 수능 성적표 → 특별 칭호 → 링크·이미지 공유',
+    phase: 'LIVE',
+  },
+  {
     path: '/prototype/classroom/classroom-3-2/wrapped',
     title: 'Class Wrapped',
     description: '반 전체 응원 총량 · 자주 남은 말/이모지 · 비경쟁 공동 기록 · 공유',
