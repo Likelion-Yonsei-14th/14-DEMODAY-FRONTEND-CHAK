@@ -60,6 +60,7 @@ describe('guess god mini game', () => {
     renderAt('/minigame/guess-god')
     expect(screen.getByRole('heading', { name: '오늘의 찍신은 나야!' })).toBeInTheDocument()
     expect(screen.getByText('10문항')).toBeInTheDocument()
+    expect(screen.queryByText(/약 1분/)).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '게임 시작' }))
 
     expect(location.pathname).toBe('/minigame/guess-god/play')
@@ -79,10 +80,13 @@ describe('guess god mini game', () => {
     expect(location.pathname).toBe('/minigame/guess-god/result/7')
     expect(screen.getByRole('heading', { name: '수능 찍기 장인' })).toBeInTheDocument()
     expect(screen.getByText('10문제 중 7문제 정답!')).toBeInTheDocument()
-    expect(screen.getByRole('table')).toBeInTheDocument()
+    expect(screen.getByRole('table', { name: 'OMR 채점 결과' })).toBeInTheDocument()
     expect(screen.getAllByText('정답', { selector: 'td span' })).toHaveLength(7)
     expect(screen.getAllByText('오답', { selector: 'td span' })).toHaveLength(3)
     expect(screen.getByText(/평균보다 높은 결과/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '한 줄로 찍기 vs 번호 나눠 찍기' })).toBeInTheDocument()
+    expect(screen.getByRole('columnheader', { name: '7문항 이상 맞힐 확률' })).toBeInTheDocument()
+    expect(screen.getAllByText('약 1,157분의 1')).toHaveLength(3)
     expect(screen.getByRole('button', { name: '결과 공유하기' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '이미지 저장하기' })).toBeInTheDocument()
   })
@@ -160,7 +164,7 @@ describe('guess god mini game', () => {
     play.unmount()
 
     renderAt(`/minigame/guess-god/result/${score}`)
-    expect(screen.getByRole('table')).toBeInTheDocument()
+    expect(screen.getByRole('table', { name: 'OMR 채점 결과' })).toBeInTheDocument()
     expect(screen.getByText(`10문제 중 ${score}문제 정답!`)).toBeInTheDocument()
     cleanup()
 

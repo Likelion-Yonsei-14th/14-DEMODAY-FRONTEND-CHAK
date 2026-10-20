@@ -30,6 +30,7 @@ import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import {
   canSubmit,
   CHOICES,
+  classifyMarkingStyle,
   clearGame,
   countMarked,
   createGame,
@@ -45,6 +46,7 @@ import {
   waysExactly,
   type Choice,
   type GuessGodGame,
+  type MarkingStyle,
 } from './guessGodLogic'
 import {
   getGuessGodResult,
@@ -144,7 +146,6 @@ export function GuessGodIntroPage() {
           </p>
           <ul className="guess-god-intro__meta" aria-label="게임 정보">
             <li>10문항</li>
-            <li>약 1분</li>
           </ul>
         </header>
 
@@ -406,7 +407,7 @@ function GradingTable({ game }: { game: GuessGodGame }) {
     <section className="guess-god-section">
       <h2>OMR 채점 결과</h2>
       <div className="guess-god-table-wrap">
-        <table className="guess-god-table">
+        <table className="guess-god-table" aria-label="OMR 채점 결과">
           <thead>
             <tr>
               <th scope="col">문번</th>
@@ -444,7 +445,59 @@ function GradingTable({ game }: { game: GuessGodGame }) {
   )
 }
 
-function LuckAnalysis({ score }: { score: number }) {
+const MARKING_STYLE_LABELS: Record<MarkingStyle, string> = {
+  'one-line': '한 줄로 찍기',
+  spread: '번호 골고루 나눠 찍기',
+  mixed: '자유롭게 찍기',
+}
+
+/** Same odds for both styles - the answer key gives each question 1/5 regardless of the mark. */
+function StrategyComparison({ score, style }: { score: number; style: MarkingStyle }) {
+  const oddsLabel = score === 0 ? '모두 틀릴 확률' : `${score}문항 이상 맞힐 확률`
+  const odds = formatOdds(score === 0 ? waysExactly(0) : waysAtLeast(score))
+  const rows: Array<{ style: MarkingStyle; name: string; example: string }> = [
+    { style: 'one-line', name: '한 줄로 찍기', example: '예: 10문항 모두 ③' },
+    { style: 'spread', name: '번호 나눠 찍기', example: '예: ①~⑤를 2개씩' },
+  ]
+
+  return (
+    <div className="guess-god-strategy">
+      <h3>한 줄로 찍기 vs 번호 나눠 찍기</h3>
+      <p>
+        이번 내 찍기 방식: <strong>{MARKING_STYLE_LABELS[style]}</strong>
+      </p>
+      <div className="guess-god-table-wrap">
+        <table className="guess-god-table guess-god-strategy__table" aria-label="찍기 방식별 확률">
+          <thead>
+            <tr>
+              <th scope="col">찍는 방식</th>
+              <th scope="col">평균 정답</th>
+              <th scope="col">{oddsLabel}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.style} className={row.style === style ? 'is-mine' : ''}>
+                <th scope="row">
+                  {row.name}
+                  <small>{row.example}</small>
+                </th>
+                <td>{EXPECTED_SCORE}문항</td>
+                <td>{odds}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        결과는 <strong>똑같아요.</strong> 이 게임의 정답표는 문항마다 1~5번이 같은
+        확률로 따로 뽑혀서, 어떤 번호를 어떻게 찍든 문항당 맞힐 확률은 20%예요.
+      </p>
+    </div>
+  )
+}
+
+function LuckAnalysis({ score, game }: { score: number; game: GuessGodGame }) {
   const comparison =
     score > EXPECTED_SCORE
       ? '오늘은 평균보다 높은 결과!'
@@ -478,6 +531,7 @@ function LuckAnalysis({ score }: { score: number }) {
           )}
         </li>
       </ul>
+      <StrategyComparison score={score} style={classifyMarkingStyle(game.userAnswers)} />
       <p className="guess-god-section__note">
         실제 참여자 순위가 아니라, 5지선다를 무작위로 찍었을 때의 수학적
         확률이에요.
@@ -638,7 +692,7 @@ function GuessGodResultView({
         )}
 
         {game && <GradingTable game={game} />}
-        {isMine && <LuckAnalysis score={score} />}
+        {game && <LuckAnalysis score={score} game={game} />}
 
         <div className="guess-god-result__actions">
           {isMine ? (

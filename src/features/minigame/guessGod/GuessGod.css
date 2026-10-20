@@ -609,6 +609,58 @@
   word-break: keep-all;
 }
 
+.guess-god-strategy {
+  display: grid;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.guess-god-strategy h3 {
+  margin: 0;
+  font-size: var(--type-title-m-size);
+  line-height: var(--type-title-m-line);
+}
+
+.guess-god-strategy > p {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-line);
+  word-break: keep-all;
+}
+
+.guess-god-strategy > p strong {
+  color: var(--color-content-primary);
+}
+
+.guess-god-strategy__table td {
+  font-size: var(--type-body-s-size);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.guess-god-strategy__table tbody th {
+  color: var(--color-content-primary);
+  font-weight: 700;
+  text-align: left;
+}
+
+.guess-god-strategy__table tbody th small {
+  display: block;
+  color: var(--color-content-tertiary);
+  font-size: var(--type-caption-size);
+  font-weight: 500;
+}
+
+.guess-god-strategy__table thead th:first-child {
+  text-align: left;
+}
+
+.guess-god-strategy__table tr.is-mine {
+  background: color-mix(in srgb, var(--color-butter-soft) 70%, transparent);
+}
+
 .guess-god-result__actions {
   display: grid;
   gap: var(--space-3);
