@@ -196,24 +196,6 @@
   font-weight: 700;
 }
 
-.grade-draw-intro__meta {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.grade-draw-intro__meta li {
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  background: var(--color-surface-subtle);
-  color: var(--color-content-secondary);
-  font-size: var(--type-label-m-size);
-  font-weight: 700;
-}
-
 .grade-draw-intro__actions {
   display: grid;
   gap: var(--space-3);
@@ -413,19 +395,6 @@
   color: var(--color-content-secondary);
   font-size: var(--type-label-m-size);
   font-weight: 600;
-}
-
-.grade-draw-report__badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  padding: 2px 8px;
-  border-radius: 2px;
-  background: var(--label-lime);
-  color: var(--color-ink);
-  font-size: var(--type-caption-size);
-  font-weight: 800;
-  transform: rotate(4deg);
 }
 
 .grade-draw-report__table {

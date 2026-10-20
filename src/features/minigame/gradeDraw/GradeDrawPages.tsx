@@ -143,10 +143,6 @@ export function GradeDrawIntroPage() {
             <br />
             오늘 당신의 수능 운은 몇 등급일까요?
           </p>
-          <ul className="grade-draw-intro__meta" aria-label="게임 정보">
-            <li>총 6과목</li>
-            <li>약 1분</li>
-          </ul>
         </header>
 
         <div className="grade-draw-intro__actions">
@@ -578,7 +574,6 @@ function GradeDrawResultView({
       <div className="grade-draw-result">
         <section className="grade-draw-report" aria-labelledby="grade-draw-report-title">
           <header className="grade-draw-report__head">
-            <span className="grade-draw-report__badge">오락용</span>
             <h1 id="grade-draw-report-title">가상 수능 성적표</h1>
             <p>수능 운빨 뽑기 · {isMine ? '나의' : '친구의'} 운빨 성적표</p>
           </header>
