@@ -634,6 +634,12 @@
   color: var(--color-content-primary);
 }
 
+.guess-god-strategy > .guess-god-strategy__note {
+  color: var(--color-content-tertiary);
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-line);
+}
+
 .guess-god-strategy__table td {
   font-size: var(--type-body-s-size);
   font-weight: 700;
