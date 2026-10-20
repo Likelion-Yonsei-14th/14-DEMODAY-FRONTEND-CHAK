@@ -130,6 +130,34 @@ export const router = createBrowserRouter([
     errorElement: <RouteErrorPage />,
     children: [
       { index: true, element: <WelcomePage /> },
+      {
+        // The operators' console loads on demand so visitors never download it.
+        path: '/admin',
+        lazy: async () => {
+          const { AdminLayout } = await import('@/features/admin/AdminLayout')
+          return { Component: AdminLayout }
+        },
+        children: [
+          {
+            index: true,
+            lazy: async () => ({
+              Component: (await import('@/features/admin/DashboardPage')).DashboardPage,
+            }),
+          },
+          {
+            path: 'users',
+            lazy: async () => ({
+              Component: (await import('@/features/admin/UsersPage')).UsersPage,
+            }),
+          },
+          {
+            path: 'reports',
+            lazy: async () => ({
+              Component: (await import('@/features/admin/ReportsPage')).ReportsPage,
+            }),
+          },
+        ],
+      },
       { path: '/start', element: <StartPage /> },
       { path: '/home', element: <HomePage /> },
       { path: '/minigame/grade-draw', element: <GradeDrawIntroPage /> },
