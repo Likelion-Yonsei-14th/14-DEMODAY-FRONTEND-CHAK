@@ -1,4 +1,4 @@
-import { ChevronRight, Plus, UserRound, UsersRound } from 'lucide-react'
+import { ChevronRight, Plus, Settings, UserRound, UsersRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useFeedback } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
@@ -19,6 +19,7 @@ export function HomePage() {
   const desk = usePrototypeStore((state) => state.currentDesk)
   const classroom = usePrototypeStore((state) => state.classroom)
   const member = usePrototypeStore((state) => state.classroomMember)
+  const authSession = usePrototypeStore((state) => state.authSession)
 
   const hasDesk = desk.claimStatus === 'claimed'
   const hasClass = Boolean(member)
@@ -27,7 +28,21 @@ export function HomePage() {
     <AppShell surface="base" contentClassName="home-page-shell">
       <main className="home-page">
         <header className="home-page__header">
-          <span className="start-page__dday">{getCsatDdayLabel()}</span>
+          <div className="home-page__top">
+            <span className="start-page__dday">{getCsatDdayLabel()}</span>
+            <button
+              type="button"
+              className="start-page__account"
+              onClick={() =>
+                authSession.status === 'authenticated'
+                  ? navigate('/account', { state: { from: '/home' } })
+                  : navigate('/auth/login')
+              }
+            >
+              <Settings size={15} aria-hidden />
+              내 계정
+            </button>
+          </div>
           <h1>
             {currentUser.displayName}님,
             <br />
