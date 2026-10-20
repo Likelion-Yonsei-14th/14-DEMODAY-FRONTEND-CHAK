@@ -478,6 +478,8 @@ export function SignupPage() {
 
 export function AccountPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const backTo = (location.state as { from?: string } | null)?.from ?? '/start'
   const currentUser = usePrototypeStore((state) => state.currentUser)
   const authSession = usePrototypeStore((state) => state.authSession)
   const signOut = usePrototypeStore((state) => state.signOut)
@@ -505,9 +507,9 @@ export function AccountPage() {
           title="내 계정"
           leading={
             <IconButton
-              label="처음으로 돌아가기"
+              label="이전 화면으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate('/start')}
+              onClick={() => navigate(backTo)}
             />
           }
         />
