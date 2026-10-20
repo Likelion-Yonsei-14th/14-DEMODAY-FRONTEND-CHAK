@@ -1,5 +1,8 @@
 import type { ReadMode } from '@/types'
-import { getDefaultCapsuleUnlockAt } from '@/features/csat/csatSchedule'
+import {
+  clampCapsuleUnlockAt,
+  getDefaultCapsuleUnlockAt,
+} from '@/features/csat/csatSchedule'
 
 export const DEFAULT_CAPSULE_UNLOCK_AT = getDefaultCapsuleUnlockAt()
 
@@ -18,7 +21,8 @@ export function joinDateTime(date: string, time: string) {
   const fallbackDate = DEFAULT_CAPSULE_UNLOCK_AT.slice(0, 10)
   const fallbackTime = DEFAULT_CAPSULE_UNLOCK_AT.slice(11, 16)
 
-  return `${date || fallbackDate}T${time || fallbackTime}`
+  // Every capsule date set in the app passes here: only after the exam
+  return clampCapsuleUnlockAt(`${date || fallbackDate}T${time || fallbackTime}`)
 }
 
 export function formatReadMode(mode: ReadMode) {
