@@ -28,6 +28,11 @@ import { SentMessagesPage } from '@/features/supporter/SentMessagesPage'
 import { SupporterSettingsPage } from '@/features/supporter/SupporterSettingsPage'
 import { StartPage } from '@/features/start/StartPage'
 import { HomePage } from '@/features/start/HomePage'
+import {
+  GuessGodIntroPage,
+  GuessGodPlayPage,
+  GuessGodResultPage,
+} from '@/features/minigame/guessGod/GuessGodPages'
 import { OwnerDeskGate, SupporterDeskGate } from '@/api/DeskGates'
 import {
   GoogleCallbackPage,
@@ -373,6 +378,12 @@ export const router = createBrowserRouter([
       { path: '/chaltteok/charge', element: <ChargePage /> },
       { path: '/chaltteok/charge/success', element: <ChargeSuccessPage /> },
       { path: '/chaltteok/charge/fail', element: <ChargeFailPage /> },
+      { path: '/minigame/guess-god', element: <GuessGodIntroPage /> },
+      { path: '/minigame/guess-god/play', element: <GuessGodPlayPage /> },
+      {
+        path: '/minigame/guess-god/result/:score',
+        element: <GuessGodResultPage />,
+      },
       { path: '*', element: <Navigate to="/start" replace /> },
     ],
   },

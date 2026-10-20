@@ -4,6 +4,7 @@ import { useFeedback } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import { GuessGodEntryCard } from '@/features/minigame/guessGod/GuessGodEntryCard'
 import './StartPage.css'
 
 /**
@@ -88,6 +89,8 @@ export function HomePage() {
           <Plus size={15} aria-hidden />
           새 책상이나 반 만들기
         </button>
+
+        <GuessGodEntryCard />
       </main>
     </AppShell>
   )
