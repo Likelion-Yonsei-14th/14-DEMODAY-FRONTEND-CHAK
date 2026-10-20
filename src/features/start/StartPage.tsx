@@ -1,22 +1,19 @@
 import { useMemo } from 'react'
-import { SneakyPhoneEntryCard } from '@/features/minigame/sneakyPhone/SneakyPhoneEntryCard'
 import { LogIn, UserRound, UsersRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { ChoiceCard } from '@/design-system'
-import { GradeDrawEntryCard } from '@/features/minigame/gradeDraw/GradeDrawEntryCard'
 import {
   getCsatDateLabel,
   getCsatDdayLabel,
 } from '@/features/csat/csatSchedule'
 import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
-import { StudyTypeEntryCard } from '@/features/minigame/studyType/StudyTypeEntryCard'
 import { DeskScene } from '@/features/desk/DeskScene'
 import {
   mergeSupportMessages,
   seededDeskObjects,
 } from '@/features/supporter/seededMessages'
+import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { AppShell } from '@/layout/AppShell'
-import { GuessGodEntryCard } from '@/features/minigame/guessGod/GuessGodEntryCard'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import './StartPage.css'
 
@@ -92,24 +89,21 @@ export function StartPage() {
         </div>
 
         <section className="start-page__choices" aria-label="응원을 모으는 방법">
-          <GradeDrawEntryCard className="grade-draw-entry--last" />
           <ChoiceCard
             title="한 사람에게 마음을 모아줄래요"
             description="나 또는 친구 한 명의 응원 책상을 만들고, 링크로 응원을 모아요."
             icon={<UserRound size={22} aria-hidden />}
             onClick={startPersonal}
           />
-          <SneakyPhoneEntryCard className="sneaky-entry--last" />
           <ChoiceCard
             title="우리끼리 서로 응원할래요"
             description="우리 반 교실에서 칠판을 채우고, 각자 사물함에 응원을 남겨요."
             icon={<UsersRound size={22} aria-hidden />}
             onClick={() => navigate('/prototype/classroom/create')}
           />
-          <StudyTypeEntryCard />
         </section>
 
-        <GuessGodEntryCard />
+        <MiniGameSection />
       </main>
     </AppShell>
   )
