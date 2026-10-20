@@ -34,6 +34,7 @@ import {
   GuessGodResultPage,
 } from '@/features/minigame/guessGod/GuessGodPages'
 import { OwnerDeskGate, SupporterDeskGate } from '@/api/DeskGates'
+import { PrivacyPolicyPage, TermsOfServicePage } from '@/features/legal/LegalPages'
 import {
   GoogleCallbackPage,
   KakaoCallbackPage,
@@ -137,6 +138,8 @@ export const router = createBrowserRouter([
         element: <GradeDrawResultPage />,
       },
       { path: '/auth/login', element: <LoginPage /> },
+      { path: '/privacy', element: <PrivacyPolicyPage /> },
+      { path: '/terms', element: <TermsOfServicePage /> },
       { path: '/auth/kakao/callback', element: <KakaoCallbackPage /> },
       { path: '/auth/google/callback', element: <GoogleCallbackPage /> },
       { path: '/auth/signup', element: <SignupPage /> },

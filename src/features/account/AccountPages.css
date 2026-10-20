@@ -294,3 +294,16 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+.account-auth__consent {
+  margin: -8px 0 0;
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.account-auth__consent a {
+  color: inherit;
+  text-decoration: underline;
+}

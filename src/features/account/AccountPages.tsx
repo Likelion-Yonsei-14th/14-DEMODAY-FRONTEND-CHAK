@@ -129,6 +129,11 @@ export function LoginPage() {
           </Button>
         )}
 
+        <p className="account-auth__consent">
+          로그인하면 <Link to="/terms">이용약관</Link>과{' '}
+          <Link to="/privacy">개인정보처리방침</Link>에 동의한 것으로 봅니다.
+        </p>
+
         <div className="account-auth__divider" aria-hidden>
           <span>
             또는 이메일로
