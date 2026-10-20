@@ -14,6 +14,7 @@ import {
   seededDeskObjects,
 } from '@/features/supporter/seededMessages'
 import { AppShell } from '@/layout/AppShell'
+import { GuessGodEntryCard } from '@/features/minigame/guessGod/GuessGodEntryCard'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import './StartPage.css'
 
@@ -103,6 +104,8 @@ export function StartPage() {
           />
           <StudyTypeEntryCard />
         </section>
+
+        <GuessGodEntryCard />
       </main>
     </AppShell>
   )
