@@ -85,6 +85,12 @@ const routes = [
     phase: 'LIVE',
   },
   {
+    path: '/minigame/guess-god',
+    title: 'Mini Game · 오늘의 찍신',
+    description: '5지선다 OMR 찍기 → 채점 → 찍신 칭호 · 확률 분석 → 링크·이미지 공유',
+    phase: 'LIVE',
+  },
+  {
     path: '/prototype/wrapped',
     title: 'Post-exam Wrapped',
     description: '수능 종료 → AI 응원 기록 → 친구 Reveal → 전체 기록 → 공유 → 혜택·쿠폰',
