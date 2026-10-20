@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
-import { ArrowLeft, House, RotateCcw, Smartphone, Trophy } from 'lucide-react'
+import { ArrowLeft, House, ListOrdered, RotateCcw, Smartphone, Trophy } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { sneakyPhoneRankingApi } from '@/api/sneakyPhoneRanking'
 import { AppBar, Button, IconButton } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
+import { usePrototypeStore } from '@/store/prototypeStore'
 import {
   advanceTo,
   createGame,
@@ -18,7 +20,12 @@ import {
   type SneakyPhoneState,
   type TeacherPhase,
 } from './sneakyPhoneEngine'
-import { SNEAKY_PHONE_PATH, SNEAKY_PHONE_PLAY_PATH } from './sneakyPhoneRoutes'
+import { goToLogin } from './rankingLogin'
+import {
+  SNEAKY_PHONE_PATH,
+  SNEAKY_PHONE_PLAY_PATH,
+  SNEAKY_PHONE_RANKING_PATH,
+} from './sneakyPhoneRoutes'
 import { SneakyPhoneScene } from './SneakyPhoneScene'
 import './SneakyPhone.css'
 
@@ -90,6 +97,14 @@ export function SneakyPhoneIntroPage() {
         <div className="sneaky-intro__actions">
           <Button variant="brand" fullWidth onClick={() => navigate(SNEAKY_PHONE_PLAY_PATH)}>
             게임 시작
+          </Button>
+          <Button
+            variant="secondary"
+            fullWidth
+            leadingIcon={<ListOrdered size={18} aria-hidden />}
+            onClick={() => navigate(SNEAKY_PHONE_RANKING_PATH)}
+          >
+            랭킹 보기
           </Button>
           <Button variant="tertiary" fullWidth onClick={() => navigate(SERVICE_HOME)}>
             홈 화면으로 돌아가기
@@ -222,9 +237,44 @@ function useSneakyPhoneGame() {
   return { state, best, record, countdown, start, holdPhone }
 }
 
+type RankSubmission =
+  | { status: 'signed-out' }
+  | { status: 'submitting' }
+  | { status: 'failed' }
+  | { status: 'done'; rank: number }
+
+/** Sends each finished round to the ranking; the server keeps the player's best. */
+function useRankSubmission(record: { result: SneakyPhoneResult } | null) {
+  const signedIn = usePrototypeStore((state) => state.authSession.status === 'authenticated')
+  const [submission, setSubmission] = useState<RankSubmission | null>(null)
+
+  useEffect(() => {
+    if (!record) {
+      setSubmission(null)
+      return
+    }
+    if (!signedIn) {
+      setSubmission({ status: 'signed-out' })
+      return
+    }
+    let active = true
+    setSubmission({ status: 'submitting' })
+    sneakyPhoneRankingApi
+      .submitScore(record.result.finalScore)
+      .then(({ rank }) => active && setSubmission({ status: 'done', rank }))
+      .catch(() => active && setSubmission({ status: 'failed' }))
+    return () => {
+      active = false
+    }
+  }, [record, signedIn])
+
+  return submission
+}
+
 export function SneakyPhonePlayPage() {
   const navigate = useNavigate()
   const { state, best, record, countdown, start, holdPhone } = useSneakyPhoneGame()
+  const submission = useRankSubmission(record)
   const counting = countdown !== null
   const playing = state.status === 'playing' && !counting
   const score = wholePoints(state.score)
@@ -289,7 +339,10 @@ export function SneakyPhonePlayPage() {
           <ResultPanel
             result={record.result}
             isNewBest={record.isNewBest}
+            submission={submission}
             onRetry={start}
+            onRanking={() => navigate(SNEAKY_PHONE_RANKING_PATH)}
+            onLogin={() => goToLogin(navigate, SNEAKY_PHONE_RANKING_PATH)}
             onExit={() => navigate(SNEAKY_PHONE_PATH)}
           />
         ) : (
@@ -326,12 +379,18 @@ export function SneakyPhonePlayPage() {
 function ResultPanel({
   result,
   isNewBest,
+  submission,
   onRetry,
+  onRanking,
+  onLogin,
   onExit,
 }: {
   result: SneakyPhoneResult
   isNewBest: boolean
+  submission: RankSubmission | null
   onRetry: () => void
+  onRanking: () => void
+  onLogin: () => void
   onExit: () => void
 }) {
   const survived = result.status === 'survived'
@@ -345,6 +404,16 @@ function ResultPanel({
       {isNewBest && <p className="sneaky-result__best">최고 점수 갱신!</p>}
       <p className="sneaky-result__score">
         <strong>{result.finalScore.toLocaleString('ko-KR')}</strong>점
+      </p>
+      <p className="sneaky-result__rank" role="status">
+        {submission?.status === 'submitting' && '랭킹에 기록하고 있어요...'}
+        {submission?.status === 'done' && (
+          <>
+            전체 랭킹 <strong>{submission.rank.toLocaleString('ko-KR')}위</strong>
+          </>
+        )}
+        {submission?.status === 'failed' && '랭킹에 기록하지 못했어요.'}
+        {submission?.status === 'signed-out' && '로그인하면 랭킹에 기록돼요.'}
       </p>
       <dl className="sneaky-result__stats">
         {survived && (
@@ -380,6 +449,20 @@ function ResultPanel({
         >
           다시 도전하기
         </Button>
+        {submission?.status === 'signed-out' ? (
+          <Button variant="secondary" fullWidth onClick={onLogin}>
+            로그인하고 랭킹 보기
+          </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            fullWidth
+            leadingIcon={<ListOrdered size={18} aria-hidden />}
+            onClick={onRanking}
+          >
+            랭킹 보기
+          </Button>
+        )}
         <Button variant="tertiary" fullWidth onClick={onExit}>
           게임 첫 화면으로
         </Button>
