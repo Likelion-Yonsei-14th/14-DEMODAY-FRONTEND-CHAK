@@ -7,6 +7,7 @@ import {
   getCsatDdayLabel,
 } from '@/features/csat/csatSchedule'
 import { DeskObjectLayer } from '@/features/desk/DeskObjectLayer'
+import { StudyTypeEntryCard } from '@/features/minigame/studyType/StudyTypeEntryCard'
 import { DeskScene } from '@/features/desk/DeskScene'
 import {
   mergeSupportMessages,
@@ -100,6 +101,7 @@ export function StartPage() {
             icon={<UsersRound size={22} aria-hidden />}
             onClick={() => navigate('/prototype/classroom/create')}
           />
+          <StudyTypeEntryCard />
         </section>
       </main>
     </AppShell>

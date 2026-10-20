@@ -98,6 +98,11 @@ import {
   ChargeFailPage,
   ChargeSuccessPage,
 } from '@/features/chaltteok/ChargeResultPages'
+import {
+  StudyTypeIntroPage,
+  StudyTypeResultPage,
+  StudyTypeTestPage,
+} from '@/features/minigame/studyType/StudyTypePages'
 
 // Only the bare entry point (`/`) branches on auth: WelcomePage sends a
 // signed-in visitor to the two-door /home and shows everyone else the
@@ -368,6 +373,12 @@ export const router = createBrowserRouter([
       {
         path: '/prototype/offers/:offerId/coupon',
         element: <OfferCouponPage />,
+      },
+      { path: '/minigame/study-type', element: <StudyTypeIntroPage /> },
+      { path: '/minigame/study-type/test', element: <StudyTypeTestPage /> },
+      {
+        path: '/minigame/study-type/result/:slug',
+        element: <StudyTypeResultPage />,
       },
       { path: '/system', element: <SystemPage /> },
       { path: '/chaltteok/charge', element: <ChargePage /> },
