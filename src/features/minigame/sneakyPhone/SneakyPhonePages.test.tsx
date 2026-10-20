@@ -26,6 +26,15 @@ const wait = (ms: number) =>
     vi.advanceTimersByTime(ms)
   })
 
+/** The round opens with a 3-2-1 countdown before the clock starts. */
+const finishCountdown = () => wait(3_000)
+
+function renderPlaying() {
+  const view = renderAt('/minigame/sneaky-phone/play')
+  finishCountdown()
+  return view
+}
+
 beforeEach(() => {
   // random() = 0: board 0–2.4s, tell 2.4–2.8s, watching 2.8–3.8s.
   vi.spyOn(Math, 'random').mockReturnValue(0)
@@ -49,8 +58,30 @@ describe('sneaky phone mini game', () => {
     expect(document.body).not.toHaveTextContent(/×|배율/)
   })
 
-  it('uses the phone only while the button is held', () => {
+  it('counts 3-2-1 before the round starts and ignores input until then', () => {
     renderAt('/minigame/sneaky-phone/play')
+    expect(screen.getByText('3', { selector: '.sneaky-scene__countdown span' })).toBeInTheDocument()
+    expect(screen.getByText('곧 시작해요')).toBeInTheDocument()
+    expect(holdButton()).toBeDisabled()
+    fireEvent.keyDown(window, { code: 'Space', key: ' ' })
+    wait(1_000)
+    expect(screen.getByText('2', { selector: '.sneaky-scene__countdown span' })).toBeInTheDocument()
+    wait(1_000)
+    expect(screen.getByText('1', { selector: '.sneaky-scene__countdown span' })).toBeInTheDocument()
+    // The clock has not moved and nothing was scored during the count.
+    expect(screen.getByText('남은 시간').nextSibling).toHaveTextContent('30초')
+    expect(screen.getByText('점수').nextSibling).toHaveTextContent('0')
+    wait(1_000)
+    expect(document.querySelector('.sneaky-scene__countdown')).toBeNull()
+    expect(screen.getByText('폰 숨김')).toBeInTheDocument()
+    expect(holdButton()).toBeEnabled()
+    fireEvent.keyUp(window, { code: 'Space', key: ' ' })
+    fireEvent.pointerDown(holdButton())
+    expect(screen.getByText('폰 사용 중')).toBeInTheDocument()
+  })
+
+  it('uses the phone only while the button is held', () => {
+    renderPlaying()
     expect(screen.getByText('폰 숨김')).toBeInTheDocument()
     expect(document.body).not.toHaveTextContent(/×|배율/)
 
@@ -69,7 +100,7 @@ describe('sneaky phone mini game', () => {
 
   // 3 & 4. Sliding off the button or a cancelled touch both hide the phone.
   it('hides the phone when the pointer leaves or the touch is cancelled', () => {
-    renderAt('/minigame/sneaky-phone/play')
+    renderPlaying()
     fireEvent.pointerDown(holdButton())
     fireEvent.pointerLeave(holdButton())
     expect(screen.getByText('폰 숨김')).toBeInTheDocument()
@@ -81,7 +112,7 @@ describe('sneaky phone mini game', () => {
 
   // 5. Switching tabs or windows hides the phone.
   it('hides the phone when the window loses focus or the tab is hidden', () => {
-    renderAt('/minigame/sneaky-phone/play')
+    renderPlaying()
     fireEvent.pointerDown(holdButton())
     act(() => {
       window.dispatchEvent(new Event('blur'))
@@ -98,7 +129,7 @@ describe('sneaky phone mini game', () => {
   })
 
   it('also works by holding the space bar', () => {
-    renderAt('/minigame/sneaky-phone/play')
+    renderPlaying()
     fireEvent.keyDown(window, { code: 'Space', key: ' ' })
     expect(screen.getByText('폰 사용 중')).toBeInTheDocument()
     fireEvent.keyUp(window, { code: 'Space', key: ' ' })
@@ -106,7 +137,7 @@ describe('sneaky phone mini game', () => {
   })
 
   it('ends with "들켰다" when the phone is out as the teacher turns, keeping the points', () => {
-    renderAt('/minigame/sneaky-phone/play')
+    renderPlaying()
     fireEvent.pointerDown(holdButton())
     wait(3_000)
 
@@ -125,7 +156,7 @@ describe('sneaky phone mini game', () => {
   })
 
   it('pays the survival bonus after 30 seconds of good timing', () => {
-    renderAt('/minigame/sneaky-phone/play')
+    renderPlaying()
     fireEvent.pointerDown(holdButton())
     wait(1_000)
     fireEvent.pointerUp(holdButton())
@@ -139,10 +170,12 @@ describe('sneaky phone mini game', () => {
 
   // 6. Retrying right away starts a clean round with no leftover state.
   it('starts a clean round on retry', () => {
-    renderAt('/minigame/sneaky-phone/play')
+    renderPlaying()
     fireEvent.pointerDown(holdButton())
     wait(3_000)
     fireEvent.click(screen.getByRole('button', { name: '다시 도전하기' }))
+    expect(screen.getByText('곧 시작해요')).toBeInTheDocument()
+    finishCountdown()
 
     expect(screen.getByText('폰 숨김')).toBeInTheDocument()
     expect(screen.getByText('남은 시간').nextSibling).toHaveTextContent('30초')

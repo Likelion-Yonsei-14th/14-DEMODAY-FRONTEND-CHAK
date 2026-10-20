@@ -34,6 +34,10 @@ const PHASE_STATUS: Record<TeacherPhase, string> = {
 
 const formatSeconds = (ms: number) => `${(ms / 1000).toFixed(1)}초`
 
+/** 3, 2, 1 before every round, so it never starts the instant the page opens. */
+const COUNTDOWN_FROM = 3
+const COUNTDOWN_STEP_MS = 1_000
+
 function ServiceHomeButton() {
   const navigate = useNavigate()
   return (
@@ -109,12 +113,24 @@ function useSneakyPhoneGame() {
   const startedAt = useRef(0)
   const frame = useRef<number | undefined>(undefined)
   const bestRef = useRef(best)
+  const [countdown, setCountdown] = useState<number | null>(COUNTDOWN_FROM)
+  const countdownTimers = useRef<number[]>([])
+  /** True only once the countdown is over and the clock is running. */
+  const running = useRef(false)
+
+  const stopTimers = useCallback(() => {
+    if (frame.current !== undefined) cancelAnimationFrame(frame.current)
+    frame.current = undefined
+    countdownTimers.current.forEach((timer) => window.clearTimeout(timer))
+    countdownTimers.current = []
+  }, [])
 
   const commit = useCallback((next: SneakyPhoneState) => {
     const previous = stateRef.current
     stateRef.current = next
     setState(next)
     if (previous.status === 'playing' && next.status !== 'playing') {
+      running.current = false
       if (frame.current !== undefined) cancelAnimationFrame(frame.current)
       frame.current = undefined
       const result = getResult(next)!
@@ -134,19 +150,34 @@ function useSneakyPhoneGame() {
     if (stateRef.current.status === 'playing') frame.current = requestAnimationFrame(tick)
   }, [commit])
 
+  /** Resets everything, counts 3-2-1, then starts the clock from zero. */
   const start = useCallback(() => {
-    if (frame.current !== undefined) cancelAnimationFrame(frame.current)
+    stopTimers()
+    running.current = false
     const fresh = createGame()
     stateRef.current = fresh
-    startedAt.current = performance.now()
     setState(fresh)
     setRecord(null)
-    frame.current = requestAnimationFrame(tick)
-  }, [tick])
+    setCountdown(COUNTDOWN_FROM)
+
+    for (let step = 1; step <= COUNTDOWN_FROM; step += 1) {
+      const timer = window.setTimeout(() => {
+        if (step < COUNTDOWN_FROM) {
+          setCountdown(COUNTDOWN_FROM - step)
+          return
+        }
+        setCountdown(null)
+        running.current = true
+        startedAt.current = performance.now()
+        frame.current = requestAnimationFrame(tick)
+      }, step * COUNTDOWN_STEP_MS)
+      countdownTimers.current.push(timer)
+    }
+  }, [stopTimers, tick])
 
   const holdPhone = useCallback(
     (using: boolean) => {
-      if (stateRef.current.status !== 'playing') return
+      if (!running.current || stateRef.current.status !== 'playing') return
       commit(setPhone(stateRef.current, using, performance.now() - startedAt.current))
     },
     [commit],
@@ -155,10 +186,10 @@ function useSneakyPhoneGame() {
   useEffect(() => {
     start()
     return () => {
-      if (frame.current !== undefined) cancelAnimationFrame(frame.current)
-      frame.current = undefined
+      running.current = false
+      stopTimers()
     }
-  }, [start])
+  }, [start, stopTimers])
 
   // Anything that pulls attention away hides the phone.
   useEffect(() => {
@@ -188,13 +219,14 @@ function useSneakyPhoneGame() {
     }
   }, [holdPhone])
 
-  return { state, best, record, start, holdPhone }
+  return { state, best, record, countdown, start, holdPhone }
 }
 
 export function SneakyPhonePlayPage() {
   const navigate = useNavigate()
-  const { state, best, record, start, holdPhone } = useSneakyPhoneGame()
-  const playing = state.status === 'playing'
+  const { state, best, record, countdown, start, holdPhone } = useSneakyPhoneGame()
+  const counting = countdown !== null
+  const playing = state.status === 'playing' && !counting
   const score = wholePoints(state.score)
 
   const pressStart = (event: ReactPointerEvent<HTMLButtonElement>) => {
@@ -242,7 +274,12 @@ export function SneakyPhonePlayPage() {
           </div>
         </dl>
 
-        <SneakyPhoneScene phase={state.phase} using={state.using} status={state.status} />
+        <SneakyPhoneScene
+          phase={state.phase}
+          using={state.using}
+          status={state.status}
+          countdown={countdown}
+        />
 
         <p className="sneaky-sr-only" role="status" aria-live="assertive">
           {playing ? PHASE_STATUS[state.phase] : ''}
@@ -258,13 +295,14 @@ export function SneakyPhonePlayPage() {
         ) : (
           <div className="sneaky-controls">
             <p className={['sneaky-controls__state', state.using ? 'is-on' : ''].filter(Boolean).join(' ')}>
-              {state.using ? '폰 사용 중' : '폰 숨김'}
+              {counting ? '곧 시작해요' : state.using ? '폰 사용 중' : '폰 숨김'}
             </p>
             <button
               type="button"
               className={['sneaky-hold', state.using ? 'is-pressed' : ''].filter(Boolean).join(' ')}
               aria-pressed={state.using}
               aria-describedby="sneaky-hold-hint"
+              disabled={counting}
               onPointerDown={pressStart}
               onPointerUp={pressEnd}
               onPointerLeave={pressEnd}

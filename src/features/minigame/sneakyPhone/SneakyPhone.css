@@ -215,6 +215,39 @@
   animation: sneaky-flash 1.2s ease-out forwards;
 }
 
+.sneaky-scene__countdown {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-2);
+  background: rgba(20, 18, 14, .45);
+  color: #fffdf6;
+  text-align: center;
+}
+
+.sneaky-scene__countdown span {
+  font-size: 84px;
+  font-weight: 800;
+  line-height: 1;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, .4);
+  animation: sneaky-count .9s ease-out;
+}
+
+.sneaky-scene__countdown small {
+  padding: 0 var(--space-4);
+  font-size: var(--type-body-s-size);
+  font-weight: 700;
+  word-break: keep-all;
+}
+
+@keyframes sneaky-count {
+  from { opacity: 0; transform: scale(1.6); }
+  25% { opacity: 1; transform: scale(1); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 @keyframes sneaky-flash {
   0% { opacity: 0; }
   20% { opacity: 1; }
@@ -465,6 +498,11 @@
   transform: translateY(3px);
 }
 
+.sneaky-hold:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
 .sneaky-hold:focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 3px;
@@ -570,6 +608,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .sneaky-scene--caught,
+  .sneaky-scene__countdown span,
   .sneaky-teacher--board .sneaky-teacher__writing-arm,
   .sneaky-teacher--watching .sneaky-teacher__eye,
   .sneaky-result {
