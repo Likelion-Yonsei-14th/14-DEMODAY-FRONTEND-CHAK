@@ -1,4 +1,4 @@
-import { ChevronRight, Plus, Settings, UserRound, UsersRound } from 'lucide-react'
+import { ChevronRight, LogIn, Plus, UserRound, UsersRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useFeedback } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
@@ -39,7 +39,7 @@ export function HomePage() {
                   : navigate('/auth/login')
               }
             >
-              <Settings size={15} aria-hidden />
+              <LogIn size={15} aria-hidden />
               내 계정
             </button>
           </div>
