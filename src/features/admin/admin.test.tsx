@@ -1,0 +1,161 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { usePrototypeStore } from '@/store/prototypeStore'
+
+const admin = vi.hoisted(() => ({
+  fetchAdminUsers: vi.fn(),
+  fetchAdminUser: vi.fn(),
+  withdrawAdminUser: vi.fn(),
+  fetchDailyStats: vi.fn(),
+  fetchRegionStats: vi.fn(),
+  fetchAdminReports: vi.fn(),
+  actOnReport: vi.fn(),
+}))
+const auth = vi.hoisted(() => ({ fetchMe: vi.fn() }))
+
+vi.mock('@/api/admin', () => admin)
+vi.mock('@/api/auth', () => auth)
+
+import { AdminLayout } from './AdminLayout'
+import { DashboardPage } from './DashboardPage'
+import { UsersPage } from './UsersPage'
+
+const summary = {
+  id: 7,
+  provider: 'KAKAO' as const,
+  displayName: '김철수',
+  email: 'kim@x.com',
+  profileImageUrl: null,
+  admin: false,
+  createdAt: '2026-10-01T00:00:00Z',
+  lastLoginAt: null,
+  deletedAt: null,
+}
+
+const detail = (overrides: Record<string, unknown> = {}) => ({
+  user: summary,
+  deskId: 3,
+  deskClosed: false,
+  receivedMessages: 4,
+  sentMessages: 2,
+  chaltteokBalance: 0,
+  history: [],
+  ...overrides,
+})
+
+describe('admin console', () => {
+  beforeEach(() => {
+    Object.values(admin).forEach((fn) => fn.mockReset())
+    auth.fetchMe.mockReset()
+    usePrototypeStore.setState({
+      authSession: { status: 'authenticated', email: 'a@b.com', provider: 'google', userId: 1 },
+    })
+  })
+
+  function renderConsole(initial = '/admin') {
+    return render(
+      <MemoryRouter initialEntries={[initial]}>
+        <Routes>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="users" element={<UsersPage />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    )
+  }
+
+  it('keeps non-admin accounts out', async () => {
+    auth.fetchMe.mockResolvedValue({ id: 1, displayName: '회원', admin: false })
+    renderConsole()
+    expect(await screen.findByText('이 계정에는 어드민 권한이 없어요.')).toBeTruthy()
+    expect(admin.fetchDailyStats).not.toHaveBeenCalled()
+  })
+
+  it('asks signed-out visitors to log in', async () => {
+    usePrototypeStore.setState({ authSession: { status: 'anonymous' } })
+    renderConsole()
+    expect(await screen.findByText('운영자 계정으로 로그인해 주세요.')).toBeTruthy()
+    expect(auth.fetchMe).not.toHaveBeenCalled()
+  })
+
+  it('shows the dashboard numbers for an admin', async () => {
+    auth.fetchMe.mockResolvedValue({ id: 1, displayName: '운영자', admin: true })
+    admin.fetchDailyStats.mockResolvedValue({
+      from: '2026-10-20',
+      to: '2026-10-21',
+      totalUsers: 120,
+      totalDesks: 80,
+      totalMessages: 900,
+      days: [
+        { date: '2026-10-20', visitors: 10, memberVisitors: 4, guestVisitors: 6, pageViews: 30, signups: 2, desksCreated: 1, messagesCreated: 5, chargeAmount: 1000 },
+        { date: '2026-10-21', visitors: 25, memberVisitors: 10, guestVisitors: 15, pageViews: 70, signups: 3, desksCreated: 2, messagesCreated: 8, chargeAmount: 3000 },
+      ],
+    })
+    admin.fetchRegionStats.mockResolvedValue({
+      from: '2026-10-20',
+      to: '2026-10-21',
+      items: [{ country: 'KR', region: '11', regionName: '서울', visitors: 7, pageViews: 40 }],
+      unknownPageViews: 3,
+    })
+    renderConsole()
+
+    expect(await screen.findByText('총 회원')).toBeTruthy()
+    expect(screen.getByText('120')).toBeTruthy()
+    expect(screen.getByText('4,000원')).toBeTruthy()
+    expect(await screen.findByText('서울')).toBeTruthy()
+    expect(screen.getByText(/회원 10 · 비회원 15/)).toBeTruthy()
+  })
+
+  it('requires typing the name before a member can be withdrawn', async () => {
+    auth.fetchMe.mockResolvedValue({ id: 1, displayName: '운영자', admin: true })
+    admin.fetchAdminUsers.mockResolvedValue({ content: [summary], page: 0, size: 20, hasNext: false })
+    admin.fetchAdminUser.mockResolvedValue(detail())
+    admin.withdrawAdminUser.mockResolvedValue(
+      detail({ user: { ...summary, displayName: '탈퇴한 사용자', deletedAt: '2026-10-21T00:00:00Z' } }),
+    )
+    renderConsole('/admin/users')
+
+    fireEvent.click(await screen.findByText('김철수'))
+    fireEvent.click(await screen.findByRole('button', { name: '탈퇴 처리' }))
+
+    const confirm = await screen.findByRole('button', { name: '탈퇴 처리하기' })
+    expect((confirm as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.change(screen.getByLabelText(/이름/), { target: { value: '김철수' } })
+    expect((confirm as HTMLButtonElement).disabled).toBe(false)
+
+    fireEvent.click(confirm)
+    await waitFor(() => expect(admin.withdrawAdminUser).toHaveBeenCalledWith(7, false))
+  })
+
+  it('also needs consent to forfeit remaining 찰떡', async () => {
+    auth.fetchMe.mockResolvedValue({ id: 1, displayName: '운영자', admin: true })
+    admin.fetchAdminUsers.mockResolvedValue({ content: [summary], page: 0, size: 20, hasNext: false })
+    admin.fetchAdminUser.mockResolvedValue(detail({ chaltteokBalance: 500 }))
+    admin.withdrawAdminUser.mockResolvedValue(detail({ user: { ...summary, deletedAt: '2026-10-21T00:00:00Z' } }))
+    renderConsole('/admin/users')
+
+    fireEvent.click(await screen.findByText('김철수'))
+    fireEvent.click(await screen.findByRole('button', { name: '탈퇴 처리' }))
+    fireEvent.change(await screen.findByLabelText(/이름/), { target: { value: '김철수' } })
+    const confirm = screen.getByRole('button', { name: '탈퇴 처리하기' }) as HTMLButtonElement
+    expect(confirm.disabled).toBe(true)
+
+    fireEvent.click(screen.getByLabelText(/사라지는 것에 동의/))
+    expect(confirm.disabled).toBe(false)
+    fireEvent.click(confirm)
+    await waitFor(() => expect(admin.withdrawAdminUser).toHaveBeenCalledWith(7, true))
+  })
+
+  it('does not offer withdrawal for operators', async () => {
+    auth.fetchMe.mockResolvedValue({ id: 1, displayName: '운영자', admin: true })
+    admin.fetchAdminUsers.mockResolvedValue({ content: [{ ...summary, admin: true }], page: 0, size: 20, hasNext: false })
+    admin.fetchAdminUser.mockResolvedValue(detail({ user: { ...summary, admin: true } }))
+    renderConsole('/admin/users')
+
+    fireEvent.click(await screen.findByText('김철수'))
+    await screen.findByLabelText('회원 상세')
+    expect(screen.queryByRole('button', { name: '탈퇴 처리' })).toBeNull()
+  })
+})
