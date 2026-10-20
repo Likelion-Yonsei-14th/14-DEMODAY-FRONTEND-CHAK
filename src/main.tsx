@@ -6,6 +6,9 @@ import '@/features/composer/fonts/fonts.css'
 import '@/styles/reset.css'
 import '@/styles/global.css'
 import '@/layout/AppShell.css'
+import { initErrorReporting } from '@/lib/errorReporter'
+
+initErrorReporting()
 
 const root = document.getElementById('root')
 if (!root) throw new Error('Root element not found')
