@@ -66,7 +66,7 @@ describe('grade draw mini game', () => {
   it('runs from the intro through drawing to the report card', () => {
     renderAt('/minigame/grade-draw')
     expect(screen.getByRole('heading', { name: '수능 운빨 뽑기' })).toBeInTheDocument()
-    expect(screen.getByText('총 6과목')).toBeInTheDocument()
+    expect(screen.queryByText(/총 6과목|약 1분/)).not.toBeInTheDocument()
     expect(screen.getByText(/오락용 미니게임입니다/)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '게임 시작' }))
 
@@ -90,6 +90,7 @@ describe('grade draw mini game', () => {
 
     expect(location.pathname).toBe(`/minigame/grade-draw/result/${encodeGrades(grades)}`)
     expect(screen.getByRole('heading', { name: '가상 수능 성적표' })).toBeInTheDocument()
+    expect(screen.queryByText('오락용', { exact: true })).not.toBeInTheDocument()
     expect(screen.getByText('특별 칭호')).toBeInTheDocument()
     expect(screen.getByText('가상 평균 등급')).toBeInTheDocument()
     expect(screen.getByText(/오락용 미니게임입니다/)).toBeInTheDocument()
