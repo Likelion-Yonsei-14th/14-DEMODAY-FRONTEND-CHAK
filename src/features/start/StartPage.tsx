@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { SneakyPhoneEntryCard } from '@/features/minigame/sneakyPhone/SneakyPhoneEntryCard'
 import { LogIn, UserRound, UsersRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { ChoiceCard } from '@/design-system'
@@ -98,6 +99,7 @@ export function StartPage() {
             icon={<UserRound size={22} aria-hidden />}
             onClick={startPersonal}
           />
+          <SneakyPhoneEntryCard className="sneaky-entry--last" />
           <ChoiceCard
             title="우리끼리 서로 응원할래요"
             description="우리 반 교실에서 칠판을 채우고, 각자 사물함에 응원을 남겨요."
