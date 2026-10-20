@@ -1,8 +1,3 @@
-import {
-  determineResultTitle,
-  type GradeDrawTitle,
-} from './gradeDrawResults'
-
 export const GRADE_DRAW_DATA_VERSION = 1
 
 export type Grade = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
@@ -77,8 +72,6 @@ export type GradeDrawGame = {
   gameId: string
   subjects: SubjectResult[]
   gameStatus: GameStatus
-  /** Set once every subject is drawn; null before. */
-  resultTitle: GradeDrawTitle | null
   createdAt: string
   completedAt: string | null
 }
@@ -149,7 +142,6 @@ export function createGame(
       isDrawn: false,
     })),
     gameStatus: 'drawing',
-    resultTitle: null,
     createdAt: now.toISOString(),
     completedAt: null,
   }
@@ -178,7 +170,6 @@ function finishIfComplete(game: GradeDrawGame, now: Date): GradeDrawGame {
   return {
     ...game,
     gameStatus: 'completed',
-    resultTitle: determineResultTitle(getGrades(game)),
     completedAt: now.toISOString(),
   }
 }
@@ -305,16 +296,10 @@ export function parseStoredGame(raw: string | null): GradeDrawGame | null {
   const allDrawn = subjects.every((subject) => subject.isDrawn)
 
   if (candidate.gameStatus === 'drawing' && !allDrawn) {
-    return { ...base, gameStatus: 'drawing', resultTitle: null, completedAt: null }
+    return { ...base, gameStatus: 'drawing', completedAt: null }
   }
   if (candidate.gameStatus === 'completed' && allDrawn && isValidDate(candidate.completedAt)) {
-    // The title is re-derived from the grades rather than trusted.
-    return {
-      ...base,
-      gameStatus: 'completed',
-      resultTitle: determineResultTitle(subjects.map((subject) => subject.grade!)),
-      completedAt: candidate.completedAt,
-    }
+    return { ...base, gameStatus: 'completed', completedAt: candidate.completedAt }
   }
   return null
 }

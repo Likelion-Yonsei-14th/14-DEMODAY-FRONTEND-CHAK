@@ -434,64 +434,6 @@
   text-align: center;
 }
 
-.grade-draw-title {
-  display: grid;
-  justify-items: center;
-  gap: var(--space-1);
-  padding: var(--space-5);
-  border-radius: 6px;
-  background: var(--color-butter-soft);
-  box-shadow: var(--shadow-paper);
-  text-align: center;
-}
-
-.grade-draw-title--csat-god,
-.grade-draw-title--top-luck,
-.grade-draw-title--korean-math {
-  background: var(--color-brand-soft);
-}
-
-.grade-draw-title--extremes {
-  background: var(--color-lilac-soft);
-}
-
-.grade-draw-title--worst-luck {
-  background: var(--color-sky-soft);
-}
-
-.grade-draw-title__eyebrow {
-  color: var(--color-content-secondary);
-  font-size: var(--type-label-m-size);
-  font-weight: 700;
-}
-
-.grade-draw-title h2 {
-  margin: 0;
-  font-size: 26px;
-  line-height: 1.35;
-  letter-spacing: -.03em;
-  animation: grade-draw-pop .45s var(--ease-emphasized) both;
-}
-
-@keyframes grade-draw-pop {
-  from {
-    opacity: 0;
-    transform: scale(.8);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.grade-draw-title p {
-  margin: 0;
-  color: var(--color-brand);
-  font-size: var(--type-title-m-size);
-  font-weight: 700;
-  word-break: keep-all;
-}
-
 .grade-draw-section {
   display: grid;
   gap: var(--space-3);
@@ -585,8 +527,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .grade-draw-chip.is-revealed,
-  .grade-draw-title h2 {
+  .grade-draw-chip.is-revealed {
     animation: none;
   }
 

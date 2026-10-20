@@ -25,7 +25,7 @@ import {
   type Grade,
   type RandomInt,
 } from './gradeDrawLogic'
-import { determineResultTitle, getResultComments } from './gradeDrawResults'
+import { getResultComments } from './gradeDrawResults'
 
 /** Small seeded PRNG so the frequency check gives the same answer every run. */
 function mulberry32(seed: number): RandomInt {
@@ -195,37 +195,12 @@ describe('drawing', () => {
     for (const subject of SUBJECTS.slice(0, 5)) {
       game = drawSubjectGrade(game, subject.subjectId, rolls(rollFor(4)))
       expect(game.gameStatus).toBe('drawing')
-      expect(game.resultTitle).toBeNull()
+      expect(game.completedAt).toBeNull()
     }
     game = drawSubjectGrade(game, 'inquiry2', rolls(rollFor(4)))
     expect(game.gameStatus).toBe('completed')
-    expect(game.resultTitle?.title).toBe('운명의 수험생')
     expect(game.completedAt).not.toBeNull()
     expect(drawRemainingGrades(game)).toBe(game)
-  })
-})
-
-describe('titles', () => {
-  const titleOf = (grades: Grade[]) => determineResultTitle(grades).title
-
-  it('gives each title for its own pattern', () => {
-    expect(titleOf([1, 1, 1, 1, 1, 1])).toBe('수능의 신')
-    expect(titleOf([9, 9, 9, 9, 9, 9])).toBe('역대급 불운')
-    expect(titleOf([3, 1, 4, 9, 5, 2])).toBe('극과 극 성적표')
-    expect(titleOf([2, 1, 1, 3, 1, 4])).toBe('운빨 최상위권')
-    expect(titleOf([1, 1, 3, 4, 2, 5])).toBe('국수 천재')
-    expect(titleOf([1, 4, 2, 3, 2, 5])).toBe('운명의 수험생')
-  })
-
-  it('applies the priority order when several rules match', () => {
-    // Three 1s and a 9: extremes beats top-luck.
-    expect(titleOf([1, 1, 1, 9, 4, 4])).toBe('극과 극 성적표')
-    // Korean and math 1 with three 1s: top-luck beats korean-math.
-    expect(titleOf([1, 1, 1, 4, 4, 4])).toBe('운빨 최상위권')
-    // Korean and math 1 with a 9: extremes beats korean-math.
-    expect(titleOf([1, 1, 4, 4, 4, 9])).toBe('극과 극 성적표')
-    // Five 1s and a 9 is still not all 1s.
-    expect(titleOf([1, 1, 1, 1, 1, 9])).toBe('극과 극 성적표')
   })
 })
 
@@ -301,12 +276,6 @@ describe('storage', () => {
     window.localStorage.setItem('grade-draw-game', '{oops')
     expect(restoreGameState()).toBeNull()
     expect(window.localStorage.getItem('grade-draw-game')).toBeNull()
-  })
-
-  it('re-derives the title instead of trusting the stored one', () => {
-    const done = completedWith([4, 4, 4, 4, 4, 4])
-    const raw = JSON.stringify({ ...done, resultTitle: { id: 'csat-god', title: '수능의 신', quote: '' } })
-    expect(parseStoredGame(raw)?.resultTitle?.title).toBe('운명의 수험생')
   })
 
   it('keeps working for this visit when storage is blocked', () => {

@@ -67,7 +67,7 @@ describe('grade draw mini game', () => {
     renderAt('/minigame/grade-draw')
     expect(screen.getByRole('heading', { name: '수능 운빨 뽑기' })).toBeInTheDocument()
     expect(screen.queryByText(/총 6과목|약 1분/)).not.toBeInTheDocument()
-    expect(screen.getByText(/오락용 미니게임입니다/)).toBeInTheDocument()
+    expect(screen.getByText('본 콘텐츠는 실제 수능 성적 및 대학 합격 가능성과 관계없는 미니게임입니다.')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '게임 시작' }))
 
     expect(location.pathname).toBe('/minigame/grade-draw/play')
@@ -90,10 +90,9 @@ describe('grade draw mini game', () => {
 
     expect(location.pathname).toBe(`/minigame/grade-draw/result/${encodeGrades(grades)}`)
     expect(screen.getByRole('heading', { name: '가상 수능 성적표' })).toBeInTheDocument()
-    expect(screen.queryByText('오락용', { exact: true })).not.toBeInTheDocument()
-    expect(screen.getByText('특별 칭호')).toBeInTheDocument()
+    expect(document.body).not.toHaveTextContent(/오락용|칭호/)
     expect(screen.getByText('가상 평균 등급')).toBeInTheDocument()
-    expect(screen.getByText(/오락용 미니게임입니다/)).toBeInTheDocument()
+    expect(screen.getByText('본 콘텐츠는 실제 수능 성적 및 대학 합격 가능성과 관계없는 미니게임입니다.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '결과 공유하기' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '이미지 저장하기' })).toBeInTheDocument()
   })
@@ -163,7 +162,10 @@ describe('grade draw mini game', () => {
 
     const result = renderAt(`/minigame/grade-draw/result/${code}`)
     expect(screen.getByText('수능 운빨 뽑기 · 나의 운빨 성적표')).toBeInTheDocument()
-    expect(screen.getByText(done.resultTitle!.title, { selector: 'h2' })).toBeInTheDocument()
+    for (const subject of done.subjects) {
+      const row = screen.getByRole('rowheader', { name: subject.subjectName }).closest('tr')!
+      expect(row).toHaveTextContent(`${subject.grade}등급`)
+    }
     result.unmount()
 
     renderAt('/minigame/grade-draw/result')
@@ -185,7 +187,7 @@ describe('grade draw mini game', () => {
 
     renderAt('/minigame/grade-draw/result/111111')
     expect(screen.getByText('수능 운빨 뽑기 · 친구의 운빨 성적표')).toBeInTheDocument()
-    expect(screen.getByText('수능의 신', { selector: 'h2' })).toBeInTheDocument()
+    expect(within(screen.getByRole('table')).getAllByText('1등급')).toHaveLength(6)
     expect(screen.queryByRole('button', { name: '결과 공유하기' })).not.toBeInTheDocument()
     expect(JSON.stringify(restoreGameState())).toBe(before)
 
