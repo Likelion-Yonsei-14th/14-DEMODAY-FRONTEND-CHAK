@@ -40,11 +40,7 @@ import {
   type SubjectId,
   type SubjectResult,
 } from './gradeDrawLogic'
-import {
-  determineResultTitle,
-  getResultComments,
-  type GradeDrawTitle,
-} from './gradeDrawResults'
+import { getResultComments } from './gradeDrawResults'
 import {
   GRADE_DRAW_PATH,
   GRADE_DRAW_PLAY_PATH,
@@ -62,7 +58,7 @@ const REVEAL_MS = 800
 const REVEAL_STAGGER_MS = 160
 
 const DISCLAIMER =
-  '본 콘텐츠는 실제 수능 성적 및 대학 합격 가능성과 관계없는 오락용 미니게임입니다.'
+  '본 콘텐츠는 실제 수능 성적 및 대학 합격 가능성과 관계없는 미니게임입니다.'
 
 const INCOMPLETE_NOTICE = '6과목을 모두 뽑아야 성적표를 볼 수 있어요.'
 
@@ -458,7 +454,7 @@ export function GradeDrawResultPage() {
   )
 }
 
-function useShareActions(subjects: SubjectResult[], grades: Grade[], title: GradeDrawTitle) {
+function useShareActions(subjects: SubjectResult[], grades: Grade[]) {
   const { showToast } = useFeedback()
   const [image, setImage] = useState<{ blob: Blob; url: string } | null>(null)
   const [rendering, setRendering] = useState(false)
@@ -479,7 +475,7 @@ function useShareActions(subjects: SubjectResult[], grades: Grade[], title: Grad
     shareOrCopyLink(
       {
         title: '수능 운빨 뽑기',
-        text: `나의 운빨 수능 성적표: ${summary}. 칭호는 '${title.title}'! 너도 운빨 수능에 도전해 볼래?`,
+        text: `나의 운빨 수능 성적표: ${summary}. 너도 운빨 수능에 도전해 볼래?`,
         url: resultUrl,
       },
       showToast,
@@ -490,7 +486,7 @@ function useShareActions(subjects: SubjectResult[], grades: Grade[], title: Grad
     if (rendering) return
     setRendering(true)
     try {
-      const blob = await generateShareImage(subjects, title, playUrl)
+      const blob = await generateShareImage(subjects, playUrl)
       setImage({ blob, url: URL.createObjectURL(blob) })
     } catch {
       showToast('이미지를 만들지 못했어요. 잠시 후 다시 시도해 주세요.')
@@ -548,10 +544,9 @@ function GradeDrawResultView({
 }) {
   const navigate = useNavigate()
   const subjects = toSubjects(grades)
-  const title = determineResultTitle(grades)
   const stats = calculateResultStats(grades)
   const comments = getResultComments(stats)
-  const share = useShareActions(subjects, grades, title)
+  const share = useShareActions(subjects, grades)
 
   return (
     <AppShell
@@ -598,12 +593,6 @@ function GradeDrawResultView({
           <p className="grade-draw-report__foot">
             게임으로 뽑은 가상의 결과예요. 실제 성적통지표가 아니에요.
           </p>
-        </section>
-
-        <section className={`grade-draw-title grade-draw-title--${title.id}`}>
-          <span className="grade-draw-title__eyebrow">특별 칭호</span>
-          <h2>{title.title}</h2>
-          <p>“{title.quote}”</p>
         </section>
 
         {!isMine && (
@@ -696,7 +685,7 @@ function GradeDrawResultView({
       >
         {share.image && (
           <div className="grade-draw-image-sheet">
-            <img src={share.image.url} alt={`${title.title} 가상 성적표 이미지`} />
+            <img src={share.image.url} alt="가상 수능 성적표 이미지" />
             <Button
               variant="primary"
               fullWidth

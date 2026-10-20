@@ -1,5 +1,4 @@
 import type { Grade, SubjectResult } from './gradeDrawLogic'
-import type { GradeDrawTitle } from './gradeDrawResults'
 
 /** 4:5, the ratio most messengers and stories show without cropping. */
 const WIDTH = 1080
@@ -63,45 +62,11 @@ function roundedRect(
   context.closePath()
 }
 
-/** Breaks Korean text at spaces first, and inside a word only when it can't fit. */
-export function wrapText(
-  measure: (text: string) => number,
-  text: string,
-  maxWidth: number,
-) {
-  const lines: string[] = []
-  let line = ''
-
-  for (const word of text.split(' ')) {
-    const candidate = line ? `${line} ${word}` : word
-    if (measure(candidate) <= maxWidth) {
-      line = candidate
-      continue
-    }
-    if (line) lines.push(line)
-    line = ''
-    for (const character of word) {
-      if (measure(line + character) > maxWidth && line) {
-        lines.push(line)
-        line = character
-      } else {
-        line += character
-      }
-    }
-  }
-
-  if (line) lines.push(line)
-  return lines
-}
-
 export async function generateShareImage(
   subjects: readonly SubjectResult[],
-  title: GradeDrawTitle,
   playUrl: string,
 ): Promise<Blob> {
-  await ensureFonts(
-    `${title.title}${title.quote}수능 운빨 뽑기나의 성적표국어수학영어한국사탐구등급칭호너도 도전해 볼래?오락용 가상 실제 무관`,
-  )
+  await ensureFonts('수능 운빨 뽑기나의 성적표국어수학영어한국사탐구등급너도 도전해 볼래?가상 실제 무관')
   const logo = await loadImage(LOGO_SRC).catch(() => null)
 
   const canvas = document.createElement('canvas')
@@ -146,7 +111,7 @@ export async function generateShareImage(
   const tableX = 150
   const tableWidth = WIDTH - 300
   const tableTop = 340
-  const rowHeight = 92
+  const rowHeight = 110
   context.fillStyle = '#ffffff'
   roundedRect(context, tableX, tableTop, tableWidth, rowHeight * subjects.length + 24, 28)
   context.fill()
@@ -184,35 +149,23 @@ export async function generateShareImage(
   })
 
   context.textAlign = 'center'
-  context.fillStyle = SECONDARY
-  context.font = `600 30px ${FONT}`
-  context.fillText('칭호', WIDTH / 2, 990)
-  context.fillStyle = INK
-  context.font = `800 60px ${FONT}`
-  context.fillText(title.title, WIDTH / 2, 1056)
-
-  context.fillStyle = '#d93a1f'
-  context.font = `600 34px ${FONT}`
-  const quoteLine = wrapText((text) => context.measureText(text).width, `“${title.quote}”`, WIDTH - 260)[0]!
-  context.fillText(quoteLine, WIDTH / 2, 1108)
-
   context.strokeStyle = '#e8e2d9'
   context.lineWidth = 3
   context.beginPath()
-  context.moveTo(140, 1146)
-  context.lineTo(WIDTH - 140, 1146)
+  context.moveTo(140, 1100)
+  context.lineTo(WIDTH - 140, 1100)
   context.stroke()
 
   context.fillStyle = INK
-  context.font = `700 34px ${FONT}`
-  context.fillText('너도 운빨 수능에 도전해 볼래?', WIDTH / 2, 1196)
+  context.font = `700 36px ${FONT}`
+  context.fillText('너도 운빨 수능에 도전해 볼래?', WIDTH / 2, 1160)
   context.fillStyle = SECONDARY
   context.font = `500 26px ${FONT}`
   const displayUrl = playUrl.replace(/^https?:\/\//, '').replace(/\?.*$/, '')
-  context.fillText(displayUrl, WIDTH / 2, 1236)
+  context.fillText(displayUrl, WIDTH / 2, 1206)
   context.fillStyle = '#928b82'
   context.font = `500 22px ${FONT}`
-  context.fillText('오락용 가상 성적표 · 실제 수능 성적과 무관해요', WIDTH / 2, 1270)
+  context.fillText('가상 성적표 · 실제 수능 성적과 무관해요', WIDTH / 2, 1250)
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(
