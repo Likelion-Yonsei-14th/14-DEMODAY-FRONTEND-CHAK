@@ -33,6 +33,7 @@ import {
   GoogleCallbackPage,
   KakaoCallbackPage,
 } from '@/features/account/OAuthCallbackPages'
+import { WelcomePage } from '@/features/start/WelcomePage'
 import {
   AccountPage,
   DeleteAccountCompletePage,
@@ -83,6 +84,8 @@ import {
   ClassroomLockerPlacementPage,
 } from '@/features/classroom/LockerPages'
 import { LockerStickerPickPage } from '@/features/classroom/LockerStickerPage'
+import { LockerCharmPickPage } from '@/features/classroom/LockerCharmPickPage'
+import { CharmPickPage } from '@/features/supporter/CharmPickPage'
 import { LockerDecoratePage } from '@/features/classroom/LockerDecoratePage'
 import { PrototypeIndexPage } from '@/prototype/screens/PrototypeIndexPage'
 import {
@@ -100,30 +103,15 @@ import {
   StudyTypeResultPage,
   StudyTypeTestPage,
 } from '@/features/minigame/studyType/StudyTypePages'
-import { usePrototypeStore } from '@/store/prototypeStore'
 
-/**
- * Only the bare entry point (`/`) branches on auth - a signed-in visitor
- * lands on the two-door /home, everyone else on the /start landing. Once
- * on a specific route (e.g. /start itself, reached from "새 책상이나 반
- * 만들기"), that route stays reachable regardless of auth state.
- */
-function EntryRedirect() {
-  const authSession = usePrototypeStore((state) => state.authSession)
-
-  return (
-    <Navigate
-      to={authSession.status === 'authenticated' ? '/home' : '/start'}
-      replace
-    />
-  )
-}
-
+// Only the bare entry point (`/`) branches on auth: WelcomePage sends a
+// signed-in visitor to the two-door /home and shows everyone else the
+// welcome screen. /start itself stays reachable regardless of auth state.
 export const router = createBrowserRouter([
   {
     element: <App />,
     children: [
-      { index: true, element: <EntryRedirect /> },
+      { index: true, element: <WelcomePage /> },
       { path: '/start', element: <StartPage /> },
       { path: '/home', element: <HomePage /> },
       { path: '/auth/login', element: <LoginPage /> },
@@ -174,6 +162,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <SupportDeskPage /> },
           { path: 'compose', element: <UnifiedComposerPage /> },
+          { path: 'charm', element: <CharmPickPage /> },
           { path: 'sticker', element: <StickerPickPage /> },
           { path: 'placement', element: <PlacementPreviewPage /> },
           { path: 'complete', element: <SupportCompletePage /> },
@@ -192,6 +181,10 @@ export const router = createBrowserRouter([
       {
         path: '/prototype/support/jisu/compose',
         element: <UnifiedComposerPage />,
+      },
+      {
+        path: '/prototype/support/jisu/charm',
+        element: <CharmPickPage />,
       },
       {
         path: '/prototype/support/jisu/sticker',
@@ -326,6 +319,10 @@ export const router = createBrowserRouter([
       {
         path: '/prototype/classroom/:classroomId/locker/:lockerId/decorate',
         element: <LockerDecoratePage />,
+      },
+      {
+        path: '/prototype/classroom/:classroomId/locker/:lockerId/charm',
+        element: <LockerCharmPickPage />,
       },
       {
         path: '/prototype/classroom/:classroomId/locker/:lockerId/sticker',

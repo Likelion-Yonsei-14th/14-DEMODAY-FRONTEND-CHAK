@@ -2,6 +2,8 @@ import { useId } from 'react'
 import type { University, UniversityCharmShape } from './universities'
 
 const WHITE = '#FBFAF6'
+/** Sticker-book outline colour shared with the illustrated assets */
+const INK = '#4A3426'
 const DISPLAY_FONT = "Impact, 'Arial Black', 'Pretendard', sans-serif"
 const TEXT_FONT = "'Pretendard', 'Apple SD Gothic Neo', sans-serif"
 
@@ -147,21 +149,39 @@ export function UniversityCharm({
   // Clear acrylic edge around the printed piece
   const edge =
     shape === 'letter' ? (
-      <text
-        x="50"
-        y="140"
-        textAnchor="middle"
-        fontFamily={DISPLAY_FONT}
-        fontSize="104"
-        fill={WHITE}
-        stroke={WHITE}
-        strokeWidth="9"
-        strokeLinejoin="round"
-      >
-        {initial}
-      </text>
+      <>
+        <text
+          x="50"
+          y="140"
+          textAnchor="middle"
+          fontFamily={DISPLAY_FONT}
+          fontSize="104"
+          fill={INK}
+          stroke={INK}
+          strokeWidth="11.5"
+          strokeLinejoin="round"
+        >
+          {initial}
+        </text>
+        <text
+          x="50"
+          y="140"
+          textAnchor="middle"
+          fontFamily={DISPLAY_FONT}
+          fontSize="104"
+          fill={WHITE}
+          stroke={WHITE}
+          strokeWidth="9"
+          strokeLinejoin="round"
+        >
+          {initial}
+        </text>
+      </>
     ) : (
-      <path d={outline} fill={WHITE} stroke={WHITE} strokeWidth="8" strokeLinejoin="round" />
+      <>
+        <path d={outline} fill={INK} stroke={INK} strokeWidth="10.5" strokeLinejoin="round" />
+        <path d={outline} fill={WHITE} stroke={WHITE} strokeWidth="8" strokeLinejoin="round" />
+      </>
     )
 
   return (
@@ -195,6 +215,9 @@ export function UniversityCharm({
         {edge}
       </g>
       <g>{artwork}</g>
+      {shape !== 'letter' && (
+        <path d={outline} fill="none" stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
+      )}
       {/* Glossy acrylic sheen */}
       {shape !== 'letter' && (
         <path d={outline} fill={`url(#${uid}-gloss)`} />
