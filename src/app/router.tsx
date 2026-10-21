@@ -419,7 +419,8 @@ export const router = createBrowserRouter([
         path: '/minigame/guess-god/result/:score',
         element: <GuessGodResultPage />,
       },
-      { path: '*', element: <Navigate to="/start" replace /> },
+      // Unknown addresses go through the front door: /home if signed in, welcome otherwise.
+      { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
 ])

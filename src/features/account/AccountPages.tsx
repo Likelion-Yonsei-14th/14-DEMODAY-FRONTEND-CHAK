@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import {
   ArrowLeft,
   LogOut,
@@ -484,14 +484,17 @@ export function SignupPage() {
 export function AccountPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const backTo = (location.state as { from?: string } | null)?.from ?? '/start'
+  const backTo = (location.state as { from?: string } | null)?.from ?? '/home'
   const currentUser = usePrototypeStore((state) => state.currentUser)
   const authSession = usePrototypeStore((state) => state.authSession)
   const signOut = usePrototypeStore((state) => state.signOut)
   const { balance, failed } = useChaltteokBalance()
+  // Set while logging out: the page re-renders signed out before the
+  // navigation lands, and must not bounce to the login screen meanwhile.
+  const loggingOut = useRef(false)
 
   if (authSession.status !== 'authenticated') {
-    return <Navigate to="/auth/login" replace />
+    return loggingOut.current ? null : <Navigate to="/auth/login" replace />
   }
 
   const logout = () => {
@@ -499,8 +502,9 @@ export function AccountPage() {
       // Fire and forget: local sign-out must not wait on (or fail with) the network.
       void logoutFromServer().catch(() => undefined)
     }
+    loggingOut.current = true
     signOut()
-    navigate('/start', { replace: true })
+    navigate('/', { replace: true })
   }
 
   return (
@@ -677,7 +681,7 @@ export function DeleteAccountCompletePage() {
         <Button
           variant="brand"
           fullWidth
-          onClick={() => navigate('/start', { replace: true })}
+          onClick={() => navigate('/', { replace: true })}
         >
           처음으로 돌아가기
         </Button>

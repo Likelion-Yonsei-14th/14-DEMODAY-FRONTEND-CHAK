@@ -19,6 +19,7 @@ import {
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { AppShell } from '@/layout/AppShell'
+import { useHomePath } from '@/app/homePath'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { getTodaysBoardQuotes } from './boardQuotes'
 import { CABINET_CELLS, cabinetCells } from './classroomCabinet'
@@ -46,6 +47,7 @@ export function ClassroomMapPage() {
   const { showToast } = useFeedback()
   const daypart = useDeskDaypart()
   const viewportRef = useRef<HTMLElement>(null)
+  const homePath = useHomePath()
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 })
 
   // The world keeps the photo's aspect ratio; the three camera stops are its
@@ -126,9 +128,9 @@ export function ClassroomMapPage() {
           transparent
           leading={
             <IconButton
-              label="처음으로 돌아가기"
+              label="홈으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate('/start')}
+              onClick={() => navigate(homePath)}
             />
           }
           trailing={
