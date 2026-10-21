@@ -1,4 +1,4 @@
-export type ShareLinkData = { title: string; text: string; url: string }
+export type ShareLinkData = { title: string; text?: string; url: string }
 
 /** Shown when no copy method works, so the user can still copy the link by hand. */
 export const MANUAL_COPY_PROMPT = '아래 링크를 복사해서 친구에게 보내 주세요.'
@@ -40,6 +40,10 @@ async function copyToClipboard(text: string) {
  * user what happened: share sheet, copy to clipboard, or - when nothing is
  * allowed - the link itself so it can be copied by hand. Dismissing the share
  * sheet is not an error.
+ *
+ * The link goes inside the text instead of as a separate `url`: share sheets
+ * that get both send them as two messages and leave a blank line after the
+ * text (KakaoTalk on mobile).
  */
 export async function shareOrCopyLink(
   data: ShareLinkData,
@@ -48,7 +52,10 @@ export async function shareOrCopyLink(
 ) {
   if (typeof navigator.share === 'function') {
     try {
-      await navigator.share(data)
+      await navigator.share({
+        title: data.title,
+        text: data.text ? `${data.text} ${data.url}` : data.url,
+      })
       return
     } catch (error) {
       if (isDismissed(error)) return
