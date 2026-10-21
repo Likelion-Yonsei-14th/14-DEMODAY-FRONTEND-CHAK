@@ -123,3 +123,8 @@
     grid-template-columns: 1fr;
   }
 }
+
+.desk-create__choices .ds-choice-card:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

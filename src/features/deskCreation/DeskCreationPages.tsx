@@ -46,10 +46,16 @@ export function DeskCreateWhoPage() {
   const draft = usePrototypeStore((state) => state.deskCreationDraft)
   const setDraft = usePrototypeStore((state) => state.setDeskCreationDraft)
 
-  const next = () => {
-    if (!draft.createdFor) return
+  // A desk for someone else needs a server feature that does not exist yet, so with a backend
+  // the option is shown as coming soon instead of sending people down a path that ends in an error.
+  const friendDeskAvailable = !isApiEnabled
+  const createdFor =
+    draft.createdFor === 'other' && !friendDeskAvailable ? undefined : draft.createdFor
 
-    if (draft.createdFor === 'self') {
+  const next = () => {
+    if (!createdFor) return
+
+    if (createdFor === 'self') {
       setDraft({ recipientDisplayName: currentUser.displayName })
       navigate('/prototype/create/read-mode')
       return
@@ -66,7 +72,7 @@ export function DeskCreateWhoPage() {
         <Button
           variant="brand"
           fullWidth
-          disabled={!draft.createdFor}
+          disabled={!createdFor}
           onClick={next}
         >
           다음
@@ -82,7 +88,7 @@ export function DeskCreateWhoPage() {
           title="내 응원 책상이에요"
           description="내가 받을 응원을 모을게요."
           icon={<UserRound size={22} aria-hidden />}
-          selected={draft.createdFor === 'self'}
+          selected={createdFor === 'self'}
           onClick={() =>
             setDraft({
               createdFor: 'self',
@@ -92,9 +98,14 @@ export function DeskCreateWhoPage() {
         />
         <ChoiceCard
           title="친구나 지인을 위한 책상이에요"
-          description="응원을 모아 책상의 주인에게 전해줄게요."
+          description={
+            friendDeskAvailable
+              ? '응원을 모아 책상의 주인에게 전해줄게요.'
+              : '아직 준비 중이에요. 곧 만나볼 수 있어요.'
+          }
           icon={<UsersRound size={22} aria-hidden />}
-          selected={draft.createdFor === 'other'}
+          selected={createdFor === 'other'}
+          disabled={!friendDeskAvailable}
           onClick={() =>
             setDraft({
               createdFor: 'other',
