@@ -162,6 +162,24 @@ export const router = createBrowserRouter([
           },
         ],
       },
+      {
+        path: '/claim/:claimToken',
+        lazy: async () => ({
+          Component: (await import('@/features/claim/ClaimLinkPage')).ClaimLinkPage,
+        }),
+      },
+      {
+        path: '/friend-desks',
+        lazy: async () => ({
+          Component: (await import('@/features/deskCreation/FriendDeskPages')).FriendDesksPage,
+        }),
+      },
+      {
+        path: '/friend-desks/created',
+        lazy: async () => ({
+          Component: (await import('@/features/deskCreation/FriendDeskPages')).FriendDeskCreatedPage,
+        }),
+      },
       { path: '/start', element: <StartPage /> },
       { path: '/home', element: <HomePage /> },
       { path: '/minigame/exam-career', element: <ExamCareerIntroPage /> },

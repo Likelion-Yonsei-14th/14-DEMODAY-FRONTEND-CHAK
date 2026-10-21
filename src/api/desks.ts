@@ -66,3 +66,55 @@ export const basketOwnerMessages = (deliveryIds: number[]) =>
     method: 'POST',
     body: { deliveryIds },
   })
+
+// ---------- desk for a friend (made by someone else, handed over by a claim link) ----------
+
+export type ApiFriendDesk = {
+  id: number
+  displayName: string
+  supporterToken: string
+  claimToken: string
+  readModeType: 'DAILY' | 'TIME_CAPSULE'
+  dailyUnlockTime: string | null
+  capsuleUnlockAt: string | null
+  roomClosed: boolean
+  messageCount: number
+  friendCount: number
+  createdAt: string
+}
+
+export type ApiClaimPreview = {
+  displayName: string
+  creatorName: string
+  readModeType: 'DAILY' | 'TIME_CAPSULE'
+  dailyUnlockTime: string | null
+  capsuleUnlockAt: string | null
+  messageCount: number
+  friendCount: number
+}
+
+export type ApiClaimResult = {
+  desk: ApiOwnerDesk
+  messageCount: number
+  friendCount: number
+}
+
+export const createFriendDesk = (body: ApiDeskWrite) =>
+  apiFetch<ApiFriendDesk>('/api/desks/for-friend', { method: 'POST', body })
+
+export const fetchFriendDesks = async () =>
+  (await apiFetch<{ desks: ApiFriendDesk[] }>('/api/desks/for-friend')).desks
+
+/** Only the current owner can delete: the creator before the hand-over, the recipient after. */
+export const deleteDesk = (deskId: number) =>
+  apiFetch<void>(`/api/desks/${deskId}`, { method: 'DELETE' })
+
+export const fetchClaimPreview = (claimToken: string) =>
+  apiFetch<ApiClaimPreview>(`/api/claims/${claimToken}`)
+
+/** `confirmedRecipient` must be true; the screen asks "are you really them?" first. */
+export const claimDesk = (claimToken: string, confirmedRecipient: boolean) =>
+  apiFetch<ApiClaimResult>(`/api/claims/${claimToken}`, {
+    method: 'POST',
+    body: { confirmedRecipient },
+  })
