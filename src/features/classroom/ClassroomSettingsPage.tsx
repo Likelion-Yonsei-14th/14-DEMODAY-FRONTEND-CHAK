@@ -15,6 +15,7 @@ import {
   TextField,
   useFeedback,
 } from '@/design-system'
+import { useHomePath } from '@/app/homePath'
 import { AppShell } from '@/layout/AppShell'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -22,6 +23,7 @@ import './ClassroomSettingsPage.css'
 
 export function ClassroomSettingsPage() {
   const navigate = useNavigate()
+  const homePath = useHomePath()
   const { classroomId } = useParams()
   const { showToast } = useFeedback()
   const classroom = usePrototypeStore((state) => state.classroom)
@@ -236,7 +238,7 @@ export function ClassroomSettingsPage() {
               className="classroom-settings__leave"
               onClick={() => {
                 leaveClassroom()
-                navigate('/start', { replace: true })
+                navigate(homePath, { replace: true })
               }}
             >
               <LogOut size={16} aria-hidden />
