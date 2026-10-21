@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
-import { Dices, PencilLine, Smartphone } from 'lucide-react'
+import { GraduationCap, PencilLine, Smartphone } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { GRADE_DRAW_PATH } from './gradeDraw/gradeDrawRoutes'
+import { EXAM_CAREER_PATH } from './examCareer/examCareerRoutes'
 import { GUESS_GOD_PATH } from './guessGod/guessGodRoutes'
 import { SNEAKY_PHONE_PATH } from './sneakyPhone/sneakyPhoneRoutes'
 import { getCharacterSrc } from './studyType/studyTypeCharacters'
@@ -32,11 +32,11 @@ const MINI_GAMES: readonly MiniGame[] = [
     icon: <PencilLine size={22} />,
   },
   {
-    id: 'grade-draw',
-    path: GRADE_DRAW_PATH,
-    title: '수능 운빨 뽑기',
-    summary: '과목별 등급 뽑기',
-    icon: <Dices size={22} />,
+    id: 'exam-career',
+    path: EXAM_CAREER_PATH,
+    title: '수험생 커리어 시뮬레이터',
+    summary: '모의고사부터 수능까지',
+    icon: <GraduationCap size={22} />,
   },
   {
     id: 'sneaky-phone',
