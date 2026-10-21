@@ -42,11 +42,9 @@ import {
 } from '@/features/account/OAuthCallbackPages'
 import { WelcomePage } from '@/features/start/WelcomePage'
 import {
-  GradeDrawIntroPage,
-  GradeDrawMyResultPage,
-  GradeDrawPlayPage,
-  GradeDrawResultPage,
-} from '@/features/minigame/gradeDraw/GradeDrawPages'
+  ExamCareerIntroPage,
+  ExamCareerPlayPage,
+} from '@/features/minigame/examCareer/ExamCareerPages'
 import {
   AccountPage,
   DeleteAccountPage,
@@ -131,13 +129,8 @@ export const router = createBrowserRouter([
       { index: true, element: <WelcomePage /> },
       { path: '/start', element: <StartPage /> },
       { path: '/home', element: <HomePage /> },
-      { path: '/minigame/grade-draw', element: <GradeDrawIntroPage /> },
-      { path: '/minigame/grade-draw/play', element: <GradeDrawPlayPage /> },
-      { path: '/minigame/grade-draw/result', element: <GradeDrawMyResultPage /> },
-      {
-        path: '/minigame/grade-draw/result/:grades',
-        element: <GradeDrawResultPage />,
-      },
+      { path: '/minigame/exam-career', element: <ExamCareerIntroPage /> },
+      { path: '/minigame/exam-career/play', element: <ExamCareerPlayPage /> },
       { path: '/auth/login', element: <LoginPage /> },
       { path: '/privacy', element: <PrivacyPolicyPage /> },
       { path: '/terms', element: <TermsOfServicePage /> },

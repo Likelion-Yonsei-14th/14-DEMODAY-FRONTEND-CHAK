@@ -85,9 +85,9 @@ const routes = [
     phase: 'LIVE',
   },
   {
-    path: '/minigame/grade-draw',
-    title: 'Mini Game · 수능 운빨 뽑기',
-    description: '과목별 가중치 등급 뽑기 → 가상 수능 성적표 → 특별 칭호 → 링크·이미지 공유',
+    path: '/minigame/exam-career',
+    title: 'Mini Game · 수험생 커리어 시뮬레이터',
+    description: '고1 학평 → 고3 수능 → 재수·N수, 선택 이벤트 · 선택과목 · 정시 지원 · 성적 그래프 · 커리어 요약',
     phase: 'LIVE',
   },
   {
