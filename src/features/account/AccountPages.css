@@ -274,6 +274,49 @@
   font-weight: 800;
 }
 
+.account-delete__request {
+  width: 100%;
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-base);
+  box-shadow: var(--shadow-paper);
+}
+
+.account-delete__email {
+  display: grid;
+  gap: 2px;
+}
+
+.account-delete__email span {
+  color: var(--color-content-tertiary);
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+}
+
+.account-delete__email strong {
+  font-size: var(--type-body-m-size);
+  word-break: break-all;
+}
+
+.account-delete__request-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.account-delete .account-delete__note {
+  font-size: var(--type-body-s-size);
+}
+
+.account-delete__note a {
+  color: var(--color-content-primary);
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
 .account-delete__actions {
   display: grid;
   grid-template-columns: 1fr 1fr;

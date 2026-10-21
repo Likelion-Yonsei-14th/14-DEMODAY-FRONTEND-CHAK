@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, describe, expect, it } from 'vitest'
 import { NotificationProvider } from '@/design-system/overlays'
 import { usePrototypeStore } from '@/store/prototypeStore'
-import { AccountPage } from './AccountPages'
+import { AccountPage, DeleteAccountPage } from './AccountPages'
 
 afterEach(() => {
   act(() => usePrototypeStore.getState().signOut())
@@ -29,5 +29,29 @@ describe('account page', () => {
     expect(await screen.findByText('첫 화면')).toBeInTheDocument()
     expect(screen.queryByText('로그인 화면')).not.toBeInTheDocument()
     expect(usePrototypeStore.getState().authSession.status).not.toBe('authenticated')
+  })
+  it('asks for account deletion by email, as the privacy policy says, without signing out', () => {
+    act(() => usePrototypeStore.getState().signIn('jisu@gmail.com', 'google'))
+    render(
+      <NotificationProvider>
+        <MemoryRouter initialEntries={['/account/delete']}>
+          <Routes>
+            <Route path="/account/delete" element={<DeleteAccountPage />} />
+            <Route path="/account" element={<p>내 계정</p>} />
+          </Routes>
+        </MemoryRouter>
+      </NotificationProvider>,
+    )
+
+    expect(screen.getByRole('heading', { name: /이메일로 요청해 주세요/ })).toBeInTheDocument()
+    expect(screen.getByText('chak.live.team@gmail.com')).toBeInTheDocument()
+    expect(screen.getByText('Google 로그인 · jisu@gmail.com')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '개인정보처리방침' })).toHaveAttribute('href', '/privacy')
+    // Nothing here pretends to delete the account.
+    expect(screen.queryByRole('button', { name: '탈퇴하기' })).not.toBeInTheDocument()
+    expect(usePrototypeStore.getState().authSession.status).toBe('authenticated')
+
+    fireEvent.click(screen.getAllByRole('button', { name: /내 계정으로 돌아가기/ })[0]!)
+    expect(screen.getByText('내 계정')).toBeInTheDocument()
   })
 })

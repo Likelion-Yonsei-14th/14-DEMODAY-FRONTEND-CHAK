@@ -2,6 +2,7 @@ import { useRef, useState, type FormEvent } from 'react'
 import {
   ArrowLeft,
   LogOut,
+  Copy,
   Mail,
   Trash2,
   UserRound,
@@ -17,6 +18,7 @@ import {
   Button,
   IconButton,
   TextField,
+  useFeedback,
 } from '@/design-system'
 import { logout as logoutFromServer, startGoogleLogin, startKakaoLogin } from '@/api/auth'
 import { GOOGLE_CLIENT_ID, isApiEnabled, isKakaoLoginEnabled } from '@/api/config'
@@ -29,8 +31,16 @@ import {
   safePath,
 } from '@/features/chaltteok/returnFlow'
 import { useChaltteokBalance } from '@/features/chaltteok/useChaltteokBalance'
+import { LEGAL_CONTACT_EMAIL } from '@/features/legal/legalInfo'
 import { usePrototypeStore } from '@/store/prototypeStore'
+import type { AuthProvider } from '@/types'
 import './AccountPages.css'
+
+const PROVIDER_LABELS: Record<AuthProvider, string> = {
+  kakao: '카카오',
+  google: 'Google',
+  password: '이메일',
+}
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -602,20 +612,40 @@ export function AccountPage() {
   )
 }
 
+/**
+ * Account deletion is handled by email, as the privacy policy says: the team
+ * verifies the request and deletes the account and its data on the backend.
+ * Until an in-app deletion API exists, this page only explains how to ask.
+ */
 export function DeleteAccountPage() {
   const navigate = useNavigate()
+  const { showToast } = useFeedback()
   const authSession = usePrototypeStore((state) => state.authSession)
-  const deleteAccount = usePrototypeStore(
-    (state) => state.deleteAccount,
-  )
+  const lastLogin = usePrototypeStore((state) => state.lastLogin)
 
   if (authSession.status !== 'authenticated') {
     return <Navigate to="/auth/login" replace />
   }
 
-  const confirm = () => {
-    deleteAccount()
-    navigate('/account/delete/complete', { replace: true })
+  const accountLine = lastLogin?.email
+    ? `${PROVIDER_LABELS[lastLogin.provider]} 로그인 · ${lastLogin.email}`
+    : null
+  const mailHref = `mailto:${LEGAL_CONTACT_EMAIL}?subject=${encodeURIComponent(
+    '[착] 회원 탈퇴 요청',
+  )}&body=${encodeURIComponent(
+    `회원 탈퇴를 요청합니다.
+
+가입한 계정: ${accountLine ?? '(로그인 방식과 이메일을 적어 주세요)'}
+`,
+  )}`
+
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(LEGAL_CONTACT_EMAIL)
+      showToast('이메일 주소를 복사했어요.')
+    } catch {
+      showToast(`이메일 주소: ${LEGAL_CONTACT_EMAIL}`)
+    }
   }
 
   return (
@@ -635,64 +665,58 @@ export function DeleteAccountPage() {
         />
       }
       fixedAction={
-        <div className="account-delete__actions">
-          <Button
-            variant="secondary"
-            fullWidth
-            onClick={() => navigate('/account')}
-          >
-            계정 유지하기
-          </Button>
-          <Button
-            variant="primary"
-            fullWidth
-            onClick={confirm}
-          >
-            탈퇴하기
-          </Button>
-        </div>
+        <Button variant="secondary" fullWidth onClick={() => navigate('/account')}>
+          내 계정으로 돌아가기
+        </Button>
       }
     >
       <main className="account-delete">
         <span className="account-delete__icon" aria-hidden>
-          <Trash2 size={23} />
+          <Mail size={23} />
         </span>
         <h1>
-          정말 계정을
+          회원 탈퇴는
           <br />
-          탈퇴할까요?
+          이메일로 요청해 주세요.
         </h1>
         <p>
-          로그인 계정과 연결된 정보는 더 이상 불러올 수 없어요.
+          본인 확인 후 계정과 연결된 정보를 지체 없이 삭제하고, 처리 결과를 알려드려요.
         </p>
-      </main>
-    </AppShell>
-  )
-}
 
-export function DeleteAccountCompletePage() {
-  const navigate = useNavigate()
+        <section className="account-delete__request" aria-label="탈퇴 요청 방법">
+          <div className="account-delete__email">
+            <span>보낼 곳</span>
+            <strong>{LEGAL_CONTACT_EMAIL}</strong>
+          </div>
+          <div className="account-delete__email">
+            <span>함께 적어 주세요</span>
+            <strong>{accountLine ?? '가입한 로그인 방식과 이메일'}</strong>
+          </div>
+          <div className="account-delete__request-actions">
+            <Button
+              variant="primary"
+              fullWidth
+              leadingIcon={<Mail size={18} aria-hidden />}
+              onClick={() => {
+                window.location.href = mailHref
+              }}
+            >
+              메일로 요청하기
+            </Button>
+            <Button
+              variant="secondary"
+              fullWidth
+              leadingIcon={<Copy size={18} aria-hidden />}
+              onClick={copyEmail}
+            >
+              이메일 주소 복사
+            </Button>
+          </div>
+        </section>
 
-  return (
-    <AppShell
-      surface="base"
-      contentClassName="account-flow-shell"
-      fixedAction={
-        <Button
-          variant="brand"
-          fullWidth
-          onClick={() => navigate('/', { replace: true })}
-        >
-          처음으로 돌아가기
-        </Button>
-      }
-    >
-      <main className="account-delete account-delete--complete">
-        <span className="account-delete__complete-mark" aria-hidden>
-          ✓
-        </span>
-        <h1>탈퇴가 완료됐어요.</h1>
-        <p>언제든 다시 응원을 주고받으러 올 수 있어요.</p>
+        <p className="account-delete__note">
+          자세한 내용은 <Link to="/privacy">개인정보처리방침</Link>에서 확인할 수 있어요.
+        </p>
       </main>
     </AppShell>
   )
