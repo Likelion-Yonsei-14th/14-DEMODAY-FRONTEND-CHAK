@@ -19,6 +19,7 @@ import {
   useFeedback,
 } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
+import { useHomePath } from '@/app/homePath'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import './Classroom.css'
@@ -204,6 +205,7 @@ export function ClassroomJoinPage() {
   const { classroomId } = useParams()
   const [searchParams] = useSearchParams()
   const creating = searchParams.get('from') === 'create'
+  const homePath = useHomePath()
   const classroom = usePrototypeStore((state) => state.classroom)
   const joinClassroom = usePrototypeStore(
     (state) => state.joinClassroom,
@@ -232,7 +234,13 @@ export function ClassroomJoinPage() {
             <IconButton
               label="이전으로"
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate('/start')}
+              onClick={() =>
+                navigate(
+                  creating
+                    ? `/prototype/classroom/${classroomId ?? classroom.id}/complete`
+                    : homePath,
+                )
+              }
             />
           }
         />
