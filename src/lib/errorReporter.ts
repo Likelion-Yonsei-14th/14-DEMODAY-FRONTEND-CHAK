@@ -27,6 +27,8 @@ const NOISE = [
   /AbortError|The user aborted a request|signal is aborted/i,
   /chrome-extension:|moz-extension:|safari-(web-)?extension:/i,
   /Non-Error promise rejection captured/i,
+  // Scripts that Instagram/Facebook in-app browsers inject into the page; the bridge dies when the user leaves.
+  /Java object is gone|Error invoking postMessage|iabjs:\/\//i,
 ]
 
 
