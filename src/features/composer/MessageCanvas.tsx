@@ -37,6 +37,8 @@ import './cardRenderShared.css'
 
 type MessageCanvasProps = {
   draft: CardPage
+  /** Whose desk or locker this cheer is for; shown in the empty text box. */
+  recipientName?: string
   selectedId: string | null
   onSelect: (id: string | null) => void
   onTextDone: () => void
@@ -61,6 +63,7 @@ type MessageCanvasProps = {
 
 export function MessageCanvas({
   draft,
+  recipientName,
   selectedId,
   onSelect,
   onTextDone,
@@ -262,6 +265,7 @@ export function MessageCanvas({
           <CanvasTextElement
             key={element.id}
             element={element}
+            recipientName={recipientName}
             bounds={textBounds}
             canvasRef={canvasRef}
             selected={
@@ -302,6 +306,7 @@ export function MessageCanvas({
 
 type CanvasTextElementProps = {
   element: TextElement
+  recipientName?: string
   bounds: TextBounds
   canvasRef:
     React.RefObject<HTMLDivElement | null>
@@ -315,6 +320,7 @@ type CanvasTextElementProps = {
 
 function CanvasTextElement({
   element,
+  recipientName,
   bounds,
   canvasRef,
   selected,
@@ -639,7 +645,7 @@ function CanvasTextElement({
         ref={textareaRef}
         value={element.text}
         className="canvas-text-element__input"
-        placeholder="지수에게 남기고 싶은 말을 적어보세요"
+        placeholder={`${recipientName?.trim() || '친구'}에게 남기고 싶은 말을 적어보세요`}
         aria-label="응원 메시지"
         rows={2}
         onFocus={onSelect}
