@@ -82,3 +82,7 @@ Check these URLs on the generated Vercel deployment:
 6. Mobile viewport interaction works for the composer tabs and canvas.
 
 A deployment is ready for review only when the GitHub quality checks and these smoke checks pass.
+
+## Visitor region for the admin stats
+
+Vercel does not attach its geolocation headers (`x-vercel-ip-*`) to requests it proxies to an external address, so `middleware.ts` (Routing Middleware, matcher `/api/:path*`) copies the visitor's country and province code into `X-Chak-Geo-Country` / `X-Chak-Geo-Region`, which the backend stores with page views. The IP is never forwarded, and values a browser sends under those names are overwritten. If the admin dashboard shows every visit as "위치 미상", check that this middleware is deployed (Vercel project → Functions/Middleware).
