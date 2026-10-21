@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { chaltteokApi } from '@/api/chaltteok'
 import { usePrototypeStore } from '@/store/prototypeStore'
 
@@ -14,14 +14,27 @@ export function useChaltteokBalance(enabled = true) {
     (state) => state.authSession.status === 'authenticated',
   )
   const [state, setState] = useState<BalanceState>({ balance: null, failed: false })
+  // A balance that arrives after the screen is gone is dropped, not applied.
+  const mounted = useRef(true)
+
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
 
   const reload = useCallback(() => {
     if (!signedIn) return
     setState((current) => ({ ...current, failed: false }))
     chaltteokApi
       .getBalance()
-      .then(({ balance, customerKey }) => setState({ balance, customerKey, failed: false }))
-      .catch(() => setState((current) => ({ ...current, failed: true })))
+      .then(({ balance, customerKey }) => {
+        if (mounted.current) setState({ balance, customerKey, failed: false })
+      })
+      .catch(() => {
+        if (mounted.current) setState((current) => ({ ...current, failed: true }))
+      })
   }, [signedIn])
 
   useEffect(() => {
