@@ -144,51 +144,57 @@ export function LoginPage() {
           <Link to="/privacy">개인정보처리방침</Link>에 동의한 것으로 봅니다.
         </p>
 
-        <div className="account-auth__divider" aria-hidden>
-          <span>
-            또는 이메일로
-            {lastLogin?.provider === 'password' && ' · 최근 사용'}
-          </span>
-        </div>
+        {/* The email form only exists in the offline prototype; a backend account needs Kakao or Google. */}
+        {!isApiEnabled && (
+          <>
+            <div className="account-auth__divider" aria-hidden>
+              <span>
+                또는 이메일로
+                {lastLogin?.provider === 'password' && ' · 최근 사용'}
+              </span>
+            </div>
 
-        <form className="account-auth__form" onSubmit={submit}>
-          <TextField
-            id="login-email"
-            label="이메일"
-            type="email"
-            autoComplete="email"
-            placeholder="example@email.com"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-          <TextField
-            id="login-password"
-            label="비밀번호"
-            type="password"
-            autoComplete="current-password"
-            placeholder="비밀번호를 입력해주세요"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-          <div className="account-auth__password-help">
-            <Link to="/auth/reset-password">
-              비밀번호를 잊었어요
-            </Link>
-          </div>
-          <Button
-            type="submit"
-            variant="brand"
-            fullWidth
-            disabled={!email.trim() || !password}
-          >
-            로그인
-          </Button>
-        </form>
+            <form className="account-auth__form" onSubmit={submit}>
+              <TextField
+                id="login-email"
+                label="이메일"
+                type="email"
+                autoComplete="email"
+                placeholder="example@email.com"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+              <TextField
+                id="login-password"
+                label="비밀번호"
+                type="password"
+                autoComplete="current-password"
+                placeholder="비밀번호를 입력해주세요"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+              <div className="account-auth__password-help">
+                <Link to="/auth/reset-password">
+                  비밀번호를 잊었어요
+                </Link>
+              </div>
+              <Button
+                type="submit"
+                variant="brand"
+                fullWidth
+                disabled={!email.trim() || !password}
+              >
+                로그인
+              </Button>
+            </form>
 
-        <p className="account-auth__switch">
-          아직 계정이 없나요?
-          <Link to="/auth/signup">회원가입</Link>
-        </p>
+            <p className="account-auth__switch">
+              아직 계정이 없나요?
+              <Link to="/auth/signup">회원가입</Link>
+            </p>
+
+          </>
+        )}
 
         <button
           type="button"
@@ -399,6 +405,11 @@ export function SignupPage() {
 
   if (authSession.status === 'authenticated') {
     return <Navigate to={returnPath ?? '/account'} replace />
+  }
+  // E-mail sign-up only fakes a session in the browser, so with a backend it would
+  // look signed in while every request failed. Kakao and Google create real accounts.
+  if (isApiEnabled) {
+    return <Navigate to="/auth/login" replace />
   }
 
   const submit = (event: FormEvent) => {

@@ -109,29 +109,34 @@ export function WelcomePage() {
               >
                 다른 방법으로 로그인
               </Button>
-              <p className="welcome-page__switch">
-                처음이에요?{' '}
-                <button type="button" onClick={() => navigate('/auth/signup')}>
-                  회원가입
-                </button>
-              </p>
+              {/* With a backend there is no separate sign-up: Kakao and Google create the account. */}
+              {!isApiEnabled && (
+                <p className="welcome-page__switch">
+                  처음이에요?{' '}
+                  <button type="button" onClick={() => navigate('/auth/signup')}>
+                    회원가입
+                  </button>
+                </p>
+              )}
             </>
           ) : (
             <>
               <Button
                 variant="brand"
                 fullWidth
-                onClick={() => navigate('/auth/signup')}
+                onClick={() => navigate(isApiEnabled ? '/auth/login' : '/auth/signup')}
               >
                 처음이에요, 시작할게요
               </Button>
-              <Button
-                variant="secondary"
-                fullWidth
-                onClick={() => navigate('/auth/login')}
-              >
-                이미 계정이 있어요
-              </Button>
+              {!isApiEnabled && (
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  onClick={() => navigate('/auth/login')}
+                >
+                  이미 계정이 있어요
+                </Button>
+              )}
             </>
           )}
 

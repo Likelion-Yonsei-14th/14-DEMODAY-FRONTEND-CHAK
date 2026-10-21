@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiFetch, ApiError } from '@/api/client'
+import * as reporter from '@/lib/errorReporter'
 import { getAccessToken, setAccessToken } from '@/api/tokenStore'
 
 function jsonResponse(status: number, body: unknown) {
@@ -94,5 +95,17 @@ describe('apiFetch', () => {
     await expect(apiFetch('/api/public/desks/t/messages', { method: 'POST', body: {} }))
       .rejects.toMatchObject({ status: 409, code: 'DESK_CLOSED' })
     await expect(Promise.reject(new ApiError(500, {}))).rejects.toBeInstanceOf(ApiError)
+  })
+
+  it('reports network failures unless the request is marked quiet', async () => {
+    const report = vi.spyOn(reporter, 'reportError').mockImplementation(() => undefined)
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'))
+
+    await expect(apiFetch('/api/x')).rejects.toThrow()
+    expect(report).toHaveBeenCalledTimes(1)
+
+    await expect(apiFetch('/api/public/unlocks', { quiet: true })).rejects.toThrow()
+    expect(report).toHaveBeenCalledTimes(1)
+    report.mockRestore()
   })
 })

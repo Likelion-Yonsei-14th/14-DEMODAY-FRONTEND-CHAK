@@ -24,6 +24,8 @@ type RequestOptions = {
   query?: Record<string, string | number | boolean | undefined>
   /** Send the Bearer token when one is held. Default true. */
   auth?: boolean
+  /** Background request whose failure the user never notices: do not alert the team about network errors. */
+  quiet?: boolean
 }
 
 function buildUrl(path: string, query?: RequestOptions['query']) {
@@ -52,11 +54,13 @@ async function send(path: string, options: RequestOptions, withToken: boolean) {
     })
   } catch (error) {
     // The browser could not reach the server at all (no response).
-    reportError({
-      kind: 'network_error',
-      message: error instanceof Error ? error.message : 'Network request failed',
-      apiPath: path,
-    })
+    if (!options.quiet) {
+      reportError({
+        kind: 'network_error',
+        message: error instanceof Error ? error.message : 'Network request failed',
+        apiPath: path,
+      })
+    }
     throw error
   }
 }

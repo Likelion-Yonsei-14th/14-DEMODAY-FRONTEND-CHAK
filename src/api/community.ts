@@ -84,7 +84,7 @@ export const openDesk = () => apiFetch('/api/desks/me/open', { method: 'POST' })
 
 // ---------- ad unlocks ----------
 
-export const fetchUnlocks = () => apiFetch<ApiUnlock[]>('/api/public/unlocks')
+export const fetchUnlocks = () => apiFetch<ApiUnlock[]>('/api/public/unlocks', { quiet: true })
 
 export const unlockWithAd = (category: ApiUnlockCategory, assetId: string, adSessionId?: string) =>
   apiFetch<ApiUnlock>('/api/public/unlocks', {
