@@ -1146,28 +1146,59 @@ export const RETAKE_CHOICE_EVENTS: readonly ChoiceEvent[] = [
 export const RETAKE_JUNE_REPORT = {
   id: 'retake-june-report',
   title: '6평 성적표',
-  /** Average-grade change that counts as a rise or a drop. */
+  /**
+   * Average-grade change that counts as a real rise or drop. Anything smaller
+   * is a slight rise, no change or a slight drop: worded apart, same effects.
+   */
   threshold: 0.4,
   cases: {
     up: [
       {
         weight: 1,
         tone: 'up',
-        text: '"올해는 다르다!" 현역 수능보다 올랐어요. 자신감이 붙었어요.',
+        text: '"올해는 다르다!" 작년 수능보다 올랐어요. 자신감이 붙었어요.',
         effects: [{ type: 'day', target: 'all', amount: [1, 3], exams: 2 }],
+      },
+    ],
+    'slight-up': [
+      {
+        weight: 1,
+        tone: 'down',
+        text: '"1년을 더 했는데 이것밖에 안 올랐다고?" 슬럼프가 찾아왔어요.',
+        effects: [{ type: 'growth', target: 'all', factor: 0.6, exams: 2 }],
+      },
+      {
+        weight: 1,
+        tone: 'up',
+        text: '"1년을 더 했는데 이것밖에 안 올랐다고?" 잠깐 흔들렸지만 마음을 다잡았어요.',
+        effects: [],
       },
     ],
     same: [
       {
         weight: 1,
         tone: 'down',
-        text: '"재수했는데 그대로라고?" 슬럼프가 찾아왔어요.',
+        text: '"1년을 더 했는데 그대로라고?" 슬럼프가 찾아왔어요.',
         effects: [{ type: 'growth', target: 'all', factor: 0.6, exams: 2 }],
       },
       {
         weight: 1,
         tone: 'up',
-        text: '"재수했는데 그대로라고?" 잠깐 흔들렸지만 마음을 다잡았어요.',
+        text: '"1년을 더 했는데 그대로라고?" 잠깐 흔들렸지만 마음을 다잡았어요.',
+        effects: [],
+      },
+    ],
+    'slight-down': [
+      {
+        weight: 1,
+        tone: 'down',
+        text: '"1년을 더 했는데 오히려 떨어졌다고?" 슬럼프가 찾아왔어요.',
+        effects: [{ type: 'growth', target: 'all', factor: 0.6, exams: 2 }],
+      },
+      {
+        weight: 1,
+        tone: 'up',
+        text: '"1년을 더 했는데 오히려 떨어졌다고?" 잠깐 흔들렸지만 마음을 다잡았어요.',
         effects: [],
       },
     ],
@@ -1175,7 +1206,7 @@ export const RETAKE_JUNE_REPORT = {
       {
         weight: 1,
         tone: 'up',
-        text: '"현역 때보다 못 봤다고?" 정신이 번쩍 들었어요. 각성했어요.',
+        text: '"작년 수능보다 못 봤다고?" 정신이 번쩍 들었어요. 각성했어요.',
         effects: [
           { type: 'potential', target: 'all', amount: [2, 4] },
           { type: 'growth', target: 'all', factor: 1.8, exams: 2 },
@@ -1184,7 +1215,7 @@ export const RETAKE_JUNE_REPORT = {
       {
         weight: 1,
         tone: 'down',
-        text: '"현역 때보다 못 봤다고?" 슬럼프에 빠졌어요.',
+        text: '"작년 수능보다 못 봤다고?" 슬럼프에 빠졌어요.',
         effects: [
           { type: 'growth', target: 'all', factor: 0.6, exams: 2 },
           { type: 'day', target: 'all', amount: [-3, -1], exams: 1 },
@@ -1196,7 +1227,7 @@ export const RETAKE_JUNE_REPORT = {
   id: string
   title: string
   threshold: number
-  cases: Record<'up' | 'same' | 'down', ChoiceOutcome[]>
+  cases: Record<'up' | 'slight-up' | 'same' | 'slight-down' | 'down', ChoiceOutcome[]>
 }
 
 /** A rare turn of luck right before any CSAT, 현역 or retake. Nobody chooses it. */
