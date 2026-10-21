@@ -57,6 +57,7 @@ Vercel first; every other `/api` path goes to the backend.
   `https://<domain>/auth/google/callback` must be an Authorized redirect URI in Google Cloud
   Console. The client secret belongs to the backend only. Without it the Google button is
   hidden when a backend is configured.
+- The redirect URI is built from the host the visitor is on, and only `https://www.chak.live/...` is registered with Google. Any other host gets `redirect_uri_mismatch`, so `vercel.json` redirects `chak-put.vercel.app` to `www.chak.live` (the apex `chak.live` already redirects). If another domain should serve the app, register its callback URI in Google Cloud Console and Kakao first.
 
 찰떡 결제 (see `.env.example`):
 
