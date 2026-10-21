@@ -3,12 +3,12 @@ import { actOnReport, fetchAdminReports, type AdminReport, type ReportAction } f
 import { formatDateTime } from './adminFormat'
 
 const FILTERS = [
-  { value: 'PENDING', label: '처리 대기' },
+  { value: 'OPEN', label: '처리 대기' },
   { value: undefined, label: '전체' },
 ] as const
 
 export function ReportsPage() {
-  const [status, setStatus] = useState<string | undefined>('PENDING')
+  const [status, setStatus] = useState<string | undefined>('OPEN')
   const [rows, setRows] = useState<AdminReport[]>([])
   const [error, setError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<number | null>(null)
@@ -77,7 +77,7 @@ export function ReportsPage() {
                 <td>{row.reason ?? '-'}</td>
                 <td>{row.messageStatus} · {row.messageVisibility === 'PUBLIC' ? '공개' : '비공개'}</td>
                 <td>
-                  {row.status === 'PENDING' ? (
+                  {row.status === 'OPEN' ? (
                     <span className="admin-actions">
                       <button type="button" disabled={busyId === row.id} onClick={() => act(row, 'DISMISS')}>기각</button>
                       <button type="button" className="admin-danger" disabled={busyId === row.id} onClick={() => act(row, 'REMOVE_MESSAGE')}>응원 삭제</button>

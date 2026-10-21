@@ -213,4 +213,13 @@ describe('admin console', () => {
       await waitFor(() => expect(admin.cancelAdminInvite).toHaveBeenCalledWith(5))
     })
   })
+
+  describe('reports page', () => {
+    it('asks the server for OPEN reports by default (the status name the API uses)', async () => {
+      admin.fetchAdminReports.mockResolvedValue({ content: [], hasNext: false, page: 0, size: 20 })
+      const { ReportsPage } = await import('./ReportsPage')
+      render(<ReportsPage />)
+      await waitFor(() => expect(admin.fetchAdminReports).toHaveBeenCalledWith('OPEN', 0))
+    })
+  })
 })
