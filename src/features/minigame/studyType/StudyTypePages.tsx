@@ -371,11 +371,7 @@ function useShareActions(result: StudyTypeResult) {
 
   const shareLink = () =>
     shareOrCopyLink(
-      {
-        title: `나의 수험생 유형은 ${result.typeName}!`,
-        text: `“${result.tagline}” 나는 ${result.typeName} 유형이래. 너는 어떤 유형이야?`,
-        url: resultUrl,
-      },
+      resultUrl,
       showToast,
       '결과 링크를 복사했어요. 친구에게 붙여넣어 보내세요.',
     )
@@ -393,23 +389,6 @@ function useShareActions(result: StudyTypeResult) {
     }
   }
 
-  const file = image
-    ? new File([image.blob], fileName, { type: 'image/png' })
-    : null
-  const canShareFile =
-    file !== null &&
-    typeof navigator.canShare === 'function' &&
-    navigator.canShare({ files: [file] })
-
-  const shareImageFile = async () => {
-    if (!file) return
-    try {
-      await navigator.share({ files: [file], title: result.typeName })
-    } catch {
-      // Closing the share sheet is not an error.
-    }
-  }
-
   return {
     shareLink,
     createImage,
@@ -417,8 +396,6 @@ function useShareActions(result: StudyTypeResult) {
     image,
     closeImage: () => setImage(null),
     downloadImage: () => image && downloadBlob(image.blob, fileName),
-    canShareFile,
-    shareImageFile,
   }
 }
 
@@ -677,16 +654,6 @@ function StudyTypeResultView({
             >
               이미지 다운로드
             </Button>
-            {share.canShareFile && (
-              <Button
-                variant="secondary"
-                fullWidth
-                leadingIcon={<Share2 size={18} aria-hidden />}
-                onClick={share.shareImageFile}
-              >
-                다른 앱으로 보내기
-              </Button>
-            )}
           </div>
         )}
       </BottomSheet>

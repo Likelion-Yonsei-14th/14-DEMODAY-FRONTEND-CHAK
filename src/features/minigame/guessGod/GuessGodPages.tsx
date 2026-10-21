@@ -625,11 +625,7 @@ function useShareActions(result: GuessGodResult, score: number, game: GuessGodGa
 
   const shareLink = () =>
     shareOrCopyLink(
-      {
-        title: '오늘의 찍신은 나야!',
-        text: `${QUESTION_COUNT}문제 중 ${score}문제 정답! 나는 '${result.title}'. 너도 도전해 볼래?`,
-        url: resultUrl,
-      },
+      resultUrl,
       showToast,
       '결과 링크를 복사했어요. 친구에게 붙여넣어 보내세요.',
     )
@@ -645,22 +641,6 @@ function useShareActions(result: GuessGodResult, score: number, game: GuessGodGa
       showToast('이미지를 만들지 못했어요. 잠시 후 다시 시도해 주세요.')
     } finally {
       setRendering(false)
-    }
-  }
-
-  const file = image ? new File([image.blob], fileName, { type: 'image/png' }) : null
-  const canShareFile =
-    file !== null &&
-    typeof navigator.canShare === 'function' &&
-    navigator.canShare({ files: [file] })
-
-  const shareImageFile = async () => {
-    if (!file) return
-    try {
-      await navigator.share({ files: [file], title: '오늘의 찍신은 나야!' })
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') return
-      showToast('공유하지 못했어요. 이미지를 저장한 뒤 직접 보내 주세요.')
     }
   }
 
@@ -680,8 +660,6 @@ function useShareActions(result: GuessGodResult, score: number, game: GuessGodGa
     image,
     closeImage: () => setImage(null),
     downloadImage,
-    canShareFile,
-    shareImageFile,
   }
 }
 
@@ -820,16 +798,6 @@ function GuessGodResultView({
             >
               이미지 다운로드
             </Button>
-            {share.canShareFile && (
-              <Button
-                variant="secondary"
-                fullWidth
-                leadingIcon={<Share2 size={18} aria-hidden />}
-                onClick={share.shareImageFile}
-              >
-                다른 앱으로 보내기
-              </Button>
-            )}
           </div>
         )}
       </BottomSheet>

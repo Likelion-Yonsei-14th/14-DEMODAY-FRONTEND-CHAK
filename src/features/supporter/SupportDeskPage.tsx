@@ -122,11 +122,7 @@ export function SupportDeskPage() {
     const url = buildPrototypeShareUrl(supporterPath(supporterToken))
 
     await shareOrCopyLink(
-      {
-        title: `${recipientName}님의 응원 책상`,
-        text: `${recipientName}님 책상에 응원 하나 놓고 가 주세요.`,
-        url,
-      },
+      url,
       showToast,
       '책상 링크를 복사했어요.',
     )

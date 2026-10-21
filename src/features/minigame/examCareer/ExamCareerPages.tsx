@@ -856,17 +856,12 @@ function useShareActions(career: SharedCareer | null, code: string | null, name:
   )
 
   const playUrl = buildPrototypeShareUrl(EXAM_CAREER_PATH)
-  const title = '수험생 커리어 시뮬레이터'
   const fileName = career ? `수험생커리어_${attemptLabel(career.attempt)}_평균${career.average}등급.png` : 'exam-career.png'
 
   const shareLink = () => {
     if (!career || !code) return
     return shareOrCopyLink(
-      {
-        title,
-        text: `${attemptLabel(career.attempt)} 수능 평균 ${career.average}등급, ${destinationText(career)}! 너도 수험생 커리어를 시작해 볼래?`,
-        url: buildPrototypeShareUrl(examCareerResultPath(code)),
-      },
+      buildPrototypeShareUrl(examCareerResultPath(code)),
       showToast,
       '결과 링크를 복사했어요. 친구에게 붙여넣어 보내세요.',
     )
@@ -882,20 +877,6 @@ function useShareActions(career: SharedCareer | null, code: string | null, name:
       showToast('이미지를 만들지 못했어요. 잠시 후 다시 시도해 주세요.')
     } finally {
       setRendering(false)
-    }
-  }
-
-  const file = image ? new File([image.blob], fileName, { type: 'image/png' }) : null
-  const canShareFile =
-    file !== null && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })
-
-  const shareImageFile = async () => {
-    if (!file) return
-    try {
-      await navigator.share({ files: [file], title })
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') return
-      showToast('공유하지 못했어요. 이미지를 저장한 뒤 직접 보내 주세요.')
     }
   }
 
@@ -916,8 +897,6 @@ function useShareActions(career: SharedCareer | null, code: string | null, name:
     image,
     closeImage: () => setImage(null),
     downloadImage,
-    canShareFile,
-    shareImageFile,
   }
 }
 
@@ -1206,16 +1185,6 @@ function CareerSummaryView({ saved, onRestart }: { saved: SavedCareer; onRestart
             >
               이미지 다운로드
             </Button>
-            {share.canShareFile && (
-              <Button
-                variant="secondary"
-                fullWidth
-                leadingIcon={<Share2 size={18} aria-hidden />}
-                onClick={share.shareImageFile}
-              >
-                다른 앱으로 보내기
-              </Button>
-            )}
           </div>
         )}
       </BottomSheet>
