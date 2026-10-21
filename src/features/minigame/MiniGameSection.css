@@ -93,9 +93,9 @@
   color: #c8432b;
 }
 
-.mini-games__icon--grade-draw {
-  background: var(--color-sky-soft);
-  color: var(--color-sky);
+.mini-games__icon--exam-career {
+  background: #2f5b48;
+  color: #fffdf6;
 }
 
 .mini-games__icon--sneaky-phone {
