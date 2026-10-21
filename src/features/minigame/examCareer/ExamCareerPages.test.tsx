@@ -352,8 +352,10 @@ describe('exam career mini game', () => {
     Object.defineProperty(navigator, 'share', { value: share, configurable: true })
     fireEvent.click(screen.getByRole('button', { name: '결과 공유하기' }))
     expect(share).toHaveBeenCalledTimes(1)
-    expect(share.mock.calls[0]![0].url).toMatch(/\/minigame\/exam-career\/result\/h0-[1-9]{5}-\d{3}-[a-z-]+$/)
-    expect(share.mock.calls[0]![0].url).not.toContain('수험생')
+    // The link is the last word of the shared text.
+    const sharedUrl = share.mock.calls[0]![0].text.split(' ').at(-1)
+    expect(sharedUrl).toMatch(/\/minigame\/exam-career\/result\/h0-[1-9]{5}-\d{3}-[a-z-]+$/)
+    expect(sharedUrl).not.toContain('수험생')
     Reflect.deleteProperty(navigator, 'share')
     expect(screen.getByRole('button', { name: '이미지 저장하기' })).toBeInTheDocument()
 

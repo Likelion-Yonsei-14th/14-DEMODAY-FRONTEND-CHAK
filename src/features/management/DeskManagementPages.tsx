@@ -30,6 +30,7 @@ import {
 } from '@/features/desk/readModeUtils'
 import { mergeSupportMessages } from '@/features/supporter/seededMessages'
 import { AppShell } from '@/layout/AppShell'
+import { shareOrCopyLink } from '@/lib/shareLink'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { loadOwnerDesk } from '@/api/ownerLoader'
 import { blockSupporter, unblockSupporter } from '@/api/community'
@@ -80,21 +81,15 @@ export function DeskSettingsPage() {
   const share = async () => {
     const url = buildPrototypeShareUrl(supporterPath(getOwnSupporterToken()))
 
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `${desk.displayName}님의 응원 공간`,
-          text: `${desk.displayName}님에게 응원을 남겨주세요.`,
-          url,
-        })
-        return
-      }
-
-      await navigator.clipboard.writeText(url)
-      showToast('응원 링크를 복사했어요.')
-    } catch {
-      // 공유 시트를 닫은 경우에는 별도 오류를 노출하지 않습니다.
-    }
+    await shareOrCopyLink(
+      {
+        title: `${desk.displayName}님의 응원 공간`,
+        text: `${desk.displayName}님에게 응원을 남겨주세요.`,
+        url,
+      },
+      showToast,
+      '응원 링크를 복사했어요.',
+    )
   }
 
   return (
@@ -557,20 +552,11 @@ export function CreatorManagementPage() {
         : supporterPath(getOwnSupporterToken())
     const url = buildPrototypeShareUrl(path)
 
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `${desk.displayName}님의 응원 공간`,
-          url,
-        })
-        return
-      }
-
-      await navigator.clipboard.writeText(url)
-      showToast('링크를 복사했어요.')
-    } catch {
-      // 공유 시트를 닫은 경우에는 별도 오류를 노출하지 않습니다.
-    }
+    await shareOrCopyLink(
+      { title: `${desk.displayName}님의 응원 공간`, url },
+      showToast,
+      '링크를 복사했어요.',
+    )
   }
 
   if (claimed) {

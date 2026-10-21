@@ -35,9 +35,18 @@ describe('shareOrCopyLink', () => {
 
     await shareOrCopyLink(data, showToast, '복사했어요')
 
-    expect(share).toHaveBeenCalledWith(data)
+    expect(share).toHaveBeenCalledWith({ title: '제목', text: '문구 https://chak.live/desk/abc' })
     expect(writeText).not.toHaveBeenCalled()
     expect(showToast).not.toHaveBeenCalled()
+  })
+
+  it('shares just the link as the text when there is no message', async () => {
+    const share = vi.fn().mockResolvedValue(undefined)
+    setNavigator(share, vi.fn())
+
+    await shareOrCopyLink({ title: '제목', url: data.url }, showToast, '복사했어요')
+
+    expect(share).toHaveBeenCalledWith({ title: '제목', text: data.url })
   })
 
   it('does nothing more when the share sheet is dismissed', async () => {
