@@ -404,15 +404,24 @@ describe('retakes', () => {
       const june = state.history.find((result) => result.examId === 'n1-06p')!
       const report = june.events.find((event) => event.eventId === 'retake-june-report')
       expect(report).toBeDefined()
-      const gain = csat.average - june.average
-      if (gain >= 0.4) expect(report!.description).toContain('올해는 다르다')
-      else if (gain <= -0.4) expect(report!.description).toContain('현역 때보다 못 봤다고')
-      else expect(report!.description).toContain('재수했는데 그대로라고')
-      seen.add(report!.description.slice(0, 8))
+      const gain = Math.round((csat.average - june.average) * 10)
+      const expected =
+        gain >= 4
+          ? '"올해는 다르다!" 작년 수능보다 올랐어요'
+          : gain <= -4
+            ? '작년 수능보다 못 봤다고'
+            : gain > 0
+              ? '이것밖에 안 올랐다고'
+              : gain < 0
+                ? '오히려 떨어졌다고'
+                : '그대로라고'
+      expect(report!.description).toContain(expected)
+      expect(report!.description).not.toContain('현역')
+      seen.add(expected)
       // 현역 exams never get it.
       expect(state.history.filter((result) => result.attempt === 0).flatMap((result) => result.events).map((event) => event.eventId)).not.toContain('retake-june-report')
     }
-    expect(seen.size).toBeGreaterThanOrEqual(3)
+    expect(seen.size).toBe(5)
   }, 30_000)
 
   it('brings the legendary lecture now and then, only right before a CSAT', () => {
