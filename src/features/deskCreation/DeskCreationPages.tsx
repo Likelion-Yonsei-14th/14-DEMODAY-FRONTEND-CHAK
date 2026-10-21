@@ -33,7 +33,6 @@ import { isApiEnabled } from '@/api/config'
 import { createMyDesk } from '@/api/desks'
 import { deskFromApi, readModeToApi } from '@/api/mappers'
 import { usePrototypeStore } from '@/store/prototypeStore'
-import { shareOrCopyLink } from '@/lib/shareLink'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { getOwnSupporterToken } from '@/prototype/ownSupporterToken'
 import { supporterPath } from '@/prototype/supporterRoute'
@@ -355,9 +354,24 @@ export function DeskCreateCompletePage() {
       kind === 'owner'
         ? buildPrototypeShareUrl('/prototype/claim')
         : buildPrototypeShareUrl(supporterPath(getOwnSupporterToken()))
+    const title =
+      kind === 'owner'
+        ? `${desk.displayName}님의 응원 책상`
+        : `${desk.displayName} 책상에 응원 하나 놓고 가줘!`
+    const text =
+      kind === 'owner'
+        ? '친구들이 응원 책상을 만들어두었어요.'
+        : `친구들이 ${desk.displayName} 응원 책상을 만들었어. 응원 하나 놓고 가줘!`
 
     try {
-      await shareOrCopyLink(url, showToast, '링크를 복사했어요.')
+      if (navigator.share) {
+        await navigator.share({ title, text, url })
+      } else {
+        await navigator.clipboard.writeText(url)
+        showToast('링크를 복사했어요.')
+      }
+    } catch {
+      // 공유 시트를 닫은 경우에는 별도 오류를 노출하지 않습니다.
     } finally {
       setSharing(false)
     }

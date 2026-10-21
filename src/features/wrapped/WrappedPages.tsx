@@ -24,8 +24,6 @@ import {
 } from '@/design-system'
 import { mergeSupportMessages } from '@/features/supporter/seededMessages'
 import { AppShell } from '@/layout/AppShell'
-import { shareOrCopyLink } from '@/lib/shareLink'
-import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import './WrappedPages.css'
 
@@ -411,9 +409,25 @@ export function WrappedSharePage() {
   const navigate = useNavigate()
   const { showToast } = useFeedback()
 
-  // The record has no public page, so the link card introduces the service.
-  const share = () =>
-    shareOrCopyLink(buildPrototypeShareUrl('/'), showToast, '링크를 복사했어요.')
+  const share = async () => {
+    const text =
+      `73일 동안 26명의 친구에게 183개의 응원을 받았어요. 수능까지 함께해준 마음을 기록으로 남겼어요.`
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: '나의 수능 응원 기록',
+          text,
+        })
+        return
+      }
+
+      await navigator.clipboard.writeText(text)
+      showToast('공유할 내용을 복사했어요.')
+    } catch {
+      // 공유 시트를 닫은 경우에는 별도 오류를 노출하지 않습니다.
+    }
+  }
 
   return (
     <AppShell

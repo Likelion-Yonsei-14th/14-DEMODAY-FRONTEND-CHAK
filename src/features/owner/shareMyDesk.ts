@@ -1,3 +1,4 @@
+import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { shareOrCopyLink } from '@/lib/shareLink'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { getOwnSupporterToken } from '@/prototype/ownSupporterToken'
@@ -14,8 +15,15 @@ export async function shareMyDeskLink(
   showToast: (message: string) => void,
   supporterToken: string = getOwnSupporterToken(),
 ) {
+  const dday = getCsatDdayLabel()
+  const url = buildPrototypeShareUrl(supporterPath(supporterToken))
+  const title = '내 책상에 응원 하나 놓고 가줘!'
+  const text = dday.startsWith('수능까지')
+    ? `${dday}, 네 응원 하나면 버틸 수 있을 것 같아.`
+    : '네 응원 하나면 버틸 수 있을 것 같아.'
+
   await shareOrCopyLink(
-    buildPrototypeShareUrl(supporterPath(supporterToken)),
+    { title, text, url },
     showToast,
     '응원 링크를 복사했어요. 친구에게 붙여넣어 보내세요.',
   )
