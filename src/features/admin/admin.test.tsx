@@ -11,6 +11,10 @@ const admin = vi.hoisted(() => ({
   fetchRegionStats: vi.fn(),
   fetchAdminReports: vi.fn(),
   actOnReport: vi.fn(),
+  fetchAdminAccess: vi.fn(),
+  grantAdmin: vi.fn(),
+  revokeAdmin: vi.fn(),
+  cancelAdminInvite: vi.fn(),
 }))
 const auth = vi.hoisted(() => ({ fetchMe: vi.fn() }))
 
@@ -20,6 +24,7 @@ vi.mock('@/api/auth', () => auth)
 import { AdminLayout } from './AdminLayout'
 import { DashboardPage } from './DashboardPage'
 import { UsersPage } from './UsersPage'
+import { AdminsPage } from './AdminsPage'
 
 const summary = {
   id: 7,
@@ -157,5 +162,55 @@ describe('admin console', () => {
     fireEvent.click(await screen.findByText('김철수'))
     await screen.findByLabelText('회원 상세')
     expect(screen.queryByRole('button', { name: '탈퇴 처리' })).toBeNull()
+  })
+
+  describe('operator access', () => {
+    const access = (overrides: Record<string, unknown> = {}) => ({
+      admins: [{ ...summary, id: 1, displayName: '운영자', email: 'mj@x.com', admin: true }],
+      invites: [{ id: 5, email: 'wait@x.com', createdAt: '2026-10-01T00:00:00Z', consumedAt: null, bootstrap: false }],
+      ...overrides,
+    })
+
+    it('lists admins and invites, grants by email and clears the field', async () => {
+      admin.fetchAdminAccess.mockResolvedValue(access())
+      admin.grantAdmin.mockResolvedValue(access({ invites: [] }))
+      render(<AdminsPage />)
+      expect(await screen.findByText('wait@x.com')).toBeInTheDocument()
+
+      const input = screen.getByLabelText('구글 계정 이메일')
+      fireEvent.change(input, { target: { value: ' new@x.com ' } })
+      fireEvent.click(screen.getByRole('button', { name: '권한 부여' }))
+
+      await waitFor(() => expect(admin.grantAdmin).toHaveBeenCalledWith('new@x.com'))
+      await waitFor(() => expect(screen.queryByText('wait@x.com')).not.toBeInTheDocument())
+      expect(input).toHaveValue('')
+    })
+
+    it('revokes an admin only after confirmation and shows server rejections', async () => {
+      admin.fetchAdminAccess.mockResolvedValue(access())
+      const { ApiError } = await import('@/api/client')
+      admin.revokeAdmin.mockRejectedValue(new ApiError(409, { code: 'ADMIN_SELF_REVOKE' }))
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true)
+      render(<AdminsPage />)
+      await screen.findByText('mj@x.com')
+
+      fireEvent.click(screen.getByRole('button', { name: '권한 해제' }))
+      expect(admin.revokeAdmin).not.toHaveBeenCalled()
+      fireEvent.click(screen.getByRole('button', { name: '권한 해제' }))
+
+      await waitFor(() => expect(admin.revokeAdmin).toHaveBeenCalledWith(1))
+      expect(await screen.findByText('본인의 권한은 해제할 수 없어요.')).toBeInTheDocument()
+      confirm.mockRestore()
+    })
+
+    it('cancels a pending invite after confirmation', async () => {
+      admin.fetchAdminAccess.mockResolvedValue(access())
+      admin.cancelAdminInvite.mockResolvedValue(access({ invites: [] }))
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      render(<AdminsPage />)
+      await screen.findByText('wait@x.com')
+      fireEvent.click(screen.getByRole('button', { name: '초대 취소' }))
+      await waitFor(() => expect(admin.cancelAdminInvite).toHaveBeenCalledWith(5))
+    })
   })
 })
