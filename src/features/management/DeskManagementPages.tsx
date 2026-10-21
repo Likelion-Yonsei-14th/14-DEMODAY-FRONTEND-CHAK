@@ -37,6 +37,8 @@ import { blockSupporter, unblockSupporter } from '@/api/community'
 import { isApiEnabled } from '@/api/config'
 import { getOwnSupporterToken } from '@/prototype/ownSupporterToken'
 import { supporterPath } from '@/prototype/supporterRoute'
+import { ApiError } from '@/api/client'
+import { deleteDesk } from '@/api/desks'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import type { ReadMode } from '@/types'
 import './DeskManagementPages.css'
@@ -52,6 +54,24 @@ export function DeskSettingsPage() {
   const updateSettings = usePrototypeStore(
     (state) => state.updateOwnerSettings,
   )
+
+  const forgetOwnDesk = usePrototypeStore((state) => state.forgetOwnDesk)
+
+  const removeDesk = async () => {
+    if (!window.confirm('책상을 삭제할까요? 모인 응원도 함께 사라지고 되돌릴 수 없어요.')) return
+    try {
+      await deleteDesk(Number(desk.id))
+    } catch (error) {
+      // Already gone on the server is the same outcome the user asked for.
+      if (!(error instanceof ApiError && error.status === 404)) {
+        showToast('삭제하지 못했어요. 잠시 후 다시 시도해주세요.')
+        return
+      }
+    }
+    forgetOwnDesk()
+    showToast('책상을 삭제했어요.')
+    navigate('/home', { replace: true })
+  }
 
   const daily = desk.readMode.type === 'daily'
   const dailyTime =
@@ -276,6 +296,11 @@ export function DeskSettingsPage() {
             onClick={() => navigate('/prototype/my/settings/end')}
           >
             응원 받기 종료
+          </button>
+        )}
+        {isApiEnabled && (
+          <button type="button" className="desk-settings__danger" onClick={removeDesk}>
+            책상 삭제
           </button>
         )}
       </main>

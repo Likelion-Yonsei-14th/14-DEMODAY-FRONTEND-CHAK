@@ -20,6 +20,12 @@ This document tracks the latest decisions that the code prototype must prioritiz
   - account page
   - logout
   - account deletion and completion
+- Desk for a friend (Claim), with a backend connected:
+  - The creator gets two links: the supporter link (`/desk/:token`) for friends and the claim link (`/claim/:claimToken`) for the person the desk is for. The creator sees only counts, never what the cheers say, and manages the desks that are not handed over yet at `/friend-desks` (also reachable from Home).
+  - The recipient signs in, sees who made it and how many cheers are waiting, and must answer "are you really that person?" before taking the desk over. The link works once; after that the creator becomes an ordinary supporter.
+  - Someone who already has a desk cannot take another (one desk per account, no merging). The creator may claim their own desk.
+  - The current owner can delete a desk: the creator before the hand-over (`/friend-desks`), the recipient afterwards (desk settings → 책상 삭제). Deleting is permanent from the user's side.
+  - The offline prototype keeps its own mock walkthrough at `/prototype/claim`.
 - With a backend connected (production), only Kakao and Google login exist. The email signup/login forms are prototype mocks that only fake a session in the browser (no server account or token, so desk creation fails); they are hidden and `/auth/signup` redirects to `/auth/login`.
 - Google is the primary social-login prototype. Kakao login remains optional follow-up scope.
 - New sign-ups land on `/start`. Returning users land on `/home` with two doors, “내 책상 가기” and “우리 반 가기”; a door the user doesn't have yet explains that instead of navigating.
