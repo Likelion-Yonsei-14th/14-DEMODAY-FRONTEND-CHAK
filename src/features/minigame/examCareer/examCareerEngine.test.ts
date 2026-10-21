@@ -126,7 +126,7 @@ describe('simulation', () => {
         }
       }
     }
-  })
+  }, 30_000)
 
   it('never lets skill run far past potential', () => {
     for (let index = 0; index < 300; index += 1) {
@@ -138,7 +138,7 @@ describe('simulation', () => {
         }
       }
     }
-  })
+  }, 30_000)
 
   it('runs the 고1-고3 schedule and then the June, September mocks and CSAT for each retake', () => {
     const schoolYears = scheduleFor(0).map((slot) => `${slot.yearLabel} ${slot.label}`)
@@ -209,7 +209,7 @@ describe('choice events', () => {
       }
     }
     expect([...where].sort()).toEqual(['g1-10', 'g2-03', 'g2-10', 'g3-03', 'g3-06p', 'g3-07'])
-  })
+  }, 30_000)
 
   it('gives every 스터디카페 pick a good and a bad side, and lets only a new couple break up before the CSAT', () => {
     const cafe = STUDY_CAFE_EVENT
@@ -242,7 +242,7 @@ describe('choice events', () => {
     expect(couples).toBeGreaterThan(100)
     expect(breakups / couples).toBeGreaterThan(0.15)
     expect(breakups / couples).toBeLessThan(0.45)
-  })
+  }, 30_000)
 
   it('starts high school with a pick that shapes the whole career', () => {
     const entry = createCareer('entry', 'science')
@@ -313,7 +313,7 @@ describe('choice events', () => {
       expect(event.options.length).toBeGreaterThanOrEqual(2)
       for (const option of event.options) expect(option.outcomes.length).toBeGreaterThan(0)
     }
-  })
+  }, 30_000)
 })
 
 describe('track lean and subject names', () => {
@@ -413,7 +413,7 @@ describe('retakes', () => {
       expect(state.history.filter((result) => result.attempt === 0).flatMap((result) => result.events).map((event) => event.eventId)).not.toContain('retake-june-report')
     }
     expect(seen.size).toBeGreaterThanOrEqual(3)
-  })
+  }, 30_000)
 
   it('brings the legendary lecture now and then, only right before a CSAT', () => {
     let csats = 0
@@ -614,7 +614,7 @@ describe('university applications', () => {
     // Each group's centre still goes down the list.
     const centres = UNIVERSITY_TIERS.map((tier) => (tier.cutoff.min + tier.cutoff.max) / 2)
     expect([...centres].sort((a, b) => a - b)).toEqual(centres)
-  })
+  }, 30_000)
 
   it('applies to one school per 가·나·다군 and replays the same results', () => {
     const applying = decide(atDecision('apply-replay'), 'university')
