@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MANUAL_COPY_PROMPT, shareOrCopyLink } from '@/lib/shareLink'
 
-const url = 'https://chak.live/desk/abc'
+const data = { title: '제목', text: '문구', url: 'https://chak.live/desk/abc' }
 
 function setNavigator(share: unknown, writeText: unknown) {
   Object.defineProperty(navigator, 'share', { value: share, configurable: true })
@@ -28,14 +28,14 @@ describe('shareOrCopyLink', () => {
     vi.unstubAllGlobals()
   })
 
-  it('shares only the link through the share sheet when the browser has one', async () => {
+  it('uses the share sheet when the browser has one', async () => {
     const share = vi.fn().mockResolvedValue(undefined)
     const writeText = vi.fn()
     setNavigator(share, writeText)
 
-    await shareOrCopyLink(url, showToast, '복사했어요')
+    await shareOrCopyLink(data, showToast, '복사했어요')
 
-    expect(share).toHaveBeenCalledWith({ url })
+    expect(share).toHaveBeenCalledWith(data)
     expect(writeText).not.toHaveBeenCalled()
     expect(showToast).not.toHaveBeenCalled()
   })
@@ -45,7 +45,7 @@ describe('shareOrCopyLink', () => {
     const writeText = vi.fn()
     setNavigator(share, writeText)
 
-    await shareOrCopyLink(url, showToast, '복사했어요')
+    await shareOrCopyLink(data, showToast, '복사했어요')
 
     expect(writeText).not.toHaveBeenCalled()
     expect(prompt).not.toHaveBeenCalled()
@@ -57,9 +57,9 @@ describe('shareOrCopyLink', () => {
     const writeText = vi.fn().mockResolvedValue(undefined)
     setNavigator(share, writeText)
 
-    await shareOrCopyLink(url, showToast, '복사했어요')
+    await shareOrCopyLink(data, showToast, '복사했어요')
 
-    expect(writeText).toHaveBeenCalledWith(url)
+    expect(writeText).toHaveBeenCalledWith(data.url)
     expect(showToast).toHaveBeenCalledWith('복사했어요')
   })
 
@@ -67,9 +67,9 @@ describe('shareOrCopyLink', () => {
     const writeText = vi.fn().mockResolvedValue(undefined)
     setNavigator(undefined, writeText)
 
-    await shareOrCopyLink(url, showToast, '복사했어요')
+    await shareOrCopyLink(data, showToast, '복사했어요')
 
-    expect(writeText).toHaveBeenCalledWith(url)
+    expect(writeText).toHaveBeenCalledWith(data.url)
     expect(showToast).toHaveBeenCalledWith('복사했어요')
   })
 
@@ -78,7 +78,7 @@ describe('shareOrCopyLink', () => {
     setNavigator(undefined, writeText)
     execCommand.mockReturnValue(true)
 
-    await shareOrCopyLink(url, showToast, '복사했어요')
+    await shareOrCopyLink(data, showToast, '복사했어요')
 
     expect(execCommand).toHaveBeenCalledWith('copy')
     expect(showToast).toHaveBeenCalledWith('복사했어요')
@@ -90,9 +90,9 @@ describe('shareOrCopyLink', () => {
     setNavigator(undefined, undefined)
     execCommand.mockReturnValue(false)
 
-    await shareOrCopyLink(url, showToast, '복사했어요')
+    await shareOrCopyLink(data, showToast, '복사했어요')
 
     expect(showToast).not.toHaveBeenCalled()
-    expect(prompt).toHaveBeenCalledWith(MANUAL_COPY_PROMPT, url)
+    expect(prompt).toHaveBeenCalledWith(MANUAL_COPY_PROMPT, data.url)
   })
 })

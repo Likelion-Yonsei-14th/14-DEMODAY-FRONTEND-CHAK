@@ -1,3 +1,5 @@
+export type ShareLinkData = { title: string; text: string; url: string }
+
 /** Shown when no copy method works, so the user can still copy the link by hand. */
 export const MANUAL_COPY_PROMPT = '아래 링크를 복사해서 친구에게 보내 주세요.'
 
@@ -38,19 +40,15 @@ async function copyToClipboard(text: string) {
  * user what happened: share sheet, copy to clipboard, or - when nothing is
  * allowed - the link itself so it can be copied by hand. Dismissing the share
  * sheet is not an error.
- *
- * Only the URL is shared: messengers such as KakaoTalk then show a single link
- * card built from the page's Open Graph tags (index.html and middleware.ts)
- * instead of the link plus a separate text message.
  */
 export async function shareOrCopyLink(
-  url: string,
+  data: ShareLinkData,
   showToast: (message: string) => void,
   copiedMessage: string,
 ) {
   if (typeof navigator.share === 'function') {
     try {
-      await navigator.share({ url })
+      await navigator.share(data)
       return
     } catch (error) {
       if (isDismissed(error)) return
@@ -58,10 +56,10 @@ export async function shareOrCopyLink(
     }
   }
 
-  if (await copyToClipboard(url)) {
+  if (await copyToClipboard(data.url)) {
     showToast(copiedMessage)
     return
   }
 
-  window.prompt(MANUAL_COPY_PROMPT, url)
+  window.prompt(MANUAL_COPY_PROMPT, data.url)
 }

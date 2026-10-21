@@ -17,8 +17,6 @@ import {
   useFeedback,
 } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
-import { shareOrCopyLink } from '@/lib/shareLink'
-import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import type { Message } from '@/types'
 import './ClassWrappedPages.css'
@@ -189,9 +187,30 @@ export function ClassWrappedSharePage() {
 
   const record = buildClassRecord(classroom, messages)
 
-  // The record has no public page, so the link card introduces the service.
-  const share = () =>
-    shareOrCopyLink(buildPrototypeShareUrl('/'), showToast, '링크를 복사했어요.')
+  const share = async () => {
+    const text = [
+      classroom.name,
+      `${record.members}명이 함께 ${record.totalEncouragements}개의 응원을 남겼어요.`,
+      record.keywords.length > 0
+        ? `우리에게 자주 남은 말: ${record.keywords.join(', ')}`
+        : null,
+    ].filter(Boolean).join('\n')
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${classroom.name} 수능 응원 기록`,
+          text,
+        })
+        return
+      }
+
+      await navigator.clipboard.writeText(text)
+      showToast('우리 반 기록을 복사했어요.')
+    } catch {
+      // 공유 시트를 닫은 경우에는 별도 오류를 노출하지 않습니다.
+    }
+  }
 
   return (
     <AppShell
