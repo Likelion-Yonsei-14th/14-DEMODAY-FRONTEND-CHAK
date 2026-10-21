@@ -340,6 +340,7 @@ Production은 **mobile-first responsive web**으로 구현합니다.
 - 모바일에서 현재 prototype의 정보 밀도와 interaction을 기준으로 합니다.
 - Tablet / desktop에서는 사용 가능한 폭에 맞춰 layout이 확장되어야 합니다.
 - 현재 `max-width: 430px` AppShell은 prototype reference이며 production의 고정 최대 폭 규칙이 아닙니다.
+- `fixedAction`은 `position: sticky; bottom: 0`으로 화면 아래에 붙습니다. 조상 요소에 `overflow: hidden/auto/scroll`을 두면 그 요소가 스크롤 컨테이너가 되어 고정 영역이 화면이 아니라 페이지 맨 끝에 놓이고, 작거나 확대된 화면에서 버튼이 화면 밖으로 밀립니다. AppShell은 가로 넘침을 `overflow-x: clip`으로 처리합니다.
 - 구체적인 desktop max-width, breakpoint, multi-column 전환 시점은 별도 responsive 화면 설계에서 확정합니다. 임의의 breakpoint 값을 디자인시스템 규칙으로 간주하지 않습니다.
 
 ---
