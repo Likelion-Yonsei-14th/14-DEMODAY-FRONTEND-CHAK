@@ -192,6 +192,25 @@
   cursor: pointer;
 }
 
+.desk-settings__reopen {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
+}
+
+.desk-settings__reopen strong {
+  font-size: var(--type-title-m-size);
+}
+
+.desk-settings__reopen p {
+  margin: 0 0 6px;
+  color: var(--color-content-secondary);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-line);
+}
+
 .desk-settings__intro {
   display: grid;
   gap: 8px;
