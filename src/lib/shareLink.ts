@@ -40,7 +40,7 @@ async function copyToClipboard(text: string) {
  * sheet is not an error.
  *
  * Only the URL is shared: messengers such as KakaoTalk then show a single link
- * card built from the page's Open Graph tags (index.html and middleware.ts)
+ * card built from the page's Open Graph tags (see src/lib/ogCards.ts)
  * instead of the link plus a separate text message.
  */
 export async function shareOrCopyLink(
