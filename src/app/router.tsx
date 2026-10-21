@@ -44,6 +44,7 @@ import { WelcomePage } from '@/features/start/WelcomePage'
 import {
   ExamCareerIntroPage,
   ExamCareerPlayPage,
+  ExamCareerResultPage,
 } from '@/features/minigame/examCareer/ExamCareerPages'
 import {
   AccountPage,
@@ -131,6 +132,7 @@ export const router = createBrowserRouter([
       { path: '/home', element: <HomePage /> },
       { path: '/minigame/exam-career', element: <ExamCareerIntroPage /> },
       { path: '/minigame/exam-career/play', element: <ExamCareerPlayPage /> },
+      { path: '/minigame/exam-career/result/:code', element: <ExamCareerResultPage /> },
       { path: '/auth/login', element: <LoginPage /> },
       { path: '/privacy', element: <PrivacyPolicyPage /> },
       { path: '/terms', element: <TermsOfServicePage /> },

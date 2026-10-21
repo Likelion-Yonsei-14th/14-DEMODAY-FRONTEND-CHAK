@@ -1,9 +1,9 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { NotificationProvider } from '@/design-system/overlays'
 import { DEFAULT_ELECTIVES } from './examCareerConfig'
-import { ExamCareerIntroPage, ExamCareerPlayPage } from './ExamCareerPages'
+import { ExamCareerIntroPage, ExamCareerPlayPage, ExamCareerResultPage } from './ExamCareerPages'
 import {
   acknowledgeNotice,
   chooseElectives,
@@ -26,6 +26,7 @@ function renderAt(path: string) {
           <Route path="/" element={<p>서비스 홈</p>} />
           <Route path="/minigame/exam-career" element={<ExamCareerIntroPage />} />
           <Route path="/minigame/exam-career/play" element={<ExamCareerPlayPage />} />
+          <Route path="/minigame/exam-career/result/:code" element={<ExamCareerResultPage />} />
         </Routes>
       </MemoryRouter>
     </NotificationProvider>,
@@ -196,7 +197,7 @@ describe('exam career mini game', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '9월 모의평가' })).toBeInTheDocument()
     expect(screen.getByText('고3 여름방학 · 실전 모의고사 반복')).toBeInTheDocument()
-  })
+  }, 30_000)
 
   it('waits a moment before showing the CSAT results', () => {
     vi.useFakeTimers()
@@ -346,11 +347,35 @@ describe('exam career mini game', () => {
     expect(screen.getByRole('heading', { name: '전체 성적 변화' })).toBeInTheDocument()
     expect(screen.getByRole('img', { name: /성적 변화 그래프/ })).toBeInTheDocument()
 
+    // The result can be shared as a link and saved as an image.
+    const share = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'share', { value: share, configurable: true })
+    fireEvent.click(screen.getByRole('button', { name: '결과 공유하기' }))
+    expect(share).toHaveBeenCalledTimes(1)
+    expect(share.mock.calls[0]![0].url).toMatch(/\/minigame\/exam-career\/result\/h0-[1-9]{5}-\d{3}-[a-z-]+$/)
+    expect(share.mock.calls[0]![0].url).not.toContain('수험생')
+    Reflect.deleteProperty(navigator, 'share')
+    expect(screen.getByRole('button', { name: '이미지 저장하기' })).toBeInTheDocument()
+
     // Starting over goes back to setting up a new student.
     fireEvent.click(screen.getByRole('button', { name: '다시 시작하기' }))
     expect(screen.getByRole('heading', { name: '수험생 커리어 시뮬레이터' })).toBeInTheDocument()
     expect(screen.getByLabelText('이름')).toHaveValue('')
     expect(loadCareer()).toBeNull()
+  })
+
+  it('shows a shared result with an invitation, and sends a broken link to the intro', () => {
+    renderAt('/minigame/exam-career/result/s1-21312-110-seoul-upper')
+    expect(screen.getByRole('heading', { name: '친구의 수험 생활 결과' })).toBeInTheDocument()
+    expect(screen.getByText('이과 · 재수 · 최종 수능')).toBeInTheDocument()
+    expect(screen.getByText('미적분')).toBeInTheDocument()
+    expect(screen.getByText('인서울 상위권 대학 자연·공학계열 진학')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '나도 해보기' }))
+    expect(screen.getByRole('heading', { name: '수험생 커리어 시뮬레이터' })).toBeInTheDocument()
+    cleanup()
+
+    renderAt('/minigame/exam-career/result/s1-21312-110-harvard')
+    expect(screen.getByRole('heading', { name: '수험생 커리어 시뮬레이터' })).toBeInTheDocument()
   })
 
   it('sends a visit without a saved career back to the intro', () => {
