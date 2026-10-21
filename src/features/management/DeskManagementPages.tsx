@@ -259,13 +259,30 @@ export function DeskSettingsPage() {
           </button>
         </section>
 
-        <button
-          type="button"
-          className="desk-settings__danger"
-          onClick={() => navigate('/prototype/my/settings/end')}
-        >
-          응원 받기 종료
-        </button>
+        {settings.roomClosed ? (
+          <section className="desk-settings__reopen" aria-label="응원 받기 상태">
+            <strong>응원 받기가 종료된 상태예요.</strong>
+            <p>다시 열면 친구들이 새 응원을 남길 수 있어요.</p>
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={() => {
+                updateSettings({ roomClosed: false })
+                showToast('다시 응원을 받을 수 있어요.')
+              }}
+            >
+              응원 다시 받기
+            </Button>
+          </section>
+        ) : (
+          <button
+            type="button"
+            className="desk-settings__danger"
+            onClick={() => navigate('/prototype/my/settings/end')}
+          >
+            응원 받기 종료
+          </button>
+        )}
       </main>
     </AppShell>
   )
@@ -512,6 +529,7 @@ export function EndRoomPage() {
         </h1>
         <p>
           기존에 받은 응원은 그대로 볼 수 있지만, 친구들은 더 이상 새 응원을 남길 수 없어요.
+          나중에 설정에서 언제든 다시 열 수 있어요.
         </p>
       </main>
     </AppShell>
