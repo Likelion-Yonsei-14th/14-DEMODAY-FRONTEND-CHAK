@@ -28,7 +28,11 @@ export function SupportCompletePage() {
     const shareUrl = buildPrototypeShareUrl(supporterPath(supporterToken))
 
     await shareOrCopyLink(
-      shareUrl,
+      {
+        title: `${recipientName}님의 응원 책상`,
+        text: `${recipientName} 책상에 응원 하나 놓고 가줘!`,
+        url: shareUrl,
+      },
       showToast,
       `${recipientName}님의 책상 링크를 복사했어요.`,
     )
