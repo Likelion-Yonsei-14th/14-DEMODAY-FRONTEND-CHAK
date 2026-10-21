@@ -225,6 +225,20 @@ describe('exam career mini game', () => {
     expect(screen.getByRole('button', { name: '대학 지원하기' })).toBeInTheDocument()
   })
 
+  it('keeps the grade chart and the exam history folded until their titles are pressed', () => {
+    const state = saveAtFirstCsat()
+    renderAt('/minigame/exam-career/play')
+
+    for (const title of ['성적 변화', `전체 시험 기록 (${state.history.length}회)`]) {
+      const card = screen.getByText(title).closest('details')!
+      expect(card).not.toHaveAttribute('open')
+      fireEvent.click(screen.getByText(title))
+      expect(card).toHaveAttribute('open')
+      fireEvent.click(screen.getByText(title))
+      expect(card).not.toHaveAttribute('open')
+    }
+  })
+
   it('pops up the 스터디카페 outcome at once, then runs the exam', () => {
     let seed = 0
     while (createCareer(`page-cafe-${seed}`, 'humanities').profile.studyCafeExamId !== 'g1-10') seed += 1

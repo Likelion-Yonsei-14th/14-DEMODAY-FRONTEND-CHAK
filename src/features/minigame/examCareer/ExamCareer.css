@@ -414,22 +414,44 @@
   font-size: var(--type-caption-size);
 }
 
-.exam-career-history {
+/* A card that opens and closes on its title (Collapsible). */
+.exam-career-collapsible {
   padding: var(--space-3) var(--space-4);
   border-radius: 6px;
   background: var(--color-surface-base);
   box-shadow: var(--shadow-paper);
 }
 
-.exam-career-history summary {
+.exam-career-collapsible summary {
   min-height: 32px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
   font-weight: 700;
   cursor: pointer;
+  list-style: none;
 }
 
-.exam-career-history ol {
+.exam-career-collapsible summary::-webkit-details-marker {
+  display: none;
+}
+
+.exam-career-collapsible__icon {
+  flex: none;
+  color: var(--color-content-secondary);
+  transition: transform .2s var(--ease-emphasized);
+}
+
+.exam-career-collapsible[open] .exam-career-collapsible__icon {
+  transform: rotate(180deg);
+}
+
+.exam-career-collapsible .exam-career-chart {
+  margin-top: var(--space-3);
+}
+
+.exam-career-history {
   display: grid;
   gap: 2px;
   margin: var(--space-2) 0 0;
@@ -691,6 +713,10 @@
   .exam-career-suspense__dots i,
   .exam-career-suspense__line {
     animation: none;
+  }
+
+  .exam-career-collapsible__icon {
+    transition: none;
   }
 }
 
