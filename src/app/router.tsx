@@ -49,7 +49,6 @@ import {
 } from '@/features/minigame/gradeDraw/GradeDrawPages'
 import {
   AccountPage,
-  DeleteAccountCompletePage,
   DeleteAccountPage,
   LoginPage,
   ResetPasswordCompletePage,
@@ -159,10 +158,6 @@ export const router = createBrowserRouter([
       },
       { path: '/account', element: <AccountPage /> },
       { path: '/account/delete', element: <DeleteAccountPage /> },
-      {
-        path: '/account/delete/complete',
-        element: <DeleteAccountCompletePage />,
-      },
       { path: '/prototype', element: <PrototypeIndexPage /> },
       { path: '/minigame/sneaky-phone', element: <SneakyPhoneIntroPage /> },
       { path: '/minigame/sneaky-phone/play', element: <SneakyPhonePlayPage /> },
