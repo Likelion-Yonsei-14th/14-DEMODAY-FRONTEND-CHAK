@@ -525,6 +525,7 @@ export function UnifiedComposerPage() {
         <div className="unified-composer">
           <MessageCanvas
             draft={page}
+            recipientName={recipientName}
             selectedId={selectedLayerId}
             onSelect={(id) => {
               setSelectedLayerId(id)
