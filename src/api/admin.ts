@@ -109,3 +109,27 @@ export const fetchAdminReports = (status: string | undefined, page: number) =>
 
 export const actOnReport = (reportId: number, action: ReportAction) =>
   apiFetch<AdminReport>(`/api/admin/reports/${reportId}`, { method: 'PATCH', body: { action } })
+
+export type AdminInvite = {
+  id: number
+  email: string
+  createdAt: string
+  consumedAt: string | null
+  bootstrap: boolean
+}
+
+export type AdminAccess = {
+  admins: AdminUserSummary[]
+  invites: AdminInvite[]
+}
+
+export const fetchAdminAccess = () => apiFetch<AdminAccess>('/api/admin/admins')
+
+export const grantAdmin = (email: string) =>
+  apiFetch<AdminAccess>('/api/admin/admins', { method: 'POST', body: { email } })
+
+export const revokeAdmin = (userId: number) =>
+  apiFetch<AdminAccess>(`/api/admin/admins/users/${userId}`, { method: 'DELETE' })
+
+export const cancelAdminInvite = (inviteId: number) =>
+  apiFetch<AdminAccess>(`/api/admin/admins/invites/${inviteId}`, { method: 'DELETE' })
