@@ -30,7 +30,7 @@ import {
 } from '@/features/desk/readModeUtils'
 import { ApiError } from '@/api/client'
 import { isApiEnabled } from '@/api/config'
-import { createMyDesk } from '@/api/desks'
+import { createFriendDesk, createMyDesk } from '@/api/desks'
 import { deskFromApi, readModeToApi } from '@/api/mappers'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { shareOrCopyLink } from '@/lib/shareLink'
@@ -202,7 +202,22 @@ export function DeskCreateReadModePage() {
       return
     }
     if (draft.createdFor === 'other') {
-      showToast('친구를 위한 책상 만들기는 아직 준비 중이에요.')
+      // A desk for a friend stays with me (links, delete) until they claim it; it is not "my desk".
+      setSaving(true)
+      try {
+        const created = await createFriendDesk({
+          displayName: draft.recipientDisplayName.trim(),
+          ...readModeToApi(draft.readMode),
+        })
+        navigate('/friend-desks/created', { replace: true, state: { desk: created } })
+      } catch (error) {
+        setSaving(false)
+        showToast(
+          error instanceof ApiError && error.code === 'TOO_MANY_FRIEND_DESKS'
+            ? '아직 전달하지 않은 친구 책상이 너무 많아요. 하나를 전달하거나 삭제한 뒤 다시 만들어주세요.'
+            : '책상을 만들지 못했어요. 잠시 후 다시 시도해주세요.',
+        )
+      }
       return
     }
 

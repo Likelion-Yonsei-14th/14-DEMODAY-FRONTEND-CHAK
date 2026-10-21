@@ -4,6 +4,7 @@ import { useFeedback } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { AppShell } from '@/layout/AppShell'
+import { isApiEnabled } from '@/api/config'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import './StartPage.css'
 
@@ -104,6 +105,11 @@ export function HomePage() {
           <Plus size={15} aria-hidden />
           새 책상이나 반 만들기
         </button>
+        {isApiEnabled && (
+          <button type="button" className="home-page__new" onClick={() => navigate('/friend-desks')}>
+            친구에게 만들어 준 책상
+          </button>
+        )}
 
         <MiniGameSection />
       </main>

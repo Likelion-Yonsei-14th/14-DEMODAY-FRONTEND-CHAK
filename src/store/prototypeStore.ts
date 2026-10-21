@@ -187,6 +187,8 @@ type PrototypeState = {
   markMessageRead: (messageId: string) => void
   /** Replaces the desk view with data loaded from the backend. */
   hydrateDesk: (payload: HydratedDesk) => void
+  /** After the owner deleted their desk on the server: stop showing it as theirs. */
+  forgetOwnDesk: () => void
   /** Adds a message the backend just accepted to the current desk. */
   appendServerMessage: (message: Message, object: DeskObject) => void
   setClaimState: (state: ClaimState) => void
@@ -973,6 +975,19 @@ export const usePrototypeStore = create<PrototypeState>()(
           readMessageIds,
           basketMessageIds,
           ownerSettings: { ...state.ownerSettings, ...ownerSettings },
+        })),
+      forgetOwnDesk: () =>
+        set((state) => ({
+          currentDesk: {
+            ...state.currentDesk,
+            ownerId: undefined,
+            claimStatus: 'unclaimed',
+            objects: [],
+          },
+          messages: [],
+          readMessageIds: [],
+          basketMessageIds: [],
+          claimState: 'unclaimed',
         })),
       appendServerMessage: (message, object) =>
         set((state) => ({
