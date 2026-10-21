@@ -8,6 +8,12 @@
       "source": "/api/:path*",
       "destination": "https://d1itub0wenvsst.cloudfront.net/api/:path*"
     },
+    { "source": "/minigame/exam-career/result/:path*", "destination": "/og/exam-career.html" },
+    { "source": "/minigame/study-type/result/:path*", "destination": "/og/study-type.html" },
+    { "source": "/minigame/guess-god/result/:path*", "destination": "/og/guess-god.html" },
+    { "source": "/desk/:path*", "destination": "/og/desk.html" },
+    { "source": "/prototype/claim", "destination": "/og/claim.html" },
+    { "source": "/prototype/classroom/:classroomId/join", "destination": "/og/classroom-join.html" },
     {
       "source": "/(.*)",
       "destination": "/index.html"
