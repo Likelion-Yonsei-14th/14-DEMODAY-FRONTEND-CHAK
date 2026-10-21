@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import {
   ArrowLeft,
   Check,
+  ChevronDown,
   Download,
   GraduationCap,
   House,
@@ -577,11 +578,23 @@ function AdmissionResults({
   )
 }
 
+/** A card that opens and closes on its title, with a chevron showing which way it goes. */
+function Collapsible({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <details className="exam-career-collapsible">
+      <summary>
+        <span>{title}</span>
+        <ChevronDown size={18} aria-hidden className="exam-career-collapsible__icon" />
+      </summary>
+      {children}
+    </details>
+  )
+}
+
 function HistoryList({ history }: { history: ExamResult[] }) {
   return (
-    <details className="exam-career-history">
-      <summary>전체 시험 기록 ({history.length}회)</summary>
-      <ol>
+    <Collapsible title={`전체 시험 기록 (${history.length}회)`}>
+      <ol className="exam-career-history">
         {[...history].reverse().map((result) => (
           <li key={result.examId} className={result.kind === 'csat' ? 'is-csat' : ''}>
             <span className="exam-career-history__label">
@@ -594,7 +607,7 @@ function HistoryList({ history }: { history: ExamResult[] }) {
           </li>
         ))}
       </ol>
-    </details>
+    </Collapsible>
   )
 }
 
@@ -816,10 +829,9 @@ export function ExamCareerPlayPage() {
           )}
 
           {history.length > 1 && !suspense && (
-            <section className="exam-career-section">
-              <h2>성적 변화</h2>
+            <Collapsible title="성적 변화">
               <ExamCareerChart history={history} />
-            </section>
+            </Collapsible>
           )}
 
           {history.length > 0 && !suspense && <HistoryList history={history} />}
