@@ -13,7 +13,9 @@
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  /* `hidden` would also make this a scroll container, and then the sticky bottom action bar
+     sticks to it instead of the screen and falls below the fold on small or zoomed screens. */
+  overflow-x: clip;
   border-inline: 1px solid color-mix(in srgb, var(--color-border-subtle) 72%, transparent);
   box-shadow: 0 0 42px rgba(53, 48, 42, .05);
 }
