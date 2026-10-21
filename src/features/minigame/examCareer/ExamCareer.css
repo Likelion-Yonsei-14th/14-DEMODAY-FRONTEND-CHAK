@@ -694,6 +694,21 @@
   }
 }
 
+/* Share image sheet */
+.exam-career-image-sheet {
+  display: grid;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+}
+
+.exam-career-image-sheet img {
+  width: min(100%, 300px);
+  justify-self: center;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-paper);
+  -webkit-touch-callout: default;
+}
+
 /* University applications */
 .exam-career-admissions {
   display: grid;

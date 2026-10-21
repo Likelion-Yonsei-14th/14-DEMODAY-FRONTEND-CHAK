@@ -1,8 +1,22 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ArrowLeft, Check, GraduationCap, House, RotateCcw, Sparkles, TrendingDown, TrendingUp, X } from 'lucide-react'
-import { Navigate, useNavigate } from 'react-router-dom'
-import { AppBar, Button, Dialog, IconButton, TextField } from '@/design-system'
+import {
+  ArrowLeft,
+  Check,
+  Download,
+  GraduationCap,
+  House,
+  RotateCcw,
+  Share2,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
+  X,
+} from 'lucide-react'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { AppBar, BottomSheet, Button, Dialog, IconButton, TextField, useFeedback } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
+import { shareOrCopyLink } from '@/lib/shareLink'
+import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import {
   APPLICATION_GROUPS,
   attemptLabel,
@@ -49,7 +63,9 @@ import {
   type SavedCareer,
 } from './examCareerEngine'
 import { createCareerSeed } from './examCareerRandom'
-import { EXAM_CAREER_PATH, EXAM_CAREER_PLAY_PATH } from './examCareerRoutes'
+import { EXAM_CAREER_PATH, EXAM_CAREER_PLAY_PATH, examCareerResultPath } from './examCareerRoutes'
+import { parseShareCode, shareCodeOf, type SharedCareer } from './examCareerShare'
+import { destinationText, downloadBlob, renderShareImage } from './examCareerShareImage'
 import { ExamCareerChart } from './ExamCareerChart'
 import './ExamCareer.css'
 
@@ -258,7 +274,9 @@ function GradeChange({ current, previous }: { current: number; previous: number 
   )
 }
 
-function GradeList({ result, previous }: { result: ExamResult; previous?: ExamResult }) {
+type GradedExam = Pick<ExamResult, 'grades' | 'electives'>
+
+function GradeList({ result, previous }: { result: GradedExam; previous?: GradedExam }) {
   const labels = SUBJECTS.map((subject) => subjectLabel(subject.id, result.electives))
   const hasElective = labels.some((label) => label.elective)
   // Each tile spans the same rows (subject, elective, grade, change) so the grades line up.
@@ -825,12 +843,165 @@ export function ExamCareerPlayPage() {
   )
 }
 
+function useShareActions(career: SharedCareer | null, code: string | null, name: string) {
+  const { showToast } = useFeedback()
+  const [image, setImage] = useState<{ blob: Blob; url: string } | null>(null)
+  const [rendering, setRendering] = useState(false)
+
+  useEffect(
+    () => () => {
+      if (image) URL.revokeObjectURL(image.url)
+    },
+    [image],
+  )
+
+  const playUrl = buildPrototypeShareUrl(EXAM_CAREER_PATH)
+  const title = '수험생 커리어 시뮬레이터'
+  const fileName = career ? `수험생커리어_${attemptLabel(career.attempt)}_평균${career.average}등급.png` : 'exam-career.png'
+
+  const shareLink = () => {
+    if (!career || !code) return
+    return shareOrCopyLink(
+      {
+        title,
+        text: `${attemptLabel(career.attempt)} 수능 평균 ${career.average}등급, ${destinationText(career)}! 너도 수험생 커리어를 시작해 볼래?`,
+        url: buildPrototypeShareUrl(examCareerResultPath(code)),
+      },
+      showToast,
+      '결과 링크를 복사했어요. 친구에게 붙여넣어 보내세요.',
+    )
+  }
+
+  const createImage = async () => {
+    if (rendering || !career) return
+    setRendering(true)
+    try {
+      const blob = await renderShareImage(career, name, playUrl)
+      setImage({ blob, url: URL.createObjectURL(blob) })
+    } catch {
+      showToast('이미지를 만들지 못했어요. 잠시 후 다시 시도해 주세요.')
+    } finally {
+      setRendering(false)
+    }
+  }
+
+  const file = image ? new File([image.blob], fileName, { type: 'image/png' }) : null
+  const canShareFile =
+    file !== null && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })
+
+  const shareImageFile = async () => {
+    if (!file) return
+    try {
+      await navigator.share({ files: [file], title })
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return
+      showToast('공유하지 못했어요. 이미지를 저장한 뒤 직접 보내 주세요.')
+    }
+  }
+
+  const downloadImage = () => {
+    if (!image) return
+    try {
+      downloadBlob(image.blob, fileName)
+    } catch {
+      showToast('저장하지 못했어요. 이미지를 길게 눌러 저장해 주세요.')
+    }
+  }
+
+  return {
+    available: career !== null,
+    shareLink,
+    createImage,
+    rendering,
+    image,
+    closeImage: () => setImage(null),
+    downloadImage,
+    canShareFile,
+    shareImageFile,
+  }
+}
+
+/** A result someone shared: the final CSAT and where it led, without their name or history. */
+export function ExamCareerResultPage() {
+  const navigate = useNavigate()
+  const { code } = useParams()
+  const career = parseShareCode(code)
+
+  useEffect(() => {
+    window.scrollTo?.(0, 0)
+  }, [code])
+
+  if (!career) return <Navigate to={EXAM_CAREER_PATH} replace />
+
+  return (
+    <AppShell
+      surface="base"
+      contentClassName="exam-career-shell"
+      appBar={
+        <AppBar
+          title="수험생 커리어 결과"
+          leading={
+            <IconButton
+              label="게임 첫 화면으로"
+              icon={<ArrowLeft size={21} aria-hidden />}
+              onClick={() => navigate(EXAM_CAREER_PATH)}
+            />
+          }
+          trailing={<ServiceHomeButton />}
+        />
+      }
+    >
+      <div className="exam-career-summary">
+        <section className="exam-career-card exam-career-card--csat">
+          <header className="exam-career-card__head">
+            <span>
+              {TRACKS[career.track].label} · {attemptLabel(career.attempt)} · 최종 수능
+            </span>
+            <h1>친구의 수험 생활 결과</h1>
+            <p>
+              평균 <strong>{career.average}</strong>등급
+            </p>
+          </header>
+          <GradeList result={career} />
+        </section>
+
+        <section className="exam-career-section exam-career-destination">
+          <h2>진학 결과</h2>
+          <p className="exam-career-destination__result">{destinationText(career)}</p>
+        </section>
+
+        <section className="exam-career-section">
+          <h2>나는 어떤 수험 생활을 보내게 될까?</h2>
+          <p className="exam-career-section__note">
+            고1 첫 모의고사부터 수능, 정시 지원까지 나만의 수험생 커리어를 만들어 보세요.
+          </p>
+          <Button variant="brand" fullWidth onClick={() => navigate(EXAM_CAREER_PATH)}>
+            나도 해보기
+          </Button>
+        </section>
+
+        <div className="exam-career-summary__actions">
+          <Button variant="tertiary" fullWidth onClick={() => navigate(SERVICE_HOME)}>
+            홈 화면으로 돌아가기
+          </Button>
+        </div>
+
+        <p className="exam-career-disclaimer">
+          친구가 공유한 미니게임 결과예요. {DISCLAIMER}
+        </p>
+      </div>
+    </AppShell>
+  )
+}
+
 function CareerSummaryView({ saved, onRestart }: { saved: SavedCareer; onRestart: () => void }) {
   const navigate = useNavigate()
   const summary = summarize(saved.state)
   const final = summary.finalCsat
   const { profile } = saved.state
   const enrolled = summary.admission?.enrolled ?? null
+  const code = shareCodeOf(saved.state)
+  const share = useShareActions(parseShareCode(code ?? undefined), code, profile.name)
 
   // The summary replaces the play screen in place; start it from the top.
   useEffect(() => {
@@ -981,7 +1152,33 @@ function CareerSummaryView({ saved, onRestart }: { saved: SavedCareer; onRestart
         </section>
 
         <div className="exam-career-summary__actions">
-          <Button variant="brand" fullWidth leadingIcon={<RotateCcw size={18} aria-hidden />} onClick={onRestart}>
+          {share.available && (
+            <>
+              <Button
+                variant="brand"
+                fullWidth
+                leadingIcon={<Share2 size={18} aria-hidden />}
+                onClick={share.shareLink}
+              >
+                결과 공유하기
+              </Button>
+              <Button
+                variant="secondary"
+                fullWidth
+                loading={share.rendering}
+                leadingIcon={<Download size={18} aria-hidden />}
+                onClick={share.createImage}
+              >
+                이미지 저장하기
+              </Button>
+            </>
+          )}
+          <Button
+            variant={share.available ? 'secondary' : 'brand'}
+            fullWidth
+            leadingIcon={<RotateCcw size={18} aria-hidden />}
+            onClick={onRestart}
+          >
             다시 시작하기
           </Button>
           <Button variant="tertiary" fullWidth onClick={() => navigate(SERVICE_HOME)}>
@@ -991,6 +1188,37 @@ function CareerSummaryView({ saved, onRestart }: { saved: SavedCareer; onRestart
 
         <p className="exam-career-disclaimer">{DISCLAIMER}</p>
       </div>
+
+      <BottomSheet
+        open={share.image !== null}
+        onClose={share.closeImage}
+        title="결과 이미지"
+        description="저장이 안 되면 이미지를 길게 눌러 저장해 주세요."
+      >
+        {share.image && (
+          <div className="exam-career-image-sheet">
+            <img src={share.image.url} alt="수험생 커리어 결과 이미지" />
+            <Button
+              variant="primary"
+              fullWidth
+              leadingIcon={<Download size={18} aria-hidden />}
+              onClick={share.downloadImage}
+            >
+              이미지 다운로드
+            </Button>
+            {share.canShareFile && (
+              <Button
+                variant="secondary"
+                fullWidth
+                leadingIcon={<Share2 size={18} aria-hidden />}
+                onClick={share.shareImageFile}
+              >
+                다른 앱으로 보내기
+              </Button>
+            )}
+          </div>
+        )}
+      </BottomSheet>
     </AppShell>
   )
 }
