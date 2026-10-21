@@ -20,6 +20,7 @@ This document tracks the latest decisions that the code prototype must prioritiz
   - account page
   - logout
   - account deletion and completion
+- With a backend connected (production), only Kakao and Google login exist. The email signup/login forms are prototype mocks that only fake a session in the browser (no server account or token, so desk creation fails); they are hidden and `/auth/signup` redirects to `/auth/login`.
 - Google is the primary social-login prototype. Kakao login remains optional follow-up scope.
 - New sign-ups land on `/start`. Returning users land on `/home` with two doors, “내 책상 가기” and “우리 반 가기”; a door the user doesn't have yet explains that instead of navigating.
 - No production authentication or OAuth credentials are included in the prototype.
