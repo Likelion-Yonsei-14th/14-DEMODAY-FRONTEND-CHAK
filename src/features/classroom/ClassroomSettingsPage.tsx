@@ -17,6 +17,7 @@ import {
 } from '@/design-system'
 import { useHomePath } from '@/app/homePath'
 import { AppShell } from '@/layout/AppShell'
+import { shareOrCopyLink } from '@/lib/shareLink'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import './ClassroomSettingsPage.css'
@@ -79,21 +80,7 @@ export function ClassroomSettingsPage() {
       `/prototype/classroom/${id}/join`,
     )
 
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `${classroom.name} 응원 공간`,
-          text: '우리끼리 칠판과 사물함에 응원을 남겨요.',
-          url,
-        })
-        return
-      }
-
-      await navigator.clipboard.writeText(url)
-      showToast('초대 링크를 복사했어요.')
-    } catch {
-      // 공유 시트를 닫은 경우에는 별도 오류를 노출하지 않습니다.
-    }
+    await shareOrCopyLink(url, showToast, '초대 링크를 복사했어요.')
   }
 
   return (
