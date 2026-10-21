@@ -630,12 +630,16 @@ function tiltedRolls(rolls: readonly DayRoll[], luck: number, swing = 1, bustRis
 }
 
 /** How last year's CSAT compares with this retake year's June 모의평가. */
-function juneTrend(history: ExamResult[], june: ExamResult): 'up' | 'same' | 'down' {
+function juneTrend(history: ExamResult[], june: ExamResult): keyof typeof RETAKE_JUNE_REPORT.cases {
   const lastCsat = [...history].reverse().find((result) => result.kind === 'csat' && result.attempt === june.attempt - 1)
   if (!lastCsat) return 'same'
-  const gain = lastCsat.average - june.average
-  if (gain >= RETAKE_JUNE_REPORT.threshold) return 'up'
-  if (gain <= -RETAKE_JUNE_REPORT.threshold) return 'down'
+  // Averages carry one decimal; compare in tenths so 3.2 - 3.0 is exactly a rise.
+  const gain = Math.round((lastCsat.average - june.average) * 10)
+  const threshold = Math.round(RETAKE_JUNE_REPORT.threshold * 10)
+  if (gain >= threshold) return 'up'
+  if (gain <= -threshold) return 'down'
+  if (gain > 0) return 'slight-up'
+  if (gain < 0) return 'slight-down'
   return 'same'
 }
 
