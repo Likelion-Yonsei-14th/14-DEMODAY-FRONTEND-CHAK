@@ -16,6 +16,7 @@ import {
   IconButton,
   useFeedback,
 } from '@/design-system'
+import { shareOrCopyLink } from '@/lib/shareLink'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { AppShell } from '@/layout/AppShell'
@@ -101,20 +102,15 @@ export function ClassroomMapPage() {
 
   const inviteFriends = async () => {
     const url = buildPrototypeShareUrl(`/prototype/classroom/${id}/join`)
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `${classroom.name}에 들어와!`,
-          text: '이름만 적으면 내 사물함이 생겨요.',
-          url,
-        })
-      } else {
-        await navigator.clipboard.writeText(url)
-        showToast('초대 링크를 복사했어요.')
-      }
-    } catch {
-      // The share sheet was dismissed.
-    }
+    await shareOrCopyLink(
+      {
+        title: `${classroom.name}에 들어와!`,
+        text: '이름만 적으면 내 사물함이 생겨요.',
+        url,
+      },
+      showToast,
+      '초대 링크를 복사했어요.',
+    )
   }
 
   return (
