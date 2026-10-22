@@ -67,6 +67,11 @@ Vercel first; every other `/api` path goes to the backend.
   Empty = a "mock 충전" button instead of the widget. The secret key belongs to the
   backend only and is never set here.
 
+미니게임 랭킹:
+
+- `VITE_MINIGAME_RANKING_API`: `mock` (default; board kept in the browser) or `server`
+  (backend `/api/minigames/sneaky-phone/*`). Keep `mock` until the backend ranking API ships.
+
 When auth, APIs, analytics, or external services are added, define variables in Vercel
 per environment rather than committing secrets to the repository.
 

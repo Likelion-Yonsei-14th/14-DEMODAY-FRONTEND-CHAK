@@ -108,6 +108,7 @@ import {
   SneakyPhoneIntroPage,
   SneakyPhonePlayPage,
 } from '@/features/minigame/sneakyPhone/SneakyPhonePages'
+import { SneakyPhoneRankingPage } from '@/features/minigame/sneakyPhone/SneakyPhoneRankingPage'
 import { ChargePage } from '@/features/chaltteok/ChargePage'
 import {
   ChargeFailPage,
@@ -208,6 +209,7 @@ export const router = createBrowserRouter([
       { path: '/prototype', element: <PrototypeIndexPage /> },
       { path: '/minigame/sneaky-phone', element: <SneakyPhoneIntroPage /> },
       { path: '/minigame/sneaky-phone/play', element: <SneakyPhonePlayPage /> },
+      { path: '/minigame/sneaky-phone/ranking', element: <SneakyPhoneRankingPage /> },
 
       { path: '/prototype/create', element: <DeskCreateWhoPage /> },
       {
