@@ -47,6 +47,11 @@ import {
   ExamCareerResultPage,
 } from '@/features/minigame/examCareer/ExamCareerPages'
 import {
+  D1CourseIntroPage,
+  D1CoursePlayPage,
+  D1CourseResultPage,
+} from '@/features/minigame/d1Course/D1CoursePages'
+import {
   AccountPage,
   DeleteAccountPage,
   LoginPage,
@@ -185,6 +190,9 @@ export const router = createBrowserRouter([
       { path: '/minigame/exam-career', element: <ExamCareerIntroPage /> },
       { path: '/minigame/exam-career/play', element: <ExamCareerPlayPage /> },
       { path: '/minigame/exam-career/result/:code', element: <ExamCareerResultPage /> },
+      { path: '/minigame/d1-course', element: <D1CourseIntroPage /> },
+      { path: '/minigame/d1-course/play', element: <D1CoursePlayPage /> },
+      { path: '/minigame/d1-course/result/:code', element: <D1CourseResultPage /> },
       { path: '/auth/login', element: <LoginPage /> },
       { path: '/privacy', element: <PrivacyPolicyPage /> },
       { path: '/terms', element: <TermsOfServicePage /> },
