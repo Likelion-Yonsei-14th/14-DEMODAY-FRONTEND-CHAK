@@ -219,6 +219,13 @@ export const STUDENT = {
    * wherever no other choice event is asked.
    */
   studyCafeBefore: ['g1-10', 'g2-03', 'g2-10', 'g3-03', 'g3-06p', 'g3-07'],
+  /**
+   * A couple from the 스터디카페 gets the date-night event before the first of
+   * these that comes after the 스터디카페 exam: free slots in the middle of a
+   * term (not the first exam of a school year nor the last before the summer
+   * break), plus the 고3 October one, so it always lands before the CSAT.
+   */
+  dateNightBefore: ['g2-10', 'g3-06p', 'g3-10'],
 } as const
 
 // ---------- growth ----------
@@ -342,11 +349,16 @@ export type EventEffect =
   | { type: 'swing'; target: EventTarget; factor: number; exams: number }
   /** Multiplies only the odds of a 대폭망 exam day for the next `exams` exams. */
   | { type: 'bust-risk'; target: EventTarget; factor: number; exams: number }
+  /** Multiplies only the odds of a 대박 exam day for the next `exams` exams. */
+  | { type: 'jackpot-chance'; target: EventTarget; factor: number; exams: number }
   /** Turns a lasting story flag on or off. */
   | { type: 'flag'; flag: CareerFlag; on: boolean }
 
-/** Story flags a career carries between events. dating: in a relationship. */
-export type CareerFlag = 'dating'
+/**
+ * Story flags a career carries between events. dating: in a relationship.
+ * conflict: the couple fell out (turned down a date), so a breakup is likelier.
+ */
+export type CareerFlag = 'dating' | 'conflict'
 
 export type ChoiceOutcome = {
   weight: number
@@ -390,10 +402,19 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '전교 1등을 노린다',
         outcomes: [
           {
-            weight: 1,
+            weight: 2,
             tone: 'up',
             text: '입학하자마자 책상 앞에 앉았어요. 출발선이 조금 앞당겨졌어요.',
             effects: [{ type: 'skill', target: 'all', amount: [2, 4] }],
+          },
+          {
+            weight: 1,
+            tone: 'down',
+            text: '처음부터 너무 달렸나 봐요. 금방 지쳐서 한동안 시험이 버거워요.',
+            effects: [
+              { type: 'skill', target: 'all', amount: [1, 2] },
+              { type: 'day', target: 'all', amount: [-4, -2], exams: 2 },
+            ],
           },
         ],
       },
@@ -437,10 +458,16 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '학원 종합반 등록',
         outcomes: [
           {
-            weight: 1,
+            weight: 2,
             tone: 'up',
             text: '학원 진도에 맞춰 공부 습관이 잡혔어요.',
             effects: [{ type: 'growth', target: 'all', factor: 1.35, exams: 3 }],
+          },
+          {
+            weight: 1,
+            tone: 'down',
+            text: '학원 진도를 따라가지 못했어요. 숙제만 쌓이고 실력은 더디게 올라요.',
+            effects: [{ type: 'growth', target: 'all', factor: 0.75, exams: 2 }],
           },
         ],
       },
@@ -461,13 +488,19 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '동아리도 열심히',
         outcomes: [
           {
-            weight: 1,
+            weight: 2,
             tone: 'up',
             text: '즐거운 학교생활 덕분에 시험장에서도 마음이 편해요.',
             effects: [
               { type: 'day', target: 'all', amount: [1, 3], exams: 2 },
               { type: 'potential', target: 'all', amount: [1, 3] },
             ],
+          },
+          {
+            weight: 1,
+            tone: 'down',
+            text: '동아리 활동에 빠져 공부에 소홀해졌어요. 성적이 한동안 제자리예요.',
+            effects: [{ type: 'growth', target: 'all', factor: 0.7, exams: 2 }],
           },
         ],
       },
@@ -508,10 +541,19 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '약한 과목 보충',
         outcomes: [
           {
-            weight: 1,
+            weight: 2,
             tone: 'up',
             text: '{subject} 구멍을 메웠어요.',
             effects: [{ type: 'skill', target: 'weakest', amount: [4, 8] }],
+          },
+          {
+            weight: 1,
+            tone: 'down',
+            text: '{subject} 구멍은 메웠지만, 손을 놓았던 잘하던 과목 실력이 떨어졌어요.',
+            effects: [
+              { type: 'skill', target: 'weakest', amount: [3, 6] },
+              { type: 'skill', target: 'strongest', amount: [-4, -2] },
+            ],
           },
         ],
       },
@@ -540,13 +582,19 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '수학 과외 시작',
         outcomes: [
           {
-            weight: 1,
+            weight: 2,
             tone: 'up',
             text: '과외 선생님과 잘 맞았어요. 수학이 빠르게 올라요.',
             effects: [
               { type: 'growth', target: 'math', factor: 2.2, exams: 2 },
               { type: 'potential', target: 'math', amount: [3, 6] },
             ],
+          },
+          {
+            weight: 1,
+            tone: 'down',
+            text: '과외 설명을 들어도 도통 모르겠어요. 수학이 좀처럼 오르지 않아요.',
+            effects: [{ type: 'growth', target: 'math', factor: 0.8, exams: 2 }],
           },
         ],
       },
@@ -555,12 +603,18 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '개념부터 다시',
         outcomes: [
           {
-            weight: 1,
+            weight: 2,
             tone: 'up',
-            text: '개념을 다시 잡느라 잠깐 주춤했지만 수학의 한계가 높아졌어요.',
+            text: '개념을 탄탄하게 다졌어요. 수학의 한계가 높아졌어요.',
+            effects: [{ type: 'potential', target: 'math', amount: [7, 11] }],
+          },
+          {
+            weight: 1,
+            tone: 'down',
+            text: '개념을 다시 보느라 진도가 밀렸어요. 한동안 수학이 주춤하지만 기본기는 단단해졌어요.',
             effects: [
-              { type: 'growth', target: 'math', factor: 0.6, exams: 1 },
-              { type: 'potential', target: 'math', amount: [7, 11] },
+              { type: 'growth', target: 'math', factor: 0.5, exams: 2 },
+              { type: 'potential', target: 'math', amount: [3, 6] },
             ],
           },
         ],
@@ -714,10 +768,19 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '취약 과목 올인',
         outcomes: [
           {
-            weight: 1,
+            weight: 2,
             tone: 'up',
             text: '{subject}에 매달린 보람이 있어요.',
             effects: [{ type: 'skill', target: 'weakest', amount: [5, 9] }],
+          },
+          {
+            weight: 1,
+            tone: 'down',
+            text: '{subject}에 매달려 점수는 올랐지만, 다른 과목은 감이 떨어졌어요.',
+            effects: [
+              { type: 'skill', target: 'weakest', amount: [4, 7] },
+              { type: 'day', target: 'all', amount: [-3, -1], exams: 2 },
+            ],
           },
         ],
       },
@@ -726,7 +789,7 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '인강 몰아 듣기',
         outcomes: [
           {
-            weight: 2,
+            weight: 1,
             tone: 'up',
             text: '인강으로 빈틈을 빠르게 채웠어요.',
             effects: [{ type: 'growth', target: 'all', factor: 1.6, exams: 2 }],
@@ -938,6 +1001,56 @@ export const STUDY_CAFE_EVENT: ChoiceEvent = {
   ],
 }
 
+/** Only for a couple from the 스터디카페, before the exam drawn from STUDENT.dateNightBefore. */
+export const DATE_NIGHT_EVENT: ChoiceEvent = {
+  id: 'date-night',
+  title: '모의고사 전날 데이트',
+  prompt:
+    '내일은 중요한 모의고사다. 마지막으로 오답노트를 정리하려던 순간, 연인에게 연락이 왔다. "내일 시험 끝나고는 바쁠 것 같은데… 오늘 잠깐 만날래?"',
+  before: [],
+  options: [
+    {
+      id: 'meet',
+      label: '잠깐이라도 만난다',
+      outcomes: [
+        {
+          weight: 1,
+          tone: 'up',
+          text: '잠깐 만났는데 기분이 최고예요!',
+          effects: [
+            { type: 'day', target: 'all', amount: [1, 3], exams: 1 },
+            { type: 'jackpot-chance', target: 'all', factor: 2.5, exams: 1 },
+          ],
+        },
+        {
+          weight: 1,
+          tone: 'down',
+          text: '늦게까지 만나느라 잠을 제대로 못 잤어요.',
+          effects: [
+            { type: 'day', target: 'all', amount: [-3, -1], exams: 1 },
+            { type: 'bust-risk', target: 'all', factor: 2.5, exams: 1 },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'stay-in',
+      label: '오늘은 시험 준비에 집중한다',
+      outcomes: [
+        {
+          weight: 1,
+          tone: 'down',
+          text: '차분하게 마무리하고 시험을 봤어요. 하지만 서운해하는 연인과 사이가 조금 어색해졌어요.',
+          effects: [
+            { type: 'swing', target: 'all', factor: 0.3, exams: 1 },
+            { type: 'flag', flag: 'conflict', on: true },
+          ],
+        },
+      ],
+    },
+  ],
+}
+
 /**
  * Only for a student who started dating at the 스터디카페: now and then, right
  * after the 현역 수능 D-30 pick, the relationship ends. Shown on the page,
@@ -947,6 +1060,8 @@ export const BREAKUP_NOTICE = {
   id: 'breakup',
   title: '수능 30일 전, 이별',
   chance: 0.3,
+  /** After turning down the date night (flag conflict). */
+  conflictChance: 0.55,
   outcomes: [
     {
       weight: 1,
@@ -956,10 +1071,11 @@ export const BREAKUP_NOTICE = {
         { type: 'bust-risk', target: 'all', factor: 4, exams: 1 },
         { type: 'day', target: 'all', amount: [-2, -1], exams: 1 },
         { type: 'flag', flag: 'dating', on: false },
+        { type: 'flag', flag: 'conflict', on: false },
       ],
     },
   ],
-} as const satisfies { id: string; title: string; chance: number; outcomes: ChoiceOutcome[] }
+} as const satisfies { id: string; title: string; chance: number; conflictChance: number; outcomes: ChoiceOutcome[] }
 
 /** Asked one after another as soon as a retake year starts, before its electives. */
 export const RETAKE_START_EVENTS = ['retake-life', 'friends-festival'] as const
@@ -979,11 +1095,14 @@ export const RETAKE_CHOICE_EVENTS: readonly ChoiceEvent[] = [
           {
             weight: 1,
             tone: 'up',
-            text: '오랜만에 실컷 웃고 왔어요. 마음은 가벼워졌지만 공부 리듬이 잠깐 흐트러졌어요.',
-            effects: [
-              { type: 'day', target: 'all', amount: [1, 3], exams: 1 },
-              { type: 'growth', target: 'all', factor: 0.75, exams: 1 },
-            ],
+            text: '오랜만에 실컷 웃고 왔어요. 재충전이 돼서 시험 날 컨디션이 좋아요.',
+            effects: [{ type: 'day', target: 'all', amount: [2, 4], exams: 1 }],
+          },
+          {
+            weight: 1,
+            tone: 'down',
+            text: '놀고 오니 공부 흐름이 끊겼어요. 다시 리듬을 찾는 데 시간이 걸려요.',
+            effects: [{ type: 'growth', target: 'all', factor: 0.6, exams: 2 }],
           },
         ],
       },
@@ -1097,10 +1216,16 @@ export const RETAKE_CHOICE_EVENTS: readonly ChoiceEvent[] = [
           {
             weight: 1,
             tone: 'up',
-            text: '마지막 한 방울까지 쏟아부었어요. 수능 날 무슨 일이든 일어날 수 있어요.',
+            text: '막판에 각성했어요! 마지막까지 실력이 빠르게 올라요.',
+            effects: [{ type: 'growth', target: 'all', factor: 1.8, exams: 1 }],
+          },
+          {
+            weight: 1,
+            tone: 'down',
+            text: '끝까지 달리다 번아웃이 왔어요. 수능 날 컨디션이 좋지 않아요.',
             effects: [
-              { type: 'swing', target: 'all', factor: 2.5, exams: 1 },
-              { type: 'growth', target: 'all', factor: 1.2, exams: 1 },
+              { type: 'growth', target: 'all', factor: 1.1, exams: 1 },
+              { type: 'day', target: 'all', amount: [-4, -2], exams: 1 },
             ],
           },
         ],
@@ -1237,7 +1362,7 @@ export const LEGEND_LECTURE = {
   chance: 0.08,
   outcomes: [
     {
-      weight: 70,
+      weight: 55,
       tone: 'up',
       text: '우연히 들은 강의에서 그동안 이해하지 못했던 {subject} 개념이 한 번에 정리됐어요.',
       effects: [
@@ -1252,7 +1377,7 @@ export const LEGEND_LECTURE = {
       effects: [],
     },
     {
-      weight: 5,
+      weight: 20,
       tone: 'up',
       text: '우연히 들은 강의에서 {subject}의 모든 게 한 번에 이해되기 시작했어요. 대역전의 시작이에요!',
       effects: [
