@@ -789,7 +789,7 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '인강 몰아 듣기',
         outcomes: [
           {
-            weight: 2,
+            weight: 1,
             tone: 'up',
             text: '인강으로 빈틈을 빠르게 채웠어요.',
             effects: [{ type: 'growth', target: 'all', factor: 1.6, exams: 2 }],
