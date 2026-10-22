@@ -3,6 +3,7 @@ import {
   ADAPTATION,
   attemptLabel,
   CHOICE_EVENTS,
+  DATE_NIGHT_EVENT,
   DEFAULT_ELECTIVES,
   LEGEND_LECTURE,
   RETAKE_CHOICE_EVENTS,
@@ -22,6 +23,7 @@ import {
   acknowledgeNotice,
   clearCareer,
   createCareer,
+  dateNightExamOf,
   decide,
   electiveChoiceBefore,
   enroll,
@@ -244,6 +246,86 @@ describe('choice events', () => {
     expect(breakups / couples).toBeLessThan(0.45)
   }, 30_000)
 
+  it('asks only a new couple about a date the day before the next free exam, and the pick shapes the day and the breakup odds', () => {
+    /** Plays to the 스터디카페 pick and answers it; then to the date night if one is asked. */
+    const toDateNight = (seed: string, cafePick: string) => {
+      let state = createCareer(seed)
+      while (!(state.status === 'event' && state.pendingEvent === 'study-cafe')) state = step(state)
+      state = chooseEventOption(state, cafePick)
+      const asked: string[] = []
+      while (!(state.status === 'event' && state.pendingEvent === 'csat-eve')) {
+        if (state.status === 'event' && state.pendingEvent === DATE_NIGHT_EVENT.id) {
+          asked.push(nextExam(state)!.id)
+          return { state, asked }
+        }
+        state = step(state)
+      }
+      return { state, asked }
+    }
+
+    let couples = 0
+    let goodDates = 0
+    let badDates = 0
+    for (let index = 0; index < 60; index += 1) {
+      const seed = `date-${index}`
+      const { state, asked } = toDateNight(seed, 'ask-number')
+      if (!state.flags.includes('dating')) {
+        expect(asked).toEqual([])
+        continue
+      }
+      couples += 1
+      expect(asked).toEqual([dateNightExamOf(state.profile)])
+      expect(nextExam(state)!.kind).not.toBe('csat')
+
+      // A good date raises only the 대박 odds, a late night only the 대폭망 odds.
+      const met = chooseEventOption(state, 'meet')
+      const date = met.pendingRecords.find((record) => record.eventId === DATE_NIGHT_EVENT.id)!
+      const odds = met.effects.filter((effect) => effect.eventId === DATE_NIGHT_EVENT.id && effect.kind !== 'day')
+      const day = met.effects.find((effect) => effect.eventId === DATE_NIGHT_EVENT.id && effect.kind === 'day')!
+      if (date.tone === 'up') {
+        goodDates += 1
+        expect(date.description).toBe('잠깐 만났는데 기분이 최고예요!')
+        expect(odds.map((effect) => effect.kind)).toEqual(['jackpot-chance'])
+        expect(day.value).toBeGreaterThan(0)
+      } else {
+        badDates += 1
+        expect(date.description).toBe('늦게까지 만나느라 잠을 제대로 못 잤어요.')
+        expect(odds.map((effect) => effect.kind)).toEqual(['bust-risk'])
+        expect(day.value).toBeLessThan(0)
+      }
+      expect(odds[0]!.value).toBeGreaterThan(1)
+      expect(met.flags).not.toContain('conflict')
+
+      const stayed = chooseEventOption(state, 'stay-in')
+      expect(stayed.effects.find((effect) => effect.eventId === DATE_NIGHT_EVENT.id && effect.kind === 'swing')!.value).toBeLessThan(1)
+      expect(stayed.flags).toEqual(expect.arrayContaining(['dating', 'conflict']))
+    }
+    expect(couples).toBeGreaterThan(15)
+    expect(goodDates).toBeGreaterThan(0)
+    expect(badDates).toBeGreaterThan(0)
+
+    // Without a couple there is no date night.
+    for (let index = 0; index < 20; index += 1) {
+      expect(toDateNight(`date-single-${index}`, 'study-first').asked).toEqual([])
+    }
+
+    // Turning the date down makes the D-30 breakup likelier.
+    const breakupRate = (pick: string) => {
+      let couplesAtEve = 0
+      let breakups = 0
+      for (let index = 0; index < 300; index += 1) {
+        let { state } = toDateNight(`date-odds-${index}`, 'ask-number')
+        if (state.pendingEvent !== DATE_NIGHT_EVENT.id) continue
+        state = chooseEventOption(state, pick)
+        while (!(state.status === 'event' && state.pendingEvent === 'csat-eve')) state = step(state)
+        couplesAtEve += 1
+        if (chooseEventOption(state, 'timed').status === 'notice') breakups += 1
+      }
+      return breakups / couplesAtEve
+    }
+    expect(breakupRate('stay-in')).toBeGreaterThan(breakupRate('meet') + 0.1)
+  }, 60_000)
+
   it('starts high school with a pick that shapes the whole career', () => {
     const entry = createCareer('entry', 'science')
     // Asked before the first exam is offered at all.
@@ -442,20 +524,29 @@ describe('retakes', () => {
     expect(lectures / csats).toBeLessThan(0.13)
   }, 30_000)
 
-  it('makes 대박 and 대폭망 more likely after going all out, and rarer after resting up', () => {
+  it('makes 대박 and 대폭망 rarer after resting up, and going all out either wakes the student up or burns them out', () => {
+    let allOutUps = 0
+    let allOutDowns = 0
     const extremes = (optionId: string) => {
       let count = 0
       for (let index = 0; index < 600; index += 1) {
         let state = decide(playThrough(`swing-${index}`, 0), 'retake')
         while (!(state.status === 'event' && state.pendingEvent === 'final-push')) state = step(state)
-        state = runExam(chooseEventOption(state, optionId))
+        state = chooseEventOption(state, optionId)
+        if (optionId === 'all-out') {
+          if (state.pendingRecords.find((record) => record.eventId === 'final-push')!.tone === 'up') allOutUps += 1
+          else allOutDowns += 1
+        }
+        state = runExam(state)
         count += state.history.at(-1)!.dayNotes.filter((note) => note.subject !== 'all').length
       }
       return count
     }
     const allOut = extremes('all-out')
     const condition = extremes('condition')
-    expect(allOut).toBeGreaterThan(condition * 3)
+    expect(allOut).toBeGreaterThan(condition * 2)
+    expect(allOutUps).toBeGreaterThan(200)
+    expect(allOutDowns).toBeGreaterThan(200)
   }, 30_000)
 
   it('always stops at a CSAT for the decision', () => {

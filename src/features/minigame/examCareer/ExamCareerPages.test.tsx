@@ -351,6 +351,9 @@ describe('exam career mini game', () => {
     const results = screen.getByRole('region', { name: /합격 발표가 났어요!|아쉽게도 모두 불합격이에요/ })
     expect(screen.getByRole('heading', { name: '수능' })).toBeInTheDocument()
     expect(within(results).getAllByRole('listitem')).toHaveLength(3)
+    // The CSAT under the results shows its grades only, without its events.
+    const csatCard = screen.getByRole('heading', { name: '수능' }).closest('section')!
+    expect(csatCard.querySelector('.exam-career-events')).toBeNull()
     const enrollButton = within(results).queryAllByRole('button', { name: /진학하기$/ })[0]
     fireEvent.click(enrollButton ?? within(results).getByRole('button', { name: '진학하지 않고 마무리하기' }))
 
@@ -358,7 +361,13 @@ describe('exam career mini game', () => {
     expect(screen.getByRole('heading', { name: '진학 결과' })).toBeInTheDocument()
     expect(loadCareer()!.state.status).toBe('finished')
     expect(screen.getByText('수험생 · 현역 · 최종 수능')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: '전체 성적 변화' })).toBeInTheDocument()
+    // The chart and the major events stay folded until their titles are pressed.
+    for (const title of ['전체 성적 변화', /^주요 이벤트 \(\d+\)$/]) {
+      const card = screen.getByText(title).closest('details')!
+      expect(card).not.toHaveAttribute('open')
+      fireEvent.click(screen.getByText(title))
+      expect(card).toHaveAttribute('open')
+    }
     expect(screen.getByRole('img', { name: /성적 변화 그래프/ })).toBeInTheDocument()
 
     // The result can be shared as a link and saved as an image.
