@@ -91,6 +91,12 @@ const routes = [
     phase: 'LIVE',
   },
   {
+    path: '/minigame/d1-course',
+    title: 'Mini Game · 수능 끝 D+1 코스 짜기',
+    description: '출발 지역 → 관심 상권 → 하고 싶은 것 3개 → 동행·예산 → 코스 카드 · 응답 통계 저장 · 링크·이미지 공유',
+    phase: 'LIVE',
+  },
+  {
     path: '/prototype/classroom/classroom-3-2/wrapped',
     title: 'Class Wrapped',
     description: '반 전체 응원 총량 · 자주 남은 말/이모지 · 비경쟁 공동 기록 · 공유',
