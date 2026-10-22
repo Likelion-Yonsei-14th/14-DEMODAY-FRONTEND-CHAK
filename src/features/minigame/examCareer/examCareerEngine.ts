@@ -3,6 +3,7 @@ import {
   ADMISSION,
   APPLICATION_GROUPS,
   BREAKUP_NOTICE,
+  DATE_NIGHT_EVENT,
   attemptLabel,
   CHANCE_LABELS,
   CHOICE_EVENTS,
@@ -75,7 +76,7 @@ export type ExamSlot = {
 
 export type ActiveEffect = {
   eventId: string
-  kind: 'growth' | 'day' | 'swing' | 'bust-risk'
+  kind: 'growth' | 'day' | 'swing' | 'bust-risk' | 'jackpot-chance'
   subjects: Subject[]
   /** Growth multiplier, day-score change, or a 대박 / 대폭망 odds multiplier. */
   value: number
@@ -440,18 +441,36 @@ export function defaultElectivesFor(state: CareerState): Electives {
 
 // ---------- events ----------
 
-const ALL_CHOICE_EVENTS: readonly ChoiceEvent[] = [...CHOICE_EVENTS, ...RETAKE_CHOICE_EVENTS, STUDY_CAFE_EVENT]
+const ALL_CHOICE_EVENTS: readonly ChoiceEvent[] = [
+  ...CHOICE_EVENTS,
+  ...RETAKE_CHOICE_EVENTS,
+  STUDY_CAFE_EVENT,
+  DATE_NIGHT_EVENT,
+]
 
 /** The choice event asked right before this exam, if any. */
 export function choiceEventFor(slot: ExamSlot): ChoiceEvent | null {
   return ALL_CHOICE_EVENTS.find((event) => event.before.includes(`${slot.phase}-${slot.key}`)) ?? null
 }
 
-/** The choice event this career asks before the exam: the fixed ones, or its own 스터디카페 moment. */
+/** The 현역 exam a couple from the 스터디카페 gets the date night before: the first free one after it. */
+export function dateNightExamOf(profile: CareerProfile): string | null {
+  const schedule = scheduleFor(0).map((slot) => slot.id)
+  const cafeIndex = schedule.indexOf(profile.studyCafeExamId)
+  return STUDENT.dateNightBefore.find((examId) => schedule.indexOf(examId) > cafeIndex) ?? null
+}
+
+/**
+ * The choice event this career asks before the exam: the fixed ones, its own
+ * 스터디카페 moment, or - while dating - the date night after it.
+ */
 export function choiceEventBefore(state: CareerState, slot: ExamSlot): ChoiceEvent | null {
   const fixed = choiceEventFor(slot)
   if (fixed) return fixed
-  return slot.attempt === 0 && state.profile.studyCafeExamId === slot.id ? STUDY_CAFE_EVENT : null
+  if (slot.attempt !== 0) return null
+  if (state.profile.studyCafeExamId === slot.id) return STUDY_CAFE_EVENT
+  if (state.flags.includes('dating') && dateNightExamOf(state.profile) === slot.id) return DATE_NIGHT_EVENT
+  return null
 }
 
 /** The notice waiting to be acknowledged (status "notice"). */
@@ -518,7 +537,12 @@ function applyEffects(
           working.potential[subject] + random.between(...effect.amount),
         )
       }
-    } else if (effect.type === 'growth' || effect.type === 'swing' || effect.type === 'bust-risk') {
+    } else if (
+      effect.type === 'growth' ||
+      effect.type === 'swing' ||
+      effect.type === 'bust-risk' ||
+      effect.type === 'jackpot-chance'
+    ) {
       working.effects.push({ eventId, kind: effect.type, subjects, value: effect.factor, examsLeft: effect.exams })
     } else {
       working.effects.push({
@@ -589,7 +613,8 @@ export function chooseEventOption(state: CareerState, optionId: string): CareerS
   let notice: string | null = null
   if (slot.kind === 'csat' && slot.attempt === 0 && working.flags.includes('dating')) {
     const key = `${state.seed}:event:${slot.id}:${BREAKUP_NOTICE.id}`
-    if (streamFor(`${key}:roll`).chance(BREAKUP_NOTICE.chance)) {
+    const chance = working.flags.includes('conflict') ? BREAKUP_NOTICE.conflictChance : BREAKUP_NOTICE.chance
+    if (streamFor(`${key}:roll`).chance(chance)) {
       records.push(happen(BREAKUP_NOTICE.outcomes, BREAKUP_NOTICE.id, BREAKUP_NOTICE.title, key, working, state.electives))
       notice = BREAKUP_NOTICE.id
     }
@@ -616,13 +641,14 @@ export function chooseEventOption(state: CareerState, optionId: string): CareerS
 
 /**
  * `swing` scales the 대박 and 대폭망 odds together (events such as 마지막 승부);
- * `bustRisk` scales only the 대폭망 odds (a breakup before the CSAT).
+ * `bustRisk` scales only the 대폭망 odds (a breakup before the CSAT), and
+ * `jackpotChance` only the 대박 odds (a good date night).
  */
-function tiltedRolls(rolls: readonly DayRoll[], luck: number, swing = 1, bustRisk = 1): DayRoll[] {
+function tiltedRolls(rolls: readonly DayRoll[], luck: number, swing = 1, bustRisk = 1, jackpotChance = 1): DayRoll[] {
   // luck 0.5 is neutral; luckier students see more good days and fewer bad ones.
   const tilt = (luck - 0.5) * 2 * LUCK_TILT
   return rolls.map((roll) => {
-    const extreme = roll.id === 'jackpot' ? swing : roll.id === 'bust' ? swing * bustRisk : 1
+    const extreme = roll.id === 'jackpot' ? swing * jackpotChance : roll.id === 'bust' ? swing * bustRisk : 1
     if (roll.id === 'good' || roll.id === 'jackpot') return { ...roll, weight: roll.weight * (1 + tilt) * extreme }
     if (roll.id === 'bad' || roll.id === 'bust') return { ...roll, weight: roll.weight * (1 - tilt) * extreme }
     return roll
@@ -729,7 +755,13 @@ export function runExam(state: CareerState): CareerState {
       working.effects
         .filter((effect) => effect.kind === kind && effect.subjects.includes(subject))
         .reduce((product, effect) => product * effect.value, 1)
-    const rolls = tiltedRolls(SUBJECT_DAY_ROLLS, profile.luck, oddsOf('swing'), oddsOf('bust-risk'))
+    const rolls = tiltedRolls(
+      SUBJECT_DAY_ROLLS,
+      profile.luck,
+      oddsOf('swing'),
+      oddsOf('bust-risk'),
+      oddsOf('jackpot-chance'),
+    )
     const roll = random.weighted(rolls, (item) => item.weight)
     // Steadier students swing less on the day, too.
     const rollValue = random.between(...roll.range) * volatility
@@ -768,7 +800,7 @@ export function runExam(state: CareerState): CareerState {
   if (slot.attempt > 0 && slot.key === '06p') {
     const trend = juneTrend(state.history, result)
     const key = `${seed}:event:${slot.id}:${RETAKE_JUNE_REPORT.id}`
-    events.push(
+    result.events.push(
       happen(RETAKE_JUNE_REPORT.cases[trend], RETAKE_JUNE_REPORT.id, RETAKE_JUNE_REPORT.title, key, working, electives),
     )
   }

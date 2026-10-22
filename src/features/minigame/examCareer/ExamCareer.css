@@ -447,7 +447,9 @@
   transform: rotate(180deg);
 }
 
-.exam-career-collapsible .exam-career-chart {
+.exam-career-collapsible .exam-career-chart,
+.exam-career-collapsible .exam-career-events,
+.exam-career-collapsible > .exam-career-section__note {
   margin-top: var(--space-3);
 }
 

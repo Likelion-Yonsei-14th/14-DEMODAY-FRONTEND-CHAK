@@ -73,6 +73,7 @@ import './ExamCareer.css'
 /** Where "back to the service" goes: the entry route picks /home or /start. */
 const SERVICE_HOME = '/'
 
+/** Shown once, on the intro. */
 const DISCLAIMER = '재미로 보는 가상 시뮬레이션이에요. 실제 성적이나 입시 결과를 예측하지 않아요.'
 const ADMISSION_NOTE = '대학과 합격선은 모두 게임 속 가상의 기준이에요. 실제 대학 입결과 관계없어요.'
 const CUTOFF_NOTE = '합격선은 해마다, 군마다 달라요. 같은 그룹이라도 어느 군에 넣느냐에 따라 가능성이 달라져요.'
@@ -303,7 +304,15 @@ function GradeList({ result, previous }: { result: GradedExam; previous?: Graded
   )
 }
 
-function ExamCard({ result, previous }: { result: ExamResult; previous?: ExamResult }) {
+function ExamCard({
+  result,
+  previous,
+  showEvents = true,
+}: {
+  result: ExamResult
+  previous?: ExamResult
+  showEvents?: boolean
+}) {
   return (
     <section className={`exam-career-card exam-career-card--${result.kind}`} aria-live="polite">
       <header className="exam-career-card__head">
@@ -314,7 +323,7 @@ function ExamCard({ result, previous }: { result: ExamResult; previous?: ExamRes
         </p>
       </header>
       <GradeList result={result} previous={previous ?? undefined} />
-      {(result.events.length > 0 || result.dayNotes.length > 0) && (
+      {showEvents && (result.events.length > 0 || result.dayNotes.length > 0) && (
         <ul className="exam-career-events">
           {result.events.map((event) => (
             <li key={event.eventId} className={`exam-career-event exam-career-event--${event.tone}`}>
@@ -824,8 +833,16 @@ export function ExamCareerPlayPage() {
             <UpcomingCard slot={upcoming!} electives={state.electives} />
           ) : (
             // While the admission results are on their way, the wait has the stage to itself.
+            // Under the admission results the CSAT shows its grades only; its events were already read.
             latest &&
-            suspense !== 'admission' && <ExamCard key={latest.examId} result={latest} previous={history.at(-2)} />
+            suspense !== 'admission' && (
+              <ExamCard
+                key={latest.examId}
+                result={latest}
+                previous={history.at(-2)}
+                showEvents={state.status !== 'admission'}
+              />
+            )
           )}
 
           {history.length > 1 && !suspense && (
@@ -835,8 +852,6 @@ export function ExamCareerPlayPage() {
           )}
 
           {history.length > 0 && !suspense && <HistoryList history={history} />}
-
-          <p className="exam-career-disclaimer">{DISCLAIMER}</p>
         </div>
       )}
 
@@ -998,9 +1013,7 @@ export function ExamCareerResultPage() {
           </Button>
         </div>
 
-        <p className="exam-career-disclaimer">
-          친구가 공유한 미니게임 결과예요. {DISCLAIMER}
-        </p>
+        <p className="exam-career-disclaimer">친구가 공유한 미니게임 결과예요.</p>
       </div>
     </AppShell>
   )
@@ -1137,13 +1150,11 @@ function CareerSummaryView({ saved, onRestart }: { saved: SavedCareer; onRestart
           </section>
         )}
 
-        <section className="exam-career-section">
-          <h2>전체 성적 변화</h2>
+        <Collapsible title="전체 성적 변화">
           <ExamCareerChart history={saved.state.history} />
-        </section>
+        </Collapsible>
 
-        <section className="exam-career-section">
-          <h2>주요 이벤트</h2>
+        <Collapsible title={`주요 이벤트 (${summary.majorEvents.length})`}>
           {summary.majorEvents.length > 0 ? (
             <ul className="exam-career-events">
               {summary.majorEvents.map((event, index) => (
@@ -1161,7 +1172,7 @@ function CareerSummaryView({ saved, onRestart }: { saved: SavedCareer; onRestart
           ) : (
             <p className="exam-career-section__note">큰 사건 없이 묵묵히 달려온 수험 생활이었어요.</p>
           )}
-        </section>
+        </Collapsible>
 
         <div className="exam-career-summary__actions">
           {share.available && (
@@ -1197,8 +1208,6 @@ function CareerSummaryView({ saved, onRestart }: { saved: SavedCareer; onRestart
             홈 화면으로 돌아가기
           </Button>
         </div>
-
-        <p className="exam-career-disclaimer">{DISCLAIMER}</p>
       </div>
 
       <BottomSheet
