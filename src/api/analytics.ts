@@ -38,8 +38,12 @@ export function trackPageView(pathname: string) {
     } catch {
       referrer = undefined
     }
+    // Counting visits is best effort: ad blockers and content blockers (the URL contains "analytics"),
+    // pages closed mid-request and flaky mobile data all end as "Load failed". None of that is our bug,
+    // so a failed visit count does not alert the team.
     void apiFetch('/api/public/analytics/events', {
       method: 'POST',
+      quiet: true,
       body: {
         eventId: crypto.randomUUID(),
         eventType: 'PAGE_VIEW',
