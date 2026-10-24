@@ -1,3 +1,4 @@
+import type { MinigameRank } from '@/api/minigames'
 import { getGuessGodResult, type GuessGodResult } from './guessGodResults'
 
 export const QUESTION_COUNT = 10
@@ -26,6 +27,16 @@ export type GuessGodGame = {
   resultTitle: string | null
   createdAt: string
   submittedAt: string | null
+  /** 서버에서 발급받은 판 번호. 서버에 연결하지 못했으면 없다. */
+  roundId?: string
+  /** 서버가 채점했을 때만: 랭킹 반영 여부와 순위. */
+  server?: ServerGrade
+}
+
+export type ServerGrade = {
+  ranked: boolean
+  rank: MinigameRank | null
+  betterThanPercent: number
 }
 
 export const CHOICES: readonly Choice[] = [1, 2, 3, 4, 5]
@@ -124,6 +135,30 @@ export function submitGame(game: GuessGodGame, now: Date = new Date()): GuessGod
   }
 }
 
+/**
+ * Locks the game with the answer key and score the server gave. The server
+ * holds the real key, so the key drawn on this device is replaced by it.
+ */
+export function applyServerGrade(
+  game: GuessGodGame,
+  grade: { answerKey: readonly number[]; ranked: boolean; rank: MinigameRank | null; betterThanPercent: number },
+  now: Date = new Date(),
+): GuessGodGame | null {
+  if (!canSubmit(game)) return null
+  if (grade.answerKey.length !== QUESTION_COUNT || !grade.answerKey.every(isChoice)) return null
+  const answerKey = [...grade.answerKey] as Choice[]
+  const score = scoreAnswers(answerKey, game.userAnswers)
+  return {
+    ...game,
+    answerKey,
+    gameStatus: 'submitted',
+    score,
+    resultTitle: getGuessGodResult(score).title,
+    submittedAt: now.toISOString(),
+    server: { ranked: grade.ranked, rank: grade.rank, betterThanPercent: grade.betterThanPercent },
+  }
+}
+
 export function getGameResult(game: GuessGodGame): GuessGodResult | null {
   return game.score === null ? null : getGuessGodResult(game.score)
 }
@@ -208,6 +243,12 @@ function isValidDate(value: unknown): value is string {
   return typeof value === 'string' && !Number.isNaN(Date.parse(value))
 }
 
+function isServerGrade(value: unknown): value is ServerGrade {
+  if (!value || typeof value !== 'object') return false
+  const grade = value as Partial<ServerGrade>
+  return typeof grade.ranked === 'boolean' && typeof grade.betterThanPercent === 'number'
+}
+
 /** Rebuilds a game from storage, or null when anything is missing or tampered with. */
 export function parseStoredGame(raw: string | null): GuessGodGame | null {
   if (!raw) return null
@@ -246,6 +287,7 @@ export function parseStoredGame(raw: string | null): GuessGodGame | null {
     answerKey: [...answerKey],
     userAnswers: [...userAnswers],
     createdAt: candidate.createdAt,
+    ...(typeof candidate.roundId === 'string' && candidate.roundId ? { roundId: candidate.roundId } : {}),
   }
 
   if (candidate.gameStatus === 'playing') {
@@ -264,6 +306,7 @@ export function parseStoredGame(raw: string | null): GuessGodGame | null {
       score,
       resultTitle: getGuessGodResult(score).title,
       submittedAt: candidate.submittedAt,
+      ...(isServerGrade(candidate.server) ? { server: candidate.server } : {}),
     }
   }
 

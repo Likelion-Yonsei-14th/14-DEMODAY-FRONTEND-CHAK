@@ -25,8 +25,8 @@ import {
   useFeedback,
 } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
-import { usePrototypeStore } from '@/store/prototypeStore'
-import { MinigameNicknameForm } from '../MinigameNicknameForm'
+import { createGuessGodRound, fetchGuessGodLeaderboard } from '@/api/minigames'
+import { MinigameLeaderboard } from '../MinigameLeaderboard'
 import { shareOrCopyLink } from '@/lib/shareLink'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import {
@@ -49,6 +49,7 @@ import {
   type Choice,
   type GuessGodGame,
   type MarkingStyle,
+  type ServerGrade,
 } from './guessGodLogic'
 import {
   getGuessGodResult,
@@ -61,6 +62,7 @@ import {
   GUESS_GOD_PLAY_PATH,
   guessGodResultPath,
 } from './guessGodRoutes'
+import { gradeOnServer } from './guessGodServer'
 import { downloadBlob, renderShareImage } from './guessGodShareImage'
 import './GuessGod.css'
 
@@ -206,6 +208,8 @@ export function GuessGodIntroPage() {
           </Button>
         </div>
 
+        <MinigameLeaderboard title="찍신 랭킹" load={fetchGuessGodLeaderboard} />
+
         <p className="guess-god-disclaimer">
           재미로 즐기는 확률 게임이에요. 실제 시험 실력이나 수능 성적과는 관련이
           없어요.
@@ -230,11 +234,36 @@ export function GuessGodPlayPage() {
   /** How many questions have been graded on the sheet; null until submitted. */
   const [revealed, setRevealed] = useState<number | null>(null)
   const submitting = useRef(false)
+  /** True while the answers are being graded by the server. */
+  const [checking, setChecking] = useState(false)
   const rowRefs = useRef<Array<HTMLFieldSetElement | null>>([])
   const grading = revealed !== null
 
   const showResult = () =>
     navigate(guessGodResultPath(game.score ?? 0), { replace: true })
+
+  // The server draws and keeps the real answer key; ask for a round as soon as the sheet opens.
+  const needsRound = game.gameStatus === 'playing' && !game.roundId
+  useEffect(() => {
+    if (!needsRound) return
+    let cancelled = false
+    createGuessGodRound()
+      .then((round) => {
+        if (cancelled) return
+        setGame((current) => {
+          if (current.gameStatus !== 'playing' || current.roundId) return current
+          const next = { ...current, roundId: round.roundId }
+          saveGame(next)
+          return next
+        })
+      })
+      .catch(() => {
+        // No server: the round still plays out on this device, just without a ranking.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [needsRound])
 
   useEffect(() => {
     if (revealed === null) return
@@ -259,7 +288,7 @@ export function GuessGodPlayPage() {
 
   const marked = countMarked(game)
   const remaining = QUESTION_COUNT - marked
-  const locked = game.gameStatus !== 'playing'
+  const locked = game.gameStatus !== 'playing' || checking
   const grades = grading ? gradeAnswers(game.answerKey, game.userAnswers) : []
   const correctSoFar = grades.slice(0, revealed ?? 0).filter(Boolean).length
 
@@ -272,10 +301,16 @@ export function GuessGodPlayPage() {
     })
   }
 
-  const submit = () => {
+  const submit = async () => {
     if (submitting.current || !canSubmit(game)) return
     submitting.current = true
-    const submitted = submitGame(game)
+    let submitted: GuessGodGame | null = null
+    if (game.roundId) {
+      setChecking(true)
+      submitted = await gradeOnServer(game)
+      setChecking(false)
+    }
+    submitted ??= submitGame(game)
     saveGame(submitted)
     setGame(submitted)
     if (prefersReducedMotion()) {
@@ -293,7 +328,9 @@ export function GuessGodPlayPage() {
       fixedAction={
         <div className="guess-god-submit">
           <p role="status">
-            {grading
+            {checking
+              ? '채점하고 있어요...'
+              : grading
               ? (revealed ?? 0) < QUESTION_COUNT
                 ? `채점하고 있어요... ${revealed ?? 0} / ${QUESTION_COUNT} · ${correctSoFar}문항 정답`
                 : `채점 완료! ${QUESTION_COUNT}문항 중 ${correctSoFar}문항 정답`
@@ -311,6 +348,7 @@ export function GuessGodPlayPage() {
               variant="brand"
               fullWidth
               disabled={remaining > 0}
+              loading={checking}
               onClick={submit}
             >
               OMR 제출하기
@@ -451,6 +489,21 @@ function ResultCard({
       <h1>{result.title}</h1>
       <p className="guess-god-card__quote">“{result.quote}”</p>
       <p className="guess-god-card__description">{result.description}</p>
+    </section>
+  )
+}
+
+function ServerStanding({ server }: { server: ServerGrade }) {
+  return (
+    <section className="guess-god-section">
+      <h2>전체 플레이어 중 내 위치</h2>
+      {server.betterThanPercent > 0 && <p>지금까지 제출된 판의 {server.betterThanPercent}%보다 높은 점수예요.</p>}
+      {server.ranked && server.rank && (
+        <p>
+          오늘 <strong>{server.rank.daily}위</strong> · 전체 <strong>{server.rank.overall}위</strong> (내 최고{' '}
+          {server.rank.bestScoreOverall}점)
+        </p>
+      )}
     </section>
   )
 }
@@ -728,7 +781,6 @@ function GuessGodResultView({
   const result = getGuessGodResult(score)
   const share = useShareActions(result, score, game)
   const isMine = game !== null
-  const signedIn = usePrototypeStore((state) => state.authSession.status === 'authenticated')
 
   return (
     <AppShell
@@ -761,7 +813,9 @@ function GuessGodResultView({
           </section>
         )}
 
-        {isMine && signedIn && <MinigameNicknameForm />}
+        {game?.server && <ServerStanding server={game.server} />}
+
+        <MinigameLeaderboard title="찍신 랭킹" load={fetchGuessGodLeaderboard} highlightScore={score} />
 
         {game && <GradingTable game={game} />}
         {game && <LuckAnalysis score={score} game={game} />}

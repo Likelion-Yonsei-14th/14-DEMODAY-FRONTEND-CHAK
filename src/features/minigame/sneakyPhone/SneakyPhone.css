@@ -615,3 +615,10 @@
     animation: none;
   }
 }
+
+.sneaky-result__rank {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-caption-size);
+  text-align: center;
+}
