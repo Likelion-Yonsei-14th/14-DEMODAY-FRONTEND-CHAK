@@ -133,3 +133,27 @@ export const revokeAdmin = (userId: number) =>
 
 export const cancelAdminInvite = (inviteId: number) =>
   apiFetch<AdminAccess>(`/api/admin/admins/invites/${inviteId}`, { method: 'DELETE' })
+
+export type AdminInquiryStatus = 'NEW' | 'CONTACTED' | 'CLOSED'
+
+export type AdminInquiry = {
+  id: number
+  company: string
+  contactName: string
+  email: string
+  phone: string | null
+  category: string | null
+  interest: 'PACKAGE' | 'BANNER' | 'OTHER' | null
+  message: string | null
+  status: AdminInquiryStatus
+  createdAt: string
+  handledAt: string | null
+}
+
+export const fetchAdminInquiries = (status: AdminInquiryStatus | undefined, page: number) =>
+  apiFetch<SliceResponse<AdminInquiry>>('/api/admin/promotion-inquiries', {
+    query: { status, page, size: 20 },
+  })
+
+export const changeAdminInquiryStatus = (id: number, status: AdminInquiryStatus) =>
+  apiFetch<AdminInquiry>(`/api/admin/promotion-inquiries/${id}`, { method: 'PATCH', body: { status } })

@@ -15,6 +15,8 @@ const admin = vi.hoisted(() => ({
   grantAdmin: vi.fn(),
   revokeAdmin: vi.fn(),
   cancelAdminInvite: vi.fn(),
+  fetchAdminInquiries: vi.fn(),
+  changeAdminInquiryStatus: vi.fn(),
 }))
 const auth = vi.hoisted(() => ({ fetchMe: vi.fn() }))
 
@@ -220,6 +222,28 @@ describe('admin console', () => {
       const { ReportsPage } = await import('./ReportsPage')
       render(<ReportsPage />)
       await waitFor(() => expect(admin.fetchAdminReports).toHaveBeenCalledWith('OPEN', 0))
+    })
+  })
+
+  describe('consultation inquiries', () => {
+    const inquiry = {
+      id: 4, company: '착커피', contactName: '김담당', email: 'kim@chakcoffee.com', phone: '010-1111-2222',
+      category: null, interest: null, message: '배너만 가능한가요?', status: 'NEW' as const,
+      createdAt: '2026-10-25T01:00:00Z', handledAt: null,
+    }
+
+    it('lists new requests and marks one as contacted', async () => {
+      admin.fetchAdminInquiries.mockResolvedValue({ content: [inquiry], hasNext: false, page: 0, size: 20 })
+      admin.changeAdminInquiryStatus.mockResolvedValue({ ...inquiry, status: 'CONTACTED' })
+      const { InquiriesPage } = await import('./InquiriesPage')
+      render(<InquiriesPage />)
+
+      expect(await screen.findByText('착커피')).toBeInTheDocument()
+      expect(screen.getByText('배너만 가능한가요?')).toBeInTheDocument()
+      expect(admin.fetchAdminInquiries).toHaveBeenCalledWith('NEW', 0)
+
+      fireEvent.click(screen.getByRole('button', { name: '연락함' }))
+      await waitFor(() => expect(admin.changeAdminInquiryStatus).toHaveBeenCalledWith(4, 'CONTACTED'))
     })
   })
 })

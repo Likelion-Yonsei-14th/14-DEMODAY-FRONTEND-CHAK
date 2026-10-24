@@ -155,12 +155,30 @@ export const router = createBrowserRouter([
             }),
           },
           {
+            path: 'inquiries',
+            lazy: async () => ({
+              Component: (await import('@/features/admin/InquiriesPage')).InquiriesPage,
+            }),
+          },
+          {
             path: 'admins',
             lazy: async () => ({
               Component: (await import('@/features/admin/AdminsPage')).AdminsPage,
             }),
           },
         ],
+      },
+      {
+        path: '/promotion',
+        lazy: async () => ({
+          Component: (await import('@/features/promotion/PromotionPage')).PromotionPage,
+        }),
+      },
+      {
+        path: '/promotion/apply',
+        lazy: async () => ({
+          Component: (await import('@/features/promotion/PromotionApplyPage')).PromotionApplyPage,
+        }),
       },
       {
         path: '/claim/:claimToken',

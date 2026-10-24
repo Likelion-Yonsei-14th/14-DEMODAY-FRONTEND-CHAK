@@ -61,6 +61,7 @@ export function AdminLayout() {
         <NavLink to="/admin" end>대시보드</NavLink>
         <NavLink to="/admin/users">회원 관리</NavLink>
         <NavLink to="/admin/reports">신고 처리</NavLink>
+        <NavLink to="/admin/inquiries">상담 문의</NavLink>
         <NavLink to="/admin/admins">운영자 관리</NavLink>
         <span className="admin__me">{me?.displayName}</span>
         <Link to="/home" className="admin__back">서비스로 돌아가기</Link>
