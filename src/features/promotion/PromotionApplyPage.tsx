@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ApiError } from '@/api/client'
 import { submitPromotionInquiry } from '@/api/promotion'
 import { PromotionLayout } from './PromotionLayout'
-import { PROMOTION_CONTACT, promotionStatus } from './promotionContent'
+import { PROMOTION_CONTACT, promotionStatus, tight } from './promotionContent'
 
 type Phase = 'editing' | 'sending' | 'done'
 
@@ -65,7 +65,7 @@ export function PromotionApplyPage() {
       <main className="promo-form-page">
         <h1>광고 상담 신청</h1>
         <p className="promo-form-page__lead">
-          참여 의향만 남겨 주셔도 착 팀이 먼저 연락드려요. 궁금한 점이 있으면 같이 적어 주세요.
+          {tight('참여 의향만 남겨 주셔도 착 팀이 먼저 연락드려요. 궁금한 점이 있으면 같이 적어 주세요.')}
         </p>
 
         {closed ? (

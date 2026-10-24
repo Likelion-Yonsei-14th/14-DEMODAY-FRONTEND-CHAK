@@ -37,6 +37,24 @@ export function promotionStatus(now: Date = new Date()): PromotionStatus {
   return 'CLOSED'
 }
 
+
+/**
+ * 모바일에서 말이 어색하게 끊기지 않도록 붙여 쓸 곳을 이어 준다(줄바꿈 금지 공백, 단어 결합 기호).
+ * 날짜(10월 31일), 요일 괄호, 숫자+단위(1만 회, 14.9만원), 자주 끊기는 짧은 구("맨 위", "한 번 더"),
+ * 닫는 괄호 뒤에 바로 오는 조사(")으로")를 한 덩어리로 만든다.
+ */
+export function tight(text: string): string {
+  return text
+    .replace(/(\d+월) (\d+일)/g, '$1\u00a0$2')
+    .replace(/(\d+일)\s?\(/g, '$1(')
+    .replace(/(\d[\d.,]*[만천백]?) (회|원|px|자|곳|구좌|장|초|개|명)/g, '$1\u00a0$2')
+    .replace(/(맨) (위)/g, '$1\u00a0$2')
+    .replace(/(한) (번) (더)/g, '$1\u00a0$2\u00a0$3')
+    .replace(/(VAT) (별도)/g, '$1\u00a0$2')
+    .replace(/(수능) (전|후|당일|다음)/g, '$1\u00a0$2')
+    .replace(/\)(?=[가-힣])/g, ')\u2060')
+}
+
 export const formatWon = (won: number) => `${(won / 10_000).toFixed(1).replace(/\.0$/, '')}만원`
 
 export const WHY_NOW = [
@@ -91,3 +109,15 @@ export const SCHEDULE = [
   { date: '11월 19일', note: '수능 당일, 마지막 응원', key: false },
   { date: '11월 20일 ~ 30일', note: '혜택함 배너 노출, 30일에 종료', key: false },
 ] as const
+
+const tightAll = <T extends Record<string, unknown>>(rows: readonly T[]): T[] =>
+  rows.map((row) => Object.fromEntries(Object.entries(row).map(([k, v]) => [k, typeof v === 'string' ? tight(v) : v])) as T)
+
+export const WHY_NOW_TEXT = tightAll(WHY_NOW)
+export const PROCESS_TEXT = tightAll(PROCESS)
+export const BEFORE_EXAM_TEXT = tightAll(BEFORE_EXAM_STEPS)
+export const AFTER_EXAM_TEXT = tightAll(AFTER_EXAM_STEPS)
+export const AD_SPECS_TEXT = tightAll(AD_SPECS)
+export const SCHEDULE_TEXT = tightAll(SCHEDULE)
+export const DAILY_REASONS_TEXT = DAILY_REASONS.map(tight)
+export const CONDITIONS_TEXT = CONDITIONS.map(tight)
