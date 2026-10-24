@@ -46,6 +46,8 @@ import {
 } from './studyTypeResults'
 import type { Trait } from './studyTypeQuestions'
 import { downloadBlob, renderShareImage } from './studyTypeShareImage'
+import { recordOutcomeOnce } from './studyTypeServer'
+import { StudyTypeCrowd } from './StudyTypeCrowd'
 import './StudyType.css'
 
 /** Where "back to the service" goes: the entry route picks /home or /start. */
@@ -214,6 +216,7 @@ export function StudyTypeTestPage() {
   const showResult = () => {
     const outcome = computeOutcome(session.answers)
     if (outcome) {
+      recordOutcomeOnce(outcome.typeCode, session.answers)
       navigate(studyTypeResultPath(outcome.typeCode))
       return
     }
@@ -576,6 +579,8 @@ function StudyTypeResultView({
             ))}
           </ol>
         </section>
+
+        <StudyTypeCrowd typeCode={result.typeCode} />
 
         <section className="study-type-section">
           <h2>함께 공부하면 좋은 메이트</h2>
