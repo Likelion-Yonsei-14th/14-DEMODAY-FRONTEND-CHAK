@@ -1,0 +1,182 @@
+/* 미니게임 랭킹 */
+.minigame-board {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-base);
+}
+
+.minigame-board__head {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.minigame-board__head h2 {
+  margin: 0;
+  font-size: var(--type-title-m-size, 1rem);
+  letter-spacing: -.02em;
+}
+
+.minigame-board__tabs {
+  display: inline-flex;
+  justify-self: start;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--color-surface-subtle);
+}
+
+.minigame-board__tabs button {
+  min-height: 32px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-content-secondary);
+  font: inherit;
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.minigame-board__tabs button[aria-selected='true'] {
+  background: var(--color-surface-base);
+  color: var(--color-content-primary);
+  box-shadow: var(--shadow-paper);
+}
+
+.minigame-board__list {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.minigame-board__list li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+}
+
+.minigame-board__list li.is-me {
+  background: var(--color-brand-soft);
+}
+
+.minigame-board__rank {
+  color: var(--color-content-tertiary);
+  font-weight: 800;
+  text-align: center;
+}
+
+.minigame-board__list li:nth-child(-n+3) .minigame-board__rank {
+  color: var(--color-brand);
+}
+
+.minigame-board__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.minigame-board__name em {
+  color: var(--color-content-secondary);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.minigame-board__score {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.minigame-board__mine {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-brand-soft);
+  font-size: var(--type-caption-size);
+}
+
+.minigame-board__empty {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-caption-size);
+}
+
+.minigame-board__empty p {
+  margin: 0;
+}
+
+.minigame-board__login {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.minigame-board__login p {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-caption-size);
+}
+
+.minigame-board__nickname {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* 점수 분포 */
+.minigame-board__dist {
+  display: grid;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  align-items: end;
+  gap: 4px;
+  height: 96px;
+}
+
+.minigame-board__dist > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+
+.minigame-board__bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: var(--color-border-strong);
+}
+
+.minigame-board__dist .is-mine .minigame-board__bar {
+  background: var(--color-brand);
+}
+
+.minigame-board__tick {
+  color: var(--color-content-tertiary);
+  font-size: 11px;
+}
+
+.minigame-board__figure {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.minigame-board__figure figcaption {
+  color: var(--color-content-tertiary);
+  font-size: var(--type-caption-size);
+  text-align: right;
+}

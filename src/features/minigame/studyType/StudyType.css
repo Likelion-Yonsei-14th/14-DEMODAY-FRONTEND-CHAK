@@ -512,3 +512,53 @@
   box-shadow: var(--shadow-paper);
   -webkit-touch-callout: default;
 }
+
+/* 다른 수험생들의 유형 분포 */
+.study-type-crowd__list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.study-type-crowd__list li {
+  display: grid;
+  grid-template-columns: minmax(0, 7.5em) minmax(0, 1fr) 3em;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--type-caption-size);
+}
+
+.study-type-crowd__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.study-type-crowd__bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--color-surface-subtle);
+  overflow: hidden;
+}
+
+.study-type-crowd__bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-border-strong);
+}
+
+.study-type-crowd__list .is-current {
+  font-weight: 800;
+}
+
+.study-type-crowd__list .is-current .study-type-crowd__bar i {
+  background: var(--color-brand);
+}
+
+.study-type-crowd__percent {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

@@ -3,7 +3,14 @@ import type { PointerEvent as ReactPointerEvent } from 'react'
 import { ArrowLeft, House, RotateCcw, Smartphone, Trophy } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AppBar, Button, IconButton } from '@/design-system'
+import {
+  createSneakyPhoneRound,
+  fetchSneakyPhoneLeaderboard,
+  submitSneakyPhoneRound,
+  type SneakyPhoneGrade,
+} from '@/api/minigames'
 import { AppShell } from '@/layout/AppShell'
+import { MinigameLeaderboard } from '../MinigameLeaderboard'
 import {
   advanceTo,
   createGame,
@@ -87,6 +94,8 @@ export function SneakyPhoneIntroPage() {
           </p>
         )}
 
+        <MinigameLeaderboard title="몰폰 랭킹" load={fetchSneakyPhoneLeaderboard} />
+
         <div className="sneaky-intro__actions">
           <Button variant="brand" fullWidth onClick={() => navigate(SNEAKY_PHONE_PLAY_PATH)}>
             게임 시작
@@ -109,6 +118,12 @@ function useSneakyPhoneGame() {
   const [state, setState] = useState<SneakyPhoneState>(() => createGame())
   const [best, setBest] = useState(loadBestScore)
   const [record, setRecord] = useState<{ result: SneakyPhoneResult; isNewBest: boolean } | null>(null)
+  /** What the server said about this round; null when it could not be reached. */
+  const [grade, setGrade] = useState<SneakyPhoneGrade | null>(null)
+  const [checking, setChecking] = useState(false)
+  /** Round id issued when the round starts, spent once when it ends. */
+  const roundId = useRef<string | null>(null)
+  const roundToken = useRef(0)
   const stateRef = useRef(state)
   const startedAt = useRef(0)
   const frame = useRef<number | undefined>(undefined)
@@ -142,6 +157,23 @@ function useSneakyPhoneGame() {
         setBest(result.finalScore)
       }
       setRecord({ result, isNewBest })
+
+      const id = roundId.current
+      roundId.current = null
+      if (id) {
+        const token = roundToken.current
+        setChecking(true)
+        submitSneakyPhoneRound(id, result)
+          .then((next) => {
+            if (roundToken.current === token) setGrade(next)
+          })
+          .catch(() => {
+            // The score still counts on this device; it just is not ranked.
+          })
+          .finally(() => {
+            if (roundToken.current === token) setChecking(false)
+          })
+      }
     }
   }, [])
 
@@ -158,7 +190,18 @@ function useSneakyPhoneGame() {
     stateRef.current = fresh
     setState(fresh)
     setRecord(null)
+    setGrade(null)
+    setChecking(false)
     setCountdown(COUNTDOWN_FROM)
+
+    // Asked for at the start so the server can tell the game really took 30 seconds.
+    roundId.current = null
+    const token = (roundToken.current += 1)
+    createSneakyPhoneRound()
+      .then((round) => {
+        if (roundToken.current === token) roundId.current = round.roundId
+      })
+      .catch(() => {})
 
     for (let step = 1; step <= COUNTDOWN_FROM; step += 1) {
       const timer = window.setTimeout(() => {
@@ -219,12 +262,12 @@ function useSneakyPhoneGame() {
     }
   }, [holdPhone])
 
-  return { state, best, record, countdown, start, holdPhone }
+  return { state, best, record, grade, checking, countdown, start, holdPhone }
 }
 
 export function SneakyPhonePlayPage() {
   const navigate = useNavigate()
-  const { state, best, record, countdown, start, holdPhone } = useSneakyPhoneGame()
+  const { state, best, record, grade, checking, countdown, start, holdPhone } = useSneakyPhoneGame()
   const counting = countdown !== null
   const playing = state.status === 'playing' && !counting
   const score = wholePoints(state.score)
@@ -289,6 +332,8 @@ export function SneakyPhonePlayPage() {
           <ResultPanel
             result={record.result}
             isNewBest={record.isNewBest}
+            grade={grade}
+            checking={checking}
             onRetry={start}
             onExit={() => navigate(SNEAKY_PHONE_PATH)}
           />
@@ -318,6 +363,10 @@ export function SneakyPhonePlayPage() {
             </p>
           </div>
         )}
+
+        {record && !checking && (
+          <MinigameLeaderboard title="몰폰 랭킹" load={fetchSneakyPhoneLeaderboard} />
+        )}
       </div>
     </AppShell>
   )
@@ -326,11 +375,15 @@ export function SneakyPhonePlayPage() {
 function ResultPanel({
   result,
   isNewBest,
+  grade,
+  checking,
   onRetry,
   onExit,
 }: {
   result: SneakyPhoneResult
   isNewBest: boolean
+  grade: SneakyPhoneGrade | null
+  checking: boolean
   onRetry: () => void
   onExit: () => void
 }) {
@@ -370,6 +423,16 @@ function ResultPanel({
           </div>
         )}
       </dl>
+      {checking && (
+        <p className="sneaky-result__rank" role="status">
+          기록을 올리는 중이에요…
+        </p>
+      )}
+      {grade?.ranked && grade.rank && (
+        <p className="sneaky-result__rank">
+          오늘 <strong>{grade.rank.daily}위</strong> · 전체 <strong>{grade.rank.overall}위</strong>
+        </p>
+      )}
       <div className="sneaky-result__actions">
         <Button
           autoFocus
