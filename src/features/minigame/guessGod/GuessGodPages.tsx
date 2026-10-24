@@ -25,6 +25,8 @@ import {
   useFeedback,
 } from '@/design-system'
 import { AppShell } from '@/layout/AppShell'
+import { usePrototypeStore } from '@/store/prototypeStore'
+import { MinigameNicknameForm } from '../MinigameNicknameForm'
 import { shareOrCopyLink } from '@/lib/shareLink'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import {
@@ -726,6 +728,7 @@ function GuessGodResultView({
   const result = getGuessGodResult(score)
   const share = useShareActions(result, score, game)
   const isMine = game !== null
+  const signedIn = usePrototypeStore((state) => state.authSession.status === 'authenticated')
 
   return (
     <AppShell
@@ -757,6 +760,8 @@ function GuessGodResultView({
             </Button>
           </section>
         )}
+
+        {isMine && signedIn && <MinigameNicknameForm />}
 
         {game && <GradingTable game={game} />}
         {game && <LuckAnalysis score={score} game={game} />}
