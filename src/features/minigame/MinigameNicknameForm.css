@@ -1,0 +1,33 @@
+/* 미니게임 랭킹 닉네임 입력 */
+.minigame-nickname {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-base);
+}
+
+.minigame-nickname h2 {
+  margin: 0;
+  font-size: var(--type-title-m-size, 1rem);
+  letter-spacing: -.02em;
+}
+
+.minigame-nickname form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.minigame-nickname__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.minigame-nickname__done {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+}
