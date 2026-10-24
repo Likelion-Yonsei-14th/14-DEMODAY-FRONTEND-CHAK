@@ -31,6 +31,7 @@ describe('trackPageView', () => {
     const [path, options] = apiFetch.mock.calls[0] as [string, { method: string; body: Record<string, string> }]
     expect(path).toBe('/api/public/analytics/events')
     expect(options.method).toBe('POST')
+    expect(options).toMatchObject({ quiet: true })
     expect(options.body).toMatchObject({ eventType: 'PAGE_VIEW', path: '/desk/abc' })
     expect(options.body.eventId).toBeTruthy()
     expect(options.body.sessionId).toBeTruthy()
