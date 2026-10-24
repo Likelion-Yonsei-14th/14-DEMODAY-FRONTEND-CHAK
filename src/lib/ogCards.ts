@@ -43,6 +43,14 @@ export const OG_PAGES: readonly { page: string; source: string; card: OgCard }[]
     },
   },
   {
+    page: 'promotion',
+    source: '/promotion',
+    card: {
+      title: '착 · 수능 시즌 광고 제휴 제안',
+      description: '수험생이 매일 여는 응원 앱 착에 브랜드 광고를 싣는 제안이에요.',
+    },
+  },
+  {
     page: 'desk',
     source: '/desk/:path*',
     card: {
