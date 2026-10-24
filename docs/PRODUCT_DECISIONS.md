@@ -20,6 +20,11 @@ This document tracks the latest decisions that the code prototype must prioritiz
   - account page
   - logout
   - account deletion and completion
+- Brand partnership pages (public, no login, wide layout instead of the 430px app shell):
+  - `/promotion`: the sponsorship proposal from the printed brochure (이름 시안.pdf): why now, how it works, the 대형 브랜드 패키지 (모달 + 배너), ad specs, schedule. All numbers, dates and specs live in `src/features/promotion/promotionContent.ts`; the early-bird price switches to the regular price after 10/31 23:59 KST and the form closes after 11/12.
+  - `/promotion/apply`: a short consultation form (brand name, contact name, email, optional phone and question, privacy consent). It posts to `POST /api/public/promotion/inquiries`; the team sees new requests in the Discord alert channel (no contact details in the alert) and in the admin console under 상담 문의. A hidden honeypot field, a per-client hourly limit and 24h de-duplication limit abuse. Requests are deleted after one year and listed in the privacy policy.
+  - The contact phone number printed in the brochure is intentionally not on the page; contact is the team email and Instagram.
+  - The link card (KakaoTalk preview) for `/promotion` is generated at build time like the other shared pages.
 - Desk for a friend (Claim), with a backend connected:
   - The creator gets two links: the supporter link (`/desk/:token`) for friends and the claim link (`/claim/:claimToken`) for the person the desk is for. The creator sees only counts, never what the cheers say, and manages the desks that are not handed over yet at `/friend-desks` (also reachable from Home).
   - The recipient signs in, sees who made it and how many cheers are waiting, and must answer "are you really that person?" before taking the desk over. The link works once; after that the creator becomes an ordinary supporter.
