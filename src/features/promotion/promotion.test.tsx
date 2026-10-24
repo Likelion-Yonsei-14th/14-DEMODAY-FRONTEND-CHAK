@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '@/api/client'
-import { formatWon, PROMOTION_DATES, promotionStatus } from './promotionContent'
+import { formatWon, PROMOTION_DATES, promotionStatus, tight } from './promotionContent'
 
 const api = vi.hoisted(() => ({ submitPromotionInquiry: vi.fn() }))
 vi.mock('@/api/promotion', () => api)
@@ -11,6 +11,9 @@ import { PromotionApplyPage } from './PromotionApplyPage'
 import { PromotionPage } from './PromotionPage'
 
 const at = (iso: string) => new Date(iso)
+
+/** 화면 글자의 줄바꿈 금지 공백과 단어 결합 기호를 일반 공백으로 보고 찾는다. */
+const plain = (pattern: RegExp) => (content: string) => pattern.test(content.replace(/\u00a0/g, ' ').replace(/\u2060/g, ''))
 
 describe('promotion schedule', () => {
   it('moves from early bird to open to closed in Korean time', () => {
@@ -40,6 +43,21 @@ function renderAt(path: string) {
   )
 }
 
+describe('tight (mobile line breaks)', () => {
+  it('keeps dates, prices, short phrases and particles after parentheses together', () => {
+    expect(tight('10월 31일(토)까지')).toBe('10월\u00a031일(토)\u2060까지')
+    expect(tight('시청 1만 회를 보장해요')).toContain('1만\u00a0회')
+    expect(tight('혜택함 맨 위에')).toBe('혜택함 맨\u00a0위에')
+    expect(tight('규격(사이즈, 문구 길이)으로 받아요')).toContain(')\u2060으로')
+    expect(tight('수능 전 광고')).toBe('수능\u00a0전 광고')
+  })
+
+  it('does not change what the text says', () => {
+    const sample = '10월 31일까지 입금하면 14.9만원(VAT 별도)이고, 수능 후 혜택함 맨 위에 한 번 더 보여 드려요.'
+    expect(tight(sample).replace(/\u00a0/g, ' ').replace(/\u2060/g, '')).toBe(sample)
+  })
+})
+
 describe('promotion page', () => {
   afterEach(() => vi.useRealTimers())
 
@@ -48,14 +66,14 @@ describe('promotion page', () => {
     vi.setSystemTime(at('2026-10-25T03:00:00Z'))
     const early = renderAt('/promotion')
     expect(screen.getByText('14.9만원')).toBeInTheDocument()
-    expect(screen.getByText(/10월 31일\(토\)까지 입금하면 14\.9만원/)).toBeInTheDocument()
+    expect(screen.getByText(plain(/10월 31일\(토\)까지 입금하면 14\.9만원/))).toBeInTheDocument()
     early.unmount()
 
     vi.setSystemTime(at('2026-11-05T03:00:00Z'))
     renderAt('/promotion')
     expect(screen.queryByText('14.9만원')).not.toBeInTheDocument()
     expect(screen.getAllByText(/19\.9만원/).length).toBeGreaterThan(0)
-    expect(screen.getByText(/얼리버드는 끝났어요/)).toBeInTheDocument()
+    expect(screen.getByText(plain(/얼리버드는 끝났어요/))).toBeInTheDocument()
   })
 
   it('links to the consultation form and lists the ad specs', () => {
@@ -63,8 +81,8 @@ describe('promotion page', () => {
     vi.setSystemTime(at('2026-10-25T03:00:00Z'))
     renderAt('/promotion')
     expect(screen.getAllByRole('link', { name: /상담 신청/ }).length).toBeGreaterThan(0)
-    expect(screen.getByText(/1080×1350px · MP4/)).toBeInTheDocument()
-    expect(screen.getByText(/1125×375px/)).toBeInTheDocument()
+    expect(screen.getByText(plain(/1080×1350px · MP4/))).toBeInTheDocument()
+    expect(screen.getByText(plain(/1125×375px/))).toBeInTheDocument()
   })
 
   it('closes the form after the final deadline and points to email', () => {
