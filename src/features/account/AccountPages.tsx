@@ -611,7 +611,7 @@ export function AccountPage() {
 
           <button
             type="button"
-            className="account-actions__danger"
+            className="account-actions__danger ds-hit-area"
             onClick={() => navigate('/account/delete')}
           >
             <Trash2 size={16} aria-hidden />

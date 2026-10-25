@@ -51,7 +51,7 @@ export function StartPage() {
           </span>
           <button
             type="button"
-            className="start-page__account"
+            className="start-page__account ds-hit-area"
             onClick={() =>
               navigate(
                 authSession.status === 'authenticated'

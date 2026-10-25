@@ -30,6 +30,11 @@
 .ds-button__spinner { animation: ds-spin .8s linear infinite; }
 @keyframes ds-spin { to { transform: rotate(360deg); } }
 
+/* Grows a small control's tappable area to at least 44×44 without changing how it looks.
+   Percent insets resolve against the control itself, so it only reaches out where it is short. */
+.ds-hit-area { position: relative; }
+.ds-hit-area::after { content: ''; position: absolute; inset: min(0px, calc((100% - 44px) / 2)); }
+
 .ds-icon-button {
   display: inline-grid;
   place-items: center;
