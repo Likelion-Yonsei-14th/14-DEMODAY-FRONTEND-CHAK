@@ -107,6 +107,11 @@
   color: #b3261e;
 }
 
+.admin__panel h3 {
+  margin: 16px 0 8px;
+  font-size: 14px;
+}
+
 .admin__muted {
   color: #7a716a;
 }

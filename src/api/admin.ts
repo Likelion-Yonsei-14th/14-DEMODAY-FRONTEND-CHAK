@@ -157,3 +157,30 @@ export const fetchAdminInquiries = (status: AdminInquiryStatus | undefined, page
 
 export const changeAdminInquiryStatus = (id: number, status: AdminInquiryStatus) =>
   apiFetch<AdminInquiry>(`/api/admin/promotion-inquiries/${id}`, { method: 'PATCH', body: { status } })
+
+export type AdminMinigameDay = { date: string; members: number; guests: number }
+
+export type AdminMinigameGame = {
+  game: 'GUESS_GOD' | 'SNEAKY_PHONE'
+  startedToday: number
+  submittedToday: number
+  submittedLast7Days: number
+  submittedLast14Days: number
+  averageScoreLast14Days: number | null
+  rankedMembers: number
+  bestMemberScore: number | null
+  days: AdminMinigameDay[]
+}
+
+export type AdminMinigameStats = {
+  games: AdminMinigameGame[]
+  studyType: {
+    total: number
+    members: number
+    today: number
+    last7Days: number
+    distribution: { code: string; count: number; percent: number }[]
+  }
+}
+
+export const fetchMinigameStats = () => apiFetch<AdminMinigameStats>('/api/admin/minigames/stats')
