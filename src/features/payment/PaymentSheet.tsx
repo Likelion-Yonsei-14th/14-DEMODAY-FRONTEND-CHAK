@@ -11,7 +11,9 @@ import {
 import { ApiError } from '@/api/client'
 import type { ApiProductCode } from '@/api/types'
 import { formatChaltteok } from '@/features/chaltteok/chaltteok'
+import { ComingSoonDialog, PAYMENTS_NOTICE } from '@/features/common/ComingSoon'
 import { MockModeBadge } from '@/features/chaltteok/MockModeBadge'
+import { arePaymentsAvailable } from '@/lib/featureFlags'
 import {
   saveResume,
   setLoginReturn,
@@ -65,7 +67,8 @@ export function PaymentSheet({
   const location = useLocation()
   const path = location.pathname + location.search
   const { showToast } = useFeedback()
-  const { signedIn, balance, failed, reload, setBalance } = useChaltteokBalance(open)
+  const available = arePaymentsAvailable()
+  const { signedIn, balance, failed, reload, setBalance } = useChaltteokBalance(open && available)
   const [purchasing, setPurchasing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const purchasingRef = useRef(false)
@@ -104,6 +107,9 @@ export function PaymentSheet({
   }, [open, onClose])
 
   if (!open) return null
+  if (!available) {
+    return <ComingSoonDialog open onClose={onClose} title={PAYMENTS_NOTICE.title} description={PAYMENTS_NOTICE.description} />
+  }
 
   const total = items.reduce((sum, item) => sum + item.amount, 0)
   const shortage = balance === null ? 0 : Math.max(0, total - balance)

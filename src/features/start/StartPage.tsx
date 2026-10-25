@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { LogIn, UserRound, UsersRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { ChoiceCard } from '@/design-system'
@@ -12,7 +12,9 @@ import {
   mergeSupportMessages,
   seededDeskObjects,
 } from '@/features/supporter/seededMessages'
+import { ComingSoonDialog, CLASSROOM_NOTICE } from '@/features/common/ComingSoon'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
+import { isClassroomAvailable } from '@/lib/featureFlags'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import './StartPage.css'
@@ -23,6 +25,7 @@ export function StartPage() {
     (state) => state.resetDeskCreationDraft,
   )
   const authSession = usePrototypeStore((state) => state.authSession)
+  const [classroomNotice, setClassroomNotice] = useState(false)
 
   const messages = useMemo(
     () => mergeSupportMessages([]),
@@ -99,12 +102,18 @@ export function StartPage() {
             title="우리끼리 서로 응원할래요"
             description="우리 반 교실에서 칠판을 채우고, 각자 사물함에 응원을 남겨요."
             icon={<UsersRound size={22} aria-hidden />}
-            onClick={() => navigate('/prototype/classroom/create')}
+            onClick={() => (isClassroomAvailable() ? navigate('/prototype/classroom/create') : setClassroomNotice(true))}
           />
         </section>
 
         <MiniGameSection />
       </main>
+      <ComingSoonDialog
+        open={classroomNotice}
+        onClose={() => setClassroomNotice(false)}
+        title={CLASSROOM_NOTICE.title}
+        description={CLASSROOM_NOTICE.description}
+      />
     </AppShell>
   )
 }

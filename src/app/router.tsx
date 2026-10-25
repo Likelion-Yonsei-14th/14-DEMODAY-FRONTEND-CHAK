@@ -1,4 +1,5 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom'
+import { ComingSoonPage } from '@/features/common/ComingSoon'
 import { RouteErrorPage } from '@/app/RouteErrorPage'
 import { App } from '@/app/App'
 import { UnifiedComposerPage } from '@/features/composer/UnifiedComposerPage'
@@ -128,11 +129,40 @@ import {
 // Only the bare entry point (`/`) branches on auth: WelcomePage sends a
 // signed-in visitor to the two-door /home and shows everyone else the
 // welcome screen. /start itself stays reachable regardless of auth state.
+/**
+ * 운영에서만 적용하는 화면 가림.
+ * - 아직 서버에 연결되지 않은 기능(우리 반, Wrapped, 혜택)은 "개발 중" 화면을 보여 준다.
+ * - 내부 확인용 화면(시안 목차, 디자인 확인 페이지, 자리표시 화면)은 처음으로 돌려보낸다.
+ * 개발과 테스트에서는 모두 그대로 열려 있다.
+ */
+const NOT_READY_PATHS: Array<{ pattern: RegExp; title: string }> = [
+  { pattern: /^\/prototype\/classroom(\/|$)/, title: '우리 반' },
+  { pattern: /^\/prototype\/wrapped(\/|$)/, title: '응원 결산' },
+  { pattern: /^\/prototype\/offers(\/|$)/, title: '혜택' },
+]
+const INTERNAL_PATHS = [/^\/prototype$/, /^\/prototype\/(composer|reader|manage)$/, /^\/system$/]
+
+export function gateRoutes(routes: RouteObject[], production: boolean): RouteObject[] {
+  if (!production) return routes
+  return routes.map((route) => {
+    const path = route.path
+    if (!path) return route
+    const notReady = NOT_READY_PATHS.find(({ pattern }) => pattern.test(path))
+    if (notReady) {
+      return { ...route, element: <ComingSoonPage title={notReady.title} description="곧 열릴 예정이에요. 지금은 응원 책상을 이용해 주세요." /> }
+    }
+    if (INTERNAL_PATHS.some((pattern) => pattern.test(path))) {
+      return { ...route, element: <Navigate to="/" replace /> }
+    }
+    return route
+  })
+}
+
 export const router = createBrowserRouter([
   {
     element: <App />,
     errorElement: <RouteErrorPage />,
-    children: [
+    children: gateRoutes([
       { index: true, element: <WelcomePage /> },
       {
         // The operators' console loads on demand so visitors never download it.
@@ -497,6 +527,6 @@ export const router = createBrowserRouter([
       },
       // Unknown addresses go through the front door: /home if signed in, welcome otherwise.
       { path: '*', element: <Navigate to="/" replace /> },
-    ],
+    ], import.meta.env.PROD),
   },
 ])

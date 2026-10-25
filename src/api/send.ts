@@ -89,6 +89,10 @@ export function sendErrorMessage(error: unknown): string {
     case 'PAYMENT_REQUIRED':
     case 'ORDER_ALREADY_USED':
       return '결제 정보를 확인할 수 없어요. 결제를 다시 진행해주세요.'
+    case 'TOO_MANY_MESSAGES':
+      return '응원을 너무 많이 보냈어요. 잠시 후 다시 시도해주세요.'
+    case 'DESK_BUSY':
+      return '이 책상에 응원이 한꺼번에 몰리고 있어요. 잠시 후 다시 시도해주세요.'
     case 'TOO_MANY_EVENTS':
       return '요청이 너무 많아요. 잠시 후 다시 시도해주세요.'
     default:

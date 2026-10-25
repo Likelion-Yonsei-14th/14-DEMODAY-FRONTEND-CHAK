@@ -233,8 +233,23 @@ const mockApi: ChaltteokApi = {
   },
 }
 
+/**
+ * 운영 빌드가 서버 결제 없이 배포되면 mock으로 떨어지지 않고 모두 거절한다.
+ * mock 충전·구매가 사용자에게 보이면 브라우저 안에서 공짜로 찰떡을 채우게 된다.
+ */
+const unavailable = () =>
+  Promise.reject(
+    new ApiError(503, { code: 'PAYMENT_NOT_CONFIGURED', message: '찰떡 결제는 아직 개발 중이에요.' }),
+  )
+const blockedApi: ChaltteokApi = {
+  createChargeOrder: unavailable,
+  confirmCharge: unavailable,
+  getBalance: unavailable,
+  purchase: unavailable,
+}
+
 export const chaltteokApi: ChaltteokApi =
-  chaltteokMode === 'server' ? serverApi : mockApi
+  chaltteokMode === 'server' ? serverApi : import.meta.env.PROD ? blockedApi : mockApi
 
 /** `{ required, balance }` when the error is a 402 INSUFFICIENT_CHALTTEOK. */
 export function readInsufficient(error: unknown) {

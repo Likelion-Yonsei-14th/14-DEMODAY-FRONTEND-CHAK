@@ -16,6 +16,8 @@ import {
   chaltteokApi,
   isValidChargeAmount,
 } from '@/api/chaltteok'
+import { ComingSoonDialog, PAYMENTS_NOTICE } from '@/features/common/ComingSoon'
+import { arePaymentsAvailable } from '@/lib/featureFlags'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { formatChaltteok, isChargePreset, pickChargeAmount } from './chaltteok'
@@ -34,7 +36,7 @@ const LIMITS_TEXT = `${CHARGE_LIMITS.min.toLocaleString()}원부터 ${CHARGE_LIM
  * a purchase that came up short (?need=N&returnTo=…) and "찰떡 충전하기".
  * orderId and amount sent to Toss always come from createChargeOrder.
  */
-export function ChargePage() {
+function ChargePageContent() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const { showToast } = useFeedback()
@@ -251,5 +253,21 @@ export function ChargePage() {
         )}
       </main>
     </AppShell>
+  )
+}
+
+/** 서버 결제가 연결되기 전에는 충전 화면 대신 안내만 보여 주고 이전 화면으로 돌려보낸다. */
+export function ChargePage() {
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  if (arePaymentsAvailable()) return <ChargePageContent />
+  const back = safePath(searchParams.get('returnTo')) ?? '/account'
+  return (
+    <ComingSoonDialog
+      open
+      onClose={() => navigate(back, { replace: true })}
+      title={PAYMENTS_NOTICE.title}
+      description={PAYMENTS_NOTICE.description}
+    />
   )
 }
