@@ -27,6 +27,14 @@ export const OG_PAGES: readonly { page: string; source: string; card: OgCard }[]
     },
   },
   {
+    page: 'd1-course',
+    source: '/minigame/d1-course/result/:path*',
+    card: {
+      title: '수능 끝 D+1 코스 짜기',
+      description: '수능 다음 날, 어디서 뭐 하고 놀까? 1분 만에 코스를 짜 보세요!',
+    },
+  },
+  {
     page: 'study-type',
     source: '/minigame/study-type/result/:path*',
     card: {
