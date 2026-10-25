@@ -1,5 +1,6 @@
 import { apiFetch } from '@/api/client'
 import { isApiEnabled } from '@/api/config'
+import { getVisitorGeo } from '@/api/geo'
 
 const SESSION_KEY = 'chak.analytics.session'
 
@@ -23,7 +24,8 @@ const IGNORED = [/^\/admin(\/|$)/]
 
 /**
  * Records that a page was opened, for the operators' visitor counts. Only the
- * path (no query string) and the referring site's origin are sent; the
+ * path (no query string), the referring site's origin and the visitor's country and
+ * province code (from the host, see /api/geo) are sent; the
  * server never stores IP addresses. Failures are ignored.
  */
 export function trackPageView(pathname: string) {
@@ -41,17 +43,26 @@ export function trackPageView(pathname: string) {
     // Counting visits is best effort: ad blockers and content blockers (the URL contains "analytics"),
     // pages closed mid-request and flaky mobile data all end as "Load failed". None of that is our bug,
     // so a failed visit count does not alert the team.
-    void apiFetch('/api/public/analytics/events', {
-      method: 'POST',
-      quiet: true,
-      body: {
-        eventId: crypto.randomUUID(),
-        eventType: 'PAGE_VIEW',
-        sessionId: sessionId(),
-        path: pathname.slice(0, 1000),
-        referrer,
-      },
-    }).catch(() => undefined)
+    const eventId = crypto.randomUUID()
+    const session = sessionId()
+    void getVisitorGeo()
+      .then((geo) =>
+        apiFetch('/api/public/analytics/events', {
+          method: 'POST',
+          quiet: true,
+          body: {
+            eventId,
+            eventType: 'PAGE_VIEW',
+            sessionId: session,
+            path: pathname.slice(0, 1000),
+            referrer,
+            // 시·도 수준의 위치만. 호스팅이 알려 준 값이고 IP는 어디에도 쓰지 않는다.
+            geoCountry: geo?.country ?? undefined,
+            geoRegion: geo?.region ?? undefined,
+          },
+        }),
+      )
+      .catch(() => undefined)
   } catch {
     // Tracking must never break the app.
   }
