@@ -345,6 +345,49 @@ describe('admin console', () => {
       expect(study).toHaveTextContent('70%')
     })
 
+    it('shows the D+1 course answers as choice shares when the server sends them', async () => {
+      admin.fetchMinigameStats.mockResolvedValue({
+        ...stats,
+        d1Course: {
+          total: 200, today: 12, last7Days: 90, shared: 40,
+          areas: [{ key: 'hongdae', count: 80 }, { key: 'gangnam', count: 40 }],
+          activities: [{ key: 'dye', count: 124 }, { key: 'food', count: 100 }],
+          companions: [{ key: 'small', count: 120 }],
+          budgets: [{ key: '30kTo100k', count: 110 }],
+          regions: [{ key: 'gyeonggi', count: 70 }],
+        },
+      })
+      const { MinigamesPage } = await import('./MinigamesPage')
+      render(<MinigamesPage />)
+
+      const d1 = await screen.findByRole('region', { name: '수능 끝 D+1 코스 짜기' })
+      expect(d1).toHaveTextContent('전체 응답200')
+      expect(d1).toHaveTextContent('공유한 응답40')
+      expect(d1).toHaveTextContent('홍대')
+      expect(d1).toHaveTextContent('40%')          // 홍대 80/200
+      expect(d1).toHaveTextContent('염색')
+      expect(d1).toHaveTextContent('62%')          // 염색 124/200
+      expect(d1).toHaveTextContent('2~3명')
+      expect(d1).toHaveTextContent('3~10만 원')
+      expect(d1).toHaveTextContent('경기')
+    })
+
+    it('says there are no D+1 answers yet and tolerates an older server without them', async () => {
+      admin.fetchMinigameStats.mockResolvedValue({
+        ...stats,
+        d1Course: { total: 0, today: 0, last7Days: 0, shared: 0, areas: [], activities: [], companions: [], budgets: [], regions: [] },
+      })
+      const { MinigamesPage } = await import('./MinigamesPage')
+      const view = render(<MinigamesPage />)
+      expect(await screen.findByText('아직 응답이 없어요.')).toBeInTheDocument()
+      view.unmount()
+
+      admin.fetchMinigameStats.mockResolvedValue(stats)
+      render(<MinigamesPage />)
+      await screen.findByRole('region', { name: '오늘의 찍신은 나야!' })
+      expect(screen.queryByRole('region', { name: '수능 끝 D+1 코스 짜기' })).not.toBeInTheDocument()
+    })
+
     it('says so when the stats cannot be loaded', async () => {
       admin.fetchMinigameStats.mockRejectedValue(new Error('down'))
       const { MinigamesPage } = await import('./MinigamesPage')
