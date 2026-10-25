@@ -260,7 +260,7 @@ export function SupportDeskPage() {
             {supporterIdentityName && (
               <button
                 type="button"
-                className="support-desk__share"
+                className="support-desk__share ds-hit-area"
                 onClick={() =>
                   navigate(supporterPath(supporterToken, '/sent'))
                 }
@@ -271,7 +271,7 @@ export function SupportDeskPage() {
             )}
             <button
               type="button"
-              className="support-desk__share"
+              className="support-desk__share ds-hit-area"
               onClick={shareDesk}
             >
               <Share2 size={16} aria-hidden />

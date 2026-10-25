@@ -454,7 +454,7 @@ export function EnvelopeStackPage() {
         {readMode.type === 'daily' && (
           <button
             type="button"
-            className="envelope-history-toggle"
+            className="envelope-history-toggle ds-hit-area"
             disabled={Boolean(openingId)}
             onClick={() => setShowHistory((value) => !value)}
           >

@@ -33,7 +33,7 @@ export function HomePage() {
             <span className="start-page__dday">{getCsatDdayLabel()}</span>
             <button
               type="button"
-              className="start-page__account"
+              className="start-page__account ds-hit-area"
               onClick={() =>
                 authSession.status === 'authenticated'
                   ? navigate('/account', { state: { from: '/home' } })
@@ -99,14 +99,14 @@ export function HomePage() {
 
         <button
           type="button"
-          className="home-page__new"
+          className="home-page__new ds-hit-area"
           onClick={() => navigate('/start')}
         >
           <Plus size={15} aria-hidden />
           새 책상이나 반 만들기
         </button>
         {isApiEnabled && (
-          <button type="button" className="home-page__new" onClick={() => navigate('/friend-desks')}>
+          <button type="button" className="home-page__new ds-hit-area" onClick={() => navigate('/friend-desks')}>
             친구에게 만들어 준 책상
           </button>
         )}
