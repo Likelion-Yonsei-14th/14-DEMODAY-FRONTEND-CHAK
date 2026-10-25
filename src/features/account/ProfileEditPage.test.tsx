@@ -119,16 +119,17 @@ describe('profile across server logins', () => {
     act(() => usePrototypeStore.setState({ currentUser: { ...mockCurrentUser }, lastLogin: null }))
   })
 
-  it('keeps this device’s edits when the same account signs in again', () => {
+  it('takes the name and photo from the server at every sign-in, so edits saved there follow the account', () => {
     const store = usePrototypeStore.getState()
     act(() => {
-      store.signInWithServer(server(7, '카카오이름'))
-      store.updateProfile({ displayName: '고친이름', profileImageUrl: PHOTO })
+      store.signInWithServer(server(7, '서버에 저장된 이름'))
+      store.updateProfile({ displayName: '이 기기에서만 고친 이름', profileImageUrl: PHOTO })
       store.signOut()
-      store.signInWithServer(server(7, '카카오이름'))
+      store.signInWithServer({ ...server(7, '서버에 저장된 이름'), avatarUrl: '/api/public/avatars/abc' })
     })
 
-    expect(usePrototypeStore.getState().currentUser).toMatchObject({ displayName: '고친이름', profileImageUrl: PHOTO })
+    expect(usePrototypeStore.getState().currentUser.displayName).toBe('서버에 저장된 이름')
+    expect(usePrototypeStore.getState().currentUser.profileImageUrl).toContain('/api/public/avatars/abc')
   })
 
   it('does not show one account’s photo to another account on the same device', () => {

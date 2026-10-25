@@ -3,6 +3,8 @@ export type ApiUser = {
   displayName: string
   email: string | null
   profileImageUrl: string | null
+  /** 직접 올린 프로필 사진(같은 서버의 상대 경로). 올리지 않았으면 없다. */
+  avatarUrl?: string | null
   admin: boolean
   /** Which login the account was created with. */
   provider?: 'KAKAO' | 'GOOGLE'
