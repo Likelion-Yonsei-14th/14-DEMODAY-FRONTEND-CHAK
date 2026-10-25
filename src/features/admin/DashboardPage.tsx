@@ -5,29 +5,10 @@ import {
   type AdminDailyStats,
   type AdminRegionStats,
 } from '@/api/admin'
+import { BarList } from './AdminBarList'
 import { formatNumber, kstDate } from './adminFormat'
 
 const RANGES = [7, 14, 30, 60] as const
-
-function BarList({ rows }: { rows: { label: string; value: number; sub?: string }[] }) {
-  const max = Math.max(1, ...rows.map((row) => row.value))
-  return (
-    <ul className="admin-bars">
-      {rows.map((row) => (
-        <li key={row.label}>
-          <span className="admin-bars__label">{row.label}</span>
-          <span className="admin-bars__track">
-            <span className="admin-bars__fill" style={{ width: `${(row.value / max) * 100}%` }} />
-          </span>
-          <span className="admin-bars__value">
-            {formatNumber(row.value)}
-            {row.sub && <small> {row.sub}</small>}
-          </span>
-        </li>
-      ))}
-    </ul>
-  )
-}
 
 export function DashboardPage() {
   const [days, setDays] = useState<(typeof RANGES)[number]>(14)

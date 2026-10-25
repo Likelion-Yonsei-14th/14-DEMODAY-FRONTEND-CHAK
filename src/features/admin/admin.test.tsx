@@ -9,6 +9,7 @@ const admin = vi.hoisted(() => ({
   withdrawAdminUser: vi.fn(),
   fetchDailyStats: vi.fn(),
   fetchRegionStats: vi.fn(),
+  fetchMinigameStats: vi.fn(),
   fetchAdminReports: vi.fn(),
   actOnReport: vi.fn(),
   fetchAdminAccess: vi.fn(),
@@ -244,6 +245,73 @@ describe('admin console', () => {
 
       fireEvent.click(screen.getByRole('button', { name: '연락함' }))
       await waitFor(() => expect(admin.changeAdminInquiryStatus).toHaveBeenCalledWith(4, 'CONTACTED'))
+    })
+  })
+
+  describe('minigame stats', () => {
+    const days = (members: number, guests: number) =>
+      Array.from({ length: 14 }, (_, index) => ({ date: `2026-10-${String(index + 12).padStart(2, '0')}`, members, guests }))
+    const stats = {
+      games: [
+        {
+          game: 'GUESS_GOD', startedToday: 120, submittedToday: 96, submittedLast7Days: 540, submittedLast14Days: 980,
+          averageScoreLast14Days: 2.1, rankedMembers: 41, bestMemberScore: 9, days: days(3, 7),
+        },
+        {
+          game: 'SNEAKY_PHONE', startedToday: 0, submittedToday: 0, submittedLast7Days: 0, submittedLast14Days: 0,
+          averageScoreLast14Days: null, rankedMembers: 0, bestMemberScore: null, days: days(0, 0),
+        },
+      ],
+      studyType: {
+        total: 100, members: 20, today: 5, last7Days: 60,
+        distribution: [
+          { code: 'PSA', count: 30, percent: 30 },
+          { code: 'LFN', count: 70, percent: 70 },
+        ],
+      },
+    }
+
+    it('shows participation per game and the study type spread', async () => {
+      admin.fetchMinigameStats.mockResolvedValue(stats)
+      const { MinigamesPage } = await import('./MinigamesPage')
+      render(<MinigamesPage />)
+
+      const guessGod = await screen.findByRole('region', { name: '오늘의 찍신은 나야!' })
+      expect(guessGod).toHaveTextContent('오늘 시작120')
+      expect(guessGod).toHaveTextContent('오늘 중간에 그만둠24')
+      expect(guessGod).toHaveTextContent('랭킹에 오른 회원41')
+      expect(guessGod).toHaveTextContent('회원 3 · 비회원 7')
+
+      const phone = screen.getByRole('region', { name: '선생님 몰래 폰 하기' })
+      expect(phone).toHaveTextContent('14일 평균 점수-')
+      expect(phone).toHaveTextContent('회원 최고 점수-')
+
+      const study = screen.getByRole('region', { name: '나의 수험생 유형은?' })
+      expect(study).toHaveTextContent('전체 결과100')
+      expect(study).toHaveTextContent('70%')
+    })
+
+    it('says so when the stats cannot be loaded', async () => {
+      admin.fetchMinigameStats.mockRejectedValue(new Error('down'))
+      const { MinigamesPage } = await import('./MinigamesPage')
+      render(<MinigamesPage />)
+      expect(await screen.findByText('통계를 불러오지 못했어요.')).toBeInTheDocument()
+    })
+
+    it('has a menu entry in the console', async () => {
+      auth.fetchMe.mockResolvedValue({ id: 1, displayName: '운영자', admin: true })
+      admin.fetchDailyStats.mockResolvedValue({ from: '', to: '', totalUsers: 0, totalDesks: 0, totalMessages: 0, days: [] })
+      admin.fetchRegionStats.mockResolvedValue({ from: '', to: '', items: [], unknownPageViews: 0 })
+      render(
+        <MemoryRouter initialEntries={['/admin']}>
+          <Routes>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<DashboardPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>,
+      )
+      expect(await screen.findByRole('link', { name: '미니게임' })).toHaveAttribute('href', '/admin/minigames')
     })
   })
 })

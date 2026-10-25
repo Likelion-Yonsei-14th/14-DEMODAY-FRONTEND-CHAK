@@ -149,6 +149,12 @@ export const router = createBrowserRouter([
             }),
           },
           {
+            path: 'minigames',
+            lazy: async () => ({
+              Component: (await import('@/features/admin/MinigamesPage')).MinigamesPage,
+            }),
+          },
+          {
             path: 'reports',
             lazy: async () => ({
               Component: (await import('@/features/admin/ReportsPage')).ReportsPage,
