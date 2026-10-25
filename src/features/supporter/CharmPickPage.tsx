@@ -31,6 +31,9 @@ export function CharmPickPage() {
   )
   const charmDraft = usePrototypeStore((state) => state.charmDraft)
   const setCharmDraft = usePrototypeStore((state) => state.setCharmDraft)
+  const signedIn = usePrototypeStore(
+    (state) => state.authSession.status === 'authenticated',
+  )
   const recommendedPhrase = getCharmDesign(charmDraft.assetId).phrase
 
   return (
@@ -82,7 +85,6 @@ export function CharmPickPage() {
                     'charm-picker__design',
                     selected ? 'charm-picker__design--selected' : '',
                   ].filter(Boolean).join(' ')}
-                  aria-label={`${design.phrase} 부적`}
                   aria-pressed={selected}
                   onClick={() => setCharmDraft({ assetId: design.id })}
                 >
@@ -158,6 +160,11 @@ export function CharmPickPage() {
               </button>
             ))}
           </div>
+          {!signedIn && (
+            <p className="paid-login-note">
+              아크릴 3D는 로그인한 뒤 찰떡으로 구매해요. 평면 스티커는 로그인 없이 놓을 수 있어요.
+            </p>
+          )}
         </section>
       </main>
     </AppShell>

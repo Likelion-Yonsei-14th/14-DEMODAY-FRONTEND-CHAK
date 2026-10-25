@@ -218,8 +218,13 @@
 
 .home-page__door--empty {
   background: #e7e1d8;
-  color: var(--color-content-secondary);
+  /* Darker than content-secondary so the 13px subtitle keeps 4.5:1 on this fill. */
+  color: #5f5a53;
   box-shadow: none;
+}
+
+.home-page__door--empty > span:not(.home-page__door-label) {
+  opacity: 1;
 }
 
 .home-page__door-label {

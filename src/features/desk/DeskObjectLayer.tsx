@@ -69,6 +69,7 @@ export function DeskObjectLayer({
   return (
     <div
       className={`desk-object-layer desk-object-layer--${daypart}`}
+      role="group"
       aria-label="책상 위 응원 오브젝트"
     >
       {objects.map((object) => {
