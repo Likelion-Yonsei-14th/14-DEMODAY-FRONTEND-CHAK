@@ -169,6 +169,14 @@
   background: #c4472d;
 }
 
+.admin-bars .is-muted .admin-bars__fill {
+  background: #b9b1a8;
+}
+
+.admin-bars .is-muted .admin-bars__label {
+  color: #7a716a;
+}
+
 .admin-bars__value small {
   color: #7a716a;
 }

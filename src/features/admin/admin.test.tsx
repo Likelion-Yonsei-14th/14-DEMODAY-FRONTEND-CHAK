@@ -109,11 +109,53 @@ describe('admin console', () => {
     })
     renderConsole()
 
-    expect(await screen.findByText('총 회원')).toBeTruthy()
+    // CI가 느릴 때를 위해 여유를 둔다.
+    expect(await screen.findByText('총 회원', {}, { timeout: 4000 })).toBeTruthy()
     expect(screen.getByText('120')).toBeTruthy()
     expect(screen.getByText('4,000원')).toBeTruthy()
     expect(await screen.findByText('서울')).toBeTruthy()
     expect(screen.getByText(/회원 10 · 비회원 15/)).toBeTruthy()
+  })
+
+  describe('region table', () => {
+    const region = (extra: Record<string, unknown>) => ({ from: '2026-10-20', to: '2026-10-21', items: [], unknownPageViews: 0, ...extra })
+    const open = async (regions: unknown) => {
+      auth.fetchMe.mockResolvedValue({ id: 1, displayName: '운영자', admin: true })
+      admin.fetchDailyStats.mockResolvedValue({ from: '', to: '', totalUsers: 0, totalDesks: 0, totalMessages: 0, days: [] })
+      admin.fetchRegionStats.mockResolvedValue(regions)
+      renderConsole()
+      return screen.findByRole('heading', { name: /접속 지역/ }, { timeout: 4000 })
+    }
+
+    it('puts unknown location in the same table with each share of all page views', async () => {
+      const heading = await open(region({
+        items: [
+          { country: 'KR', region: '11', regionName: '서울', visitors: 3, pageViews: 45 },
+          { country: 'KR', region: '41', regionName: '경기', visitors: 1, pageViews: 15 },
+        ],
+        unknownPageViews: 940,
+      }))
+      const panel = heading.closest('section') as HTMLElement
+      expect(panel).toHaveTextContent('서울')
+      expect(panel).toHaveTextContent('접속자 3 · 4.5%')
+      expect(panel).toHaveTextContent('접속자 1 · 1.5%')
+      expect(panel).toHaveTextContent('위치 미상')
+      expect(panel).toHaveTextContent('94%')
+      expect(panel).toHaveTextContent('조회수 기준')
+    })
+
+    it('shows only the unknown row while nothing has a location yet', async () => {
+      const heading = await open(region({ unknownPageViews: 250 }))
+      const panel = heading.closest('section') as HTMLElement
+      expect(panel).toHaveTextContent('위치 미상')
+      expect(panel).toHaveTextContent('100%')
+      expect(panel).toHaveTextContent('아직 위치가 기록된 접속이 없어요')
+    })
+
+    it('says so when there is no traffic at all', async () => {
+      const heading = await open(region({}))
+      expect((heading.closest('section') as HTMLElement)).toHaveTextContent('아직 기록된 접속이 없어요')
+    })
   })
 
   it('requires typing the name before a member can be withdrawn', async () => {
