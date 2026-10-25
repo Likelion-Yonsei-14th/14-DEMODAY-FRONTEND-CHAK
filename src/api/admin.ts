@@ -143,7 +143,7 @@ export type AdminInquiry = {
   email: string
   phone: string | null
   category: string | null
-  interest: 'PACKAGE' | 'BANNER' | 'OTHER' | null
+  interest: string | null
   message: string | null
   status: AdminInquiryStatus
   createdAt: string
