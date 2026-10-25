@@ -233,7 +233,8 @@
   gap: 6px;
   border: 0;
   background: transparent;
-  color: var(--color-danger);
+  /* --color-danger is 4.1:1 on the canvas; this keeps 13px text at 5:1. */
+  color: #a3463f;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;

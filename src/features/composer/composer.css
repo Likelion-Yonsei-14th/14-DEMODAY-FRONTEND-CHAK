@@ -1503,6 +1503,12 @@
   box-shadow: 0 4px 12px rgba(64,48,38,.05);
 }
 
+.composer-page-rail__tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
 .composer-page-rail button {
   width: 28px;
   height: 28px;
