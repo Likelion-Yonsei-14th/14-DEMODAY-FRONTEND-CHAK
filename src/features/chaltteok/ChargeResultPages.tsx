@@ -3,7 +3,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '@/design-system'
 import { chaltteokApi, type ChargeResult } from '@/api/chaltteok'
 import { ApiError } from '@/api/client'
+import { arePaymentsAvailable } from '@/lib/featureFlags'
 import { AppShell } from '@/layout/AppShell'
+import { Navigate } from 'react-router-dom'
 import { formatChaltteok } from './chaltteok'
 import { MockModeBadge } from './MockModeBadge'
 import {
@@ -36,7 +38,7 @@ function confirmErrorMessage(error: unknown) {
 }
 
 /** Toss redirects here with paymentKey / orderId / amount; the backend confirms and credits. */
-export function ChargeSuccessPage() {
+function ChargeSuccessContent() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const [context] = useState(readChargeContext)
@@ -130,7 +132,7 @@ export function ChargeSuccessPage() {
 }
 
 /** Toss redirects here with code / message (no orderId when the buyer cancels). */
-export function ChargeFailPage() {
+function ChargeFailContent() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const [context] = useState(readChargeContext)
@@ -178,4 +180,13 @@ export function ChargeFailPage() {
       </main>
     </AppShell>
   )
+}
+
+/** 결제가 막혀 있을 때 주소로 들어와도 충전이 처리되지 않게 처음으로 돌려보낸다. */
+export function ChargeSuccessPage() {
+  return arePaymentsAvailable() ? <ChargeSuccessContent /> : <Navigate to="/account" replace />
+}
+
+export function ChargeFailPage() {
+  return arePaymentsAvailable() ? <ChargeFailContent /> : <Navigate to="/account" replace />
 }
