@@ -60,6 +60,7 @@ export function AdminLayout() {
         <strong className="admin__brand">CHAK 어드민</strong>
         <NavLink to="/admin" end>대시보드</NavLink>
         <NavLink to="/admin/users">회원 관리</NavLink>
+        <NavLink to="/admin/minigames">미니게임</NavLink>
         <NavLink to="/admin/reports">신고 처리</NavLink>
         <NavLink to="/admin/inquiries">상담 문의</NavLink>
         <NavLink to="/admin/admins">운영자 관리</NavLink>
