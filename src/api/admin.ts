@@ -66,6 +66,8 @@ export type AdminRegionStats = {
   to: string
   items: AdminRegionStat[]
   unknownPageViews: number
+  /** 한국이 아닌 접속 건수. 표에는 넣지 않는다. 옛 서버 응답에는 없을 수 있다. */
+  overseasPageViews?: number
 }
 
 export type AdminReport = {
