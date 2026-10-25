@@ -857,3 +857,35 @@
   gap: 20px;
   padding-bottom: 24px;
 }
+
+/* 응원을 남긴 직후 "답장 알림 받기" */
+.support-complete__push {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-base);
+}
+
+.support-complete__push p {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+}
+
+p.support-complete__push {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-content-secondary);
+  font-size: var(--type-caption-size);
+}
+
+.support-complete__push-error {
+  color: var(--color-danger);
+}
