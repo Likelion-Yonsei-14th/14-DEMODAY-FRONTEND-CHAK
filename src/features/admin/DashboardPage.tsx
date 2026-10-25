@@ -5,10 +5,53 @@ import {
   type AdminDailyStats,
   type AdminRegionStats,
 } from '@/api/admin'
-import { BarList } from './AdminBarList'
+import { BarList, type BarRow } from './AdminBarList'
 import { formatNumber, kstDate } from './adminFormat'
 
 const RANGES = [7, 14, 30, 60] as const
+
+/** 비율을 소수 첫째 자리까지. 정수로 떨어지면 소수점은 뺀다. */
+const percent = (part: number, total: number) => `${Math.round((part / total) * 1000) / 10}%`
+
+/** 접속 지역(시·도). 위치를 알 수 없는 조회도 같은 표에 넣어 전체 중 비중을 한눈에 본다. */
+function RegionSection({ regions }: { regions: AdminRegionStats }) {
+  const known = regions.items.reduce((sum, item) => sum + item.pageViews, 0)
+  const total = known + regions.unknownPageViews
+  const rows: BarRow[] = regions.items.map((item) => ({
+    label: item.regionName,
+    value: item.pageViews,
+    sub: `접속자 ${formatNumber(item.visitors)} · ${percent(item.pageViews, total)}`,
+  }))
+  if (regions.unknownPageViews > 0) {
+    rows.push({
+      label: '위치 미상',
+      value: regions.unknownPageViews,
+      sub: percent(regions.unknownPageViews, total),
+      muted: true,
+    })
+  }
+
+  return (
+    <section className="admin__panel">
+      <h2>접속 지역 (시·도, 조회수 기준)</h2>
+      {total === 0 ? (
+        <p className="admin__muted">아직 기록된 접속이 없어요.</p>
+      ) : (
+        <>
+          <BarList rows={rows} />
+          {regions.items.length === 0 && (
+            <p className="admin__muted">아직 위치가 기록된 접속이 없어요. 위치가 쌓이면 지역별로 나뉘어 보여요.</p>
+          )}
+          {regions.unknownPageViews > 0 && (
+            <p className="admin__muted">
+              위치 미상은 위치 수집을 시작하기 전의 접속이거나 위치를 받지 못한 접속이에요.
+            </p>
+          )}
+        </>
+      )}
+    </section>
+  )
+}
 
 export function DashboardPage() {
   const [days, setDays] = useState<(typeof RANGES)[number]>(14)
@@ -112,28 +155,7 @@ export function DashboardPage() {
         </>
       )}
 
-      {regions && (
-        <section className="admin__panel">
-          <h2>접속 지역 (시·도)</h2>
-          {regions.items.length === 0 ? (
-            <p className="admin__muted">
-              아직 위치가 기록된 접속이 없어요.
-              {regions.unknownPageViews > 0 && ` 위치를 알 수 없는 조회 ${formatNumber(regions.unknownPageViews)}건.`}
-            </p>
-          ) : (
-            <BarList
-              rows={regions.items.map((item) => ({
-                label: item.regionName,
-                value: item.pageViews,
-                sub: `접속자 ${item.visitors}`,
-              }))}
-            />
-          )}
-          {regions.unknownPageViews > 0 && regions.items.length > 0 && (
-            <p className="admin__muted">위치를 알 수 없는 조회 {formatNumber(regions.unknownPageViews)}건은 제외했어요.</p>
-          )}
-        </section>
-      )}
+      {regions && <RegionSection regions={regions} />}
     </>
   )
 }
