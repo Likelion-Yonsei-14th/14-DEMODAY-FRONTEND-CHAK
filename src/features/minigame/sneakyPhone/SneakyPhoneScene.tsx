@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import {
+  FEINT_MS,
   RETURNING_MS,
   WARNING_MS,
   type GameStatus,
@@ -10,6 +11,8 @@ import {
  * The teacher, drawn to sit in the existing classroom illustration. Two
  * poses - back (at the board) and front (facing the class) - are swapped by
  * the phase class, so what you see is always the phase the engine is in.
+ * The fake return ('feint') keeps the front pose: it starts the turn back
+ * like 'returning', stops, and settles to face the class again.
  */
 function TeacherFigure({ caught }: { caught: boolean }) {
   return (
@@ -118,6 +121,7 @@ export function SneakyPhoneScene({
   const timing = {
     '--sneaky-warning-ms': `${WARNING_MS}ms`,
     '--sneaky-returning-ms': `${RETURNING_MS}ms`,
+    '--sneaky-feint-ms': `${FEINT_MS}ms`,
   } as CSSProperties
 
   return (
