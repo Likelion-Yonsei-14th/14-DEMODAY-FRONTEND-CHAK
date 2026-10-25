@@ -8,6 +8,8 @@ export type PrototypeUser = {
   id: string
   displayName: string
   role: UserRole
+  /** Square photo as a data URL. Kept on this device only until the backend can store it. */
+  profileImageUrl?: string
 }
 
 export type AuthProvider = 'password' | 'google' | 'kakao'
@@ -16,6 +18,8 @@ export type AuthProvider = 'password' | 'google' | 'kakao'
 export type LastLogin = {
   email: string
   provider: AuthProvider
+  /** Set for backend logins; tells a returning account apart from a different one. */
+  userId?: number
 }
 
 export type AuthSession =

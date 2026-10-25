@@ -123,6 +123,7 @@ type PrototypeState = {
     provider?: 'KAKAO' | 'GOOGLE'
   }) => void
   signUp: (displayName: string, email: string) => void
+  updateProfile: (profile: { displayName: string; profileImageUrl?: string }) => void
   signOut: () => void
   deleteAccount: () => void
   setDeskReadMode: (readMode: ReadMode) => void
@@ -396,14 +397,28 @@ export const usePrototypeStore = create<PrototypeState>()(
           provider: user.provider === 'GOOGLE' ? 'google' : 'kakao',
         } as const
         set((state) => ({
-          currentUser: {
-            ...state.currentUser,
-            displayName: user.displayName || state.currentUser.displayName,
-          },
+          // Profile edits live only on this device for now, so the same account
+          // signing in again keeps them; another account starts from the server's.
+          currentUser:
+            state.lastLogin?.userId === user.id
+              ? state.currentUser
+              : {
+                  ...state.currentUser,
+                  displayName: user.displayName || state.currentUser.displayName,
+                  profileImageUrl: undefined,
+                },
           authSession: { status: 'authenticated', ...login, userId: user.id },
-          lastLogin: login,
+          lastLogin: { ...login, userId: user.id },
         }))
       },
+      updateProfile: ({ displayName, profileImageUrl }) =>
+        set((state) => ({
+          currentUser: {
+            ...state.currentUser,
+            displayName: displayName.trim() || state.currentUser.displayName,
+            profileImageUrl,
+          },
+        })),
       signUp: (displayName, email) =>
         set((state) => ({
           currentUser: {
