@@ -1,11 +1,11 @@
 import { useRef, useState, type FormEvent } from 'react'
 import {
   ArrowLeft,
+  ChevronRight,
   LogOut,
   Copy,
   Mail,
   Trash2,
-  UserRound,
 } from 'lucide-react'
 import {
   Link,
@@ -34,6 +34,7 @@ import { useChaltteokBalance } from '@/features/chaltteok/useChaltteokBalance'
 import { LEGAL_CONTACT_EMAIL } from '@/features/legal/legalInfo'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import type { AuthProvider } from '@/types'
+import { ProfileAvatar } from './ProfileAvatar'
 import './AccountPages.css'
 
 const PROVIDER_LABELS: Record<AuthProvider, string> = {
@@ -546,15 +547,25 @@ export function AccountPage() {
       }
     >
       <main className="account-page">
-        <section className="account-profile">
-          <span className="account-profile__avatar" aria-hidden>
-            <UserRound size={25} />
-          </span>
+        <button
+          type="button"
+          className="account-profile account-profile--button"
+          onClick={() => navigate('/account/profile', { state: { fromAccount: true } })}
+        >
+          <ProfileAvatar
+            src={currentUser.profileImageUrl}
+            size={48}
+            className="account-profile__avatar"
+          />
           <div>
             <strong>{currentUser.displayName}</strong>
             <span>{authSession.email}</span>
           </div>
-        </section>
+          <span className="account-profile__edit">
+            프로필 수정
+            <ChevronRight size={16} aria-hidden />
+          </span>
+        </button>
 
         <section className="account-section">
           <h2>계정 정보</h2>
