@@ -245,7 +245,6 @@ export function OwnerDeskPage() {
           <button
             type="button"
             className="owner-desk__ask"
-            aria-label={ASK_FOR_CHEERS_LABEL}
             onClick={() => shareMyDeskLink(showToast)}
           >
             <Share2 size={15} aria-hidden />

@@ -3,6 +3,7 @@ import { BottomSheet, Button } from '@/design-system'
 import { DeskObjectVisual } from '@/features/desk/DeskObjectLayer'
 import type { CharmMaterial, DeskGem, DeskObjectType } from '@/types'
 import { formatChaltteok } from '@/features/chaltteok/chaltteok'
+import { usePrototypeStore } from '@/store/prototypeStore'
 import {
   GEM_PRICE,
   LOOSE_GEM_SIZE,
@@ -55,6 +56,9 @@ export function GemDecoratorSheet({
   gems,
   onChange,
 }: GemDecoratorSheetProps) {
+  const signedIn = usePrototypeStore(
+    (state) => state.authSession.status === 'authenticated',
+  )
   const objectRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<DragState | null>(null)
   const [tab, setTab] = useState<'loose' | 'pattern'>('loose')
@@ -168,7 +172,9 @@ export function GemDecoratorSheet({
       open={open}
       onClose={onClose}
       title="보석 스티커로 꾸미기"
-      description={`보석 하나에 ${formatChaltteok(GEM_PRICE)}이에요. 끌어서 옮기고, 눌러서 고를 수 있어요.`}
+      description={`보석 하나에 ${formatChaltteok(GEM_PRICE)}이에요.${
+        signedIn ? '' : ' 구매하려면 로그인이 필요해요.'
+      } 끌어서 옮기고, 눌러서 고를 수 있어요.`}
     >
       <div className="gem-decorator">
         <div className="gem-decorator__stage">
