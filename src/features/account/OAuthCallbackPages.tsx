@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { consumeOAuthState, loginWithGoogle, loginWithKakao, type OAuthProvider } from '@/api/auth'
 import { ApiError } from '@/api/client'
+import { fetchMyDesk } from '@/api/desks'
 import type { AuthTokenResponse } from '@/api/types'
 import { Button } from '@/design-system'
 import { takeLoginReturn } from '@/features/chaltteok/returnFlow'
@@ -14,6 +15,20 @@ const PROVIDERS: Record<
 > = {
   kakao: { label: '카카오', login: loginWithKakao, invalidCode: 'INVALID_KAKAO_AUTH_CODE' },
   google: { label: '구글', login: loginWithGoogle, invalidCode: 'INVALID_GOOGLE_AUTH_CODE' },
+}
+
+/**
+ * Where to go after a login that was not started from somewhere else
+ * (a cheer link, a purchase...): someone without a desk yet starts by
+ * making one, everyone else goes home. A failed check just goes home.
+ */
+async function landingAfterLogin() {
+  try {
+    await fetchMyDesk()
+    return '/home'
+  } catch (reason) {
+    return reason instanceof ApiError && reason.code === 'DESK_NOT_FOUND' ? '/start' : '/home'
+  }
 }
 
 /** The provider redirects here with ?code=...&state=...; we trade the code for a session. */
@@ -44,9 +59,9 @@ function OAuthCallbackPage({ provider }: { provider: OAuthProvider }) {
     }
 
     login(code)
-      .then((tokens) => {
+      .then(async (tokens) => {
         signInWithServer(tokens.user)
-        navigate(takeLoginReturn() ?? '/home', { replace: true })
+        navigate(takeLoginReturn() ?? (await landingAfterLogin()), { replace: true })
       })
       .catch((reason: unknown) => {
         setError(

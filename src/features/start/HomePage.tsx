@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react'
 import { ChevronRight, LogIn, Plus, UserRound, UsersRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { ApiError } from '@/api/client'
+import { fetchMyDesk } from '@/api/desks'
 import { useFeedback } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
@@ -9,9 +12,37 @@ import { usePrototypeStore } from '@/store/prototypeStore'
 import './StartPage.css'
 
 /**
+ * With a backend the store's desk is only a placeholder until a desk screen
+ * loads it, so ask the server whether this account has one. Undefined while
+ * unknown or when the check fails, so the caller keeps its usual door.
+ */
+function useServerHasDesk(enabled: boolean) {
+  const [hasDesk, setHasDesk] = useState<boolean>()
+
+  useEffect(() => {
+    if (!enabled) return
+    let cancelled = false
+    fetchMyDesk().then(
+      () => {
+        if (!cancelled) setHasDesk(true)
+      },
+      (reason: unknown) => {
+        if (!cancelled && reason instanceof ApiError && reason.code === 'DESK_NOT_FOUND') setHasDesk(false)
+      },
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [enabled])
+
+  return hasDesk
+}
+
+/**
  * Where a returning user lands after logging in: always two doors, one to
- * their own desk and one to their class. A door they don't have yet says
- * so instead of sending them somewhere empty. New sign-ups go to /start.
+ * their own desk and one to their class. Without a desk yet, the desk door
+ * starts making one; a class door they don't have says so. New sign-ups
+ * without a desk go to /start.
  */
 export function HomePage() {
   const navigate = useNavigate()
@@ -21,9 +52,16 @@ export function HomePage() {
   const classroom = usePrototypeStore((state) => state.classroom)
   const member = usePrototypeStore((state) => state.classroomMember)
   const authSession = usePrototypeStore((state) => state.authSession)
+  const resetDeskCreationDraft = usePrototypeStore((state) => state.resetDeskCreationDraft)
+  const serverHasDesk = useServerHasDesk(isApiEnabled && authSession.status === 'authenticated')
 
-  const hasDesk = desk.claimStatus === 'claimed'
+  const hasDesk = serverHasDesk ?? desk.claimStatus === 'claimed'
   const hasClass = Boolean(member)
+
+  const startDesk = () => {
+    resetDeskCreationDraft()
+    navigate('/prototype/create')
+  }
 
   return (
     <AppShell surface="base" contentClassName="home-page-shell">
@@ -54,23 +92,15 @@ export function HomePage() {
         <div className="home-page__doors">
           <button
             type="button"
-            className={[
-              'home-page__door',
-              'home-page__door--desk',
-              hasDesk ? '' : 'home-page__door--empty',
-            ].filter(Boolean).join(' ')}
-            onClick={() =>
-              hasDesk
-                ? navigate('/prototype/my/desk')
-                : showToast('아직 내 책상이 만들어지지 않았어요.')
-            }
+            className="home-page__door home-page__door--desk"
+            onClick={hasDesk ? () => navigate('/prototype/my/desk') : startDesk}
           >
             <span className="home-page__door-label">
-              <UserRound size={14} aria-hidden />
+              {hasDesk ? <UserRound size={14} aria-hidden /> : <Plus size={14} aria-hidden />}
             </span>
-            <strong>내 책상 가기</strong>
+            <strong>{hasDesk ? '내 책상 가기' : '내 책상 만들기'}</strong>
             <span>
-              {hasDesk ? '친구들이 남긴 응원을 확인해요' : '아직 만든 책상이 없어요'}
+              {hasDesk ? '친구들이 남긴 응원을 확인해요' : '링크 하나로 친구들의 응원을 모아요'}
             </span>
             <ChevronRight size={20} aria-hidden />
           </button>
