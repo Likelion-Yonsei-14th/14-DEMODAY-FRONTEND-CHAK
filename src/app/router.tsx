@@ -60,6 +60,7 @@ import {
   ResetPasswordPage,
   SignupPage,
 } from '@/features/account/AccountPages'
+import { ProfileEditPage } from '@/features/account/ProfileEditPage'
 import {
   BlockedSupportersPage,
   ConnectRoomsPage,
@@ -236,6 +237,7 @@ export const router = createBrowserRouter([
         element: <ResetPasswordCompletePage />,
       },
       { path: '/account', element: <AccountPage /> },
+      { path: '/account/profile', element: <ProfileEditPage /> },
       { path: '/account/delete', element: <DeleteAccountPage /> },
       { path: '/prototype', element: <PrototypeIndexPage /> },
       { path: '/minigame/sneaky-phone', element: <SneakyPhoneIntroPage /> },
