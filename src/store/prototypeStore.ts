@@ -5,6 +5,7 @@ import { isApiEnabled } from '@/api/config'
 import { basketOwnerMessages, markOwnerMessageRead } from '@/api/desks'
 import type { ApiSupporter } from '@/api/types'
 import { scheduleDeskSettingsSync } from '@/api/deskSync'
+import { avatarSrc } from '@/api/profile'
 import {
   syncOwnDelete,
   syncReaction,
@@ -120,8 +121,11 @@ type PrototypeState = {
     id: number
     displayName: string
     email: string | null
+    avatarUrl?: string | null
     provider?: 'KAKAO' | 'GOOGLE'
   }) => void
+  /** 서버에 저장된 이름과 사진을 화면 상태에 반영한다. */
+  applyServerProfile: (user: { displayName: string; avatarUrl?: string | null }) => void
   signUp: (displayName: string, email: string) => void
   updateProfile: (profile: { displayName: string; profileImageUrl?: string }) => void
   signOut: () => void
@@ -397,20 +401,24 @@ export const usePrototypeStore = create<PrototypeState>()(
           provider: user.provider === 'GOOGLE' ? 'google' : 'kakao',
         } as const
         set((state) => ({
-          // Profile edits live only on this device for now, so the same account
-          // signing in again keeps them; another account starts from the server's.
-          currentUser:
-            state.lastLogin?.userId === user.id
-              ? state.currentUser
-              : {
-                  ...state.currentUser,
-                  displayName: user.displayName || state.currentUser.displayName,
-                  profileImageUrl: undefined,
-                },
+          // 이름과 사진은 서버가 기준이다(직접 고친 값도 서버에 저장되어 있다).
+          currentUser: {
+            ...state.currentUser,
+            displayName: user.displayName || state.currentUser.displayName,
+            profileImageUrl: avatarSrc(user.avatarUrl),
+          },
           authSession: { status: 'authenticated', ...login, userId: user.id },
           lastLogin: { ...login, userId: user.id },
         }))
       },
+      applyServerProfile: (user) =>
+        set((state) => ({
+          currentUser: {
+            ...state.currentUser,
+            displayName: user.displayName || state.currentUser.displayName,
+            profileImageUrl: avatarSrc(user.avatarUrl),
+          },
+        })),
       updateProfile: ({ displayName, profileImageUrl }) =>
         set((state) => ({
           currentUser: {
