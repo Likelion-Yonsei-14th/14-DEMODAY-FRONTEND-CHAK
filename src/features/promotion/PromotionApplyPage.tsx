@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ApiError } from '@/api/client'
 import { submitPromotionInquiry } from '@/api/promotion'
 import { PromotionLayout } from './PromotionLayout'
-import { PROMOTION_CONTACT, promotionStatus, tight } from './promotionContent'
+import { INTEREST_OPTIONS, PROMOTION_CONTACT, promotionStatus, tight } from './promotionContent'
 
 type Phase = 'editing' | 'sending' | 'done'
 
@@ -23,6 +23,7 @@ export function PromotionApplyPage() {
   const [contactName, setContactName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [interest, setInterest] = useState('')
   const [message, setMessage] = useState('')
   const [consent, setConsent] = useState(false)
   const [website, setWebsite] = useState('')
@@ -35,7 +36,7 @@ export function PromotionApplyPage() {
     setPhase('sending')
     setError(null)
     try {
-      await submitPromotionInquiry({ company, contactName, email, phone, message, consent, website })
+      await submitPromotionInquiry({ company, contactName, email, phone, interest, message, consent, website })
       setPhase('done')
     } catch (failure) {
       setError(errorText(failure))
@@ -91,13 +92,22 @@ export function PromotionApplyPage() {
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^0-9+\-() ]/g, ''))} maxLength={30} autoComplete="tel" />
             </label>
             <label>
+              <span>관심 있는 상품 <small>(선택)</small></span>
+              <select value={interest} onChange={(e) => setInterest(e.target.value)}>
+                <option value="">아직 정하지 않았어요</option>
+                {INTEREST_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </label>
+            <label>
               <span>궁금한 점 <small>(선택)</small></span>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 maxLength={2000}
                 rows={4}
-                placeholder="예) 배너만 할 수 있는지, 소재는 언제까지 보내야 하는지"
+                placeholder="예) 매장 수와 지역, 원하는 시기, 소재는 언제까지 보내야 하는지"
               />
             </label>
 
