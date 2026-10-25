@@ -2,18 +2,28 @@ import { useRef, useState, type ChangeEvent } from 'react'
 import { ArrowLeft, Camera } from 'lucide-react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { AppBar, Button, IconButton, TextField, useFeedback } from '@/design-system'
+import { isApiEnabled } from '@/api/config'
+import {
+  changeDisplayName,
+  deleteAvatar,
+  profileFailure,
+  profileNameFormatError,
+  uploadAvatar,
+} from '@/api/profile'
+import type { ApiUser } from '@/api/types'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { ProfileAvatar } from './ProfileAvatar'
 import { makeProfilePhoto } from './profilePhoto'
 import './AccountPages.css'
 
-export const PROFILE_NAME_MAX_LENGTH = 20
+export { PROFILE_NAME_MAX_LENGTH } from '@/api/profile'
+import { PROFILE_NAME_MAX_LENGTH } from '@/api/profile'
 
 /**
- * Edit the name and photo shown for this account. The backend has no profile
- * update API yet, so this saves to the device's store only; swap the save for
- * the API call once it exists.
+ * Edit the name and photo shown for this account. With a backend they are
+ * saved to the server (so they follow the account to other devices and
+ * survive the next login); the offline prototype keeps them on the device.
  */
 export function ProfileEditPage() {
   const navigate = useNavigate()
@@ -22,11 +32,14 @@ export function ProfileEditPage() {
   const currentUser = usePrototypeStore((state) => state.currentUser)
   const authenticated = usePrototypeStore((state) => state.authSession.status === 'authenticated')
   const updateProfile = usePrototypeStore((state) => state.updateProfile)
+  const applyServerProfile = usePrototypeStore((state) => state.applyServerProfile)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [name, setName] = useState(currentUser.displayName)
   const [photo, setPhoto] = useState(currentUser.profileImageUrl)
   const [processing, setProcessing] = useState(false)
   const [photoError, setPhotoError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [serverNameError, setServerNameError] = useState<string | null>(null)
 
   if (!authenticated) return <Navigate to="/auth/login" replace />
 
@@ -36,7 +49,7 @@ export function ProfileEditPage() {
 
   const trimmedName = name.trim()
   const changed = trimmedName !== currentUser.displayName || photo !== currentUser.profileImageUrl
-  const nameError = trimmedName ? undefined : '이름을 적어 주세요.'
+  const nameError = serverNameError ?? (isApiEnabled ? profileNameFormatError(name) : trimmedName ? null : '이름을 적어 주세요.') ?? undefined
 
   const pickPhoto = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -54,11 +67,39 @@ export function ProfileEditPage() {
     }
   }
 
-  const save = () => {
-    if (!trimmedName || !changed) return
-    updateProfile({ displayName: trimmedName, profileImageUrl: photo })
-    showToast({ message: '프로필을 저장했어요.', tone: 'success' })
-    leave()
+  const save = async () => {
+    if (!trimmedName || !changed || saving || (isApiEnabled && nameError)) return
+    if (!isApiEnabled) {
+      updateProfile({ displayName: trimmedName, profileImageUrl: photo })
+      showToast({ message: '프로필을 저장했어요.', tone: 'success' })
+      leave()
+      return
+    }
+
+    setSaving(true)
+    setServerNameError(null)
+    setPhotoError(null)
+    // 이름은 저장됐는데 사진에서 실패하면, 저장된 이름이라도 화면에 반영한다.
+    let latest: ApiUser | null = null
+    try {
+      if (trimmedName !== currentUser.displayName) {
+        latest = await changeDisplayName(trimmedName)
+      }
+      if (photo !== currentUser.profileImageUrl) {
+        latest = photo ? await uploadAvatar(photo) : await deleteAvatar()
+      }
+      if (latest) applyServerProfile(latest)
+      showToast({ message: '프로필을 저장했어요.', tone: 'success' })
+      leave()
+    } catch (error) {
+      if (latest) applyServerProfile(latest)
+      const failure = profileFailure(error)
+      if (failure.field === 'name') setServerNameError(failure.message)
+      else if (failure.field === 'photo') setPhotoError(failure.message)
+      else showToast({ message: failure.message, tone: 'danger' })
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -78,7 +119,7 @@ export function ProfileEditPage() {
         />
       }
       fixedAction={
-        <Button variant="brand" fullWidth disabled={!trimmedName || !changed || processing} onClick={save}>
+        <Button variant="brand" fullWidth loading={saving} disabled={!trimmedName || !changed || processing || Boolean(isApiEnabled && nameError)} onClick={save}>
           저장하기
         </Button>
       }
@@ -144,7 +185,10 @@ export function ProfileEditPage() {
           autoComplete="nickname"
           helper={`홈과 내 계정에 보이는 이름이에요. ${PROFILE_NAME_MAX_LENGTH}자까지 쓸 수 있어요.`}
           error={nameError}
-          onChange={(event) => setName(event.target.value)}
+          onChange={(event) => {
+            setName(event.target.value)
+            setServerNameError(null)
+          }}
         />
       </main>
     </AppShell>
