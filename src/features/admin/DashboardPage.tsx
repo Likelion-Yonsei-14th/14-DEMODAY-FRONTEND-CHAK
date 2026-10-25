@@ -47,6 +47,9 @@ function RegionSection({ regions }: { regions: AdminRegionStats }) {
               위치 미상은 위치 수집을 시작하기 전의 접속이거나 위치를 받지 못한 접속이에요.
             </p>
           )}
+          {(regions.overseasPageViews ?? 0) > 0 && (
+            <p className="admin__muted">해외 접속 {formatNumber(regions.overseasPageViews ?? 0)}건은 제외했어요.</p>
+          )}
         </>
       )}
     </section>
