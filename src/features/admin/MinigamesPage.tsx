@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'react'
-import { fetchMinigameStats, type AdminMinigameGame, type AdminMinigameStats } from '@/api/admin'
+import {
+  fetchMinigameStats,
+  type AdminD1CourseStats,
+  type AdminKeyCount,
+  type AdminMinigameGame,
+  type AdminMinigameStats,
+} from '@/api/admin'
+import { ACTIVITIES, AREAS, BUDGETS, COMPANIONS } from '@/features/minigame/d1Course/d1CourseConfig'
+import { REGIONS } from '@/features/minigame/d1Course/d1CourseRegions'
 import { STUDY_TYPE_RESULTS, isStudyTypeCode } from '@/features/minigame/studyType/studyTypeResults'
 import { BarList } from './AdminBarList'
 import { formatNumber } from './adminFormat'
@@ -42,6 +50,49 @@ function GameSection({ stats }: { stats: AdminMinigameGame }) {
   )
 }
 
+const labelFrom = (options: readonly { id: string; label: string }[]) => (key: string) =>
+  options.find((option) => option.id === key)?.label ?? key
+
+/** 선택지별 응답 수를 막대로. 퍼센트는 `base`(응답 수)를 기준으로 한다. */
+function choiceRows(rows: AdminKeyCount[], base: number, label: (key: string) => string) {
+  return rows.map((row) => ({
+    label: label(row.key),
+    value: row.count,
+    sub: base > 0 ? `${Math.round((row.count / base) * 1000) / 10}%` : undefined,
+  }))
+}
+
+function D1CourseSection({ stats }: { stats: AdminD1CourseStats }) {
+  const total = stats.total
+  return (
+    <section className="admin__panel" aria-label="수능 끝 D+1 코스 짜기">
+      <h2>수능 끝 D+1 코스 짜기</h2>
+      <div className="admin-cards">
+        <div><span>전체 응답</span><strong>{formatNumber(total)}</strong></div>
+        <div><span>오늘</span><strong>{formatNumber(stats.today)}</strong></div>
+        <div><span>최근 7일</span><strong>{formatNumber(stats.last7Days)}</strong></div>
+        <div><span>공유한 응답</span><strong>{formatNumber(stats.shared)}</strong></div>
+      </div>
+      {total === 0 ? (
+        <p className="admin__muted">아직 응답이 없어요.</p>
+      ) : (
+        <>
+          <h3>가고 싶은 곳</h3>
+          <BarList rows={choiceRows(stats.areas, total, labelFrom(AREAS))} />
+          <h3>하고 싶은 것 (중복 선택, 응답 대비 비율)</h3>
+          <BarList rows={choiceRows(stats.activities, total, labelFrom(ACTIVITIES))} />
+          <h3>누구와</h3>
+          <BarList rows={choiceRows(stats.companions, total, labelFrom(COMPANIONS))} />
+          <h3>예산</h3>
+          <BarList rows={choiceRows(stats.budgets, total, labelFrom(BUDGETS))} />
+          <h3>출발 지역</h3>
+          <BarList rows={choiceRows(stats.regions, total, labelFrom(REGIONS))} />
+        </>
+      )}
+    </section>
+  )
+}
+
 export function MinigamesPage() {
   const [stats, setStats] = useState<AdminMinigameStats | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -74,6 +125,8 @@ export function MinigamesPage() {
       {!stats && !error && <p>불러오는 중...</p>}
 
       {stats?.games.map((game) => <GameSection key={game.game} stats={game} />)}
+
+      {stats?.d1Course && <D1CourseSection stats={stats.d1Course} />}
 
       {study && (
         <section className="admin__panel" aria-label="나의 수험생 유형은?">
