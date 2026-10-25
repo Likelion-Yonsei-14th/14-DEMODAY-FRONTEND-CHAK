@@ -310,11 +310,6 @@ export function EnvelopeStackPage() {
                         zIndex: position.zIndex,
                       } as React.CSSProperties}
                       onClick={() => openMessage(message, index)}
-                      aria-label={
-                        locked
-                          ? `아직 열리지 않은 ${message.senderName}님의 응원 봉투`
-                          : `${message.senderName}에게서 온 응원 봉투 열기`
-                      }
                     >
                       <span className="message-envelope__shadow" />
                       <span className="message-envelope__body">
@@ -407,24 +402,14 @@ export function EnvelopeStackPage() {
                         </span>
 
                         {!isRead && !locked && (
-                          <span
-                            className="message-envelope__new"
-                            aria-label="아직 열지 않은 응원"
-                          >
+                          <span className="message-envelope__new">
                             새 응원
                           </span>
                         )}
 
                         {locked && (
-                          <span
-                            className="message-envelope__locked"
-                            aria-label={
-                              availability?.unlockAt
-                                ? `${formatUnlockAt(availability.unlockAt, now)}에 열려요`
-                                : '아직 열 수 없는 응원'
-                            }
-                          >
-                            <LockKeyhole size={11} aria-hidden />
+                          <span className="message-envelope__locked">
+                            <LockKeyhole size={12} aria-hidden />
                             {availability?.unlockAt
                               ? `${formatUnlockAt(availability.unlockAt, now)}에 열려요`
                               : '아직 잠김'}
@@ -434,6 +419,7 @@ export function EnvelopeStackPage() {
                         {message.visibility === 'private' && (
                           <span
                             className="message-envelope__private"
+                            role="img"
                             aria-label="나만 보는 응원"
                           >
                             <LockKeyhole size={13} aria-hidden />

@@ -24,33 +24,35 @@ export function ComposerPageRail({
 
   return (
     <div className="composer-page-control">
-      <div
-        className="composer-page-rail"
-        role="tablist"
-        aria-label="카드 페이지"
-      >
-        {pages.map((page, index) => {
-          const active = page.id === activePageId
+      <div className="composer-page-rail">
+        <div
+          className="composer-page-rail__tabs"
+          role="tablist"
+          aria-label="카드 페이지"
+        >
+          {pages.map((page, index) => {
+            const active = page.id === activePageId
 
-          return (
-            <button
-              type="button"
-              role="tab"
-              key={page.id}
-              className={[
-                'composer-page-rail__page',
-                active
-                  ? 'composer-page-rail__page--active'
-                  : '',
-              ].filter(Boolean).join(' ')}
-              aria-selected={active}
-              aria-label={`${index + 1}번째 카드`}
-              onClick={() => onSelect(page.id)}
-            >
-              {index + 1}
-            </button>
-          )
-        })}
+            return (
+              <button
+                type="button"
+                role="tab"
+                key={page.id}
+                className={[
+                  'composer-page-rail__page',
+                  active
+                    ? 'composer-page-rail__page--active'
+                    : '',
+                ].filter(Boolean).join(' ')}
+                aria-selected={active}
+                aria-label={`${index + 1}번째 카드`}
+                onClick={() => onSelect(page.id)}
+              >
+                {index + 1}
+              </button>
+            )
+          })}
+        </div>
 
         {canAdd && (
           <button

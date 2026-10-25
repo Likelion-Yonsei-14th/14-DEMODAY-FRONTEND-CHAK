@@ -129,6 +129,9 @@ export function PlacementPreviewPage() {
   const [paidOrderId, setPaidOrderId] = useState<number | undefined>()
   const [paymentOpen, setPaymentOpen] = useState(false)
   const needsPayment = !stickerMode && totalCost > paidAmount
+  const signedIn = usePrototypeStore(
+    (state) => state.authSession.status === 'authenticated',
+  )
   const firstPage = getFirstCardPage(draft)
   const cardPreviewColor =
     getComposerBackground(firstPage.backgroundAssetId).tone
@@ -375,6 +378,12 @@ export function PlacementPreviewPage() {
                 : `하나에 ${formatChaltteok(GEM_PRICE)}`}
             </span>
           </button>
+        )}
+
+        {needsPayment && !signedIn && (
+          <p className="paid-login-note">
+            유료 꾸미기는 로그인한 뒤 찰떡으로 구매해요. 로그인하고 돌아와도 쓰던 응원은 그대로예요.
+          </p>
         )}
 
         {!stickerMode && !charmMode && (
