@@ -174,6 +174,21 @@ export type AdminMinigameGame = {
   days: AdminMinigameDay[]
 }
 
+export type AdminKeyCount = { key: string; count: number }
+
+export type AdminD1CourseStats = {
+  total: number
+  today: number
+  last7Days: number
+  shared: number
+  areas: AdminKeyCount[]
+  /** 한 응답이 세 개를 고르므로 합이 응답 수의 3배다. */
+  activities: AdminKeyCount[]
+  companions: AdminKeyCount[]
+  budgets: AdminKeyCount[]
+  regions: AdminKeyCount[]
+}
+
 export type AdminMinigameStats = {
   games: AdminMinigameGame[]
   studyType: {
@@ -183,6 +198,8 @@ export type AdminMinigameStats = {
     last7Days: number
     distribution: { code: string; count: number; percent: number }[]
   }
+  /** 옛 서버 응답에는 없을 수 있다. */
+  d1Course?: AdminD1CourseStats
 }
 
 export const fetchMinigameStats = () => apiFetch<AdminMinigameStats>('/api/admin/minigames/stats')
