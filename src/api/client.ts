@@ -67,7 +67,16 @@ async function send(path: string, options: RequestOptions, withToken: boolean) {
 
 async function parse<T>(response: Response): Promise<T> {
   const text = await response.text()
-  const data = text ? JSON.parse(text) : undefined
+  // 서버가 아닌 곳(CloudFront·Vercel의 오류 페이지 등)이 HTML로 답할 수 있다. 그때도 상태 코드로 오류를 알려야 한다.
+  let data: unknown
+  let notJson = false
+  if (text) {
+    try {
+      data = JSON.parse(text)
+    } catch {
+      notJson = true
+    }
+  }
   if (!response.ok) {
     const error = new ApiError(response.status, (data ?? {}) as Partial<ApiErrorBody>)
     // 5xx means our server failed; 4xx are normal answers (wrong input, not logged in...).
@@ -81,6 +90,17 @@ async function parse<T>(response: Response): Promise<T> {
       })
     }
     throw error
+  }
+  if (notJson) {
+    // 성공(2xx)인데 JSON이 아닌 응답: 예를 들어 없는 주소가 홈 화면 HTML로 돌아온 경우.
+    reportError({
+      kind: 'api_error',
+      message: 'Response was not JSON',
+      apiPath: new URL(response.url || window.location.href, window.location.origin).pathname,
+      status: response.status,
+      code: 'INVALID_RESPONSE',
+    })
+    throw new ApiError(502, { code: 'INVALID_RESPONSE', message: '서버 응답을 읽지 못했어요.' })
   }
   return data as T
 }

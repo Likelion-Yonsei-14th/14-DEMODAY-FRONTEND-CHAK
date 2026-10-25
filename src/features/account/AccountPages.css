@@ -472,3 +472,9 @@
   color: inherit;
   text-decoration: underline;
 }
+
+.account-section__note {
+  margin: 0 0 var(--space-3);
+  color: var(--color-content-secondary);
+  font-size: var(--type-caption-size);
+}

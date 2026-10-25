@@ -5,7 +5,9 @@ import { ApiError } from '@/api/client'
 import { fetchMyDesk } from '@/api/desks'
 import { useFeedback } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
+import { ComingSoonDialog, CLASSROOM_NOTICE } from '@/features/common/ComingSoon'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
+import { isClassroomAvailable } from '@/lib/featureFlags'
 import { AppShell } from '@/layout/AppShell'
 import { isApiEnabled } from '@/api/config'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -57,6 +59,9 @@ export function HomePage() {
 
   const hasDesk = serverHasDesk ?? desk.claimStatus === 'claimed'
   const hasClass = Boolean(member)
+
+  const classroomOpen = isClassroomAvailable()
+  const [classroomNotice, setClassroomNotice] = useState(false)
 
   const startDesk = () => {
     resetDeskCreationDraft()
@@ -112,17 +117,21 @@ export function HomePage() {
               'home-page__door--class',
               hasClass ? '' : 'home-page__door--empty',
             ].filter(Boolean).join(' ')}
-            onClick={() =>
-              hasClass
-                ? navigate(`/prototype/classroom/${classroom.id}/map`)
-                : showToast('아직 반이 생성되지 않았어요.')
-            }
+            onClick={() => {
+              if (!classroomOpen) {
+                setClassroomNotice(true)
+              } else if (hasClass) {
+                navigate(`/prototype/classroom/${classroom.id}/map`)
+              } else {
+                showToast('아직 반이 생성되지 않았어요.')
+              }
+            }}
           >
             <span className="home-page__door-label">
               <UsersRound size={14} aria-hidden />
             </span>
             <strong>우리 반 가기</strong>
-            <span>{hasClass ? classroom.name : '아직 참여한 반이 없어요'}</span>
+            <span>{!classroomOpen ? '곧 열려요' : hasClass ? classroom.name : '아직 참여한 반이 없어요'}</span>
             <ChevronRight size={20} aria-hidden />
           </button>
         </div>
@@ -133,7 +142,7 @@ export function HomePage() {
           onClick={() => navigate('/start')}
         >
           <Plus size={15} aria-hidden />
-          새 책상이나 반 만들기
+          {classroomOpen ? '새 책상이나 반 만들기' : '새 책상 만들기'}
         </button>
         {isApiEnabled && (
           <button type="button" className="home-page__new ds-hit-area" onClick={() => navigate('/friend-desks')}>
@@ -143,6 +152,12 @@ export function HomePage() {
 
         <MiniGameSection />
       </main>
+      <ComingSoonDialog
+        open={classroomNotice}
+        onClose={() => setClassroomNotice(false)}
+        title={CLASSROOM_NOTICE.title}
+        description={CLASSROOM_NOTICE.description}
+      />
     </AppShell>
   )
 }

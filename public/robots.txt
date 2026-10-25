@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /admin
+Disallow: /prototype
+Disallow: /system
+Disallow: /auth/
+Disallow: /account
+Disallow: /api/
+Disallow: /claim/
+Allow: /
