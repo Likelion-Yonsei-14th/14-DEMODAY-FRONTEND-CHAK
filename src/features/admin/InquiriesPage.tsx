@@ -5,6 +5,7 @@ import {
   type AdminInquiry,
   type AdminInquiryStatus,
 } from '@/api/admin'
+import { interestLabel } from '../promotion/promotionContent'
 import { formatDateTime } from './adminFormat'
 
 const FILTERS = [
@@ -94,7 +95,11 @@ export function InquiriesPage() {
                     </>
                   )}
                 </td>
-                <td>{row.message ?? '-'}</td>
+                <td>
+                  {row.interest && <strong>{interestLabel(row.interest)}</strong>}
+                  {row.interest && row.message && <br />}
+                  {row.message ?? (row.interest ? null : '-')}
+                </td>
                 <td>
                   <span className="admin-actions">
                     <span>{STATUS_LABEL[row.status]}</span>
