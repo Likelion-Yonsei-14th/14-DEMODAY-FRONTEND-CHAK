@@ -7,6 +7,7 @@ import { DeskObjectVisual } from '@/features/desk/DeskObjectLayer'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { shareOrCopyLink } from '@/lib/shareLink'
 import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
+import { ReplyPushPrompt } from './ReplyPushPrompt'
 import { deskObjectLabels } from './supporterFlow'
 import './supporterFlow.css'
 
@@ -124,6 +125,8 @@ export function SupportCompletePage() {
             )}
           </section>
         )}
+
+        <ReplyPushPrompt />
 
         <Button
           variant="secondary"
