@@ -336,11 +336,13 @@
 
 /* 3. Facing the class - this pose appears on the very frame the catch is judged */
 .sneaky-teacher--watching .sneaky-teacher__back,
+.sneaky-teacher--feint .sneaky-teacher__back,
 .sneaky-teacher--returning .sneaky-teacher__back {
   opacity: 0;
 }
 
 .sneaky-teacher--watching .sneaky-teacher__front,
+.sneaky-teacher--feint .sneaky-teacher__front,
 .sneaky-teacher--returning .sneaky-teacher__front {
   opacity: 1;
 }
@@ -361,6 +363,21 @@
 @keyframes sneaky-scan {
   from { transform: translateX(-1.5px); }
   to { transform: translateX(1.5px); }
+}
+
+/*
+ * 3'. Once a round, the fake turn back: it starts exactly like 4 below,
+ * stops partway, and settles to face the class again. Still looking.
+ */
+.sneaky-teacher--feint {
+  animation: sneaky-feint var(--sneaky-feint-ms) ease-in-out forwards;
+}
+
+@keyframes sneaky-feint {
+  0% { transform: none; animation-timing-function: ease-in; }
+  /* Swings further than the real turn back (.7) so it reads as committed. */
+  35%, 55% { transform: scaleX(.55) rotate(-3deg); }
+  100% { transform: none; }
 }
 
 /* 4. Turning back: still facing you until this finishes */
