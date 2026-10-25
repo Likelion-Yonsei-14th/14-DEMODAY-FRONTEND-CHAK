@@ -144,6 +144,18 @@ describe('admin console', () => {
       expect(panel).toHaveTextContent('조회수 기준')
     })
 
+    it('leaves overseas visits out of the table and the shares, and says how many it left out', async () => {
+      const heading = await open(region({
+        items: [{ country: 'KR', region: '11', regionName: '서울', visitors: 3, pageViews: 45 }],
+        unknownPageViews: 5,
+        overseasPageViews: 4,
+      }))
+      const panel = heading.closest('section') as HTMLElement
+      expect(panel).toHaveTextContent('접속자 3 · 90%')
+      expect(panel).toHaveTextContent('해외 접속 4건은 제외했어요')
+      expect(panel).not.toHaveTextContent('CA')
+    })
+
     it('shows only the unknown row while nothing has a location yet', async () => {
       const heading = await open(region({ unknownPageViews: 250 }))
       const panel = heading.closest('section') as HTMLElement
