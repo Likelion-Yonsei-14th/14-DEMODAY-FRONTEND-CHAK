@@ -31,6 +31,8 @@ import {
   safePath,
 } from '@/features/chaltteok/returnFlow'
 import { useChaltteokBalance } from '@/features/chaltteok/useChaltteokBalance'
+import { ComingSoonDialog, PAYMENTS_NOTICE } from '@/features/common/ComingSoon'
+import { arePaymentsAvailable } from '@/lib/featureFlags'
 import { LEGAL_CONTACT_EMAIL } from '@/features/legal/legalInfo'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import type { AuthProvider } from '@/types'
@@ -510,7 +512,9 @@ export function AccountPage() {
   const currentUser = usePrototypeStore((state) => state.currentUser)
   const authSession = usePrototypeStore((state) => state.authSession)
   const signOut = usePrototypeStore((state) => state.signOut)
-  const { balance, failed } = useChaltteokBalance()
+  const paymentsOpen = arePaymentsAvailable()
+  const [paymentsNotice, setPaymentsNotice] = useState(false)
+  const { balance, failed } = useChaltteokBalance(paymentsOpen)
   // Set while logging out: the page re-renders signed out before the
   // navigation lands, and must not bounce to the login screen meanwhile.
   const loggingOut = useRef(false)
@@ -591,24 +595,36 @@ export function AccountPage() {
             찰떡
             <MockModeBadge />
           </h2>
-          <div className="account-info-row">
-            <span>보유 찰떡</span>
-            <strong>
-              {balance !== null
-                ? formatChaltteok(balance)
-                : failed
-                  ? '불러오지 못했어요'
-                  : '확인하는 중…'}
-            </strong>
-          </div>
+          {paymentsOpen ? (
+            <div className="account-info-row">
+              <span>보유 찰떡</span>
+              <strong>
+                {balance !== null
+                  ? formatChaltteok(balance)
+                  : failed
+                    ? '불러오지 못했어요'
+                    : '확인하는 중…'}
+              </strong>
+            </div>
+          ) : (
+            <p className="account-section__note">찰떡 충전과 구매는 아직 개발 중이에요.</p>
+          )}
           <Button
             variant="secondary"
             fullWidth
-            onClick={() => navigate('/chaltteok/charge?returnTo=%2Faccount')}
+            onClick={() =>
+              paymentsOpen ? navigate('/chaltteok/charge?returnTo=%2Faccount') : setPaymentsNotice(true)
+            }
           >
             찰떡 충전하기
           </Button>
         </section>
+        <ComingSoonDialog
+          open={paymentsNotice}
+          onClose={() => setPaymentsNotice(false)}
+          title={PAYMENTS_NOTICE.title}
+          description={PAYMENTS_NOTICE.description}
+        />
 
         <section className="account-actions">
           <Button

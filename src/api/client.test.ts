@@ -108,4 +108,53 @@ describe('apiFetch', () => {
     expect(report).toHaveBeenCalledTimes(1)
     report.mockRestore()
   })
+
+  describe('responses that are not JSON', () => {
+    const html = (status: number) =>
+      new Response('<!DOCTYPE HTML><HTML><H1>504 Gateway Timeout ERROR</H1></HTML>', {
+        status,
+        headers: { 'Content-Type': 'text/html' },
+      })
+
+    it('turns a CloudFront error page into an ApiError with its status and tells the team about a 5xx', async () => {
+      const report = vi.spyOn(reporter, 'reportError').mockImplementation(() => undefined)
+      fetchMock.mockResolvedValueOnce(html(504))
+
+      const error = await apiFetch('/api/public/health').catch((e: unknown) => e)
+
+      expect(error).toBeInstanceOf(ApiError)
+      expect((error as ApiError).status).toBe(504)
+      expect((error as ApiError).code).toBe('UNKNOWN')
+      expect(report).toHaveBeenCalledWith(expect.objectContaining({ kind: 'api_error', status: 504 }))
+      report.mockRestore()
+    })
+
+    it('keeps a 4xx HTML page as a normal ApiError without alerting', async () => {
+      const report = vi.spyOn(reporter, 'reportError').mockImplementation(() => undefined)
+      fetchMock.mockResolvedValueOnce(html(403))
+
+      const error = await apiFetch('/api/x').catch((e: unknown) => e)
+
+      expect((error as ApiError).status).toBe(403)
+      expect(report).not.toHaveBeenCalled()
+      report.mockRestore()
+    })
+
+    it('does not accept a 200 HTML page as data (a route that fell through to the home page)', async () => {
+      const report = vi.spyOn(reporter, 'reportError').mockImplementation(() => undefined)
+      fetchMock.mockResolvedValueOnce(html(200))
+
+      const error = await apiFetch('/api/missing').catch((e: unknown) => e)
+
+      expect(error).toBeInstanceOf(ApiError)
+      expect((error as ApiError).code).toBe('INVALID_RESPONSE')
+      expect(report).toHaveBeenCalledWith(expect.objectContaining({ code: 'INVALID_RESPONSE' }))
+      report.mockRestore()
+    })
+
+    it('still answers an empty success body with undefined', async () => {
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 202 }))
+      await expect(apiFetch('/api/public/analytics/events', { method: 'POST' })).resolves.toBeUndefined()
+    })
+  })
 })
