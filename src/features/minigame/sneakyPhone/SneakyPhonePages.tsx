@@ -35,6 +35,8 @@ const SERVICE_HOME = '/'
 const PHASE_STATUS: Record<TeacherPhase, string> = {
   board: '선생님이 칠판을 보고 있어요',
   warning: '선생님이 돌아보려고 해요!',
+  // Reads like the real turn back, so the fake-out fools everyone alike.
+  feint: '선생님이 칠판으로 돌아가는 중',
   watching: '선생님이 보고 있어요',
   returning: '선생님이 칠판으로 돌아가는 중',
 }

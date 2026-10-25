@@ -18,6 +18,16 @@ export const RETURNING_MS = 350
 export const WATCHING_MIN_MS = 1_000
 export const WATCHING_MAX_MS = 2_000
 
+/**
+ * Once a round the teacher only makes as if to go back to the board: while
+ * watching they start the turn, stop, and face the class again. They never
+ * stop looking, so this catches anyone who reaches for the phone before the
+ * back is really turned - the same rule as 'returning'.
+ */
+export const FEINT_MS = 600
+/** The fake replaces the first turn back to the board past a random moment in this window. */
+export const FEINT_WINDOW_MS = { from: 6_000, to: 20_000 } as const
+
 /** Board-facing time shrinks as the round goes on. */
 export const BOARD_MS_BY_STAGE = [
   { from: 0, min: 2_400, max: 4_000 },
@@ -33,7 +43,7 @@ export const STREAK_TIERS = [
   { from: 3_000, multiplier: 3 },
 ] as const
 
-export type TeacherPhase = 'board' | 'warning' | 'watching' | 'returning'
+export type TeacherPhase = 'board' | 'warning' | 'feint' | 'watching' | 'returning'
 export type GameStatus = 'playing' | 'caught' | 'survived'
 
 /** Returns a number in [0, 1). */
@@ -55,6 +65,8 @@ export type SneakyPhoneState = {
   totalPhoneMs: number
   /** Game time the round ended, when it has. */
   endedAt: number | null
+  /** The first turn back to the board after this game time is faked; null once it has happened. */
+  feintAfter: number | null
 }
 
 export type SneakyPhoneResult = {
@@ -68,7 +80,7 @@ export type SneakyPhoneResult = {
 
 /** The teacher can see the class: holding the phone now means getting caught. */
 export function isTeacherLooking(phase: TeacherPhase) {
-  return phase === 'watching' || phase === 'returning'
+  return phase === 'watching' || phase === 'feint' || phase === 'returning'
 }
 
 export function multiplierFor(streakMs: number) {
@@ -112,6 +124,8 @@ function phaseDuration(phase: TeacherPhase, startsAt: number, random: Random) {
       return boardDurationAt(startsAt, random)
     case 'warning':
       return WARNING_MS
+    case 'feint':
+      return FEINT_MS
     case 'watching':
       return between(random, WATCHING_MIN_MS, WATCHING_MAX_MS)
     case 'returning':
@@ -122,23 +136,31 @@ function phaseDuration(phase: TeacherPhase, startsAt: number, random: Random) {
 const NEXT_PHASE: Record<TeacherPhase, TeacherPhase> = {
   board: 'warning',
   warning: 'watching',
+  feint: 'watching',
   watching: 'returning',
   returning: 'board',
 }
 
 export function createGame(random: Random = Math.random): SneakyPhoneState {
+  const phaseEndsAt = phaseDuration('board', 0, random)
   return {
     status: 'playing',
     elapsed: 0,
     phase: 'board',
     phaseStartedAt: 0,
-    phaseEndsAt: phaseDuration('board', 0, random),
+    phaseEndsAt,
     using: false,
     streakMs: 0,
     score: 0,
     totalPhoneMs: 0,
     endedAt: null,
+    feintAfter: between(random, FEINT_WINDOW_MS.from, FEINT_WINDOW_MS.to),
   }
+}
+
+function nextPhase(s: SneakyPhoneState): TeacherPhase {
+  const fakes = s.phase === 'watching' && s.feintAfter !== null && s.elapsed >= s.feintAfter
+  return fakes ? 'feint' : NEXT_PHASE[s.phase]
 }
 
 /**
@@ -176,7 +198,8 @@ export function advanceTo(
       break
     }
     if (s.elapsed >= s.phaseEndsAt) {
-      s.phase = NEXT_PHASE[s.phase]
+      s.phase = nextPhase(s)
+      if (s.phase === 'feint') s.feintAfter = null
       s.phaseStartedAt = s.elapsed
       s.phaseEndsAt = s.elapsed + phaseDuration(s.phase, s.elapsed, random)
       // The turn completes with the phone out: caught at this exact instant.
