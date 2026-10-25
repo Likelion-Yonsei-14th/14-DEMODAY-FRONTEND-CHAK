@@ -3,6 +3,8 @@ import {
   advanceTo,
   boardDurationAt,
   createGame,
+  FEINT_MS,
+  FEINT_WINDOW_MS,
   GAME_MS,
   getResult,
   loadBestScore,
@@ -140,6 +142,55 @@ describe('teacher and catching', () => {
     expect(advanceTo(caught, 10_000)).toBe(caught)
     expect(setPhone(caught, false, 10_000)).toBe(caught)
     expect(setPhone(caught, true, 10_000)).toBe(caught)
+  })
+})
+
+describe('fake turn', () => {
+  /** Every phase entered over a whole round, with when it started. */
+  const phasesOverRound = (random: () => number) => {
+    const seen: Array<{ phase: string; at: number }> = []
+    let game = createGame(random)
+    for (let at = 0; at <= GAME_MS; at += 10) {
+      game = advanceTo(game, at, random)
+      if (seen.at(-1)?.at !== game.phaseStartedAt) seen.push({ phase: game.phase, at: game.phaseStartedAt })
+    }
+    return seen
+  }
+
+  // Shortest draws: feintAfter = 6000. The first watching ending past it is
+  // 6950–7950, so 7950–8550 is the fake turn, then watching again until 9550
+  // and only then the real turn back.
+  const FAKE_AT = 7_950
+  const WATCH_AGAIN_AT = FAKE_AT + FEINT_MS
+
+  it('starts to turn back, then keeps watching the class instead', () => {
+    const phases = [FAKE_AT - 1, FAKE_AT, WATCH_AGAIN_AT - 1, WATCH_AGAIN_AT, WATCH_AGAIN_AT + 999, WATCH_AGAIN_AT + 1_000].map(
+      (at) => advanceTo(start(), at).phase,
+    )
+    expect(phases).toEqual(['watching', 'feint', 'feint', 'watching', 'watching', 'returning'])
+    expect(advanceTo(start(), WATCH_AGAIN_AT + 1_000 + RETURNING_MS).phase).toBe('board')
+  })
+
+  it('catches a phone taken out during the fake turn', () => {
+    const game = setPhone(advanceTo(start(), FAKE_AT + 300), true, FAKE_AT + 300)
+    expect(game.status).toBe('caught')
+    expect(game.endedAt).toBe(FAKE_AT + 300)
+  })
+
+  it('leaves a player who waits for the back to turn safe', () => {
+    const atBoard = WATCH_AGAIN_AT + 1_000 + RETURNING_MS
+    const game = advanceTo(setPhone(advanceTo(start(), atBoard), true, atBoard), atBoard + 500)
+    expect(game.status).toBe('playing')
+  })
+
+  it.each([
+    ['shortest', shortest],
+    ['longest', longest],
+  ])('happens exactly once a round, inside its window (%s draws)', (_, random) => {
+    const feints = phasesOverRound(random).filter((entry) => entry.phase === 'feint')
+    expect(feints).toHaveLength(1)
+    expect(feints[0]!.at).toBeGreaterThanOrEqual(FEINT_WINDOW_MS.from)
+    expect(feints[0]!.at).toBeLessThan(GAME_MS)
   })
 })
 
