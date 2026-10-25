@@ -244,7 +244,7 @@ export function OwnerDeskPage() {
         <section className="owner-desk__toolbar">
           <button
             type="button"
-            className="owner-desk__ask"
+            className="owner-desk__ask ds-hit-area"
             onClick={() => shareMyDeskLink(showToast)}
           >
             <Share2 size={15} aria-hidden />

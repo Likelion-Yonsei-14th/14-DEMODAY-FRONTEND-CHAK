@@ -125,7 +125,7 @@ export function CharmPickPage() {
             {charmDraft.phrase !== recommendedPhrase && (
               <button
                 type="button"
-                className="charm-phrase__suggestion"
+                className="charm-phrase__suggestion ds-hit-area"
                 onClick={() => setCharmDraft({ phrase: recommendedPhrase })}
               >
                 추천 문구 넣기 · {recommendedPhrase}

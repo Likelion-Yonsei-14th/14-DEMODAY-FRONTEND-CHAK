@@ -40,6 +40,7 @@ export function ComposerPageRail({
                 key={page.id}
                 className={[
                   'composer-page-rail__page',
+                  'ds-hit-area',
                   active
                     ? 'composer-page-rail__page--active'
                     : '',
@@ -57,7 +58,7 @@ export function ComposerPageRail({
         {canAdd && (
           <button
             type="button"
-            className="composer-page-rail__add"
+            className="composer-page-rail__add ds-hit-area"
             aria-label="카드 추가"
             onClick={onAdd}
           >
@@ -68,7 +69,7 @@ export function ComposerPageRail({
         {pages.length > 1 && (
           <button
             type="button"
-            className="composer-page-rail__delete"
+            className="composer-page-rail__delete ds-hit-area"
             aria-label="현재 카드 삭제"
             onClick={onDelete}
           >
@@ -80,7 +81,7 @@ export function ComposerPageRail({
       {overflow && canAdd && (
         <button
           type="button"
-          className="composer-page-overflow-action"
+          className="composer-page-overflow-action ds-hit-area"
           onClick={onAdd}
         >
           새 카드에 이어쓰기
