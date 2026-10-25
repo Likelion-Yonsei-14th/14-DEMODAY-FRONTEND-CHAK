@@ -15,7 +15,7 @@ export function OwnerViewToggle({ mode }: OwnerViewToggleProps) {
     <div className="owner-view-toggle" role="group" aria-label="응원 보기 방식">
       <button
         type="button"
-        className={mode === 'desk' ? 'owner-view-toggle__item owner-view-toggle__item--active' : 'owner-view-toggle__item'}
+        className={mode === 'desk' ? 'owner-view-toggle__item owner-view-toggle__item--active ds-hit-area' : 'owner-view-toggle__item ds-hit-area'}
         aria-pressed={mode === 'desk'}
         onClick={() => go('/prototype/my/desk')}
       >
@@ -24,7 +24,7 @@ export function OwnerViewToggle({ mode }: OwnerViewToggleProps) {
       </button>
       <button
         type="button"
-        className={mode === 'mail' ? 'owner-view-toggle__item owner-view-toggle__item--active' : 'owner-view-toggle__item'}
+        className={mode === 'mail' ? 'owner-view-toggle__item owner-view-toggle__item--active ds-hit-area' : 'owner-view-toggle__item ds-hit-area'}
         aria-pressed={mode === 'mail'}
         onClick={() => go('/prototype/my/desk/cards')}
       >
