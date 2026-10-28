@@ -203,6 +203,12 @@ export const router = createBrowserRouter([
             }),
           },
           {
+            path: 'benefits/:id',
+            lazy: async () => ({
+              Component: (await import('@/features/admin/BenefitSubmissionDetailPage')).BenefitSubmissionDetailPage,
+            }),
+          },
+          {
             path: 'inquiries',
             lazy: async () => ({
               Component: (await import('@/features/admin/InquiriesPage')).InquiriesPage,

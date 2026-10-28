@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -311,29 +311,90 @@ describe('admin console', () => {
       headline: '수험생 전 음료 20% 할인', status: 'NEW' as const, createdAt: '2026-10-30T01:00:00Z', handledAt: null,
     }
 
-    it('lists submissions, shows the answers with labels and marks one as sent', async () => {
+    it('lists submissions with a link to each detail page and marks one as sent', async () => {
       admin.fetchAdminBenefitSubmissions.mockResolvedValue({ content: [row], hasNext: false, page: 0, size: 20 })
-      admin.fetchAdminBenefitSubmission.mockResolvedValue({
-        summary: row,
-        answers: { brand: '착커피', benefits: ['PERCENT', 'FREE_GIFT'], percent: 20, giftItem: '쿠키', scope: 'ALL_STORES', logoFileKey: 'promotion/uploads/x/logo.png' },
-        files: [{ field: 'logoFileKey', fileName: 'logo.png', url: 'https://bucket.example/get' }],
-      })
       admin.changeAdminBenefitStatus.mockResolvedValue({ ...row, status: 'CONTACTED' })
       const { BenefitSubmissionsPage } = await import('./BenefitSubmissionsPage')
-      render(<BenefitSubmissionsPage />)
+      render(<MemoryRouter><BenefitSubmissionsPage /></MemoryRouter>)
 
       expect(await screen.findByText('착커피')).toBeInTheDocument()
       expect(screen.getByText('수험생 전 음료 20% 할인')).toBeInTheDocument()
       expect(admin.fetchAdminBenefitSubmissions).toHaveBeenCalledWith('NEW', 0)
-
-      fireEvent.click(screen.getByRole('button', { name: '자세히 보기' }))
-      expect(await screen.findByText('% 할인, 구매 시 무료 증정')).toBeInTheDocument()
-      expect(screen.getByText('쿠키')).toBeInTheDocument()
-      expect(screen.getByText('전 매장')).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: 'logo.png' })).toHaveAttribute('href', 'https://bucket.example/get')
+      expect(screen.getByRole('link', { name: '상세' })).toHaveAttribute('href', '/admin/benefits/7')
+      expect(screen.getByRole('link', { name: '착커피' })).toHaveAttribute('href', '/admin/benefits/7')
 
       fireEvent.click(screen.getByRole('button', { name: '시안 보냄' }))
       await waitFor(() => expect(admin.changeAdminBenefitStatus).toHaveBeenCalledWith(7, 'CONTACTED'))
+    })
+
+    const detail = {
+      summary: row,
+      answers: {
+        brand: '착커피', category: 'CAFE', contactName: '박담당', phone: '010-3333-4444', email: 'park@chakcoffee.com',
+        target: 'EXAM_TICKET_HOLDER', benefits: ['PERCENT', 'FREE_GIFT'], percent: 20, giftItem: '쿠키',
+        headlineRaw: '수험생 전 음료 20% 할인', startDate: '2026-11-20', endDate: '2026-12-31',
+        usageMethods: ['SHOW_EXAM_TICKET'], conditionMinAmount: 5000, conditions: ['MIN_PURCHASE'],
+        scope: 'SOME_STORES', storeList: '강남역점\n해운대점', logoFileKey: 'promotion/uploads/x/logo.png',
+        exposure: ['BENEFIT_BOX', 'OFFICIAL_SNS'], reviewPeriod: 'WITHIN_1_DAY',
+      },
+      files: [{ field: 'logoFileKey', fileName: 'logo.png', url: 'https://bucket.example/get' }],
+    }
+
+    const renderDetail = async () => {
+      const { BenefitSubmissionDetailPage } = await import('./BenefitSubmissionDetailPage')
+      return render(
+        <MemoryRouter initialEntries={['/admin/benefits/7']}>
+          <Routes>
+            <Route path="/admin/benefits" element={<p>목록 화면</p>} />
+            <Route path="/admin/benefits/:id" element={<BenefitSubmissionDetailPage />} />
+          </Routes>
+        </MemoryRouter>,
+      )
+    }
+
+    it('shows what the mockup needs first, then the answers grouped by survey page', async () => {
+      admin.fetchAdminBenefitSubmission.mockResolvedValue(detail)
+      await renderDetail()
+
+      expect(await screen.findByRole('heading', { name: '착커피' })).toBeInTheDocument()
+      const brief = within(screen.getByRole('region', { name: '시안 제작 요약' }))
+      expect(brief.getByText('수험생 전 음료 20% 할인')).toBeInTheDocument()
+      expect(brief.getByText('2026-11-20 ~ 2026-12-31')).toBeInTheDocument()
+      expect(brief.getByText('% 할인 · 구매 시 무료 증정')).toBeInTheDocument()
+      expect(brief.getByRole('link', { name: 'park@chakcoffee.com' })).toHaveAttribute('href', 'mailto:park@chakcoffee.com')
+
+      expect(screen.getByRole('img', { name: '착커피 로고' })).toHaveAttribute('src', 'https://bucket.example/get')
+      expect(screen.getByRole('link', { name: '원본 열기·다운로드' })).toHaveAttribute('href', 'https://bucket.example/get')
+
+      for (const title of ['업체 정보', '혜택 내용', '사용 방법', '참여 매장 · 시안 자료']) {
+        expect(screen.getByRole('region', { name: title })).toBeInTheDocument()
+      }
+      const benefitSection = within(screen.getByRole('region', { name: '혜택 내용' }))
+      expect(benefitSection.getByText('20%')).toBeInTheDocument()
+      expect(benefitSection.getByText('쿠키')).toBeInTheDocument()
+      // 선택 안내 문구는 운영자 화면에서 뗀다
+      expect(benefitSection.getByText('혜택 유형')).toBeInTheDocument()
+      expect(within(screen.getByRole('region', { name: '사용 방법' })).getByText('5,000원')).toBeInTheDocument()
+      expect(within(screen.getByRole('region', { name: '참여 매장 · 시안 자료' })).getByText('일부 매장')).toBeInTheDocument()
+    })
+
+    it('changes the status from the detail page', async () => {
+      admin.fetchAdminBenefitSubmission.mockResolvedValue(detail)
+      admin.changeAdminBenefitStatus.mockResolvedValue({ ...row, status: 'CONTACTED' })
+      await renderDetail()
+
+      fireEvent.click(await screen.findByRole('button', { name: '시안 보냄으로 표시' }))
+      await waitFor(() => expect(admin.changeAdminBenefitStatus).toHaveBeenCalledWith(7, 'CONTACTED'))
+      expect(await screen.findByRole('button', { name: '새 신청으로 되돌리기' })).toBeInTheDocument()
+    })
+
+    it('says so when the submission cannot be loaded and links back to the list', async () => {
+      admin.fetchAdminBenefitSubmission.mockRejectedValue(new Error('404'))
+      await renderDetail()
+
+      expect(await screen.findByText('신청 내용을 불러오지 못했어요.')).toBeInTheDocument()
+      fireEvent.click(screen.getByRole('link', { name: '← 혜택 시안 신청 목록' }))
+      expect(screen.getByText('목록 화면')).toBeInTheDocument()
     })
   })
 
