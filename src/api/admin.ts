@@ -160,6 +160,36 @@ export const fetchAdminInquiries = (status: AdminInquiryStatus | undefined, page
 export const changeAdminInquiryStatus = (id: number, status: AdminInquiryStatus) =>
   apiFetch<AdminInquiry>(`/api/admin/promotion-inquiries/${id}`, { method: 'PATCH', body: { status } })
 
+export type AdminBenefitSummary = {
+  id: number
+  brand: string
+  category: string
+  contactName: string
+  email: string
+  phone: string
+  headline: string
+  status: AdminInquiryStatus
+  createdAt: string
+  handledAt: string | null
+}
+
+export type AdminBenefitDetail = {
+  summary: AdminBenefitSummary
+  answers: Record<string, string | number | string[]>
+  files: { field: string; fileName: string; url: string }[]
+}
+
+export const fetchAdminBenefitSubmissions = (status: AdminInquiryStatus | undefined, page: number) =>
+  apiFetch<SliceResponse<AdminBenefitSummary>>('/api/admin/benefit-submissions', {
+    query: { status, page, size: 20 },
+  })
+
+export const fetchAdminBenefitSubmission = (id: number) =>
+  apiFetch<AdminBenefitDetail>(`/api/admin/benefit-submissions/${id}`)
+
+export const changeAdminBenefitStatus = (id: number, status: AdminInquiryStatus) =>
+  apiFetch<AdminBenefitSummary>(`/api/admin/benefit-submissions/${id}`, { method: 'PATCH', body: { status } })
+
 export type AdminMinigameDay = { date: string; members: number; guests: number }
 
 export type AdminMinigameGame = {
