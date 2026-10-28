@@ -8,6 +8,7 @@ const api = vi.hoisted(() => ({ submitPromotionInquiry: vi.fn() }))
 vi.mock('@/api/promotion', () => api)
 
 import { PromotionApplyPage } from './PromotionApplyPage'
+import { PromotionConsultPage } from './PromotionConsultPage'
 import { PromotionPage } from './PromotionPage'
 
 const at = (iso: string) => new Date(iso)
@@ -46,6 +47,8 @@ function renderAt(path: string) {
       <Routes>
         <Route path="/promotion" element={<PromotionPage />} />
         <Route path="/promotion/apply" element={<PromotionApplyPage />} />
+        <Route path="/promotion/apply/consult" element={<PromotionConsultPage />} />
+        <Route path="/promotion/apply/benefit" element={<p>혜택 시안 신청서</p>} />
       </Routes>
     </MemoryRouter>,
   )
@@ -155,7 +158,34 @@ describe('promotion page', () => {
   })
 })
 
-describe('promotion apply form', () => {
+describe('promotion apply chooser', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(at('2026-10-25T03:00:00Z'))
+  })
+  afterEach(() => vi.useRealTimers())
+
+  it('offers a contract consultation and a mockup request', () => {
+    renderAt('/promotion/apply')
+    expect(screen.getByRole('link', { name: /계약 상담 신청하기/ })).toHaveAttribute('href', '/promotion/apply/consult')
+    expect(screen.getByRole('link', { name: /시안 신청하기/ })).toHaveAttribute('href', '/promotion/apply/benefit')
+  })
+
+  it('opens the right form from each choice', () => {
+    renderAt('/promotion/apply')
+    fireEvent.click(screen.getByRole('link', { name: /시안 신청하기/ }))
+    expect(screen.getByText('혜택 시안 신청서')).toBeInTheDocument()
+  })
+
+  it('offers only email once the season is over', () => {
+    vi.setSystemTime(at('2026-11-20T03:00:00Z'))
+    renderAt('/promotion/apply')
+    expect(screen.queryByRole('link', { name: /시안 신청하기/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /계약 상담 신청하기/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('promotion consult form', () => {
   beforeEach(() => {
     api.submitPromotionInquiry.mockReset()
     vi.useFakeTimers({ toFake: ['Date'] })
@@ -170,7 +200,7 @@ describe('promotion apply form', () => {
   }
 
   it('needs the required fields and the privacy consent before it can be sent', () => {
-    renderAt('/promotion/apply')
+    renderAt('/promotion/apply/consult')
     const send = screen.getByRole('button', { name: '상담 신청하기' })
     expect(send).toBeDisabled()
     fill()
@@ -181,7 +211,7 @@ describe('promotion apply form', () => {
 
   it('sends the inquiry and confirms', async () => {
     api.submitPromotionInquiry.mockResolvedValue({ received: true })
-    renderAt('/promotion/apply')
+    renderAt('/promotion/apply/consult')
     fill()
     fireEvent.click(screen.getByRole('checkbox'))
     fireEvent.click(screen.getByRole('button', { name: '상담 신청하기' }))
@@ -195,7 +225,7 @@ describe('promotion apply form', () => {
 
   it('sends the chosen product so the team knows what to talk about', async () => {
     api.submitPromotionInquiry.mockResolvedValue({ received: true })
-    renderAt('/promotion/apply')
+    renderAt('/promotion/apply/consult')
     fill()
     fireEvent.change(screen.getByRole('combobox', { name: /관심 있는 상품/ }), { target: { value: 'BRAND_M' } })
     fireEvent.click(screen.getByRole('checkbox'))
@@ -207,7 +237,7 @@ describe('promotion apply form', () => {
 
   it('explains rate limiting and keeps what was typed', async () => {
     api.submitPromotionInquiry.mockRejectedValue(new ApiError(429, { code: 'TOO_MANY_EVENTS' }))
-    renderAt('/promotion/apply')
+    renderAt('/promotion/apply/consult')
     fill()
     fireEvent.click(screen.getByRole('checkbox'))
     fireEvent.click(screen.getByRole('button', { name: '상담 신청하기' }))

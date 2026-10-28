@@ -18,6 +18,9 @@ const admin = vi.hoisted(() => ({
   cancelAdminInvite: vi.fn(),
   fetchAdminInquiries: vi.fn(),
   changeAdminInquiryStatus: vi.fn(),
+  fetchAdminBenefitSubmissions: vi.fn(),
+  fetchAdminBenefitSubmission: vi.fn(),
+  changeAdminBenefitStatus: vi.fn(),
 }))
 const auth = vi.hoisted(() => ({ fetchMe: vi.fn() }))
 
@@ -299,6 +302,38 @@ describe('admin console', () => {
 
       fireEvent.click(screen.getByRole('button', { name: '연락함' }))
       await waitFor(() => expect(admin.changeAdminInquiryStatus).toHaveBeenCalledWith(4, 'CONTACTED'))
+    })
+  })
+
+  describe('benefit submissions', () => {
+    const row = {
+      id: 7, brand: '메가커피', category: 'CAFE', contactName: '박담당', email: 'park@mega.com', phone: '010-3333-4444',
+      headline: '수험생 전 음료 20% 할인', status: 'NEW' as const, createdAt: '2026-10-30T01:00:00Z', handledAt: null,
+    }
+
+    it('lists submissions, shows the answers with labels and marks one as sent', async () => {
+      admin.fetchAdminBenefitSubmissions.mockResolvedValue({ content: [row], hasNext: false, page: 0, size: 20 })
+      admin.fetchAdminBenefitSubmission.mockResolvedValue({
+        summary: row,
+        answers: { brand: '메가커피', benefits: ['PERCENT', 'FREE_GIFT'], percent: 20, giftItem: '쿠키', scope: 'ALL_STORES', logoFileKey: 'promotion/uploads/x/logo.png' },
+        files: [{ field: 'logoFileKey', fileName: 'logo.png', url: 'https://bucket.example/get' }],
+      })
+      admin.changeAdminBenefitStatus.mockResolvedValue({ ...row, status: 'CONTACTED' })
+      const { BenefitSubmissionsPage } = await import('./BenefitSubmissionsPage')
+      render(<BenefitSubmissionsPage />)
+
+      expect(await screen.findByText('메가커피')).toBeInTheDocument()
+      expect(screen.getByText('수험생 전 음료 20% 할인')).toBeInTheDocument()
+      expect(admin.fetchAdminBenefitSubmissions).toHaveBeenCalledWith('NEW', 0)
+
+      fireEvent.click(screen.getByRole('button', { name: '자세히 보기' }))
+      expect(await screen.findByText('% 할인, 구매 시 무료 증정')).toBeInTheDocument()
+      expect(screen.getByText('쿠키')).toBeInTheDocument()
+      expect(screen.getByText('전 매장')).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'logo.png' })).toHaveAttribute('href', 'https://bucket.example/get')
+
+      fireEvent.click(screen.getByRole('button', { name: '시안 보냄' }))
+      await waitFor(() => expect(admin.changeAdminBenefitStatus).toHaveBeenCalledWith(7, 'CONTACTED'))
     })
   })
 
