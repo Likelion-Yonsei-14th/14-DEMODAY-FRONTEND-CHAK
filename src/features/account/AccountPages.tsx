@@ -116,7 +116,20 @@ export function LoginPage() {
         </section>
 
         {isApiEnabled && isKakaoLoginEnabled && (
-          <Button variant="brand" fullWidth onClick={startKakaoLogin}>
+          <Button
+            variant="secondary"
+            fullWidth
+            className="account-auth__provider"
+            onClick={startKakaoLogin}
+          >
+            <span className="account-auth__mark account-auth__mark--kakao" aria-hidden>
+              <svg viewBox="0 0 24 24" width="14" height="14">
+                <path
+                  fill="currentColor"
+                  d="M12 3.5c-5 0-9 3.1-9 7 0 2.5 1.7 4.7 4.2 5.9l-.9 3.3c-.1.3.2.5.5.4l3.9-2.6c.4 0 .8.1 1.3.1 5 0 9-3.1 9-7s-4-7.1-9-7.1z"
+                />
+              </svg>
+            </span>
             카카오로 계속하기
             {lastLogin?.provider === 'kakao' && (
               <span className="account-auth__recent">최근 사용</span>
@@ -129,10 +142,10 @@ export function LoginPage() {
           <Button
             variant="secondary"
             fullWidth
-            className="account-auth__google"
+            className="account-auth__provider"
             onClick={isApiEnabled ? startGoogleLogin : continueWithGoogle}
           >
-            <span className="account-auth__google-mark" aria-hidden>
+            <span className="account-auth__mark" aria-hidden>
               G
             </span>
             Google로 계속하기

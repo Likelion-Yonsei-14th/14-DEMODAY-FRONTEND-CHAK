@@ -30,11 +30,11 @@
   line-height: var(--type-body-m-line);
 }
 
-.account-auth__google {
+.account-auth__provider {
   position: relative;
 }
 
-.account-auth__google-mark {
+.account-auth__mark {
   position: absolute;
   left: 19px;
   width: 24px;
@@ -46,6 +46,12 @@
   background: white;
   font-size: 13px;
   font-weight: 800;
+}
+
+.account-auth__mark--kakao {
+  border-color: transparent;
+  background: #fee500;
+  color: #191919;
 }
 
 .account-auth__recent {
