@@ -58,3 +58,35 @@ describe('home desk door', () => {
     expect(screen.getByText('내 책상 화면')).toBeInTheDocument()
   })
 })
+
+describe('home desk door while the server has not answered', () => {
+  beforeEach(() => {
+    api.fetchMyDesk.mockReset()
+    usePrototypeStore.setState({
+      authSession: { status: 'authenticated', email: 'a@b.com', provider: 'kakao', userId: 7 },
+    })
+  })
+
+  it('does not show a desk door before knowing whether the account has a desk', () => {
+    api.fetchMyDesk.mockReturnValue(new Promise(() => {}))
+    renderHome()
+
+    expect(screen.queryByRole('button', { name: /내 책상 가기/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /내 책상 만들기/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /내 책상 확인하는 중/ })).toBeDisabled()
+  })
+
+  it('offers a retry, not a desk, when the check fails, and recovers on retry', async () => {
+    api.fetchMyDesk.mockRejectedValueOnce(new ApiError(500, { code: 'INTERNAL_ERROR' }))
+    renderHome()
+
+    const retry = await screen.findByRole('button', { name: /다시 시도/ })
+    expect(screen.queryByRole('button', { name: /내 책상 가기/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /내 책상 만들기/ })).not.toBeInTheDocument()
+
+    api.fetchMyDesk.mockResolvedValue({ id: 1 })
+    fireEvent.click(retry)
+
+    expect(await screen.findByRole('button', { name: /내 책상 가기/ })).toBeInTheDocument()
+  })
+})
