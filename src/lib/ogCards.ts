@@ -90,16 +90,28 @@ const escapeAttribute = (value: string) =>
 /**
  * Puts a card's title and description into index.html. og:url is dropped: one
  * copy serves many links, so scrapers should keep the address that was shared.
+ *
+ * Search engines get the same copy: these pages are results, personal desks and
+ * invitations, so they ask not to be indexed, and the home page's address,
+ * structured data and crawler text are left out because they describe `/` only.
  */
 export function withOgCard(html: string, card: OgCard): string {
   const values: Record<string, string> = {
     'og:title': card.title,
     'og:description': card.description,
   }
+  const title = escapeAttribute(card.title)
+  const description = escapeAttribute(card.description)
   return html
     .replace(/[ \t]*<meta property="og:url" content="[^"]*"\s*\/?>\r?\n?/, '')
     .replace(
       /<meta property="(og:title|og:description)" content="[^"]*"\s*\/?>/g,
       (_, property: string) => `<meta property="${property}" content="${escapeAttribute(values[property]!)}" />`,
     )
+    .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
+    .replace(/(<meta\s+name="description"\s+content=")[^"]*(")/, `$1${description}$2`)
+    .replace(/<meta name="robots" content="[^"]*"\s*\/?>/, '<meta name="robots" content="noindex,nofollow" />')
+    .replace(/[ \t]*<link rel="canonical" href="[^"]*"\s*\/?>\r?\n?/, '')
+    .replace(/[ \t]*<!-- seo:jsonld:start -->[\s\S]*?<!-- seo:jsonld:end -->\r?\n?/, '')
+    .replace(/\s*<!-- seo:fallback:start -->[\s\S]*?<!-- seo:fallback:end -->\s*/, '')
 }

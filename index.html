@@ -7,17 +7,68 @@
     <link rel="icon" type="image/svg+xml" href="/assets/brand/chak-app-icon.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/assets/brand/chak-apple-touch-icon.png" />
-    <title>착!</title>
-    <meta name="description" content="수능 전까지, 친구들의 마음을 모아두세요." />
+    <title>착! | 수험생 응원 책상 · 수능 응원 메시지 모으기</title>
+    <meta
+      name="description"
+      content="수능을 앞둔 친구에게 응원 메시지를 모아 주는 책상, 착! 링크 하나로 친구들의 응원을 받고 답장해요. 수능 D-day 수험생 응원 메시지와 미니게임까지."
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://www.chak.live/" />
     <!-- Link card for shared links. Shared paths get their own copy of this page (see src/lib/ogCards.ts). -->
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ko_KR" />
     <meta property="og:site_name" content="착!" />
     <meta property="og:title" content="착!" />
     <meta property="og:description" content="수능 전까지, 친구들의 마음을 모아두세요." />
     <meta property="og:url" content="https://www.chak.live/" />
+    <meta property="og:image" content="https://www.chak.live/assets/brand/og-chak.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <!-- seo:jsonld:start -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://www.chak.live/#website",
+            "url": "https://www.chak.live/",
+            "name": "착!",
+            "alternateName": ["착", "CHAK", "chak.live", "착 수험생 응원 책상"],
+            "inLanguage": "ko-KR",
+            "description": "수능을 앞둔 친구에게 응원 메시지를 모아 주는 책상"
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://www.chak.live/#organization",
+            "name": "착",
+            "alternateName": "CHAK",
+            "url": "https://www.chak.live/",
+            "logo": "https://www.chak.live/assets/brand/chak-icon-512.png"
+          }
+        ]
+      }
+    </script>
+    <!-- seo:jsonld:end -->
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- seo:fallback:start -->
+      <main style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">
+        <h1>착! 수험생 응원 책상</h1>
+        <p>수능 전까지, 친구들의 마음을 모아두세요. 링크 하나로 수험생 친구에게 응원 메시지를 모아 전하고, 받은 응원에는 답장할 수 있어요.</p>
+        <nav aria-label="착 주요 페이지">
+          <a href="/minigame/study-type">나의 수험생 유형은? 공부 성향 테스트</a>
+          <a href="/minigame/exam-career">수험생 커리어 시뮬레이터</a>
+          <a href="/minigame/d1-course">수능 끝 D+1 코스 짜기</a>
+          <a href="/minigame/guess-god">오늘의 찍신은 나야! 찍기 운 시험</a>
+          <a href="/privacy">개인정보처리방침</a>
+          <a href="/terms">이용약관</a>
+        </nav>
+      </main>
+      <!-- seo:fallback:end -->
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
