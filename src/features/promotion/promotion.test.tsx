@@ -32,9 +32,9 @@ describe('promotion schedule', () => {
   it('keeps the BM price table: launch partner price is always below the base price', () => {
     expect(LOCAL_PRODUCTS.map((p) => p.price)).toEqual([49_000, 99_000, 129_000])
     expect(BRAND_TIERS.map((t) => [t.regular, t.launch])).toEqual([
-      [149_000, 119_000],
-      [299_000, 239_000],
-      [499_000, 399_000],
+      [140_000, 110_000],
+      [290_000, 230_000],
+      [440_000, 350_000],
       [null, null],
     ])
   })
@@ -92,12 +92,12 @@ describe('promotion page', () => {
     renderAt('/promotion')
     const table = screen.getByRole('table')
     const row = (name: string) => screen.getByRole('rowheader', { name }).closest('tr') as HTMLElement
-    expect(row('Brand S')).toHaveTextContent('14.9만원')
-    expect(row('Brand S')).toHaveTextContent('11.9만원')
-    expect(row('Brand M')).toHaveTextContent('29.9만원')
-    expect(row('Brand M')).toHaveTextContent('23.9만원')
-    expect(row('Brand L')).toHaveTextContent('49.9만원')
-    expect(row('Brand L')).toHaveTextContent('39.9만원')
+    expect(row('Brand S')).toHaveTextContent('14만원')
+    expect(row('Brand S')).toHaveTextContent('11만원')
+    expect(row('Brand M')).toHaveTextContent('29만원')
+    expect(row('Brand M')).toHaveTextContent('23만원')
+    expect(row('Brand L')).toHaveTextContent('44만원')
+    expect(row('Brand L')).toHaveTextContent('35만원')
     expect(row('Enterprise')).toHaveTextContent('별도 협의')
     expect(table).toHaveTextContent('런칭 파트너가')
   })

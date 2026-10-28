@@ -241,7 +241,7 @@ export function PromotionPage() {
         <section className="promo-section promo-cta" aria-labelledby="apply">
           <h2 id="apply">어떤 상품이 맞을지 고민되시면</h2>
           <p>
-            {tight(`매장 수와 원하시는 방식만 알려 주시면 같이 정해 드려요. 회신 기한은 ${PROMOTION_DATES.replyDeadline.label}이고, 서비스 기간은 ${PROMOTION_DATES.serviceStart.short}부터 ${PROMOTION_DATES.serviceEnd.short}까지예요. 상담 먼저 받아 보시고 정하셔도 괜찮아요.`)}
+            {tight(`매장 수와 원하시는 방식만 알려 주시면 같이 정해 드려요. 회신 기한은 ${PROMOTION_DATES.replyDeadline.label}이고, 1차 광고 집행 기간은 ${PROMOTION_DATES.serviceStart.short}부터 ${PROMOTION_DATES.serviceEnd.short}까지예요. 연장을 원하시면 협의할 수 있어요. 상담 먼저 받아 보시고 정하셔도 괜찮아요.`)}
           </p>
           <div className="promo-actions">{apply}</div>
           <p className="promo-cta__contact">
