@@ -329,7 +329,7 @@ export function PromotionBenefitPage() {
         <p className="promo-back"><Link to="/promotion/apply">← 신청 종류 다시 고르기</Link></p>
         <h1 tabIndex={-1} ref={topRef}>2027 수능 수험생 혜택 참여 신청</h1>
         <p className="promo-form-page__lead">
-          {tight(`수능을 마친 수험생들을 위한 '착 수험생 혜택함'에 소개할 혜택 정보를 받고 있어요. ${BENEFIT_DATES.sendBy}까지 보내주시면 ${BENEFIT_DATES.proposalBy}까지 광고 시안을 보내드립니다. (약 3분 소요)`)}
+          {tight(`수능을 마친 수험생들을 위한 '착 수험생 혜택함'에 소개할 혜택 정보를 받고 있어요. ${BENEFIT_DATES.sendBy}까지 보내주시면 ${BENEFIT_DATES.proposalBy}까지 광고 시안을 보내드립니다. 작성에는 약 3분 걸려요.`)}
         </p>
 
         {closed ? (
