@@ -21,13 +21,15 @@ export function PromotionApplyPage() {
           <div className="promo-choices">
             <Link className="promo-choice" to="/promotion/apply/consult">
               <strong>계약 상담 신청하기</strong>
-              <span>{tight('어떤 광고가 맞을지 먼저 이야기하고 싶어요. 연락처만 남기면 착 팀이 연락드려요. (약 1분)')}</span>
+              <span>{tight('어떤 광고가 맞을지 먼저 이야기하고 싶어요. 연락처만 남기면 착 팀이 연락드려요.')}</span>
+              <small>작성 시간 약 1분</small>
             </Link>
             <Link className="promo-choice" to="/promotion/apply/benefit">
               <strong>시안 신청하기</strong>
               <span>
-                {tight(`수험생에게 드릴 혜택 정보를 보내고 광고 시안을 받아요. ${BENEFIT_DATES.sendBy}까지 보내 주시면 ${BENEFIT_DATES.proposalBy}까지 시안을 보내드려요. (약 3분)`)}
+                {tight(`수험생에게 드릴 혜택 정보를 보내고 광고 시안을 받아요. ${BENEFIT_DATES.sendBy}까지 보내 주시면 ${BENEFIT_DATES.proposalBy}까지 시안을 보내드려요.`)}
               </span>
+              <small>작성 시간 약 3분</small>
             </Link>
           </div>
         )}
