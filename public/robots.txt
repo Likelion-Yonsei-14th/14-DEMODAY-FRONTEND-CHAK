@@ -6,4 +6,11 @@ Disallow: /auth/
 Disallow: /account
 Disallow: /api/
 Disallow: /claim/
+Disallow: /home
+Disallow: /start
+Disallow: /friend-desks
+Disallow: /minigame/*/play
+Disallow: /minigame/study-type/test
 Allow: /
+
+Sitemap: https://www.chak.live/sitemap.xml
