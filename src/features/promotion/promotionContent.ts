@@ -81,6 +81,7 @@ export const LOCAL_PRODUCTS: readonly LocalProduct[] = [
       '수능 후 혜택함 입점',
       '광고에서 수능 후 쓸 쿠폰을 미리 담기',
       '수능 전 인지부터 수능 후 방문까지 한 번에 연결',
+      'A와 B를 따로 신청할 때보다 1.9만원 저렴해요',
     ],
   },
 ]
@@ -127,9 +128,9 @@ export type BrandTier = {
 }
 
 export const BRAND_TIERS: readonly BrandTier[] = [
-  { id: 'S', name: 'Brand S', branches: '2~5개 지점', regular: 149_000, launch: 119_000 },
-  { id: 'M', name: 'Brand M', branches: '6~20개 지점', regular: 299_000, launch: 239_000 },
-  { id: 'L', name: 'Brand L', branches: '21~50개 지점', regular: 499_000, launch: 399_000 },
+  { id: 'S', name: 'Brand S', branches: '2~5개 지점', regular: 140_000, launch: 110_000 },
+  { id: 'M', name: 'Brand M', branches: '6~20개 지점', regular: 290_000, launch: 230_000 },
+  { id: 'L', name: 'Brand L', branches: '21~50개 지점', regular: 440_000, launch: 350_000 },
   { id: 'ENTERPRISE', name: 'Enterprise', branches: '51개 이상 또는 전국 단위', regular: null, launch: null },
 ]
 
