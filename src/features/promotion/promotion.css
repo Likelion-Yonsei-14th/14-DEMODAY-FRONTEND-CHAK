@@ -162,6 +162,7 @@
 .promo-choice { display: grid; gap: 6px; padding: 18px; border: 1.5px solid var(--promo-ink); border-radius: 10px; background: #fff; color: var(--promo-ink); text-decoration: none; }
 .promo-choice strong { font-size: 19px; letter-spacing: -0.01em; }
 .promo-choice span { color: var(--promo-muted); font-size: 15px; }
+.promo-choice small { color: var(--promo-red); font-size: 13px; font-weight: 700; }
 .promo-choice:hover, .promo-choice:focus-visible { background: var(--promo-tint); }
 .promo-back { margin-bottom: 8px; font-size: 14px; }
 .promo-back a { color: var(--promo-muted); }
