@@ -49,7 +49,7 @@ export const BENEFIT_PAGES: readonly Page[] = [
   {
     title: '업체 정보',
     questions: [
-      { id: 'brand', kind: 'text', label: '브랜드(업체)명을 공식 표기 그대로 적어주세요', required: true, max: 100, placeholder: '예) 메가MGC커피' },
+      { id: 'brand', kind: 'text', label: '브랜드(업체)명을 공식 표기 그대로 적어주세요', required: true, max: 100 },
       {
         id: 'category',
         kind: 'select',
@@ -221,7 +221,7 @@ export const BENEFIT_PAGES: readonly Page[] = [
         required: true,
         options: options([['WITHIN_1_DAY', '1일 이내'], ['DAYS_2_3', '2~3일'], ['WEEK_PLUS', '1주 이상']]),
       },
-      { id: 'officialSns', kind: 'text', label: '공식 SNS 계정', max: 100, placeholder: '예) @megacoffee_official' },
+      { id: 'officialSns', kind: 'text', label: '공식 SNS 계정', max: 100, placeholder: '예) @브랜드_공식계정' },
       { id: 'message', kind: 'longtext', label: '남기고 싶은 말', max: 2000 },
     ],
   },
