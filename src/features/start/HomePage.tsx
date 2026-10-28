@@ -13,31 +13,41 @@ import { isApiEnabled } from '@/api/config'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import './StartPage.css'
 
+type DeskCheck = 'unknown' | 'has' | 'none' | 'failed'
+
 /**
  * With a backend the store's desk is only a placeholder until a desk screen
- * loads it, so ask the server whether this account has one. Undefined while
- * unknown or when the check fails, so the caller keeps its usual door.
+ * loads it, so ask the server whether this account has one. 'unknown' until
+ * it answers and 'failed' when the check itself fails, so the placeholder is
+ * never taken for this account's desk.
  */
-function useServerHasDesk(enabled: boolean) {
-  const [hasDesk, setHasDesk] = useState<boolean>()
+function useServerDeskCheck(enabled: boolean) {
+  const [check, setCheck] = useState<DeskCheck>('unknown')
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
     if (!enabled) return
     let cancelled = false
     fetchMyDesk().then(
       () => {
-        if (!cancelled) setHasDesk(true)
+        if (!cancelled) setCheck('has')
       },
       (reason: unknown) => {
-        if (!cancelled && reason instanceof ApiError && reason.code === 'DESK_NOT_FOUND') setHasDesk(false)
+        if (cancelled) return
+        setCheck(reason instanceof ApiError && reason.code === 'DESK_NOT_FOUND' ? 'none' : 'failed')
       },
     )
     return () => {
       cancelled = true
     }
-  }, [enabled])
+  }, [enabled, attempt])
 
-  return hasDesk
+  const retry = () => {
+    setCheck('unknown')
+    setAttempt((count) => count + 1)
+  }
+
+  return { check, retry }
 }
 
 /**
@@ -55,9 +65,12 @@ export function HomePage() {
   const member = usePrototypeStore((state) => state.classroomMember)
   const authSession = usePrototypeStore((state) => state.authSession)
   const resetDeskCreationDraft = usePrototypeStore((state) => state.resetDeskCreationDraft)
-  const serverHasDesk = useServerHasDesk(isApiEnabled && authSession.status === 'authenticated')
+  const serverCheck = isApiEnabled && authSession.status === 'authenticated'
+  const { check: deskCheck, retry: retryDeskCheck } = useServerDeskCheck(serverCheck)
 
-  const hasDesk = serverHasDesk ?? desk.claimStatus === 'claimed'
+  const hasDesk = serverCheck ? deskCheck === 'has' : desk.claimStatus === 'claimed'
+  // The server hasn't said yet (or couldn't): don't show a desk or offer to make one.
+  const deskUnsure = serverCheck && (deskCheck === 'unknown' || deskCheck === 'failed')
   const hasClass = Boolean(member)
 
   const classroomOpen = isClassroomAvailable()
@@ -98,14 +111,23 @@ export function HomePage() {
           <button
             type="button"
             className="home-page__door home-page__door--desk"
-            onClick={hasDesk ? () => navigate('/prototype/my/desk') : startDesk}
+            disabled={serverCheck && deskCheck === 'unknown'}
+            onClick={deskUnsure ? retryDeskCheck : hasDesk ? () => navigate('/prototype/my/desk') : startDesk}
           >
             <span className="home-page__door-label">
-              {hasDesk ? <UserRound size={14} aria-hidden /> : <Plus size={14} aria-hidden />}
+              {deskUnsure || hasDesk ? <UserRound size={14} aria-hidden /> : <Plus size={14} aria-hidden />}
             </span>
-            <strong>{hasDesk ? '내 책상 가기' : '내 책상 만들기'}</strong>
+            <strong>
+              {deskUnsure ? '내 책상 확인하는 중' : hasDesk ? '내 책상 가기' : '내 책상 만들기'}
+            </strong>
             <span>
-              {hasDesk ? '친구들이 남긴 응원을 확인해요' : '링크 하나로 친구들의 응원을 모아요'}
+              {deskCheck === 'failed'
+                ? '불러오지 못했어요. 눌러서 다시 시도해요'
+                : deskUnsure
+                  ? '잠시만 기다려 주세요'
+                  : hasDesk
+                    ? '친구들이 남긴 응원을 확인해요'
+                    : '링크 하나로 친구들의 응원을 모아요'}
             </span>
             <ChevronRight size={20} aria-hidden />
           </button>
