@@ -131,7 +131,7 @@
 .promo-footer { display: grid; gap: 4px; padding: 24px max(20px, calc((100vw - 880px) / 2)) 36px; color: var(--promo-muted); font-size: 13px; }
 
 /* 상담 신청 폼 */
-.promo-form-page { max-width: 640px; margin: 0 auto; padding-top: 36px; padding-bottom: 56px; }
+.promo-form-page { max-width: 640px; margin: 0 auto; padding: 36px 20px 56px; }
 .promo-form-page h1 { font-size: 28px; letter-spacing: -0.02em; }
 .promo-form-page__lead { margin-top: 8px; color: var(--promo-muted); }
 .promo-form { display: grid; gap: 16px; margin-top: 24px; }
