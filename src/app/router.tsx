@@ -197,6 +197,12 @@ export const router = createBrowserRouter([
             }),
           },
           {
+            path: 'benefits',
+            lazy: async () => ({
+              Component: (await import('@/features/admin/BenefitSubmissionsPage')).BenefitSubmissionsPage,
+            }),
+          },
+          {
             path: 'inquiries',
             lazy: async () => ({
               Component: (await import('@/features/admin/InquiriesPage')).InquiriesPage,
@@ -220,6 +226,18 @@ export const router = createBrowserRouter([
         path: '/promotion/apply',
         lazy: async () => ({
           Component: (await import('@/features/promotion/PromotionApplyPage')).PromotionApplyPage,
+        }),
+      },
+      {
+        path: '/promotion/apply/consult',
+        lazy: async () => ({
+          Component: (await import('@/features/promotion/PromotionConsultPage')).PromotionConsultPage,
+        }),
+      },
+      {
+        path: '/promotion/apply/benefit',
+        lazy: async () => ({
+          Component: (await import('@/features/promotion/PromotionBenefitPage')).PromotionBenefitPage,
         }),
       },
       {

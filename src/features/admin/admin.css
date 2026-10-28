@@ -368,3 +368,9 @@
   border-radius: 8px;
   font: inherit;
 }
+
+/* 혜택 시안 신청 상세: 문항과 답을 두 칸으로 */
+.admin-answers { display: grid; gap: 6px; margin: 0; }
+.admin-answers > div { display: grid; grid-template-columns: minmax(140px, 240px) 1fr; gap: 12px; padding: 6px 0; border-top: 1px solid var(--admin-line, #e6e6e6); }
+.admin-answers dt { font-weight: 700; }
+.admin-answers dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }

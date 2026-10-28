@@ -28,3 +28,32 @@ export const submitPromotionInquiry = (input: PromotionInquiryInput) =>
       website: input.website,
     },
   })
+
+export type BenefitUploadPurpose = 'LOGO' | 'SHEET'
+
+type BenefitUpload = {
+  key: string
+  uploadUrl: string
+  method: 'PUT'
+  headers: Record<string, string>
+}
+
+/** 혜택 시안 신청서에 붙일 파일을 저장소에 올리고, 신청서에 넣을 파일 키를 돌려준다. 로그인 없이 호출한다. */
+export async function uploadBenefitFile(purpose: BenefitUploadPurpose, file: File): Promise<string> {
+  const upload = await apiFetch<BenefitUpload>('/api/public/promotion/benefit-uploads', {
+    method: 'POST',
+    body: { purpose, fileName: file.name, size: file.size },
+  })
+  const response = await fetch(upload.uploadUrl, { method: 'PUT', headers: upload.headers, body: file })
+  if (!response.ok) {
+    throw new Error(`upload failed: ${response.status}`)
+  }
+  return upload.key
+}
+
+/** 혜택 시안 신청서를 보낸다. 로그인 없이 호출한다. */
+export const submitBenefitSubmission = (answers: Record<string, string | number | string[]>, website: string) =>
+  apiFetch<{ received: boolean }>('/api/public/promotion/benefit-submissions', {
+    method: 'POST',
+    body: { answers, website },
+  })

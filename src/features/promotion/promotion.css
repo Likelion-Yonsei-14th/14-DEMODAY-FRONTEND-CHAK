@@ -138,7 +138,7 @@
 .promo-form label { display: grid; gap: 6px; }
 .promo-form label > span { font-weight: 700; font-size: 15px; }
 .promo-form small { color: var(--promo-muted); font-weight: 400; }
-.promo-form input:not([type='checkbox']), .promo-form textarea, .promo-form select {
+.promo-form input:not([type='checkbox']):not([type='radio']), .promo-form textarea, .promo-form select {
   width: 100%;
   min-height: 48px;
   padding: 10px 12px;
@@ -156,6 +156,34 @@
 .promo-error { padding: 12px 14px; border-radius: 8px; background: #fde4dd; color: #8a1f0c; font-size: 14px; }
 .promo-done { display: grid; gap: 14px; justify-items: start; padding: 24px 0; }
 .promo-done h1 { font-size: 26px; }
+
+/* 신청 종류 고르기 */
+.promo-choices { display: grid; gap: 12px; margin-top: 24px; }
+.promo-choice { display: grid; gap: 6px; padding: 18px; border: 1.5px solid var(--promo-ink); border-radius: 10px; background: #fff; color: var(--promo-ink); text-decoration: none; }
+.promo-choice strong { font-size: 19px; letter-spacing: -0.01em; }
+.promo-choice span { color: var(--promo-muted); font-size: 15px; }
+.promo-choice:hover, .promo-choice:focus-visible { background: var(--promo-tint); }
+.promo-back { margin-bottom: 8px; font-size: 14px; }
+.promo-back a { color: var(--promo-muted); }
+
+/* 혜택 시안 설문 */
+.promo-survey { gap: 20px; }
+.promo-progress { color: var(--promo-red); font-size: 14px; font-weight: 700; }
+.promo-field { display: grid; gap: 6px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.promo-field > label, .promo-field > legend { display: block; padding: 0; font-weight: 700; font-size: 15px; }
+.promo-field small { display: block; color: var(--promo-muted); font-weight: 400; font-size: 13px; }
+.promo-field--sub { margin-left: 4px; padding-left: 14px; border-left: 3px solid var(--promo-line); }
+.promo-required { color: var(--promo-red); font-size: 13px; font-style: normal; font-weight: 400; }
+.promo-option { display: flex !important; gap: 10px; align-items: flex-start; padding: 6px 0; font-weight: 400; }
+.promo-option span { font-weight: 400 !important; font-size: 15px !important; }
+.promo-option input { flex: none; width: 20px; height: 20px; margin-top: 2px; }
+.promo-field-error { color: #8a1f0c; font-size: 14px; }
+.promo-field [aria-invalid='true'] { border-color: #c4361a; }
+.promo-unit { display: flex; align-items: center; gap: 8px; }
+.promo-unit span { flex: none; color: var(--promo-muted); }
+.promo-linkbtn { padding: 0; border: 0; background: none; color: var(--promo-red); font: inherit; text-decoration: underline; cursor: pointer; }
+.promo-survey__nav { display: flex; gap: 10px; }
+.promo-survey__nav .promo-btn { flex: 1; }
 
 @media (max-width: 560px) {
   .promo-hero, .promo-section { padding-top: 32px; padding-bottom: 32px; }
