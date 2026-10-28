@@ -55,8 +55,11 @@ const MINI_GAMES: readonly MiniGame[] = [
   },
 ]
 
-/** Every mini game in one place, shown at the end of /home and /start. */
-export function MiniGameSection() {
+/**
+ * Every mini game in one place, shown at the end of /home and /start and under
+ * the sign-in doors on the first screen. `note` is a line under the heading.
+ */
+export function MiniGameSection({ note }: { note?: string }) {
   const navigate = useNavigate()
 
   return (
@@ -65,6 +68,7 @@ export function MiniGameSection() {
         <h2 id="mini-games-title">잠깐 쉬어 가기</h2>
         <span>미니게임</span>
       </div>
+      {note && <p className="mini-games__note">{note}</p>}
       <ul className="mini-games__grid">
         {MINI_GAMES.map((game) => (
           <li key={game.id}>
