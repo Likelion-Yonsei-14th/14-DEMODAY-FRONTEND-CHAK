@@ -137,6 +137,11 @@
   background: rgba(255, 255, 255, .10);
 }
 
+/* Text is drawn above stickers; let a selected sticker under it be grabbed. */
+.message-canvas--sticker-selected .canvas-text-element {
+  pointer-events: none;
+}
+
 .canvas-text-element__input {
   width: 100%;
   overflow: hidden;
