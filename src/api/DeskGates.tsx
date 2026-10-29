@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Navigate, Outlet, useParams } from 'react-router-dom'
+import { Navigate, Outlet, useLocation, useParams } from 'react-router-dom'
 import { fetchRepliesToMe } from '@/api/community'
 import { loadOwnerDesk, loadReactions } from '@/api/ownerLoader'
 import { fetchPublicDesk, fetchPublicMessages } from '@/api/desks'
 import { ApiError } from '@/api/client'
 import { isApiEnabled } from '@/api/config'
+import { cleanDeskToken } from '@/api/deskToken'
 import { deskFromApi, publicMessagesFromApi, replyFromApi } from '@/api/mappers'
 import { usePrototypeStore } from '@/store/prototypeStore'
 
@@ -21,10 +22,12 @@ function Notice({ children }: { children: string }) {
  */
 export function SupporterDeskGate() {
   const { supporterToken = '' } = useParams()
+  const location = useLocation()
+  const cleaned = cleanDeskToken(supporterToken)
   const [state, setState] = useState<LoadState>(isApiEnabled ? 'loading' : 'ready')
 
   useEffect(() => {
-    if (!isApiEnabled) return
+    if (!isApiEnabled || cleaned !== supporterToken) return
     let cancelled = false
     setState('loading')
 
@@ -67,8 +70,14 @@ export function SupporterDeskGate() {
     return () => {
       cancelled = true
     }
-  }, [supporterToken])
+  }, [supporterToken, cleaned])
 
+  if (isApiEnabled && cleaned === null) return <Notice>존재하지 않는 응원 링크예요.</Notice>
+  if (isApiEnabled && cleaned !== supporterToken) {
+    // 끝에 붙은 군더더기를 떼고 같은 화면으로 다시 보낸다. 경로의 나머지(compose 등)와 검색어·해시는 그대로 둔다.
+    const path = location.pathname.replace(/^\/desk\/[^/]+/, `/desk/${cleaned}`)
+    return <Navigate to={`${path}${location.search}${location.hash}`} replace />
+  }
   if (state === 'loading') return <Notice>책상을 불러오고 있어요...</Notice>
   if (state === 'not-found') return <Notice>존재하지 않는 응원 링크예요.</Notice>
   if (state === 'error') return <Notice>책상을 불러오지 못했어요. 잠시 후 다시 시도해주세요.</Notice>

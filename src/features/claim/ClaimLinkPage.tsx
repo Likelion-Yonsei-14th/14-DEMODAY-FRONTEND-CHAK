@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { cleanDeskToken } from '@/api/deskToken'
 import { ApiError } from '@/api/client'
 import { isApiEnabled } from '@/api/config'
 import { claimDesk, fetchClaimPreview, type ApiClaimPreview, type ApiClaimResult } from '@/api/desks'
@@ -36,7 +37,9 @@ function Shell({ back, children }: { back: () => void; children: ReactNode }) {
  * are waiting (never what they say), confirm they really are that person, and take the desk over.
  */
 export function ClaimLinkPage() {
-  const { claimToken = '' } = useParams()
+  // 공유하다가 링크 끝에 붙은 글자(역슬래시 등)는 떼고 서버에 묻는다.
+  const { claimToken: rawToken = '' } = useParams()
+  const claimToken = cleanDeskToken(rawToken) ?? rawToken
   const navigate = useNavigate()
   const authenticated = usePrototypeStore((state) => state.authSession.status === 'authenticated')
   const [preview, setPreview] = useState<ApiClaimPreview | null>(null)
