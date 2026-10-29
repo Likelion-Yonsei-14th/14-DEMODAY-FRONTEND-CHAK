@@ -393,10 +393,12 @@ export function ComposerToolTray({
 
               </div>
 
+              {/* Text always renders above other layers, so its order is fixed. */}
               <LayerActions
                 onSendBackward={onTextSendBackward}
                 onBringForward={onTextBringForward}
                 onDelete={onTextDelete}
+                canReorder={false}
               />
             </>
           ) : (
