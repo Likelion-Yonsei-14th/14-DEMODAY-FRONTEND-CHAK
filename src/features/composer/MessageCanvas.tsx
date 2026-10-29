@@ -25,12 +25,14 @@ import { getTextAppearance } from './fonts/fontRegistry'
 import { WordArtGraphic } from './wordArt/wordArtAssets'
 import { getStickerAsset } from './stickerAssets'
 import {
+  cardPx,
   getBackgroundPhotoStyle,
   getFloatingPhotoStyle,
   getPhotoObjectFit,
   getPositionedAssetStyle,
   getStickerStyle,
   getTextBoxStyle,
+  getTextMinHeight,
 } from './cardRenderStyles'
 import './composer.css'
 import './cardRenderShared.css'
@@ -351,10 +353,11 @@ function CanvasTextElement({
     const textarea = textareaRef.current
     if (!textarea) return
 
+    // The minimum height comes from CSS (getTextMinHeight), scaled with the card.
     const resizeToContent = () => {
       textarea.style.height = 'auto'
       textarea.style.height =
-        `${Math.max(72, textarea.scrollHeight)}px`
+        `${textarea.scrollHeight}px`
     }
 
     resizeToContent()
@@ -364,7 +367,18 @@ function CanvasTextElement({
         resizeToContent()
       }
     })
+
+    // Font size follows the card width, so re-fit when the card resizes.
+    const canvas = canvasRef.current
+    const observer =
+      canvas && typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(resizeToContent)
+        : null
+    if (canvas) observer?.observe(canvas)
+
+    return () => observer?.disconnect()
   }, [
+    canvasRef,
     element.text,
     element.fontId,
     element.fontSize,
@@ -655,7 +669,11 @@ function CanvasTextElement({
         }
         style={{
           fontFamily: appearance.fontFamily,
-          fontSize: `${appearance.fontSize}px`,
+          fontSize: cardPx(appearance.fontSize),
+          minHeight: getTextMinHeight(
+            appearance.fontSize,
+            appearance.lineHeight,
+          ),
           fontWeight: appearance.fontWeight,
           lineHeight: appearance.lineHeight,
           letterSpacing: appearance.letterSpacing,
