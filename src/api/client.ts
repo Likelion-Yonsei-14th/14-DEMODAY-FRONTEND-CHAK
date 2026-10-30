@@ -107,6 +107,27 @@ async function parse<T>(response: Response): Promise<T> {
 
 let refreshInFlight: Promise<AuthTokenResponse | null> | null = null
 
+/** Pauses before re-trying a refresh that never reached the server; one entry per retry. */
+const REFRESH_RETRY_DELAYS_MS = [400, 1200]
+
+/**
+ * A refresh that got no response at all (dropped connection, brief network
+ * change) usually never reached the server, so the refresh token was not
+ * rotated and sending it again works. If the server did rotate it, the retry
+ * is rejected and the user ends up signed out, as without a retry. Only the
+ * last attempt alerts the team.
+ */
+async function sendRefresh() {
+  for (const delay of REFRESH_RETRY_DELAYS_MS) {
+    try {
+      return await send('/api/auth/refresh', { method: 'POST', quiet: true }, false)
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+  }
+  return send('/api/auth/refresh', { method: 'POST' }, false)
+}
+
 /**
  * Exchanges the HttpOnly refresh cookie for a new access token. Concurrent
  * callers share one request, because the backend rotates the refresh token
@@ -116,7 +137,7 @@ export function refreshSession(): Promise<AuthTokenResponse | null> {
   if (!refreshInFlight) {
     refreshInFlight = (async () => {
       try {
-        const response = await send('/api/auth/refresh', { method: 'POST' }, false)
+        const response = await sendRefresh()
         const tokens = await parse<AuthTokenResponse>(response)
         setAccessToken(tokens.accessToken)
         return tokens
