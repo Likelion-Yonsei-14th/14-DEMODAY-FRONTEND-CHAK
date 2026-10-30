@@ -54,7 +54,8 @@ describe('card render styles', () => {
       left: '48%',
       top: '55%',
       width: '70%',
-      zIndex: 31,
+      // Text renders above stickers (max stored zIndex 80) without changing stored data.
+      zIndex: 131,
     })
   })
 
