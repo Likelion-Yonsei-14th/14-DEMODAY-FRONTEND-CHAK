@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import {
   ArrowLeft,
-  MessageCircleMore,
+  Mail,
 } from 'lucide-react'
 import {
   Navigate,
@@ -205,7 +205,7 @@ export function MessageReplyPage() {
       <main className="reply-page">
         <section className="reply-page__heading">
           <span className="reply-page__icon" aria-hidden>
-            <MessageCircleMore size={21} />
+            <Mail size={21} />
           </span>
           <h1>
             {scope === 'daily'
@@ -229,6 +229,11 @@ export function MessageReplyPage() {
         )}
 
         <form className="reply-compose" onSubmit={submit}>
+          <img
+            className="reply-compose__tape"
+            src="/assets/letter-decor/tape-pink.webp"
+            alt=""
+          />
           <label>
             <span>답장</span>
             <textarea
@@ -334,7 +339,7 @@ export function SupporterRepliesPage() {
         {received.length === 0 ? (
           <section className="reply-empty">
             <span className="reply-page__icon" aria-hidden>
-              <MessageCircleMore size={21} />
+              <Mail size={21} />
             </span>
             <h1>아직 받은 답장이 없어요.</h1>
           </section>
@@ -361,15 +366,20 @@ export function SupporterRepliesPage() {
                   </div>
                 )}
                 <div className="received-reply__answer">
+                  <img
+                    className="reply-compose__tape"
+                    src="/assets/letter-decor/tape-pink.webp"
+                    alt=""
+                  />
                   <span>{reply.ownerName}님의 답장</span>
                   <p>{reply.text}</p>
+                  <time>
+                    {new Intl.DateTimeFormat('ko-KR', {
+                      month: 'long',
+                      day: 'numeric',
+                    }).format(new Date(reply.createdAt))}
+                  </time>
                 </div>
-                <time>
-                  {new Intl.DateTimeFormat('ko-KR', {
-                    month: 'long',
-                    day: 'numeric',
-                  }).format(new Date(reply.createdAt))}
-                </time>
               </article>
             )
           })
