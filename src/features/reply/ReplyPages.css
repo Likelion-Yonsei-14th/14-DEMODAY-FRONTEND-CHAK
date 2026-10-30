@@ -39,22 +39,28 @@
   font-size: 13px;
 }
 
-.reply-page__source {
+.reply-page__source,
+.received-reply__mine {
   display: grid;
   gap: 6px;
-  padding: 14px 15px;
-  border-radius: var(--radius-md);
-  background: var(--color-surface-subtle);
+  /* Tucked behind the letter: the extra bottom padding keeps its text clear. */
+  margin: 0 10px -32px;
+  padding: 14px 15px 46px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-base);
+  box-shadow: var(--shadow-paper);
+  transform: rotate(-1.5deg);
 }
 
 .reply-page__source span,
 .received-reply span {
   color: var(--color-content-secondary);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 800;
 }
 
-.reply-page__source p {
+.reply-page__source p,
+.received-reply__mine p {
   margin: 0;
   overflow: hidden;
   font-size: 13px;
@@ -64,9 +70,30 @@
   -webkit-line-clamp: 2;
 }
 
-.reply-compose {
+.reply-compose,
+.received-reply__answer {
+  position: relative;
   display: grid;
   gap: 6px;
+  padding: 26px 20px 14px;
+  border-radius: var(--radius-sm);
+  background: #f8f1e7;
+  box-shadow: var(--shadow-paper);
+}
+
+.reply-compose:focus-within {
+  box-shadow:
+    var(--shadow-paper),
+    0 0 0 3px color-mix(in srgb, var(--color-focus) 24%, transparent);
+}
+
+.reply-compose__tape {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  width: 112px;
+  transform: translateX(-50%) rotate(-2deg);
+  pointer-events: none;
 }
 
 .reply-compose label {
@@ -75,40 +102,47 @@
 }
 
 .reply-compose label > span {
+  color: var(--color-content-secondary);
   font-size: 12px;
   font-weight: 700;
 }
 
-.reply-compose textarea {
-  min-height: 176px;
-  resize: none;
-  padding: 15px;
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface-base);
+.reply-compose textarea,
+.received-reply__answer p {
+  /* Line height and rule spacing share 32px so text sits on the lines. */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 31px,
+    rgba(120, 95, 65, .2) 31px 32px
+  );
   color: var(--color-content-primary);
-  font: inherit;
-  line-height: 1.65;
+  font-family: var(--font-hand);
+  font-size: 20px;
+  line-height: 32px;
+}
+
+.reply-compose textarea {
+  height: 224px;
+  resize: none;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  background-attachment: local;
   outline: none;
 }
 
-.reply-compose textarea:focus {
-  border-color: var(--color-focus);
-  box-shadow: 0 0 0 3px color-mix(
-    in srgb,
-    var(--color-focus) 14%,
-    transparent
-  );
+.reply-compose textarea::placeholder {
+  color: var(--color-content-secondary);
 }
 
 .reply-compose > small {
   justify-self: end;
-  color: var(--color-content-tertiary);
-  font-size: 10px;
+  color: var(--color-content-secondary);
+  font-size: 12px;
 }
 
 .reply-page--received {
-  gap: 12px;
+  gap: 32px;
 }
 
 .reply-empty {
@@ -122,36 +156,20 @@
 
 .received-reply {
   display: grid;
-  gap: 0;
-  overflow: hidden;
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface-base);
 }
 
-.received-reply__mine,
-.received-reply__answer {
-  display: grid;
-  gap: 5px;
-  padding: 14px 15px;
+.received-reply:nth-child(even) .received-reply__mine {
+  transform: rotate(1.5deg);
 }
 
-.received-reply__mine {
-  background: var(--color-surface-subtle);
-}
-
-.received-reply__answer {
-  border-top: 1px solid var(--color-border-subtle);
-}
-
-.received-reply p {
+.received-reply__answer p {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.6;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .received-reply time {
-  padding: 0 15px 13px;
-  color: var(--color-content-tertiary);
-  font-size: 10px;
+  justify-self: end;
+  color: var(--color-content-secondary);
+  font-size: 12px;
 }
