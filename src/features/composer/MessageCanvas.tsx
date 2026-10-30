@@ -25,12 +25,14 @@ import { getTextAppearance } from './fonts/fontRegistry'
 import { WordArtGraphic } from './wordArt/wordArtAssets'
 import { getStickerAsset } from './stickerAssets'
 import {
+  cardPx,
   getBackgroundPhotoStyle,
   getFloatingPhotoStyle,
   getPhotoObjectFit,
   getPositionedAssetStyle,
   getStickerStyle,
   getTextBoxStyle,
+  getTextMinHeight,
 } from './cardRenderStyles'
 import './composer.css'
 import './cardRenderShared.css'
@@ -88,6 +90,11 @@ export function MessageCanvas({
     draft.photoElements.filter(
       (photo) => photo.role === 'floating',
     )
+  // Text sits above stickers; while one is selected (and so while it is
+  // dragged) text boxes let the pointer through so a covered sticker can move.
+  const stickerSelected = draft.stickerElements.some(
+    (element) => element.id === selectedId,
+  )
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current
@@ -140,6 +147,9 @@ export function MessageCanvas({
           background.kind === 'css'
             ? background.className ?? ''
             : 'message-canvas--image',
+          stickerSelected
+            ? 'message-canvas--sticker-selected'
+            : '',
         ].filter(Boolean).join(' ')}
         style={{
           backgroundColor: background.tone,
@@ -151,6 +161,46 @@ export function MessageCanvas({
             target instanceof Element &&
             !target.closest('[data-canvas-layer]')
           ) {
+            // A tap on a pass-through text box still starts editing it.
+            // Hit-testing skips pointer-events: none, so compare rects instead.
+            const textInput = stickerSelected
+              ? [
+                  ...event.currentTarget.querySelectorAll<HTMLTextAreaElement>(
+                    '.canvas-text-element__input',
+                  ),
+                ].reverse().find((node) => {
+                  const rect = node.getBoundingClientRect()
+                  return (
+                    event.clientX >= rect.left &&
+                    event.clientX <= rect.right &&
+                    event.clientY >= rect.top &&
+                    event.clientY <= rect.bottom
+                  )
+                })
+              : undefined
+            const textId = textInput?.dataset.textId
+            if (textInput && textId) {
+              // Keep the default pointerdown from moving focus away again.
+              event.preventDefault()
+              onSelect(textId)
+              textInput.focus()
+              // The text's done/move buttons appear under the finger; the
+              // click from this same tap must not press them.
+              const swallowClick = (clickEvent: MouseEvent) => {
+                clickEvent.preventDefault()
+                clickEvent.stopPropagation()
+              }
+              window.addEventListener('click', swallowClick, {
+                capture: true,
+                once: true,
+              })
+              window.setTimeout(() => {
+                window.removeEventListener('click', swallowClick, {
+                  capture: true,
+                })
+              }, 500)
+              return
+            }
             onSelect(null)
           }
         }}
@@ -351,10 +401,11 @@ function CanvasTextElement({
     const textarea = textareaRef.current
     if (!textarea) return
 
+    // The minimum height comes from CSS (getTextMinHeight), scaled with the card.
     const resizeToContent = () => {
       textarea.style.height = 'auto'
       textarea.style.height =
-        `${Math.max(72, textarea.scrollHeight)}px`
+        `${textarea.scrollHeight}px`
     }
 
     resizeToContent()
@@ -364,7 +415,18 @@ function CanvasTextElement({
         resizeToContent()
       }
     })
+
+    // Font size follows the card width, so re-fit when the card resizes.
+    const canvas = canvasRef.current
+    const observer =
+      canvas && typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(resizeToContent)
+        : null
+    if (canvas) observer?.observe(canvas)
+
+    return () => observer?.disconnect()
   }, [
+    canvasRef,
     element.text,
     element.fontId,
     element.fontSize,
@@ -645,6 +707,7 @@ function CanvasTextElement({
         ref={textareaRef}
         value={element.text}
         className="canvas-text-element__input"
+        data-text-id={element.id}
         placeholder={`${recipientName?.trim() || '친구'}에게 남기고 싶은 말을 적어보세요`}
         aria-label="응원 메시지"
         rows={2}
@@ -655,7 +718,11 @@ function CanvasTextElement({
         }
         style={{
           fontFamily: appearance.fontFamily,
-          fontSize: `${appearance.fontSize}px`,
+          fontSize: cardPx(appearance.fontSize),
+          minHeight: getTextMinHeight(
+            appearance.fontSize,
+            appearance.lineHeight,
+          ),
           fontWeight: appearance.fontWeight,
           lineHeight: appearance.lineHeight,
           letterSpacing: appearance.letterSpacing,

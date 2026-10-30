@@ -5,12 +5,14 @@ import { getTextAppearance } from '@/features/composer/fonts/fontRegistry'
 import { getFirstCardPage } from '@/features/composer/messagePages'
 import { getStickerAsset } from '@/features/composer/stickerAssets'
 import {
+  cardPx,
   getBackgroundPhotoStyle,
   getFloatingPhotoStyle,
   getPhotoObjectFit,
   getPositionedAssetStyle,
   getStickerStyle,
   getTextBoxStyle,
+  getTextMinHeight,
 } from '@/features/composer/cardRenderStyles'
 import type { CardPage, Message, PhotoElement } from '@/types'
 import './MessageViewerPage.css'
@@ -126,7 +128,12 @@ export function OriginalMessageRenderer({
           const appearance = getTextAppearance(element)
           const typography: CSSProperties = {
             fontFamily: appearance.fontFamily,
-            fontSize: `${appearance.fontSize}px`,
+            fontSize: cardPx(appearance.fontSize),
+            // + the 1px top and bottom border the composer keeps on its wrapper.
+            minHeight: `calc(${getTextMinHeight(
+              appearance.fontSize,
+              appearance.lineHeight,
+            )} + 2px)`,
             fontWeight: appearance.fontWeight,
             lineHeight: appearance.lineHeight,
             letterSpacing: appearance.letterSpacing,

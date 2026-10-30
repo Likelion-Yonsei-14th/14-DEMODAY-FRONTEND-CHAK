@@ -12,6 +12,9 @@
     0 5px 14px rgba(71, 52, 38, .07),
     inset 0 1px 0 rgba(255, 255, 255, .78);
   isolation: isolate;
+  /* Text sizes are in cqw of the card; see CARD_DESIGN_WIDTH in cardRenderStyles.ts. */
+  container-type: inline-size;
+  --card-px: calc(100cqw / 320);
 }
 
 .message-canvas--cream {
@@ -64,15 +67,18 @@
 .canvas-text-element__input,
 .original-message__text {
   box-sizing: border-box;
-  min-height: 72px;
-  padding: 9px 12px;
+  padding: calc(9 * var(--card-px)) calc(12 * var(--card-px));
   font-synthesis: none;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
+/* Block, so no inline baseline gap makes the composer box taller than the recipient's. */
+.canvas-text-element__input {
+  display: block;
+}
+
 .original-message__text {
-  min-height: 74px;
   border: 1px solid transparent;
   border-radius: 12px;
 }
