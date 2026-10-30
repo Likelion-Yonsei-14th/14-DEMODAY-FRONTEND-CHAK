@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { apiFetch, ApiError } from '@/api/client'
+import { apiFetch, ApiError, refreshSession } from '@/api/client'
 import * as reporter from '@/lib/errorReporter'
 import { getAccessToken, setAccessToken } from '@/api/tokenStore'
 
@@ -107,6 +107,48 @@ describe('apiFetch', () => {
     await expect(apiFetch('/api/public/unlocks', { quiet: true })).rejects.toThrow()
     expect(report).toHaveBeenCalledTimes(1)
     report.mockRestore()
+  })
+
+  describe('refreshSession network retries', () => {
+    beforeEach(() => vi.useFakeTimers())
+    afterEach(() => vi.useRealTimers())
+
+    it('retries a refresh that got no response and restores the session without alerting', async () => {
+      const report = vi.spyOn(reporter, 'reportError').mockImplementation(() => undefined)
+      fetchMock
+        .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+        .mockResolvedValueOnce(jsonResponse(200, tokens))
+
+      const pending = refreshSession()
+      await vi.runAllTimersAsync()
+
+      await expect(pending).resolves.toMatchObject({ accessToken: 'new-access' })
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+      expect(getAccessToken()).toBe('new-access')
+      expect(report).not.toHaveBeenCalled()
+      report.mockRestore()
+    })
+
+    it('alerts once and rejects after three failed attempts', async () => {
+      const report = vi.spyOn(reporter, 'reportError').mockImplementation(() => undefined)
+      fetchMock.mockRejectedValue(new TypeError('Failed to fetch'))
+
+      const pending = refreshSession()
+      const outcome = pending.catch((e: unknown) => e)
+      await vi.runAllTimersAsync()
+
+      expect(await outcome).toBeInstanceOf(TypeError)
+      expect(fetchMock).toHaveBeenCalledTimes(3)
+      expect(report).toHaveBeenCalledTimes(1)
+      report.mockRestore()
+    })
+
+    it('does not retry when the server answered, even with a rejection', async () => {
+      fetchMock.mockResolvedValueOnce(jsonResponse(401, { code: 'INVALID_REFRESH_TOKEN', message: 'x' }))
+
+      await expect(refreshSession()).resolves.toBeNull()
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
   })
 
   describe('responses that are not JSON', () => {
