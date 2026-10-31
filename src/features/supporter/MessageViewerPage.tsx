@@ -17,6 +17,8 @@ import {
 } from '@/design-system'
 import { getMessagePages } from '@/features/composer/messagePages'
 import { AppShell } from '@/layout/AppShell'
+import { isApiEnabled } from '@/api/config'
+import { loadOwnerDesk } from '@/api/ownerLoader'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { DEFAULT_SUPPORTER_TOKEN, supporterPath } from '@/prototype/supporterRoute'
 import {
@@ -191,6 +193,25 @@ export function MessageViewerPage() {
     classroomView,
   ])
 
+  // The backend sends a letter without its contents while it is locked. If this
+  // page still holds that copy but the letter has opened since (settings
+  // changed, time passed), fetch it again instead of showing an empty card.
+  const emptyOpenedLetter =
+    isApiEnabled &&
+    !supporterView &&
+    !classroomView &&
+    message?.kind === 'card' &&
+    Boolean(availability?.available) &&
+    !message.pages?.length
+  const [refetchState, setRefetchState] = useState<'idle' | 'loading' | 'done'>('idle')
+  useEffect(() => {
+    if (!emptyOpenedLetter || refetchState !== 'idle') return
+    setRefetchState('loading')
+    loadOwnerDesk()
+      .catch(() => undefined)
+      .finally(() => setRefetchState('done'))
+  }, [emptyOpenedLetter, refetchState])
+
   useEffect(() => {
     setActivePageIndex(0)
     setCharmPhase('front')
@@ -270,6 +291,40 @@ export function MessageViewerPage() {
         : '/prototype/my/desk'
 
     navigate(`${path}${location.search}`)
+  }
+
+  if (emptyOpenedLetter) {
+    return (
+      <AppShell
+        surface="base"
+        contentClassName="message-viewer-shell"
+        appBar={
+          <AppBar
+            title="응원 열기"
+            leading={
+              <IconButton
+                label="돌아가기"
+                icon={<ArrowLeft size={21} aria-hidden />}
+                onClick={back}
+              />
+            }
+          />
+        }
+      >
+        <div className="message-viewer__missing">
+          <strong>
+            {refetchState === 'done'
+              ? '응원 내용을 불러오지 못했어요. 새로고침해 주세요.'
+              : '응원을 불러오고 있어요...'}
+          </strong>
+          {refetchState === 'done' ? (
+            <Button variant="secondary" onClick={() => window.location.reload()}>
+              새로고침
+            </Button>
+          ) : null}
+        </div>
+      </AppShell>
+    )
   }
 
   if (!message) {
