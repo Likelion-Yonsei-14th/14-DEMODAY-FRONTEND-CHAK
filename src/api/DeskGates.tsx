@@ -11,6 +11,8 @@ import { usePrototypeStore } from '@/store/prototypeStore'
 
 type LoadState = 'loading' | 'ready' | 'not-found' | 'error'
 
+const REFRESH_AFTER_HIDDEN_MS = 30_000
+
 function Notice({ children }: { children: string }) {
   return <main style={{ padding: 24, textAlign: 'center' }}>{children}</main>
 }
@@ -115,6 +117,24 @@ export function OwnerDeskGate() {
     return () => {
       cancelled = true
     }
+  }, [authenticated, userId])
+
+  // A page left open (a phone's in-app browser resumes without reloading) keeps
+  // the letters it fetched, and letters that were locked then come without
+  // their contents. Reload quietly when the page comes back after a while.
+  useEffect(() => {
+    if (!isApiEnabled || !authenticated) return
+    let hiddenAt = 0
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        hiddenAt = Date.now()
+      } else if (hiddenAt && Date.now() - hiddenAt >= REFRESH_AFTER_HIDDEN_MS) {
+        hiddenAt = 0
+        loadOwnerDesk().catch(() => undefined)
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
   }, [authenticated, userId])
 
   if (!isApiEnabled) return <Outlet />
