@@ -36,6 +36,10 @@ export function scheduleDeskSettingsSync(read: () => Snapshot) {
       defaultMessageVisibility: settings.defaultMessageVisibility === 'public' ? 'PUBLIC' : 'PRIVATE',
       applyVisibilityToExisting: false,
       pushEnabled: settings.pushEnabled,
-    }).catch(() => notifyApiError('설정을 저장하지 못했어요. 잠시 후 다시 시도해주세요.'))
+    })
+      // The backend re-times letters that are still locked, so the list this
+      // screen holds (their unlock times and contents) is out of date now.
+      .then(() => import('@/api/ownerLoader').then(({ loadOwnerDesk }) => loadOwnerDesk()))
+      .catch(() => notifyApiError('설정을 저장하지 못했어요. 잠시 후 다시 시도해주세요.'))
   }, DEBOUNCE_MS)
 }
