@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { NotificationProvider } from '@/design-system/overlays'
 import { DEFAULT_ELECTIVES } from './examCareerConfig'
 import { ExamCareerIntroPage, ExamCareerPlayPage, ExamCareerResultPage } from './ExamCareerPages'
+import { RELEASE_NOTES } from './examCareerReleaseNotes'
 import {
   acknowledgeNotice,
   chooseElectives,
@@ -106,6 +107,31 @@ afterEach(() => {
 })
 
 describe('exam career mini game', () => {
+  it('folds the release notes between the home button and the disclaimer', () => {
+    renderAt('/minigame/exam-career')
+    const latest = RELEASE_NOTES[0]!
+    const summary = screen.getByText(`릴리즈 노트 · v${latest.version}`)
+    const notes = summary.closest('details')!
+    expect(notes).not.toHaveAttribute('open')
+    fireEvent.click(summary)
+    expect(notes).toHaveAttribute('open')
+    expect(within(notes).getByRole('heading', { name: /^v1\.0\.0 / })).toBeInTheDocument()
+
+    // The last one; the app bar has an icon button of the same name.
+    const home = screen.getAllByRole('button', { name: '홈 화면으로 돌아가기' }).at(-1)!
+    const disclaimer = screen.getByText(/^재미로 보는 가상 시뮬레이션이에요/)
+    expect(home.compareDocumentPosition(notes) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(notes.compareDocumentPosition(disclaimer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('numbers the release notes as one patch per merge, newest first', () => {
+    const versions = RELEASE_NOTES.map((note) => note.version)
+    expect(versions.at(-1)).toBe('1.0.0')
+    versions.forEach((version, index) => {
+      expect(version).toBe(`1.0.${versions.length - 1 - index}`)
+    })
+  })
+
   it('needs a name and a 문과/이과 pick, then starts high school with a choice on the page', () => {
     renderAt('/minigame/exam-career')
     expect(screen.getByRole('heading', { name: '수험생 커리어 시뮬레이터' })).toBeInTheDocument()

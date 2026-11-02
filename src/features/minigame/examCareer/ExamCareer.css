@@ -391,7 +391,7 @@
 
 .exam-career-event--plain {
   background: var(--color-surface-muted);
-  color: var(--color-text-secondary);
+  color: var(--color-content-secondary);
 }
 
 .exam-career-batch {
@@ -830,7 +830,7 @@
 
 .exam-career-shuffle__caption {
   margin: 0;
-  color: var(--color-text-secondary);
+  color: var(--color-content-secondary);
   font-size: var(--type-body-s-size);
   word-break: keep-all;
 }
@@ -894,5 +894,40 @@
   color: #5b5348;
   font-size: 14px;
   line-height: 1.5;
+  word-break: keep-all;
+}
+
+/* Release notes, folded at the bottom of the start screen */
+.exam-career-releases {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.exam-career-releases h3 {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-1);
+  font-size: var(--type-body-m-size);
+  font-weight: 800;
+}
+
+.exam-career-releases time {
+  color: var(--color-content-tertiary);
+  font-size: var(--type-caption-size);
+  font-weight: 500;
+}
+
+.exam-career-releases ul {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding-left: 1.1em;
+  color: var(--color-content-secondary);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-line);
   word-break: keep-all;
 }
