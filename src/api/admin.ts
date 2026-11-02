@@ -219,6 +219,23 @@ export type AdminD1CourseStats = {
   regions: AdminKeyCount[]
 }
 
+export type AdminExamCareerStats = {
+  started: number
+  startedToday: number
+  startedLast7Days: number
+  finished: number
+  finishedLast7Days: number
+  /** 끝난 판의 최종 수능 평균 등급. 끝난 판이 없으면 null. */
+  averageFinalGrade: number | null
+  tracks: AdminKeyCount[]
+  /** key는 재수 횟수("0"이 현역). */
+  attempts: AdminKeyCount[]
+  /** key는 대학 단계 id, 진학하지 않으면 "none". */
+  enrolled: AdminKeyCount[]
+  titles: AdminKeyCount[]
+  days: { date: string; started: number; finished: number }[]
+}
+
 export type AdminMinigameStats = {
   games: AdminMinigameGame[]
   studyType: {
@@ -230,6 +247,7 @@ export type AdminMinigameStats = {
   }
   /** 옛 서버 응답에는 없을 수 있다. */
   d1Course?: AdminD1CourseStats
+  examCareer?: AdminExamCareerStats
 }
 
 export const fetchMinigameStats = () => apiFetch<AdminMinigameStats>('/api/admin/minigames/stats')

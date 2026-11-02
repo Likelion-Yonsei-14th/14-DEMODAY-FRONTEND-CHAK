@@ -468,6 +468,34 @@ describe('admin console', () => {
       expect(d1).toHaveTextContent('경기')
     })
 
+    it('shows the career simulator plays with completion rate and where careers ended', async () => {
+      admin.fetchMinigameStats.mockResolvedValue({
+        ...stats,
+        examCareer: {
+          started: 200, startedToday: 15, startedLast7Days: 90, finished: 50, finishedLast7Days: 20,
+          averageFinalGrade: 3.42,
+          tracks: [{ key: 'humanities', count: 120 }, { key: 'science', count: 80 }],
+          attempts: [{ key: '1', count: 20 }, { key: '0', count: 30 }],
+          enrolled: [{ key: 'seoul-upper', count: 10 }, { key: 'none', count: 5 }],
+          titles: [{ key: '현역 에이스', count: 8 }],
+          days: [{ date: '2026-11-02', started: 15, finished: 6 }],
+        },
+      })
+      const { MinigamesPage } = await import('./MinigamesPage')
+      render(<MinigamesPage />)
+
+      const career = await screen.findByRole('region', { name: '수험생 커리어 시뮬레이터' })
+      expect(career).toHaveTextContent('전체 시작200')
+      expect(career).toHaveTextContent('완주율25%')
+      expect(career).toHaveTextContent('최종 수능 평균 등급3.42')
+      expect(career).toHaveTextContent('현역')
+      expect(career).toHaveTextContent('60%')            // 현역 30/50
+      expect(career).toHaveTextContent('인서울 상위권 대학')
+      expect(career).toHaveTextContent('진학하지 않음')
+      expect(career).toHaveTextContent('현역 에이스')
+      expect(career).toHaveTextContent('완주 6')
+    })
+
     it('says there are no D+1 answers yet and tolerates an older server without them', async () => {
       admin.fetchMinigameStats.mockResolvedValue({
         ...stats,
