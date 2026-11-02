@@ -10,6 +10,12 @@ export type PatchNote = {
  */
 export const PATCH_NOTES: readonly PatchNote[] = [
   {
+    version: '1.7.1',
+    changes: [
+      '수능 D-30과 재수 "마지막 승부"에서 고른 선택의 봉투는 성적표와 함께 나오지 않아요. 봉투를 열고 "성적표 보기"를 누르면 성적표가 나와요.',
+    ],
+  },
+  {
     version: '1.7.0',
     changes: [
       '결과가 갈리는 선택지를 고르면 봉투가 올라와요. 직접 눌러 열면 어떻게 됐는지 보여요.',
