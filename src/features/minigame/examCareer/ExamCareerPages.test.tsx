@@ -220,6 +220,12 @@ describe('exam career mini game', () => {
 
     finishSuspense()
     expect(screen.queryByRole('status', { name: '수능 채점 중' })).not.toBeInTheDocument()
+    // The condition roulette comes before the grades; the real odds are its slices.
+    const wheel = screen.getByRole('status', { name: '수능 날의 컨디션은?' })
+    expect(within(wheel).getAllByRole('listitem')).toHaveLength(5)
+    expect(screen.queryByRole('heading', { name: '수능' })).not.toBeInTheDocument()
+    fireEvent.click(within(wheel).getByRole('button', { name: '건너뛰기' }))
+    fireEvent.click(within(wheel).getByRole('button', { name: '성적표 보기' }))
     expect(screen.getByRole('heading', { name: '수능' })).toBeInTheDocument()
     expect(screen.getByText(/^수능 D-30 · /)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '대학 지원하기' })).toBeInTheDocument()
@@ -347,6 +353,12 @@ describe('exam career mini game', () => {
     expect(screen.queryByRole('heading', { name: '수능' })).not.toBeInTheDocument()
     expect(screen.queryByRole('region', { name: /합격 발표가 났어요!|아쉽게도 모두 불합격이에요/ })).not.toBeInTheDocument()
     finishSuspense()
+
+    // One roulette per 군: step through the first, then skip the rest to the results.
+    const first = screen.getByRole('status', { name: /^가·|^가군|가/ })
+    fireEvent.click(within(first).getByRole('button', { name: '건너뛰기' }))
+    fireEvent.click(screen.getByRole('button', { name: '다음 군 보기' }))
+    fireEvent.click(screen.getByRole('button', { name: '남은 것도 모두 건너뛰기' }))
 
     const results = screen.getByRole('region', { name: /합격 발표가 났어요!|아쉽게도 모두 불합격이에요/ })
     expect(screen.getByRole('heading', { name: '수능' })).toBeInTheDocument()
