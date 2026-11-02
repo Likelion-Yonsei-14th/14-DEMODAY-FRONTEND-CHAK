@@ -77,10 +77,10 @@ function Where() {
   return <p data-testid="where">{useLocation().pathname}</p>
 }
 
-function renderPage() {
+function renderPage(path = '/minigame/desk-blast') {
   return render(
     <NotificationProvider>
-      <MemoryRouter initialEntries={['/minigame/desk-blast']}>
+      <MemoryRouter initialEntries={[path]}>
         <Routes>
           <Route path="/minigame/desk-blast" element={<DeskBlastPage />} />
           <Route path="*" element={<Where />} />
@@ -825,5 +825,46 @@ describe('sound', () => {
     renderPage()
 
     expect(screen.getByRole('button', { name: '효과음 켜기' })).toHaveAttribute('aria-pressed', 'false')
+  })
+})
+
+describe('looks', () => {
+  it('starts as the night desk, dark all the way up to the app bar', () => {
+    renderPage()
+
+    expect(document.querySelector('.blast-page')).toHaveAttribute('data-look', 'arcade')
+    expect(document.querySelector('.app-shell')).toHaveClass('blast-look-arcade')
+  })
+
+  it('switches to the cream desk with the button, and remembers it', () => {
+    const first = renderPage()
+
+    fireEvent.click(screen.getByRole('button', { name: /화면 스타일 바꾸기/ }))
+
+    expect(document.querySelector('.blast-page')).toHaveAttribute('data-look', 'objects')
+    expect(document.querySelector('.app-shell')).toHaveClass('blast-look-objects')
+    expect(screen.getByRole('button', { name: '화면 스타일 바꾸기, 지금은 실물 문구' })).toBeInTheDocument()
+    first.unmount()
+
+    renderPage()
+    expect(document.querySelector('.blast-page')).toHaveAttribute('data-look', 'objects')
+  })
+
+  it('opens in the look named in the address', () => {
+    window.localStorage.setItem('chak:desk-blast:look', 'arcade')
+
+    renderPage('/minigame/desk-blast?look=objects')
+
+    expect(document.querySelector('.blast-page')).toHaveAttribute('data-look', 'objects')
+  })
+
+  it('plays the same in either look', () => {
+    engine.next = state({})
+    renderPage('/minigame/desk-blast?look=objects')
+
+    tapPiece(0)
+    fireEvent.click(cell(3, 3))
+
+    expect(score()).toBe('1')
   })
 })
