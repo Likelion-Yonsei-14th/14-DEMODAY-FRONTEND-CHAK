@@ -1,0 +1,694 @@
+/* 수능 블라스트 - mini game screen.
+ *
+ * Layout, motion and the result card are shared. The two looks (data-look on
+ * .blast-page, blast-look-* on the shell) only change colors, materials and
+ * how the stationery is drawn:
+ *   arcade  - 심야 책상: a dark desk mat under a stand lamp, saturated glowing blocks.
+ *   objects - 실물 문구: a green cutting mat on a cream desk, blocks drawn as real objects with soft shadows.
+ */
+
+.blast-shell {
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-4);
+}
+
+.blast-page {
+  --blast-gap: 3px;
+  --blast-cell-radius: 6px;
+  --blast-piece-cell: 23px;
+  display: grid;
+  gap: var(--space-3);
+  max-width: 440px;
+  margin: 0 auto;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* ---------- The night desk: the whole screen goes dark ---------- */
+.blast-look-arcade {
+  --color-bg-canvas: #13111a;
+  --color-surface-base: #1b1822;
+  --color-surface-subtle: #25212e;
+  --color-surface-muted: #2c2736;
+  --color-surface-raised: #2c2736;
+  --color-content-primary: #f6efe4;
+  --color-content-secondary: #b3a9bd;
+  --color-content-tertiary: #8b8197;
+  --color-border-subtle: #2e2a38;
+  --color-border-default: #3b3547;
+  --color-border-strong: #4d465c;
+  --color-brand: #ff5a3c;
+  --color-brand-pressed: #e24526;
+  --color-success: #4fd6a6;
+  background:
+    radial-gradient(120% 60% at 18% -6%, rgba(255, 196, 120, .16), transparent 60%),
+    #13111a;
+  color: var(--color-content-primary);
+}
+
+.blast-look-arcade .app-shell__content,
+.blast-look-arcade .ds-app-bar {
+  background: transparent;
+}
+
+/* ---------- The cream desk: paper, a cutting mat and objects ---------- */
+.blast-look-objects {
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, .55), transparent 40%),
+    #efe7d8;
+}
+
+/* ---------- Header ---------- */
+.blast-stats {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: end;
+  gap: var(--space-3);
+  padding: 0 var(--space-1);
+}
+
+.blast-stats__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--color-content-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+}
+
+.blast-stats__score,
+.blast-stats__combo,
+.blast-stats__best {
+  display: grid;
+  gap: 2px;
+}
+
+.blast-stats__value {
+  font-size: 42px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -.045em;
+  font-variant-numeric: tabular-nums;
+  animation: blast-score-bump .28s ease-out;
+}
+
+[data-look='arcade'] .blast-stats__value {
+  color: #fff7ea;
+  text-shadow: 0 0 22px rgba(255, 170, 90, .35);
+}
+
+.blast-stats__combo strong,
+.blast-stats__best strong {
+  font-size: 20px;
+  line-height: 1.1;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.blast-stats__combo {
+  text-align: center;
+  opacity: .4;
+  transition: opacity .2s, transform .2s;
+}
+
+.blast-stats__combo.is-on {
+  opacity: 1;
+  color: var(--color-brand);
+  transform: scale(1.12);
+}
+
+[data-look='arcade'] .blast-stats__combo.is-on strong {
+  text-shadow: 0 0 14px rgba(255, 90, 60, .75);
+}
+
+.blast-stats__best {
+  text-align: right;
+  color: var(--color-content-secondary);
+}
+
+/* Sound and light/dark sit in the top right corner of the app bar. */
+.ds-app-bar__side--trailing {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.blast-look-arcade .ds-icon-button {
+  color: var(--color-content-primary);
+}
+
+@keyframes blast-score-bump {
+  0% { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- The desk ---------- */
+.blast-desk {
+  position: relative;
+  padding: 40px 14px 34px;
+  border-radius: 26px;
+}
+
+[data-look='arcade'] .blast-desk {
+  background:
+    radial-gradient(90% 70% at 20% 0%, rgba(255, 190, 110, .13), transparent 62%),
+    linear-gradient(165deg, #26222f, #19171f);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .08),
+    inset 0 0 0 1px rgba(255, 255, 255, .04),
+    0 18px 40px -18px rgba(0, 0, 0, .7);
+}
+
+[data-look='objects'] .blast-desk {
+  background:
+    repeating-linear-gradient(0deg, rgba(120, 90, 50, .035) 0 1px, transparent 1px 4px),
+    linear-gradient(165deg, #f6efe2, #e6dcc8);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .8),
+    0 1px 1px rgba(60, 40, 15, .18),
+    0 14px 28px -14px rgba(60, 40, 15, .35);
+}
+
+/* Things lying on the desk around the board; they leave as the score climbs. */
+.blast-clutter {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.blast-clutter__item {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  transition: opacity .8s ease, transform .8s ease;
+}
+
+[data-look='arcade'] .blast-clutter__item {
+  color: rgba(255, 233, 205, .3);
+  filter: drop-shadow(0 0 6px rgba(255, 190, 110, .18));
+}
+
+[data-look='objects'] .blast-clutter__item {
+  color: #7a6a52;
+  opacity: .82;
+  filter: drop-shadow(0 2px 1.5px rgba(60, 40, 15, .28));
+}
+
+.blast-clutter__item svg {
+  stroke-width: 1.5;
+}
+
+.blast-clutter__item.is-cleared {
+  opacity: 0 !important;
+  transform: translateY(-10px) scale(.6) !important;
+}
+
+.blast-clutter__item--coffee { top: 8px; left: 12px; transform: rotate(-8deg); }
+.blast-clutter__item--sticky { top: 7px; left: 50px; transform: rotate(6deg); }
+.blast-clutter__item--eraser { top: 10px; left: 88px; transform: rotate(-12deg); }
+.blast-clutter__item--timer { top: 6px; left: 126px; transform: rotate(4deg); }
+.blast-clutter__item--highlighter { top: 8px; right: 126px; transform: rotate(-6deg); }
+.blast-clutter__item--chocolate { top: 7px; right: 88px; transform: rotate(10deg); }
+.blast-clutter__item--pen { top: 10px; right: 50px; transform: rotate(-4deg); }
+.blast-clutter__item--memo { top: 6px; right: 12px; transform: rotate(8deg); }
+.blast-clutter__item--ticket { bottom: 3px; left: 16px; transform: rotate(-6deg); }
+.blast-clutter__item--workbook { bottom: 3px; right: 16px; transform: rotate(5deg); }
+
+.blast-board-wrap {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- The board ---------- */
+.blast-board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  gap: var(--blast-gap);
+  aspect-ratio: 1;
+  padding: var(--blast-gap);
+  border-radius: 16px;
+  touch-action: none;
+  transition: box-shadow .3s;
+}
+
+[data-look='arcade'] .blast-board {
+  background: #0d0c12;
+  box-shadow:
+    inset 0 2px 10px rgba(0, 0, 0, .7),
+    0 0 0 2px #3a3446,
+    0 0 0 3px rgba(255, 255, 255, .05);
+}
+
+[data-look='arcade'] .blast-board--glow-1 { box-shadow: inset 0 2px 10px rgba(0, 0, 0, .7), 0 0 0 2px #5a4a3a, 0 0 22px rgba(255, 196, 120, .35); }
+[data-look='arcade'] .blast-board--glow-2 { box-shadow: inset 0 2px 10px rgba(0, 0, 0, .7), 0 0 0 2px #7a4a3a, 0 0 30px rgba(255, 110, 80, .5); }
+[data-look='arcade'] .blast-board--glow-3 { box-shadow: inset 0 2px 10px rgba(0, 0, 0, .7), 0 0 0 2px #a04a5a, 0 0 40px rgba(255, 90, 160, .65); }
+
+/* A self-healing cutting mat: deep green, fine white grid, ticks along the edge. */
+[data-look='objects'] .blast-board {
+  background: #2d5545;
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, .14),
+    inset 0 2px 8px rgba(0, 0, 0, .3),
+    0 6px 14px -4px rgba(30, 60, 45, .55);
+}
+
+[data-look='objects'] .blast-board--glow-1 { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .14), inset 0 2px 8px rgba(0, 0, 0, .3), 0 6px 14px -4px rgba(30, 60, 45, .55), 0 0 0 3px rgba(255, 194, 26, .5); }
+[data-look='objects'] .blast-board--glow-2 { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .14), inset 0 2px 8px rgba(0, 0, 0, .3), 0 6px 14px -4px rgba(30, 60, 45, .55), 0 0 0 3px rgba(255, 143, 122, .75); }
+[data-look='objects'] .blast-board--glow-3 { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .14), inset 0 2px 8px rgba(0, 0, 0, .3), 0 6px 14px -4px rgba(30, 60, 45, .55), 0 0 0 3px rgba(255, 122, 184, .95); }
+
+.blast-cell {
+  position: relative;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--blast-cell-radius);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-look='arcade'] .blast-cell {
+  background: #1a1822;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+}
+
+[data-look='objects'] .blast-cell {
+  background: rgba(255, 255, 255, .06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .13);
+}
+
+.blast-cell:disabled {
+  cursor: default;
+}
+
+.blast-cell--will-clear {
+  animation: blast-will-clear .5s ease-in-out infinite alternate;
+}
+
+@keyframes blast-will-clear {
+  from { filter: brightness(1); }
+  to { filter: brightness(1.4) saturate(1.2); }
+}
+
+/* ---------- Stationery ----------
+ * Each piece is drawn whole, as the object it stands for, over the cells it covers.
+ */
+.blast-art {
+  --gap: var(--blast-gap);
+  position: absolute;
+  inset: var(--blast-gap);
+  pointer-events: none;
+}
+
+.blast-art__piece {
+  position: absolute;
+  left: calc(var(--col) * ((100% - 7 * var(--gap)) / 8 + var(--gap)));
+  top: calc(var(--row) * ((100% - 7 * var(--gap)) / 8 + var(--gap)));
+  width: calc(var(--cols) * ((100% - 7 * var(--gap)) / 8) + (var(--cols) - 1) * var(--gap));
+  height: calc(var(--rows) * ((100% - 7 * var(--gap)) / 8) + (var(--rows) - 1) * var(--gap));
+  overflow: visible;
+  filter: drop-shadow(0 1.5px 1.5px rgba(0, 0, 0, .5));
+}
+
+.blast-art__piece--ghost {
+  opacity: .6;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, .6));
+}
+
+/* A filled cell is only a place to tap; the object over it is the picture. */
+.blast-cell--filled {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* ---------- Cells leaving the desk ---------- */
+.blast-burst {
+  position: absolute;
+  inset: var(--blast-gap);
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  gap: var(--blast-gap);
+  pointer-events: none;
+}
+
+.blast-burst__cell {
+  position: relative;
+  border-radius: var(--blast-cell-radius);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--burst-color) 70%, #fff), var(--burst-color));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6), inset 0 -2px 0 rgba(0, 0, 0, .2);
+  animation: blast-pop .52s cubic-bezier(.3, 1.4, .5, 1) both;
+}
+
+.blast-burst__cell::after {
+  content: '';
+  position: absolute;
+  top: 6%;
+  right: 8%;
+  width: 22%;
+  height: 22%;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  animation: blast-sparkle .5s ease-out both;
+  animation-delay: inherit;
+}
+
+.blast-burst--l2 .blast-burst__cell { animation-duration: .6s; }
+.blast-burst--l3 .blast-burst__cell { animation-duration: .68s; }
+
+@keyframes blast-pop {
+  0% { transform: scale(1); opacity: 1; }
+  28% { transform: translateY(-14%) scale(1.14); opacity: 1; filter: brightness(1.3); }
+  100% { transform: translateY(6%) scale(.1) rotate(8deg); opacity: 0; }
+}
+
+@keyframes blast-sparkle {
+  0% { opacity: 0; transform: scale(.4); }
+  40% { opacity: 1; transform: scale(1.5); }
+  100% { opacity: 0; transform: scale(.6); }
+}
+
+/* ---------- Text that floats over the board ---------- */
+.blast-floaters {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.blast-floater {
+  font-weight: 800;
+  text-align: center;
+  animation: blast-float 1.3s ease-out both;
+}
+
+.blast-floater--gain { font-size: 28px; color: #fff; text-shadow: 0 2px 10px rgba(0, 0, 0, .6); }
+.blast-floater--combo { font-size: 36px; color: #ff6a4a; letter-spacing: -.02em; text-shadow: 0 0 18px rgba(255, 90, 60, .85), 0 2px 0 rgba(0, 0, 0, .4); }
+
+.blast-floater--phrase,
+.blast-floater--allclear {
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 20px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
+}
+
+[data-look='arcade'] .blast-floater--phrase { color: #1b1208; background: linear-gradient(180deg, #ffe39a, #ffb84a); }
+[data-look='objects'] .blast-floater--phrase { color: #292722; background: #fffdf6; }
+.blast-floater--allclear { color: #06352a; background: linear-gradient(180deg, #8ff0cd, #35c99b); }
+
+@keyframes blast-float {
+  0% { opacity: 0; transform: translateY(14px) scale(.7); }
+  16% { opacity: 1; transform: translateY(0) scale(1.08); }
+  70% { opacity: 1; transform: translateY(-10px) scale(1); }
+  100% { opacity: 0; transform: translateY(-26px) scale(1); }
+}
+
+/* ---------- First-visit hint ---------- */
+.blast-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  z-index: 4;
+  width: calc(100% - 28px);
+  transform: translateX(-50%);
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: rgba(10, 9, 14, .92);
+  color: #fff7ea;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: center;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+
+/* ---------- The three waiting pieces ---------- */
+.blast-tray {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  min-height: 132px;
+  padding: var(--space-3);
+  border-radius: var(--radius-xl);
+}
+
+[data-look='arcade'] .blast-tray {
+  background: linear-gradient(180deg, #1c1a24, #16141c);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), inset 0 -2px 6px rgba(0, 0, 0, .35);
+}
+
+[data-look='objects'] .blast-tray {
+  background: #e3d8c3;
+  box-shadow: inset 0 2px 6px rgba(80, 55, 20, .18);
+}
+
+.blast-slot {
+  display: grid;
+  place-items: center;
+  min-height: 108px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  touch-action: none;
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.blast-slot--empty {
+  cursor: default;
+}
+
+.blast-slot--selected {
+  border-color: var(--color-brand);
+  background: rgba(255, 255, 255, .08);
+}
+
+[data-look='objects'] .blast-slot--selected {
+  background: rgba(255, 255, 255, .55);
+}
+
+.blast-slot--dragging {
+  opacity: .3;
+}
+
+.blast-slot:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.blast-shape {
+  --blast-gap: 2px;
+  display: block;
+  width: calc(var(--cols) * var(--blast-piece-cell) + (var(--cols) - 1) * var(--blast-gap));
+  height: calc(var(--rows) * var(--blast-piece-cell) + (var(--rows) - 1) * var(--blast-gap));
+  pointer-events: none;
+  filter: drop-shadow(0 1.5px 1.5px rgba(0, 0, 0, .4));
+}
+
+.blast-shape__art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.blast-tapnote {
+  margin: calc(var(--space-1) * -1) 0 0;
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* The piece following the finger, a little above it. */
+.blast-drag {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 12px rgba(0, 0, 0, .45));
+}
+
+.blast-drag .blast-shape {
+  --blast-gap: 3px;
+}
+
+/* ---------- Result ---------- */
+.blast-result {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  justify-items: center;
+  align-items: start;
+  overflow-y: auto;
+  padding: var(--space-6) var(--space-4);
+  background: rgba(8, 7, 12, .6);
+  backdrop-filter: blur(4px);
+  animation: blast-result-fade .25s ease-out;
+}
+
+.blast-result__card {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 400px;
+  padding: var(--space-6) var(--space-5);
+  border-radius: var(--radius-2xl);
+  background: var(--color-surface-base);
+  box-shadow: var(--shadow-floating);
+  text-align: center;
+  animation: blast-result-in .32s ease-out;
+}
+
+.blast-look-arcade .blast-result__card {
+  background: linear-gradient(180deg, #27232f, #1b1822);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 24px 60px -10px rgba(0, 0, 0, .75);
+}
+
+.blast-result__tag {
+  justify-self: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--color-butter-soft);
+  color: var(--color-warning);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.blast-look-arcade .blast-result__tag {
+  background: rgba(255, 196, 70, .16);
+  color: #ffd66b;
+}
+
+.blast-result__type {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.3;
+  font-weight: 800;
+  letter-spacing: -.04em;
+}
+
+.blast-result__line {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.blast-result__score-label {
+  margin: var(--space-2) 0 0;
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.blast-result__score {
+  margin: 0;
+  color: var(--color-brand);
+  font-size: 56px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.blast-look-arcade .blast-result__score {
+  text-shadow: 0 0 26px rgba(255, 90, 60, .5);
+}
+
+.blast-result__record {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.blast-result__rank {
+  margin: 0;
+  color: var(--color-success);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.blast-result__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+}
+
+.blast-result__stats div {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3) var(--space-1);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
+}
+
+.blast-result__stats dt {
+  color: var(--color-content-secondary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.blast-result__stats dd {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.blast-result__actions {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.blast-result__share {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--space-2);
+}
+
+@keyframes blast-result-in {
+  from { opacity: 0; transform: translateY(18px) scale(.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes blast-result-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blast-burst__cell,
+  .blast-burst__cell::after,
+  .blast-floater,
+  .blast-stats__value,
+  .blast-cell--will-clear,
+  .blast-result,
+  .blast-result__card {
+    animation-duration: .01ms;
+    animation-iteration-count: 1;
+  }
+
+  .blast-clutter__item {
+    transition: none;
+  }
+}
