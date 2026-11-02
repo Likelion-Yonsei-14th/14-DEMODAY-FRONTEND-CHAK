@@ -264,6 +264,12 @@ export const router = createBrowserRouter([
           Component: (await import('@/features/deskCreation/FriendDeskPages')).FriendDeskCreatedPage,
         }),
       },
+      {
+        path: '/letters',
+        lazy: async () => ({
+          Component: (await import('@/features/supporter/MyLettersPage')).MyLettersPage,
+        }),
+      },
       { path: '/start', element: <StartPage /> },
       { path: '/home', element: <HomePage /> },
       { path: '/minigame/exam-career', element: <ExamCareerIntroPage /> },
