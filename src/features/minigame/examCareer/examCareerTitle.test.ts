@@ -18,7 +18,7 @@ const career = ({ grades: list, ...patch }: Omit<Partial<SharedCareer>, 'grades'
 
 describe('career title', () => {
   it('rewards the rare stories first', () => {
-    expect(careerTitleOf(career({ attempt: 4 })).title).toBe('4수의 전설')
+    expect(careerTitleOf(career({ attempt: 4 })).title).toBe('5수의 전설')
     expect(careerTitleOf(career({ enrolled: 'sky', grades: [1, 1, 1, 1, 1] })).title).toBe('현역 SKY 신화')
     expect(careerTitleOf(career({ attempt: 2, enrolled: 'sky' })).title).toBe('역전의 명수')
     expect(careerTitleOf(career({ attempt: 1, enrolled: 'seoul-upper' })).title).toBe('다시 일어선 도전자')
