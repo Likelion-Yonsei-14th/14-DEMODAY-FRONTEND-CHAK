@@ -528,15 +528,7 @@ const CONDITION_PANELS: readonly (ShuffleOutcome & { id: DayRollId })[] = [
 ]
 
 /** The shared condition of the CSAT day: the panels flip by, then stop on the one drawn. */
-function CsatConditionShuffle({
-  result,
-  continueLabel = '성적표 보기',
-  onDone,
-}: {
-  result: ExamResult
-  continueLabel?: string
-  onDone: () => void
-}) {
+function CsatConditionShuffle({ result, onDone }: { result: ExamResult; onDone: () => void }) {
   const roll = conditionRollOf(result)
   return (
     <OutcomeShuffle
@@ -544,7 +536,7 @@ function CsatConditionShuffle({
       caption="이날 하루가 모든 과목에 영향을 줘요."
       outcomes={[...CONDITION_PANELS]}
       targetIndex={Math.max(0, CONDITION_PANELS.findIndex((panel) => panel.id === roll))}
-      continueLabel={continueLabel}
+      continueLabel="채점 결과 기다리기"
       onDone={onDone}
     />
   )
@@ -745,7 +737,6 @@ export function ExamCareerPlayPage() {
   /** UI only: the wait before a CSAT score or admission results. Not saved. */
   const [suspense, setSuspense] = useState<'csat' | 'csat-condition' | 'csat-pick' | 'admission' | null>(null)
   const endSuspense = useCallback(() => setSuspense(null), [])
-  const showCsatCondition = useCallback(() => setSuspense('csat-condition'), [])
   /** UI only: an outcome shown right away (스터디카페), before its exam runs. */
   const [revealed, setRevealed] = useState<CareerEventRecord | null>(null)
   /** UI only: a risky pick whose outcome panels flip by before its exam runs. */
@@ -760,6 +751,16 @@ export function ExamCareerPlayPage() {
   /** UI only: the CSAT whose pick panel has settled; it stays above the grades. */
   const [csatPickSettledFor, setCsatPickSettledFor] = useState<string | null>(null)
 
+  /** The CSAT's own pick (D-30), as it landed in the CSAT results. */
+  const lastExam = saved?.state.history.at(-1)
+  const csatPickResult =
+    csatPick && lastExam?.kind === 'csat'
+      ? lastExam.events.find((record) => record.eventId === csatPick.event.id && record.outcomeIndex !== undefined)
+      : undefined
+  // After the scoring wait, the D-30 pick (if any) flips by before the grades.
+  const hasCsatPick = Boolean(csatPickResult)
+  const endCsatWait = useCallback(() => setSuspense(hasCsatPick ? 'csat-pick' : null), [hasCsatPick])
+
   if (!saved) return <Navigate to={EXAM_CAREER_PATH} replace />
 
   const { state } = saved
@@ -767,7 +768,8 @@ export function ExamCareerPlayPage() {
     const nextSaved = { state: next }
     saveCareer(nextSaved)
     setSaved(nextSaved)
-    if (next.history.length > state.history.length && next.history.at(-1)!.kind === 'csat') setSuspense('csat')
+    // The CSAT-day condition comes first, then the wait for the score.
+    if (next.history.length > state.history.length && next.history.at(-1)!.kind === 'csat') setSuspense('csat-condition')
   }
   const history = state.history
   const latest = history.at(-1)
@@ -784,12 +786,6 @@ export function ExamCareerPlayPage() {
     state.status === 'playing' &&
     upcoming !== null &&
     (!latest || state.choiceAnsweredFor === upcoming.id || (upcoming.attempt > 0 && state.nextExamIndex === 0))
-
-  /** The CSAT's own pick (D-30), as it landed in the CSAT results. */
-  const csatPickResult =
-    csatPick && latest?.kind === 'csat'
-      ? latest.events.find((record) => record.eventId === csatPick.event.id && record.outcomeIndex !== undefined)
-      : undefined
 
   const chooseEvent = (optionId: string) => {
     const answered = chooseEventOption(state, optionId)
@@ -963,14 +959,10 @@ export function ExamCareerPlayPage() {
               />
             )}
 
-          {suspense === 'csat' ? (
-            <SuspenseCard kind="csat" onDone={showCsatCondition} />
-          ) : suspense === 'csat-condition' && latest ? (
-            <CsatConditionShuffle
-              result={latest}
-              continueLabel={csatPickResult ? `${csatPick!.event.title} 결과 보기` : undefined}
-              onDone={csatPickResult ? () => setSuspense('csat-pick') : endSuspense}
-            />
+          {suspense === 'csat-condition' && latest ? (
+            <CsatConditionShuffle result={latest} onDone={() => setSuspense('csat')} />
+          ) : suspense === 'csat' ? (
+            <SuspenseCard kind="csat" onDone={endCsatWait} />
           ) : suspense === 'csat-pick' ? null : startingFresh ? (
             <UpcomingCard slot={upcoming!} electives={state.electives} />
           ) : (
