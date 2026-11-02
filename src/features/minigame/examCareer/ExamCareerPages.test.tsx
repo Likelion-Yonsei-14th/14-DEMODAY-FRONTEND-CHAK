@@ -68,18 +68,9 @@ function startCareer(track: '문과' | '이과') {
 function answerEvent() {
   const group = screen.queryByRole('group', { name: '이벤트 선택지' })
   if (group) fireEvent.click(within(group).getAllByRole('button')[0]!)
-  skipPickShuffle()
   const confirm = screen.queryByRole('button', { name: '확인' })
   if (confirm) fireEvent.click(confirm)
   return Boolean(group || confirm)
-}
-
-/** A risky pick flips through its outcomes first; skip to the end and carry on. */
-function skipPickShuffle() {
-  const skip = screen.queryByRole('button', { name: '건너뛰기' })
-  if (skip) fireEvent.click(skip)
-  const shuffle = screen.queryByRole('status', { name: /어떻게 될까\?$/ })
-  if (shuffle) fireEvent.click(within(shuffle).getByRole('button', { name: '확인' }))
 }
 
 const PROCEED = /^다음 시험|넘어가기$|^선택과목 최종 확정하기$|^수능 보러 가기$/
@@ -156,14 +147,6 @@ describe('exam career mini game', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^다음 시험/ })).not.toBeInTheDocument()
     fireEvent.click(within(entry).getByRole('button', { name: /전교 1등을 노린다/ }))
-    // A gamble flips through its outcome panels first and stops on the one drawn.
-    const shuffle = screen.getByRole('status', { name: '전교 1등을 노린다, 어떻게 될까?' })
-    expect(within(shuffle).queryByRole('button', { name: '확인' })).not.toBeInTheDocument()
-    fireEvent.click(within(shuffle).getByRole('button', { name: '건너뛰기' }))
-    const shown = shuffle.textContent
-    fireEvent.click(within(shuffle).getByRole('button', { name: '확인' }))
-    // The pick is saved once the panels settle, and it is the one they stopped on.
-    expect(shown).toContain(loadCareer()!.state.pendingRecords.at(-1)!.description)
 
     // Then the March exam is offered; the pick's outcome comes out with it.
     expect(screen.queryByRole('region', { name: '고등학교 입학' })).not.toBeInTheDocument()
@@ -181,7 +164,6 @@ describe('exam career mini game', () => {
     fireEvent.click(screen.getByRole('button', { name: '다음 시험 · 고1 6월 학평' }))
     const style = screen.getByRole('dialog', { name: '고1 공부 스타일' })
     fireEvent.click(within(style).getByRole('button', { name: /학원 종합반 등록/ }))
-    skipPickShuffle()
     expect(screen.getByRole('heading', { name: '6월 학평' })).toBeInTheDocument()
     expect(screen.getByText('고1 공부 스타일 · 학원 종합반 등록')).toBeInTheDocument()
     expect(loadCareer()?.state.pendingRecords).toHaveLength(0)
@@ -263,54 +245,14 @@ describe('exam career mini game', () => {
     expect(screen.getByRole('heading', { name: '10월 학평' })).toBeInTheDocument()
     expect(loadCareer()!.state.history.at(-1)!.examId).toBe('g3-10')
     fireEvent.click(screen.getByRole('button', { name: '수능 보러 가기' }))
-
-    // Right after the button, the condition panels flip by and stop on the day that was drawn.
-    const condition = screen.getByRole('status', { name: '수능 날의 컨디션은?' })
-    expect(screen.queryByRole('status', { name: '수능 채점 중' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: '수능' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: '대학 지원하기' })).not.toBeInTheDocument()
-    expect(within(condition).queryByRole('button', { name: '채점 결과 기다리기' })).not.toBeInTheDocument()
-    fireEvent.click(within(condition).getByRole('button', { name: '건너뛰기' }))
-    const drawnDay = loadCareer()!.state.history.at(-1)!.conditionRoll
-    const dayLabel = { normal: '평소 같은 하루', good: '컨디션 좋은 날', bad: '컨디션 나쁜 날', jackpot: '모든 게 잘 풀린 날', bust: '모든 게 꼬인 날' }
-    expect(within(condition).getByText(dayLabel[drawnDay!])).toBeInTheDocument()
-    fireEvent.click(within(condition).getByRole('button', { name: '채점 결과 기다리기' }))
-
-    // Then the wait for the score, then the grades.
     expect(screen.getByRole('status', { name: '수능 채점 중' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: '수능' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '대학 지원하기' })).not.toBeInTheDocument()
+
     finishSuspense()
     expect(screen.queryByRole('status', { name: '수능 채점 중' })).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '수능' })).toBeInTheDocument()
     expect(screen.getByText(/^수능 D-30 · /)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '대학 지원하기' })).toBeInTheDocument()
-  })
-
-  it('keeps a risky D-30 pick hidden until it comes out with the CSAT grades', () => {
-    vi.useFakeTimers()
-    const atEve = playEngineUntil('page-eve-gamble', (current) => nextExam(current)?.id === 'g3-csat' && current.status === 'event')
-    saveCareer({ state: { ...atEve, flags: [] } })
-    renderAt('/minigame/exam-career/play')
-
-    // Picking it shows nothing yet; the CSAT button comes straight back.
-    fireEvent.click(within(screen.getByRole('dialog', { name: '수능 D-30' })).getByRole('button', { name: '끝까지 새 문제 풀기' }))
-    expect(screen.queryByRole('status', { name: /어떻게 될까\?$/ })).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: '수능 보러 가기' }))
-
-    // The condition and the scoring wait come first, then the pick flips by with the grades held back.
-    const condition = screen.getByRole('status', { name: '수능 날의 컨디션은?' })
-    fireEvent.click(within(condition).getByRole('button', { name: '건너뛰기' }))
-    fireEvent.click(within(condition).getByRole('button', { name: '채점 결과 기다리기' }))
-    finishSuspense()
-    const pick = screen.getByRole('status', { name: '끝까지 새 문제 풀기, 어떻게 될까?' })
-    expect(screen.queryByRole('heading', { name: '수능' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: '대학 지원하기' })).not.toBeInTheDocument()
-
-    // The moment it stops, the grades come out under it; the settled panel stays.
-    fireEvent.click(within(pick).getByRole('button', { name: '건너뛰기' }))
-    const drawn = loadCareer()!.state.history.at(-1)!.events.find((record) => record.eventId === 'csat-eve')!
-    expect(within(screen.getByRole('status', { name: '끝까지 새 문제 풀기, 어떻게 될까?' })).getByText(drawn.description)).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: '수능' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '대학 지원하기' })).toBeInTheDocument()
   })
 
@@ -345,12 +287,10 @@ describe('exam career mini game', () => {
     ])
     fireEvent.click(within(cafe).getByRole('button', { name: '함께 공부하자고 제안한다' }))
 
-    // The outcome panels flip by and stop on the reveal; the exam waits for it.
-    const shuffle = screen.getByRole('status', { name: '함께 공부하자고 제안한다, 어떻게 될까?' })
+    const outcome = screen.getByRole('dialog', { name: '스터디카페의 운명의 짝 · 함께 공부하자고 제안한다' })
     expect(loadCareer()!.state.history).toHaveLength(before.history.length)
     expect(screen.queryByRole('button', { name: /^다음 시험/ })).not.toBeInTheDocument()
-    fireEvent.click(within(shuffle).getByRole('button', { name: '건너뛰기' }))
-    fireEvent.click(within(shuffle).getByRole('button', { name: '확인' }))
+    fireEvent.click(within(outcome).getByRole('button', { name: '확인' }))
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '10월 학평' })).toBeInTheDocument()
