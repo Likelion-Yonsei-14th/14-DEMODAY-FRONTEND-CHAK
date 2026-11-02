@@ -286,7 +286,7 @@ describe('exam career mini game', () => {
     expect(screen.getByRole('button', { name: '대학 지원하기' })).toBeInTheDocument()
   })
 
-  it('keeps a risky D-30 pick hidden until it comes out with the CSAT grades', () => {
+  it('keeps a risky D-30 pick hidden until its envelope is opened after the CSAT', () => {
     vi.useFakeTimers()
     const atEve = playEngineUntil('page-eve-gamble', (current) => nextExam(current)?.id === 'g3-csat' && current.status === 'event')
     saveCareer({ state: { ...atEve, flags: [] } })
@@ -306,12 +306,21 @@ describe('exam career mini game', () => {
     expect(screen.queryByRole('heading', { name: '수능' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '대학 지원하기' })).not.toBeInTheDocument()
 
-    // The moment it stops, the grades come out under it; the settled panel stays.
+    // Opened, it shows what happened; the grades still wait, like after the condition envelope.
     fireEvent.click(within(pick).getByRole('button', { name: '건너뛰기' }))
     const drawn = loadCareer()!.state.history.at(-1)!.events.find((record) => record.eventId === 'csat-eve')!
-    expect(within(screen.getByRole('status', { name: '끝까지 새 문제 풀기, 어떻게 될까?' })).getByText(drawn.description)).toBeInTheDocument()
+    expect(within(pick).getByText(drawn.description)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: '수능' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '대학 지원하기' })).not.toBeInTheDocument()
+
+    // Its button brings the grades out, and the envelope makes way for them.
+    fireEvent.click(within(pick).getByRole('button', { name: '성적표 보기' }))
+    expect(screen.queryByRole('status', { name: '끝까지 새 문제 풀기, 어떻게 될까?' })).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '수능' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '대학 지원하기' })).toBeInTheDocument()
+
+    // It does not come back while applying either.
+    fireEvent.click(screen.getByRole('button', { name: '대학 지원하기' }))
+    expect(screen.queryByRole('status', { name: '끝까지 새 문제 풀기, 어떻게 될까?' })).not.toBeInTheDocument()
   })
 
   it('keeps the grade chart and the exam history folded until their titles are pressed', () => {
@@ -392,6 +401,40 @@ describe('exam career mini game', () => {
     fireEvent.click(within(notice).getByRole('button', { name: '마음 추스르기' }))
     expect(screen.queryByRole('region', { name: '수능 30일 전, 이별' })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: '수능 보러 가기' })).toBeInTheDocument()
+  })
+
+  it('after a risky D-30 pick and a breakup, still opens the pick envelope before the CSAT grades', () => {
+    vi.useFakeTimers()
+    let atEve: CareerState | null = null
+    for (let index = 0; index < 200 && !atEve; index += 1) {
+      const candidate = playEngineUntil(
+        `page-breakup-gamble-${index}`,
+        (current) => nextExam(current)?.id === 'g3-csat' && current.status === 'event',
+      )
+      const dating = { ...candidate, flags: ['dating' as const] }
+      if (chooseEventOption(dating, 'new-problems').status === 'notice') atEve = dating
+    }
+    saveCareer({ state: atEve! })
+    renderAt('/minigame/exam-career/play')
+
+    // The pick stays hidden; the breakup comes first and holds the CSAT button back.
+    fireEvent.click(within(screen.getByRole('dialog', { name: '수능 D-30' })).getByRole('button', { name: '끝까지 새 문제 풀기' }))
+    expect(screen.queryByRole('status', { name: /어떻게 될까\?$/ })).not.toBeInTheDocument()
+    fireEvent.click(within(screen.getByRole('region', { name: '수능 30일 전, 이별' })).getByRole('button', { name: '마음 추스르기' }))
+    fireEvent.click(screen.getByRole('button', { name: '수능 보러 가기' }))
+
+    // Condition, scoring wait, then the pick's envelope, then the grades.
+    const condition = screen.getByRole('status', { name: '수능 날의 컨디션은?' })
+    fireEvent.click(within(condition).getByRole('button', { name: '건너뛰기' }))
+    fireEvent.click(within(condition).getByRole('button', { name: '채점 결과 기다리기' }))
+    finishSuspense()
+    const pick = screen.getByRole('status', { name: '끝까지 새 문제 풀기, 어떻게 될까?' })
+    fireEvent.click(within(pick).getByRole('button', { name: '건너뛰기' }))
+    const events = loadCareer()!.state.history.at(-1)!.events
+    expect(within(pick).getByText(events.find((record) => record.eventId === 'csat-eve')!.description)).toBeInTheDocument()
+    expect(events.some((record) => record.eventId === 'breakup')).toBe(true)
+    fireEvent.click(within(pick).getByRole('button', { name: '성적표 보기' }))
+    expect(screen.getByRole('heading', { name: '수능' })).toBeInTheDocument()
   })
 
   it('asks how to spend the retake year, then brings the friends at university, then the electives', () => {

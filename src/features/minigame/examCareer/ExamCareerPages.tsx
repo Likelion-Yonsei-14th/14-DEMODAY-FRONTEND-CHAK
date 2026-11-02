@@ -533,12 +533,12 @@ function EventDialog({ event, onChoose }: { event: ChoiceEvent; onChoose: (optio
 /** A risky pick: an envelope that holds what happened, opened by the player. */
 function PickShuffle({
   pick,
+  continueLabel,
   onDone,
-  onStop,
 }: {
   pick: { event: ChoiceEvent; option: ChoiceOption; record: CareerEventRecord }
+  continueLabel?: string
   onDone?: () => void
-  onStop?: () => void
 }) {
   const { event, option, record } = pick
   const drawn = option.outcomes[record.outcomeIndex ?? 0]
@@ -552,8 +552,8 @@ function PickShuffle({
       text={record.description}
       // Only a lucky draw against the odds is thrown with full confetti.
       big={record.tone === 'up' && drawn !== undefined && drawn.weight / totalWeight <= 0.4}
+      continueLabel={continueLabel}
       onDone={onDone}
-      onStop={onStop}
     />
   )
 }
@@ -772,10 +772,8 @@ export function ExamCareerPlayPage() {
     record: CareerEventRecord
     answered: CareerState
   } | null>(null)
-  /** UI only: a risky pick made right before a CSAT (D-30); its panels flip by with the CSAT grades. */
+  /** UI only: a risky pick made right before a CSAT (D-30); its envelope is opened before the CSAT grades. */
   const [csatPick, setCsatPick] = useState<{ event: ChoiceEvent; option: ChoiceOption } | null>(null)
-  /** UI only: the CSAT whose pick panel has settled; it stays above the grades. */
-  const [csatPickSettledFor, setCsatPickSettledFor] = useState<string | null>(null)
 
   /** The CSAT's own pick (D-30), as it landed in the CSAT results. */
   const lastExam = saved?.state.history.at(-1)
@@ -975,18 +973,18 @@ export function ExamCareerPlayPage() {
             />
           )}
 
-          {/* The D-30 pick's panels stop with the CSAT grades: they come out under it at that moment, and it stays put. */}
-          {csatPick && csatPickResult && latest &&
-            (suspense === 'csat-pick' || (csatPickSettledFor === latest.examId && state.status === 'decision')) && (
-              <PickShuffle
-                key={latest.examId}
-                pick={{ ...csatPick, record: csatPickResult }}
-                onStop={() => {
-                  setCsatPickSettledFor(latest.examId)
-                  endSuspense()
-                }}
-              />
-            )}
+          {/* Like the condition envelope: the D-30 pick is opened first, and the grades come out on its button. */}
+          {suspense === 'csat-pick' && csatPick && csatPickResult && latest && (
+            <PickShuffle
+              key={latest.examId}
+              pick={{ ...csatPick, record: csatPickResult }}
+              continueLabel="성적표 보기"
+              onDone={() => {
+                setCsatPick(null)
+                endSuspense()
+              }}
+            />
+          )}
 
           {suspense === 'csat-condition' && latest ? (
             <CsatConditionShuffle result={latest} onDone={() => setSuspense('csat')} />
