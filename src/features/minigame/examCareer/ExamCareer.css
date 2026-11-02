@@ -907,19 +907,11 @@
 }
 
 .exam-career-releases h3 {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
   margin: 0 0 var(--space-1);
   font-size: var(--type-body-m-size);
   font-weight: 800;
 }
 
-.exam-career-releases time {
-  color: var(--color-content-tertiary);
-  font-size: var(--type-caption-size);
-  font-weight: 500;
-}
 
 .exam-career-releases ul {
   display: grid;
