@@ -232,21 +232,24 @@ describe('exam career mini game', () => {
     expect(screen.getByRole('heading', { name: '10월 학평' })).toBeInTheDocument()
     expect(loadCareer()!.state.history.at(-1)!.examId).toBe('g3-10')
     fireEvent.click(screen.getByRole('button', { name: '수능 보러 가기' }))
-    expect(screen.getByRole('status', { name: '수능 채점 중' })).toBeInTheDocument()
+
+    // Right after the button, the condition panels flip by and stop on the day that was drawn.
+    const condition = screen.getByRole('status', { name: '수능 날의 컨디션은?' })
+    expect(screen.queryByRole('status', { name: '수능 채점 중' })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: '수능' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '대학 지원하기' })).not.toBeInTheDocument()
-
-    finishSuspense()
-    expect(screen.queryByRole('status', { name: '수능 채점 중' })).not.toBeInTheDocument()
-    // The condition panels flip by before the grades and stop on the day that was drawn.
-    const condition = screen.getByRole('status', { name: '수능 날의 컨디션은?' })
-    expect(screen.queryByRole('heading', { name: '수능' })).not.toBeInTheDocument()
-    expect(within(condition).queryByRole('button', { name: '성적표 보기' })).not.toBeInTheDocument()
+    expect(within(condition).queryByRole('button', { name: '채점 결과 기다리기' })).not.toBeInTheDocument()
     fireEvent.click(within(condition).getByRole('button', { name: '건너뛰기' }))
     const drawnDay = loadCareer()!.state.history.at(-1)!.conditionRoll
     const dayLabel = { normal: '평소 같은 하루', good: '컨디션 좋은 날', bad: '컨디션 나쁜 날', jackpot: '모든 게 잘 풀린 날', bust: '모든 게 꼬인 날' }
     expect(within(condition).getByText(dayLabel[drawnDay!])).toBeInTheDocument()
-    fireEvent.click(within(condition).getByRole('button', { name: '성적표 보기' }))
+    fireEvent.click(within(condition).getByRole('button', { name: '채점 결과 기다리기' }))
+
+    // Then the wait for the score, then the grades.
+    expect(screen.getByRole('status', { name: '수능 채점 중' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: '수능' })).not.toBeInTheDocument()
+    finishSuspense()
+    expect(screen.queryByRole('status', { name: '수능 채점 중' })).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '수능' })).toBeInTheDocument()
     expect(screen.getByText(/^수능 D-30 · /)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '대학 지원하기' })).toBeInTheDocument()
@@ -263,11 +266,11 @@ describe('exam career mini game', () => {
     expect(screen.queryByRole('status', { name: /어떻게 될까\?$/ })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '수능 보러 가기' }))
 
-    // The condition comes first as before, then the pick flips by with the grades held back.
-    finishSuspense()
+    // The condition and the scoring wait come first, then the pick flips by with the grades held back.
     const condition = screen.getByRole('status', { name: '수능 날의 컨디션은?' })
     fireEvent.click(within(condition).getByRole('button', { name: '건너뛰기' }))
-    fireEvent.click(within(condition).getByRole('button', { name: '수능 D-30 결과 보기' }))
+    fireEvent.click(within(condition).getByRole('button', { name: '채점 결과 기다리기' }))
+    finishSuspense()
     const pick = screen.getByRole('status', { name: '끝까지 새 문제 풀기, 어떻게 될까?' })
     expect(screen.queryByRole('heading', { name: '수능' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '대학 지원하기' })).not.toBeInTheDocument()
@@ -404,7 +407,6 @@ describe('exam career mini game', () => {
     expect(screen.queryByRole('heading', { name: '수능' })).not.toBeInTheDocument()
     expect(screen.queryByRole('region', { name: /합격 발표가 났어요!|아쉽게도 모두 불합격이에요/ })).not.toBeInTheDocument()
     finishSuspense()
-
 
     const results = screen.getByRole('region', { name: /합격 발표가 났어요!|아쉽게도 모두 불합격이에요/ })
     expect(screen.getByRole('heading', { name: '수능' })).toBeInTheDocument()
