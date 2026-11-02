@@ -389,6 +389,11 @@
   color: #7d322c;
 }
 
+.exam-career-event--plain {
+  background: var(--color-surface-muted);
+  color: var(--color-content-secondary);
+}
+
 .exam-career-batch {
   display: grid;
   gap: var(--space-2);
@@ -804,6 +809,60 @@
 
 @media (prefers-reduced-motion: reduce) {
   .exam-career-admissions li {
+    animation: none;
+  }
+}
+
+/* A draw (a risky pick, the CSAT-day condition): its outcome panels flip by, then settle on what happened */
+.exam-career-shuffle {
+  display: grid;
+  gap: var(--space-3);
+  padding-block: var(--space-6);
+  text-align: center;
+}
+
+.exam-career-shuffle__title {
+  margin: 0;
+  font-size: var(--type-title-m-size);
+  font-weight: 800;
+  word-break: keep-all;
+}
+
+.exam-career-shuffle__caption {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-body-s-size);
+  word-break: keep-all;
+}
+
+/* Tall enough for the longest outcome, so the card does not jump between flips. */
+.exam-career-shuffle__panel {
+  min-height: 6.5em;
+  text-align: left;
+  animation: exam-career-shuffle-flip .08s ease-out;
+}
+
+.exam-career-shuffle__panel.is-stopped {
+  animation: exam-career-shuffle-land .45s var(--ease-emphasized);
+}
+
+@keyframes exam-career-shuffle-flip {
+  from { transform: translateY(-6px); opacity: .55; }
+}
+
+@keyframes exam-career-shuffle-land {
+  0% { transform: scale(.94); }
+  60% { transform: scale(1.03); }
+}
+
+.exam-career-shuffle__actions {
+  display: grid;
+  gap: var(--space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exam-career-shuffle__panel,
+  .exam-career-shuffle__panel.is-stopped {
     animation: none;
   }
 }
