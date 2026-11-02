@@ -13,6 +13,12 @@ const routes = [
     phase: 'LIVE',
   },
   {
+    path: '/minigame/desk-blast',
+    title: 'Mini Game · 수능 블라스트',
+    description: '8x8 책상에 블록을 놓아 한 줄씩 정리 → 콤보·책상정리력 → 수험생 유형 결과 카드 공유',
+    phase: 'LIVE',
+  },
+  {
     path: '/minigame/sneaky-phone',
     title: 'Mini Game · 선생님 몰래 폰 하기',
     description: '30초 야자 타이밍 게임 → 선생님 뒤돌기 예고 보고 숨기기 → 점수·최고 기록',

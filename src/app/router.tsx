@@ -111,6 +111,7 @@ import {
   ReaderPage,
 } from '@/prototype/screens/flowPages'
 import { SystemPage } from '@/system/SystemPage'
+import { DeskBlastPage } from '@/features/minigame/deskBlast/DeskBlastPages'
 import {
   SneakyPhoneIntroPage,
   SneakyPhonePlayPage,
@@ -294,6 +295,7 @@ export const router = createBrowserRouter([
       { path: '/account/profile', element: <ProfileEditPage /> },
       { path: '/account/delete', element: <DeleteAccountPage /> },
       { path: '/prototype', element: <PrototypeIndexPage /> },
+      { path: '/minigame/desk-blast', element: <DeskBlastPage /> },
       { path: '/minigame/sneaky-phone', element: <SneakyPhoneIntroPage /> },
       { path: '/minigame/sneaky-phone/play', element: <SneakyPhonePlayPage /> },
 

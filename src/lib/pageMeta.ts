@@ -30,6 +30,10 @@ export const PAGE_META: Record<string, PageMeta> = {
     title: '오늘의 찍신은 나야! 찍기 운 시험 | 착!',
     description: '10문제 찍기 운 시험, 나는 몇 개나 맞힐 수 있을까? 오늘의 찍신에 도전해 보세요.',
   },
+  '/minigame/desk-blast': {
+    title: '수능 블라스트 책상 정리 퍼즐 | 착!',
+    description: '공부 시작 전에 책상 정리만 계속하는 수험생! 블록을 놓아 한 줄씩 정리하는 책상 정리 퍼즐에 도전해 보세요.',
+  },
   '/privacy': {
     title: '개인정보처리방침 | 착!',
     description: '착!이 수집하는 개인정보와 이용 목적, 보관 기간을 안내합니다.',
