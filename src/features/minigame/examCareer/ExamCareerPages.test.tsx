@@ -252,6 +252,34 @@ describe('exam career mini game', () => {
     expect(screen.getByRole('button', { name: '대학 지원하기' })).toBeInTheDocument()
   })
 
+  it('keeps a risky D-30 pick hidden until it comes out with the CSAT grades', () => {
+    vi.useFakeTimers()
+    const atEve = playEngineUntil('page-eve-gamble', (current) => nextExam(current)?.id === 'g3-csat' && current.status === 'event')
+    saveCareer({ state: { ...atEve, flags: [] } })
+    renderAt('/minigame/exam-career/play')
+
+    // Picking it shows nothing yet; the CSAT button comes straight back.
+    fireEvent.click(within(screen.getByRole('dialog', { name: '수능 D-30' })).getByRole('button', { name: '끝까지 새 문제 풀기' }))
+    expect(screen.queryByRole('status', { name: /어떻게 될까\?$/ })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '수능 보러 가기' }))
+
+    // The condition comes first as before, then the pick flips by with the grades held back.
+    finishSuspense()
+    const condition = screen.getByRole('status', { name: '수능 날의 컨디션은?' })
+    fireEvent.click(within(condition).getByRole('button', { name: '건너뛰기' }))
+    fireEvent.click(within(condition).getByRole('button', { name: '수능 D-30 결과 보기' }))
+    const pick = screen.getByRole('status', { name: '끝까지 새 문제 풀기, 어떻게 될까?' })
+    expect(screen.queryByRole('heading', { name: '수능' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '대학 지원하기' })).not.toBeInTheDocument()
+
+    // The moment it stops, the grades come out under it; the settled panel stays.
+    fireEvent.click(within(pick).getByRole('button', { name: '건너뛰기' }))
+    const drawn = loadCareer()!.state.history.at(-1)!.events.find((record) => record.eventId === 'csat-eve')!
+    expect(within(screen.getByRole('status', { name: '끝까지 새 문제 풀기, 어떻게 될까?' })).getByText(drawn.description)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '수능' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '대학 지원하기' })).toBeInTheDocument()
+  })
+
   it('keeps the grade chart and the exam history folded until their titles are pressed', () => {
     const state = saveAtFirstCsat()
     renderAt('/minigame/exam-career/play')
