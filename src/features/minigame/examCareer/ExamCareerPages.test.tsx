@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { NotificationProvider } from '@/design-system/overlays'
 import { DEFAULT_ELECTIVES } from './examCareerConfig'
 import { ExamCareerIntroPage, ExamCareerPlayPage, ExamCareerResultPage } from './ExamCareerPages'
-import { RELEASE_NOTES } from './examCareerReleaseNotes'
+import { PATCH_NOTES } from './examCareerPatchNotes'
 import {
   acknowledgeNotice,
   chooseElectives,
@@ -107,10 +107,10 @@ afterEach(() => {
 })
 
 describe('exam career mini game', () => {
-  it('folds the release notes between the home button and the disclaimer', () => {
+  it('folds the patch notes between the home button and the disclaimer', () => {
     renderAt('/minigame/exam-career')
-    const latest = RELEASE_NOTES[0]!
-    const summary = screen.getByText(`릴리즈 노트 · v${latest.version}`)
+    const latest = PATCH_NOTES[0]!
+    const summary = screen.getByText(`Patch Note · v${latest.version}`)
     const notes = summary.closest('details')!
     expect(notes).not.toHaveAttribute('open')
     fireEvent.click(summary)
@@ -124,8 +124,8 @@ describe('exam career mini game', () => {
     expect(notes.compareDocumentPosition(disclaimer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
-  it('numbers the release notes as one patch per merge, newest first', () => {
-    const versions = RELEASE_NOTES.map((note) => note.version)
+  it('numbers the patch notes as one patch per merge, newest first', () => {
+    const versions = PATCH_NOTES.map((note) => note.version)
     expect(versions.at(-1)).toBe('1.0.0')
     versions.forEach((version, index) => {
       expect(version).toBe(`1.0.${versions.length - 1 - index}`)

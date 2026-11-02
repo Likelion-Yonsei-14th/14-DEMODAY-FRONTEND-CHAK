@@ -1,4 +1,4 @@
-export type ReleaseNote = {
+export type PatchNote = {
   version: string
   changes: readonly string[]
 }
@@ -7,7 +7,7 @@ export type ReleaseNote = {
  * What changed in the career simulator, newest first. Semantic versioning:
  * every merged pull request that touched the game is one patch release.
  */
-export const RELEASE_NOTES: readonly ReleaseNote[] = [
+export const PATCH_NOTES: readonly PatchNote[] = [
   {
     version: '1.0.7',
     changes: ['검색 결과에 게임 제목과 소개가 보이도록 페이지 정보를 달고 사이트맵에 추가했어요.'],
