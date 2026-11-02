@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react'
 import { Button } from '@/design-system'
 
@@ -24,6 +24,7 @@ export function OutcomeShuffle({
   outcomes,
   targetIndex,
   continueLabel = '확인',
+  onStop,
   onDone,
 }: {
   title: string
@@ -32,7 +33,10 @@ export function OutcomeShuffle({
   outcomes: ShuffleOutcome[]
   targetIndex: number
   continueLabel?: string
-  onDone: () => void
+  /** Shows a button once it stops; without it the settled panel simply stays. */
+  onDone?: () => void
+  /** Called once, the moment it stops (or is skipped to the end). */
+  onStop?: () => void
 }) {
   const reduced = useMemo(prefersReducedMotion, [])
   const total = outcomes.length
@@ -41,8 +45,19 @@ export function OutcomeShuffle({
   const [flip, setFlip] = useState(reduced ? FLIP_MS.length : 0)
   const stopped = flip >= FLIP_MS.length
 
+  // The latest onStop, so a parent re-rendering with a new callback does not call it twice.
+  const stopRef = useRef(onStop)
+  stopRef.current = onStop
+  const reportedStop = useRef(false)
+
   useEffect(() => {
-    if (stopped) return
+    if (stopped) {
+      if (!reportedStop.current) {
+        reportedStop.current = true
+        stopRef.current?.()
+      }
+      return
+    }
     const timer = window.setTimeout(() => setFlip(flip + 1), FLIP_MS[flip])
     return () => window.clearTimeout(timer)
   }, [flip, stopped])
@@ -65,17 +80,21 @@ export function OutcomeShuffle({
           {shown.text}
         </span>
       </div>
-      <div className="exam-career-shuffle__actions">
-        {stopped ? (
-          <Button variant="brand" fullWidth onClick={onDone}>
-            {continueLabel}
-          </Button>
-        ) : (
+      {!stopped ? (
+        <div className="exam-career-shuffle__actions">
           <Button variant="tertiary" fullWidth onClick={() => setFlip(FLIP_MS.length)}>
             건너뛰기
           </Button>
-        )}
-      </div>
+        </div>
+      ) : (
+        onDone && (
+          <div className="exam-career-shuffle__actions">
+            <Button variant="brand" fullWidth onClick={onDone}>
+              {continueLabel}
+            </Button>
+          </div>
+        )
+      )}
     </section>
   )
 }
