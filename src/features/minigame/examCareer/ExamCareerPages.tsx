@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import {
   ArrowLeft,
   Check,
@@ -22,8 +22,6 @@ import {
   APPLICATION_GROUPS,
   attemptLabel,
   type ChoiceEvent,
-  type ChoiceOption,
-  type DayRollId,
   ELECTIVE_OPTIONS,
   MAJOR_FIELDS,
   STUDENT_NAME,
@@ -44,7 +42,6 @@ import {
   acknowledgeNotice,
   chooseEventOption,
   choiceEventBefore,
-  conditionRollOf,
   clearCareer,
   createCareer,
   decide,
@@ -73,7 +70,6 @@ import { PATCH_NOTES } from './examCareerPatchNotes'
 import { careerTitleOf } from './examCareerTitle'
 import { destinationText, downloadBlob, renderShareImage } from './examCareerShareImage'
 import { ExamCareerChart } from './ExamCareerChart'
-import { OutcomeShuffle, type ShuffleOutcome } from './OutcomeShuffle'
 import './ExamCareer.css'
 
 /** Where "back to the service" goes: the entry route picks /home or /start. */
@@ -471,40 +467,6 @@ function EventDialog({ event, onChoose }: { event: ChoiceEvent; onChoose: (optio
   )
 }
 
-/** A risky pick: its outcome panels flip by until they stop on the one that happened. */
-function PickShuffle({
-  pick,
-  onDone,
-  onStop,
-}: {
-  pick: { event: ChoiceEvent; option: ChoiceOption; record: CareerEventRecord }
-  onDone?: () => void
-  onStop?: () => void
-}) {
-  const { event, option, record } = pick
-  const targetIndex = record.outcomeIndex ?? 0
-  const outcomes = useMemo(
-    () =>
-      option.outcomes.map((outcome, index) => ({
-        tone: outcome.tone,
-        label: outcome.tone === 'up' ? '잘 풀렸어요' : '꼬였어요',
-        // The drawn one reads as it happened; the others only flash by.
-        text: index === targetIndex ? record.description : outcome.text.replace('{subject}', '한 과목'),
-      })),
-    [option, record, targetIndex],
-  )
-  return (
-    <OutcomeShuffle
-      title={`${option.label}, 어떻게 될까?`}
-      caption={event.title}
-      outcomes={outcomes}
-      targetIndex={targetIndex}
-      onDone={onDone}
-      onStop={onStop}
-    />
-  )
-}
-
 /** A short wait before the CSAT score or the admission results come out. */
 function SuspenseCard({ kind, onDone }: { kind: 'csat' | 'admission'; onDone: () => void }) {
   const lines = SUSPENSE_LINES[kind]
@@ -538,30 +500,6 @@ function SuspenseCard({ kind, onDone }: { kind: 'csat' | 'admission'; onDone: ()
         aria-hidden
       />
     </section>
-  )
-}
-
-/** The CSAT-day conditions in flip order: good and bad days take turns so the flips read as a swing. */
-const CONDITION_PANELS: readonly (ShuffleOutcome & { id: DayRollId })[] = [
-  { id: 'good', tone: 'up', label: '컨디션 좋은 날', text: '머리가 맑아요. 아는 문제는 다 맞힐 것 같아요.' },
-  { id: 'bad', tone: 'down', label: '컨디션 나쁜 날', text: '긴장해서 손이 떨려요. 실력만큼 풀기 어려울 것 같아요.' },
-  { id: 'jackpot', tone: 'up', label: '모든 게 잘 풀린 날', text: '찍은 문제까지 맞는 날이에요. 대박이에요!' },
-  { id: 'normal', tone: 'plain', label: '평소 같은 하루', text: '연습한 그대로 풀었어요. 실력만큼 나올 거예요.' },
-  { id: 'bust', tone: 'down', label: '모든 게 꼬인 날', text: '첫 교시부터 꼬였어요. 대폭망이에요...' },
-]
-
-/** The shared condition of the CSAT day: the panels flip by, then stop on the one drawn. */
-function CsatConditionShuffle({ result, onDone }: { result: ExamResult; onDone: () => void }) {
-  const roll = conditionRollOf(result)
-  return (
-    <OutcomeShuffle
-      title="수능 날의 컨디션은?"
-      caption="이날 하루가 모든 과목에 영향을 줘요."
-      outcomes={[...CONDITION_PANELS]}
-      targetIndex={Math.max(0, CONDITION_PANELS.findIndex((panel) => panel.id === roll))}
-      continueLabel="채점 결과 기다리기"
-      onDone={onDone}
-    />
   )
 }
 
@@ -758,31 +696,10 @@ export function ExamCareerPlayPage() {
   const navigate = useNavigate()
   const [saved, setSaved] = useState<SavedCareer | null>(loadCareer)
   /** UI only: the wait before a CSAT score or admission results. Not saved. */
-  const [suspense, setSuspense] = useState<'csat' | 'csat-condition' | 'csat-pick' | 'admission' | null>(null)
+  const [suspense, setSuspense] = useState<'csat' | 'admission' | null>(null)
   const endSuspense = useCallback(() => setSuspense(null), [])
   /** UI only: an outcome shown right away (스터디카페), before its exam runs. */
   const [revealed, setRevealed] = useState<CareerEventRecord | null>(null)
-  /** UI only: a risky pick whose outcome panels flip by before its exam runs. */
-  const [pickShuffle, setPickShuffle] = useState<{
-    event: ChoiceEvent
-    option: ChoiceOption
-    record: CareerEventRecord
-    answered: CareerState
-  } | null>(null)
-  /** UI only: a risky pick made right before a CSAT (D-30); its panels flip by with the CSAT grades. */
-  const [csatPick, setCsatPick] = useState<{ event: ChoiceEvent; option: ChoiceOption } | null>(null)
-  /** UI only: the CSAT whose pick panel has settled; it stays above the grades. */
-  const [csatPickSettledFor, setCsatPickSettledFor] = useState<string | null>(null)
-
-  /** The CSAT's own pick (D-30), as it landed in the CSAT results. */
-  const lastExam = saved?.state.history.at(-1)
-  const csatPickResult =
-    csatPick && lastExam?.kind === 'csat'
-      ? lastExam.events.find((record) => record.eventId === csatPick.event.id && record.outcomeIndex !== undefined)
-      : undefined
-  // After the scoring wait, the D-30 pick (if any) flips by before the grades.
-  const hasCsatPick = Boolean(csatPickResult)
-  const endCsatWait = useCallback(() => setSuspense(hasCsatPick ? 'csat-pick' : null), [hasCsatPick])
 
   if (!saved) return <Navigate to={EXAM_CAREER_PATH} replace />
 
@@ -791,8 +708,7 @@ export function ExamCareerPlayPage() {
     const nextSaved = { state: next }
     saveCareer(nextSaved)
     setSaved(nextSaved)
-    // The CSAT-day condition comes first, then the wait for the score.
-    if (next.history.length > state.history.length && next.history.at(-1)!.kind === 'csat') setSuspense('csat-condition')
+    if (next.history.length > state.history.length && next.history.at(-1)!.kind === 'csat') setSuspense('csat')
   }
   const history = state.history
   const latest = history.at(-1)
@@ -812,28 +728,6 @@ export function ExamCareerPlayPage() {
 
   const chooseEvent = (optionId: string) => {
     const answered = chooseEventOption(state, optionId)
-    const option = event?.options.find((item) => item.id === optionId)
-    // A breakup notice can follow the D-30 pick, so look the pick's own record up.
-    const record = [...answered.pendingRecords].reverse().find((item) => item.eventId === event?.id)
-    if (event && option && option.outcomes.length > 1 && answered !== state && record?.outcomeIndex !== undefined) {
-      if (upcoming?.kind === 'csat' && !event.revealAtOnce) {
-        // Right before the CSAT the outcome stays hidden; it comes out with the CSAT grades.
-        setCsatPick({ event, option })
-        afterPick(answered)
-        return
-      }
-      // A real gamble: the outcome panels flip by and stop on what happened, then the exam runs.
-      setPickShuffle({ event, option, record, answered })
-      return
-    }
-    afterPick(answered)
-  }
-  const afterPick = (answered: CareerState) => {
-    if (entryEvent) {
-      // The opening pick only readies the first exam; its button comes next.
-      commit(answered)
-      return
-    }
     if (event?.revealAtOnce && answered !== state) {
       // The outcome pops up first; the exam runs once it has been read.
       commit(answered)
@@ -843,14 +737,6 @@ export function ExamCareerPlayPage() {
     // The exam the event led up to runs right away and its card shows the event's
     // outcome, except the CSAT, which gets a button of its own.
     commit(answered.status === 'playing' && upcoming?.kind !== 'csat' ? runExam(answered) : answered)
-  }
-  const closePickShuffle = () => {
-    if (!pickShuffle) return
-    const { answered, event: picked } = pickShuffle
-    setPickShuffle(null)
-    // The shuffle already told the story, so the reveal dialog is skipped; the exam runs now.
-    if (picked.revealAtOnce && !entryEvent) commit(answered.status === 'playing' ? runExam(answered) : answered)
-    else afterPick(answered)
   }
   const closeRevealed = () => {
     setRevealed(null)
@@ -866,7 +752,7 @@ export function ExamCareerPlayPage() {
   }
 
   const choosing = state.status === 'choosing' && state.pendingChoice
-  const showActions = !suspense && !revealed && !pickShuffle && (state.status === 'playing' || state.status === 'decision')
+  const showActions = !suspense && !revealed && (state.status === 'playing' || state.status === 'decision')
 
   return (
     <AppShell
@@ -918,11 +804,7 @@ export function ExamCareerPlayPage() {
         ) : undefined
       }
     >
-      {pickShuffle ? (
-        <div className="exam-career-play">
-          <PickShuffle pick={pickShuffle} onDone={closePickShuffle} />
-        </div>
-      ) : notice ? (
+      {notice ? (
         // The CSAT button only comes back once this has sunk in.
         <div className="exam-career-play">
           <NoticeCard title={notice.title} text={notice.text} onAcknowledge={() => commit(acknowledgeNotice(state))} />
@@ -933,7 +815,7 @@ export function ExamCareerPlayPage() {
           <EntryEvent
             key={entryEvent.id}
             event={entryEvent}
-            onChoose={chooseEvent}
+            onChoose={(optionId) => commit(chooseEventOption(state, optionId))}
           />
         </div>
       ) : choosing ? (
@@ -969,24 +851,9 @@ export function ExamCareerPlayPage() {
             />
           )}
 
-          {/* The D-30 pick's panels stop with the CSAT grades: they come out under it at that moment, and it stays put. */}
-          {csatPick && csatPickResult && latest &&
-            (suspense === 'csat-pick' || (csatPickSettledFor === latest.examId && state.status === 'decision')) && (
-              <PickShuffle
-                key={latest.examId}
-                pick={{ ...csatPick, record: csatPickResult }}
-                onStop={() => {
-                  setCsatPickSettledFor(latest.examId)
-                  endSuspense()
-                }}
-              />
-            )}
-
-          {suspense === 'csat-condition' && latest ? (
-            <CsatConditionShuffle result={latest} onDone={() => setSuspense('csat')} />
-          ) : suspense === 'csat' ? (
-            <SuspenseCard kind="csat" onDone={endCsatWait} />
-          ) : suspense === 'csat-pick' ? null : startingFresh ? (
+          {suspense === 'csat' ? (
+            <SuspenseCard kind="csat" onDone={endSuspense} />
+          ) : startingFresh ? (
             <UpcomingCard slot={upcoming!} electives={state.electives} />
           ) : (
             // While the admission results are on their way, the wait has the stage to itself.
@@ -1022,7 +889,7 @@ export function ExamCareerPlayPage() {
         />
       )}
 
-      {event && !entryEvent && !suspense && !pickShuffle && <EventDialog key={`${state.attempt}-${state.nextExamIndex}-${event.id}`} event={event} onChoose={chooseEvent} />}
+      {event && !entryEvent && !suspense && <EventDialog key={`${state.attempt}-${state.nextExamIndex}-${event.id}`} event={event} onChoose={chooseEvent} />}
     </AppShell>
   )
 }
