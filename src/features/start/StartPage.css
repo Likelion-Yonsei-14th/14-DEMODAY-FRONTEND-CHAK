@@ -252,9 +252,31 @@
   grid-area: arrow;
 }
 
-.home-page__links {
+.home-page__shortcuts {
   display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
   gap: 8px;
+}
+
+.home-page__shortcut {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px 4px 12px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-base);
+  color: var(--color-content-primary);
+  font-size: 12px;
+  font-weight: 700;
+  word-break: keep-all;
+  cursor: pointer;
+}
+
+.home-page__shortcut svg {
+  color: var(--color-content-secondary);
 }
 
 .home-page__new {

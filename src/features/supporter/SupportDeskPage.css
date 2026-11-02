@@ -14,6 +14,10 @@
   gap: 2px;
 }
 
+.favorite-desk-button--on {
+  color: #e8a317;
+}
+
 .support-desk__intro {
   display: grid;
   gap: 7px;

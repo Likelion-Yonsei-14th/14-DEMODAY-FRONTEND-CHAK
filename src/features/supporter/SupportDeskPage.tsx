@@ -24,6 +24,7 @@ import {
   seededDeskObjects,
 } from './seededMessages'
 import { isStickerMessage, type SupporterObjectChoice } from './deskStickers'
+import { FavoriteDeskButton } from './FavoriteDeskButton'
 import { ObjectChoiceSheet } from './ObjectChoiceSheet'
 import './SupportDeskPage.css'
 
@@ -150,6 +151,7 @@ export function SupportDeskPage() {
           }
           trailing={
             <div className="support-desk__app-actions">
+              <FavoriteDeskButton supporterToken={supporterToken} displayName={recipientName} />
               {supporterIdentityName && (
                 <IconButton
                   label={

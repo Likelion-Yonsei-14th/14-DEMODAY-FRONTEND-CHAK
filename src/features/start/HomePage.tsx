@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ChevronRight, LogIn, Plus, UserRound, UsersRound } from 'lucide-react'
+import { ChevronRight, Gift, LogIn, Mail, Plus, Star, UserRound, UsersRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { ApiError } from '@/api/client'
 import { fetchMyDesk } from '@/api/desks'
@@ -158,24 +158,31 @@ export function HomePage() {
           </button>
         </div>
 
-        <div className="home-page__links">
-          <button
-            type="button"
-            className="home-page__new ds-hit-area"
-            onClick={() => navigate('/start')}
-          >
-            <Plus size={15} aria-hidden />
-            {classroomOpen ? '새 책상이나 반 만들기' : '새 책상 만들기'}
-          </button>
-          <button type="button" className="home-page__new ds-hit-area" onClick={() => navigate('/letters')}>
+        <nav className="home-page__shortcuts" aria-label="바로가기">
+          <button type="button" className="home-page__shortcut" onClick={() => navigate('/letters')}>
+            <Mail size={20} aria-hidden />
             내가 쓴 편지
           </button>
+          <button type="button" className="home-page__shortcut" onClick={() => navigate('/favorite-desks')}>
+            <Star size={20} aria-hidden />
+            즐겨찾는 책상
+          </button>
           {isApiEnabled && (
-            <button type="button" className="home-page__new ds-hit-area" onClick={() => navigate('/friend-desks')}>
-              친구에게 만들어 준 책상
+            <button type="button" className="home-page__shortcut" onClick={() => navigate('/friend-desks')}>
+              <Gift size={20} aria-hidden />
+              만들어 준 책상
             </button>
           )}
-        </div>
+        </nav>
+
+        <button
+          type="button"
+          className="home-page__new ds-hit-area"
+          onClick={() => navigate('/start')}
+        >
+          <Plus size={15} aria-hidden />
+          {classroomOpen ? '새 책상이나 반 만들기' : '새 책상 만들기'}
+        </button>
 
         <MiniGameSection />
       </main>
