@@ -8,6 +8,7 @@ import { AppShell } from '@/layout/AppShell'
 import { shareOrCopyLink } from '@/lib/shareLink'
 import { buildPrototypeShareUrl } from '@/prototype/shareUrl'
 import { supporterPath } from '@/prototype/supporterRoute'
+import { usePrototypeStore } from '@/store/prototypeStore'
 import './DeskCreation.css'
 
 /** The link the friend who made the desk sends to the person it is for. */
@@ -129,6 +130,8 @@ export function FriendDesksPage() {
   const [desks, setDesks] = useState<ApiFriendDesk[] | null>(null)
   const [failed, setFailed] = useState(false)
   const [reload, setReload] = useState(0)
+  const resetDeskCreationDraft = usePrototypeStore((state) => state.resetDeskCreationDraft)
+  const setDeskCreationDraft = usePrototypeStore((state) => state.setDeskCreationDraft)
 
   useEffect(() => {
     let cancelled = false
@@ -169,7 +172,16 @@ export function FriendDesksPage() {
       {desks === null && !failed && <p>불러오고 있어요...</p>}
       {desks?.length === 0 && <p>아직 전달하지 않은 친구 책상이 없어요.</p>}
       {desks?.map((desk) => <FriendDeskCard key={desk.id} desk={desk} onDelete={remove} />)}
-      <Button variant="brand" fullWidth onClick={() => navigate('/prototype/create')}>
+      <Button
+        variant="brand"
+        fullWidth
+        onClick={() => {
+          // Here the desk is always for a friend, so skip "who is it for?".
+          resetDeskCreationDraft()
+          setDeskCreationDraft({ createdFor: 'other' })
+          navigate('/prototype/create/recipient', { state: { from: '/friend-desks' } })
+        }}
+      >
         새 책상 만들기
       </Button>
     </FriendDeskShell>

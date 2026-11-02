@@ -7,7 +7,7 @@ import {
   UserRound,
   UsersRound,
 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   AppBar,
   Button,
@@ -112,8 +112,11 @@ export function DeskCreateWhoPage() {
 
 export function DeskCreateRecipientPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const draft = usePrototypeStore((state) => state.deskCreationDraft)
   const setDraft = usePrototypeStore((state) => state.setDeskCreationDraft)
+  // Started from "내가 만든 친구 책상", which skips the "who is it for?" step.
+  const backTo = (location.state as { from?: string } | null)?.from ?? '/prototype/create'
 
   const name = draft.recipientDisplayName
   const valid = name.trim().length > 0
@@ -121,7 +124,7 @@ export function DeskCreateRecipientPage() {
   return (
     <CreationShell
       title="응원 책상 만들기"
-      back={() => navigate('/prototype/create')}
+      back={() => navigate(backTo)}
       action={
         <Button
           variant="brand"
