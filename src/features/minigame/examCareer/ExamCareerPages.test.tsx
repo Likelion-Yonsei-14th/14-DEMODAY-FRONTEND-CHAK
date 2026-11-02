@@ -238,15 +238,16 @@ describe('exam career mini game', () => {
 
     finishSuspense()
     expect(screen.queryByRole('status', { name: '수능 채점 중' })).not.toBeInTheDocument()
-    // The condition panels flip by before the grades and stop on the day that was drawn.
+    // The condition panels flip by with the grades held back, and stop on the day that was drawn.
     const condition = screen.getByRole('status', { name: '수능 날의 컨디션은?' })
     expect(screen.queryByRole('heading', { name: '수능' })).not.toBeInTheDocument()
-    expect(within(condition).queryByRole('button', { name: '성적표 보기' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '대학 지원하기' })).not.toBeInTheDocument()
     fireEvent.click(within(condition).getByRole('button', { name: '건너뛰기' }))
+    // The moment it stops, the grades come out under it; the settled panel stays.
     const drawnDay = loadCareer()!.state.history.at(-1)!.conditionRoll
     const dayLabel = { normal: '평소 같은 하루', good: '컨디션 좋은 날', bad: '컨디션 나쁜 날', jackpot: '모든 게 잘 풀린 날', bust: '모든 게 꼬인 날' }
-    expect(within(condition).getByText(dayLabel[drawnDay!])).toBeInTheDocument()
-    fireEvent.click(within(condition).getByRole('button', { name: '성적표 보기' }))
+    expect(within(screen.getByRole('status', { name: '수능 날의 컨디션은?' })).getByText(dayLabel[drawnDay!])).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '건너뛰기' })).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '수능' })).toBeInTheDocument()
     expect(screen.getByText(/^수능 D-30 · /)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '대학 지원하기' })).toBeInTheDocument()

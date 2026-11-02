@@ -524,8 +524,8 @@ const CONDITION_PANELS: readonly (ShuffleOutcome & { id: DayRollId })[] = [
   { id: 'bust', tone: 'down', label: '모든 게 꼬인 날', text: '첫 교시부터 꼬였어요. 대폭망이에요...' },
 ]
 
-/** The shared condition of the CSAT day: the panels flip by, then stop on the one drawn. */
-function CsatConditionShuffle({ result, onDone }: { result: ExamResult; onDone: () => void }) {
+/** The shared condition of the CSAT day: the panels flip by, then stop on the one drawn, right above the grades. */
+function CsatConditionShuffle({ result, onStop }: { result: ExamResult; onStop: () => void }) {
   const roll = conditionRollOf(result)
   return (
     <OutcomeShuffle
@@ -533,8 +533,7 @@ function CsatConditionShuffle({ result, onDone }: { result: ExamResult; onDone: 
       caption="이날 하루가 모든 과목에 영향을 줘요."
       outcomes={[...CONDITION_PANELS]}
       targetIndex={Math.max(0, CONDITION_PANELS.findIndex((panel) => panel.id === roll))}
-      continueLabel="성적표 보기"
-      onDone={onDone}
+      onStop={onStop}
     />
   )
 }
@@ -735,6 +734,8 @@ export function ExamCareerPlayPage() {
   const [suspense, setSuspense] = useState<'csat' | 'csat-condition' | 'admission' | null>(null)
   const endSuspense = useCallback(() => setSuspense(null), [])
   const showCsatCondition = useCallback(() => setSuspense('csat-condition'), [])
+  /** UI only: the CSAT whose condition panel has settled; it stays above the grades. */
+  const [conditionSettledFor, setConditionSettledFor] = useState<string | null>(null)
   /** UI only: an outcome shown right away (스터디카페), before its exam runs. */
   const [revealed, setRevealed] = useState<CareerEventRecord | null>(null)
   /** UI only: a risky pick whose outcome panels flip by before its exam runs. */
@@ -922,11 +923,22 @@ export function ExamCareerPlayPage() {
             />
           )}
 
+          {/* The condition panel stays put once it stops, and the grades come out under it at that moment. */}
+          {latest?.kind === 'csat' &&
+            (suspense === 'csat-condition' || (conditionSettledFor === latest.examId && state.status === 'decision')) && (
+              <CsatConditionShuffle
+                key={latest.examId}
+                result={latest}
+                onStop={() => {
+                  setConditionSettledFor(latest.examId)
+                  endSuspense()
+                }}
+              />
+            )}
+
           {suspense === 'csat' ? (
             <SuspenseCard kind="csat" onDone={showCsatCondition} />
-          ) : suspense === 'csat-condition' && latest ? (
-            <CsatConditionShuffle result={latest} onDone={endSuspense} />
-          ) : startingFresh ? (
+          ) : suspense === 'csat-condition' ? null : startingFresh ? (
             <UpcomingCard slot={upcoming!} electives={state.electives} />
           ) : (
             // While the admission results are on their way, the wait has the stage to itself.
