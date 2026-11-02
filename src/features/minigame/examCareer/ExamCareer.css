@@ -808,7 +808,7 @@
   }
 }
 
-/* Roulette for the exam-day condition and the admission draws */
+/* Roulette for the CSAT-day condition */
 .exam-career-wheel {
   display: grid;
   justify-items: center;
@@ -922,6 +922,60 @@
 @media (prefers-reduced-motion: reduce) {
   .exam-career-wheel__result.is-visible,
   .exam-career-wheel__slice.is-hit path {
+    animation: none;
+  }
+}
+
+/* A risky pick: its outcome panels flip by, then settle on what happened */
+.exam-career-shuffle {
+  display: grid;
+  gap: var(--space-3);
+  padding-block: var(--space-6);
+  text-align: center;
+}
+
+.exam-career-shuffle__title {
+  margin: 0;
+  font-size: var(--type-title-m-size);
+  font-weight: 800;
+  word-break: keep-all;
+}
+
+.exam-career-shuffle__caption {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--type-body-s-size);
+  word-break: keep-all;
+}
+
+/* Tall enough for the longest outcome, so the card does not jump between flips. */
+.exam-career-shuffle__panel {
+  min-height: 6.5em;
+  text-align: left;
+  animation: exam-career-shuffle-flip .08s ease-out;
+}
+
+.exam-career-shuffle__panel.is-stopped {
+  animation: exam-career-shuffle-land .45s var(--ease-emphasized);
+}
+
+@keyframes exam-career-shuffle-flip {
+  from { transform: translateY(-6px); opacity: .55; }
+}
+
+@keyframes exam-career-shuffle-land {
+  0% { transform: scale(.94); }
+  60% { transform: scale(1.03); }
+}
+
+.exam-career-shuffle__actions {
+  display: grid;
+  gap: var(--space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exam-career-shuffle__panel,
+  .exam-career-shuffle__panel.is-stopped {
     animation: none;
   }
 }

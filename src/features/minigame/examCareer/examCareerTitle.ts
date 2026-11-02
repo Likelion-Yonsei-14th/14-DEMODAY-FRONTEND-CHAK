@@ -20,7 +20,7 @@ export function careerTitleOf(career: SharedCareer): CareerTitle {
 
   if (retakes >= 3) {
     return {
-      title: `${retakes}수의 전설`,
+      title: `${attemptLabel(retakes)}의 전설`,
       blurb: `${attemptLabel(retakes)}까지 책상을 떠나지 않았어요. 끝까지 간 사람만 아는 이야기예요.`,
     }
   }

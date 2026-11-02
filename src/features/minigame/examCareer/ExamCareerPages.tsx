@@ -60,7 +60,6 @@ import {
   summarize,
   universityLabel,
   type CareerEventRecord,
-  type AdmissionRecord,
   type CareerState,
   type ElectiveChoicePoint,
   type ExamResult,
@@ -74,6 +73,7 @@ import { careerTitleOf } from './examCareerTitle'
 import { destinationText, downloadBlob, renderShareImage } from './examCareerShareImage'
 import { ExamCareerChart } from './ExamCareerChart'
 import { ChanceWheel, type WheelSegment } from './ChanceWheel'
+import { OutcomeShuffle } from './OutcomeShuffle'
 import './ExamCareer.css'
 
 /** Where "back to the service" goes: the entry route picks /home or /start. */
@@ -449,41 +449,32 @@ function EventDialog({ event, onChoose }: { event: ChoiceEvent; onChoose: (optio
   )
 }
 
-/** The wheel for a risky pick: one slice group per possible outcome, sized by its weight. */
-function PickWheel({
+/** A risky pick: its outcome panels flip by until they stop on the one that happened. */
+function PickShuffle({
   pick,
-  seed,
   onDone,
-  onSkipAll,
 }: {
   pick: { event: ChoiceEvent; option: ChoiceOption; record: CareerEventRecord }
-  seed: string
   onDone: () => void
-  onSkipAll?: () => void
 }) {
   const { event, option, record } = pick
-  const segments = useMemo<WheelSegment[]>(
+  const targetIndex = record.outcomeIndex ?? 0
+  const outcomes = useMemo(
     () =>
       option.outcomes.map((outcome, index) => ({
-        id: String(index),
-        label: outcome.tone === 'up' ? '잘 풀려요' : '꼬여요',
-        weight: outcome.weight,
         tone: outcome.tone,
-        color: outcome.tone === 'up' ? '#3f8f6a' : '#e07a3a',
-        glyph: outcome.tone === 'up' ? '▲' : '▼',
+        // The drawn one reads as it happened; the others only flash by.
+        text: index === targetIndex ? record.description : outcome.text.replace('{subject}', '한 과목'),
       })),
-    [option],
+    [option, record, targetIndex],
   )
   return (
-    <ChanceWheel
+    <OutcomeShuffle
       title={`${option.label}, 어떻게 될까?`}
       caption={event.title}
-      segments={segments}
-      targetId={String(record.outcomeIndex ?? 0)}
-      seedKey={`${seed}:${event.id}:${option.id}`}
-      resultText={() => record.description}
+      outcomes={outcomes}
+      targetIndex={targetIndex}
       onDone={onDone}
-      onSkipAll={onSkipAll}
     />
   )
 }
@@ -562,32 +553,6 @@ function CsatConditionWheel({ result, luck, onDone }: { result: ExamResult; luck
       resultText={(segment) => CONDITION_RESULT[segment.id] ?? segment.label}
       continueLabel="성적표 보기"
       onDone={onDone}
-    />
-  )
-}
-
-/** One roulette per 가·나·다군 application, each landing on what the draw already decided. */
-function AdmissionWheels({ record, seed, onDone }: { record: AdmissionRecord; seed: string; onDone: () => void }) {
-  const [index, setIndex] = useState(0)
-  const application = record.applications[index]
-  if (!application) return null
-  const last = index === record.applications.length - 1
-  const segments: WheelSegment[] = [
-    { id: 'pass', label: '합격', weight: application.chance, tone: 'up', color: '#3f8f6a', glyph: '○' },
-    { id: 'fail', label: '불합격', weight: Math.max(0.01, 1 - application.chance), tone: 'down', color: '#d9a58f', glyph: '✕' },
-  ]
-  return (
-    <ChanceWheel
-      key={application.group}
-      title={`${application.group} · ${universityLabel(application.tierId)}`}
-      caption={`${chanceLabel(application.chance).label} 지원이에요. 칸의 크기가 합격 확률이에요.`}
-      segments={segments}
-      targetId={application.accepted ? 'pass' : 'fail'}
-      seedKey={`${seed}:${record.attempt}:${application.group}`}
-      resultText={(segment) => (segment.id === 'pass' ? '합격이에요!' : '아쉽게 불합격이에요')}
-      continueLabel={last ? '결과 보기' : '다음 군 보기'}
-      onDone={() => (last ? onDone() : setIndex(index + 1))}
-      onSkipAll={last ? undefined : onDone}
     />
   )
 }
@@ -785,17 +750,13 @@ export function ExamCareerPlayPage() {
   const navigate = useNavigate()
   const [saved, setSaved] = useState<SavedCareer | null>(loadCareer)
   /** UI only: the wait before a CSAT score or admission results. Not saved. */
-  const [suspense, setSuspense] = useState<'csat' | 'csat-wheel' | 'admission' | 'admission-wheel' | null>(null)
+  const [suspense, setSuspense] = useState<'csat' | 'csat-wheel' | 'admission' | null>(null)
   const endSuspense = useCallback(() => setSuspense(null), [])
-  const spinWheel = useCallback(
-    (kind: 'csat' | 'admission') => setSuspense(kind === 'csat' ? 'csat-wheel' : 'admission-wheel'),
-    [],
-  )
-  const admissionWait = suspense === 'admission' || suspense === 'admission-wheel'
+  const spinCsatWheel = useCallback(() => setSuspense('csat-wheel'), [])
   /** UI only: an outcome shown right away (스터디카페), before its exam runs. */
   const [revealed, setRevealed] = useState<CareerEventRecord | null>(null)
-  /** UI only: a risky pick whose outcome is spinning on a wheel before its exam runs. */
-  const [pickWheel, setPickWheel] = useState<{
+  /** UI only: a risky pick whose outcome panels flip by before its exam runs. */
+  const [pickShuffle, setPickShuffle] = useState<{
     event: ChoiceEvent
     option: ChoiceOption
     record: CareerEventRecord
@@ -832,8 +793,8 @@ export function ExamCareerPlayPage() {
     const option = event?.options.find((item) => item.id === optionId)
     const record = answered.pendingRecords.at(-1)
     if (event && option && option.outcomes.length > 1 && answered !== state && record?.outcomeIndex !== undefined) {
-      // A real gamble: the wheel shows how it landed first, then the exam runs.
-      setPickWheel({ event, option, record, answered })
+      // A real gamble: the outcome panels flip by and stop on what happened, then the exam runs.
+      setPickShuffle({ event, option, record, answered })
       return
     }
     afterPick(answered)
@@ -854,11 +815,11 @@ export function ExamCareerPlayPage() {
     // outcome, except the CSAT, which gets a button of its own.
     commit(answered.status === 'playing' && upcoming?.kind !== 'csat' ? runExam(answered) : answered)
   }
-  const closePickWheel = () => {
-    if (!pickWheel) return
-    const { answered, event: picked } = pickWheel
-    setPickWheel(null)
-    // The wheel already told the story, so the reveal dialog is skipped; the exam runs now.
+  const closePickShuffle = () => {
+    if (!pickShuffle) return
+    const { answered, event: picked } = pickShuffle
+    setPickShuffle(null)
+    // The shuffle already told the story, so the reveal dialog is skipped; the exam runs now.
     if (picked.revealAtOnce && !entryEvent) commit(answered.status === 'playing' ? runExam(answered) : answered)
     else afterPick(answered)
   }
@@ -876,7 +837,7 @@ export function ExamCareerPlayPage() {
   }
 
   const choosing = state.status === 'choosing' && state.pendingChoice
-  const showActions = !suspense && !revealed && !pickWheel && (state.status === 'playing' || state.status === 'decision')
+  const showActions = !suspense && !revealed && !pickShuffle && (state.status === 'playing' || state.status === 'decision')
 
   return (
     <AppShell
@@ -928,9 +889,9 @@ export function ExamCareerPlayPage() {
         ) : undefined
       }
     >
-      {pickWheel ? (
+      {pickShuffle ? (
         <div className="exam-career-play">
-          <PickWheel pick={pickWheel} seed={state.seed} onDone={closePickWheel} />
+          <PickShuffle pick={pickShuffle} onDone={closePickShuffle} />
         </div>
       ) : notice ? (
         // The CSAT button only comes back once this has sunk in.
@@ -969,10 +930,7 @@ export function ExamCareerPlayPage() {
             />
           )}
 
-          {suspense === 'admission' && <SuspenseCard kind="admission" onDone={() => spinWheel('admission')} />}
-          {suspense === 'admission-wheel' && state.admissions.at(-1) && (
-            <AdmissionWheels record={state.admissions.at(-1)!} seed={state.seed} onDone={endSuspense} />
-          )}
+          {suspense === 'admission' && <SuspenseCard kind="admission" onDone={endSuspense} />}
 
           {state.status === 'admission' && !suspense && (
             <AdmissionResults
@@ -983,7 +941,7 @@ export function ExamCareerPlayPage() {
           )}
 
           {suspense === 'csat' ? (
-            <SuspenseCard kind="csat" onDone={() => spinWheel('csat')} />
+            <SuspenseCard kind="csat" onDone={spinCsatWheel} />
           ) : suspense === 'csat-wheel' && latest ? (
             <CsatConditionWheel result={latest} luck={state.profile.luck} onDone={endSuspense} />
           ) : startingFresh ? (
@@ -992,7 +950,7 @@ export function ExamCareerPlayPage() {
             // While the admission results are on their way, the wait has the stage to itself.
             // Under the admission results the CSAT shows its grades only; its events were already read.
             latest &&
-            !admissionWait && (
+            suspense !== 'admission' && (
               <ExamCard
                 key={latest.examId}
                 result={latest}
@@ -1022,7 +980,7 @@ export function ExamCareerPlayPage() {
         />
       )}
 
-      {event && !entryEvent && !suspense && !pickWheel && <EventDialog key={`${state.attempt}-${state.nextExamIndex}-${event.id}`} event={event} onChoose={chooseEvent} />}
+      {event && !entryEvent && !suspense && !pickShuffle && <EventDialog key={`${state.attempt}-${state.nextExamIndex}-${event.id}`} event={event} onChoose={chooseEvent} />}
     </AppShell>
   )
 }
