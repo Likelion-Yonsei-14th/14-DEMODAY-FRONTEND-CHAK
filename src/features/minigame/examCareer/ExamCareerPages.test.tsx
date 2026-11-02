@@ -11,6 +11,7 @@ import {
   chooseEventOption,
   clearCareer,
   createCareer,
+  decide,
   loadCareer,
   nextExam,
   pendingEventOf,
@@ -435,6 +436,39 @@ describe('exam career mini game', () => {
     expect(events.some((record) => record.eventId === 'breakup')).toBe(true)
     fireEvent.click(within(pick).getByRole('button', { name: '성적표 보기' }))
     expect(screen.getByRole('heading', { name: '수능' })).toBeInTheDocument()
+  })
+
+  it('opens a retake 마지막 승부 envelope right away, then the CSAT button, then the condition', () => {
+    vi.useFakeTimers()
+    const csatDone = playEngineUntil('page-final-push', (current) => current.status === 'decision')
+    let state = decide(csatDone, 'retake')
+    while (pendingEventOf(state)?.id !== 'final-push') {
+      state =
+        state.status === 'choosing'
+          ? chooseElectives(state, state.electives ?? DEFAULT_ELECTIVES.humanities)
+          : state.status === 'event'
+            ? chooseEventOption(state, pendingEventOf(state)!.options[0]!.id)
+            : runExam(state)
+    }
+    saveCareer({ state })
+    renderAt('/minigame/exam-career/play')
+
+    // Picking opens its envelope at once; the CSAT waits until it is read.
+    fireEvent.click(within(screen.getByRole('dialog', { name: '마지막 승부' })).getByRole('button', { name: '마지막까지 달린다' }))
+    const pick = screen.getByRole('status', { name: '마지막까지 달린다, 어떻게 될까?' })
+    expect(screen.queryByRole('button', { name: '수능 보러 가기' })).not.toBeInTheDocument()
+    fireEvent.click(within(pick).getByRole('button', { name: '건너뛰기' }))
+    fireEvent.click(within(pick).getByRole('button', { name: '확인' }))
+
+    // Then the CSAT, its condition envelope, the scoring wait and the grades, with no second envelope.
+    fireEvent.click(screen.getByRole('button', { name: '수능 보러 가기' }))
+    const condition = screen.getByRole('status', { name: '수능 날의 컨디션은?' })
+    fireEvent.click(within(condition).getByRole('button', { name: '건너뛰기' }))
+    fireEvent.click(within(condition).getByRole('button', { name: '채점 결과 기다리기' }))
+    finishSuspense()
+    expect(screen.queryByRole('status', { name: '마지막까지 달린다, 어떻게 될까?' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '수능' })).toBeInTheDocument()
+    expect(loadCareer()!.state.history.at(-1)!.events.some((record) => record.eventId === 'final-push')).toBe(true)
   })
 
   it('asks how to spend the retake year, then brings the friends at university, then the electives', () => {
