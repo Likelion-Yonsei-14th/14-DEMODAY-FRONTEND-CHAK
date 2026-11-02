@@ -19,7 +19,7 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { AppBar, Button, IconButton, useFeedback } from '@/design-system'
 import {
   createDeskBlastRound,
@@ -67,6 +67,7 @@ import {
   setMuted,
   unlockAudio,
 } from './deskBlastSound'
+import { LOOK_LABEL, readLook, saveLook, type BlastLook } from './deskBlastLook'
 import { hasSeenHint, loadBestScore, markHintSeen, saveBestScore } from './deskBlastStorage'
 import './DeskBlast.css'
 
@@ -117,6 +118,7 @@ function ServiceHomeButton() {
 /** The page of the game: starts at once, with a one-line hint the first time only. */
 export function DeskBlastPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { showToast } = useFeedback()
   const [game, setGame] = useState<GameState>(() => createGame())
   const gameRef = useRef(game)
@@ -130,6 +132,7 @@ export function DeskBlastPage() {
   const [resultOpen, setResultOpen] = useState(false)
   const [best, setBest] = useState(loadBestScore)
   const [soundOff, setSoundOff] = useState(isMuted)
+  const [look, setLook] = useState<BlastLook>(() => readLook(location.search))
   const bestRef = useRef(best)
   const boardRef = useRef<HTMLDivElement | null>(null)
   const dragInfo = useRef<{ slot: number; pointerId: number; startX: number; startY: number; moved: boolean } | null>(null)
@@ -345,9 +348,10 @@ export function DeskBlastPage() {
     <AppShell
       surface="base"
       contentClassName="blast-shell"
+      shellClassName={`blast-look-${look}`}
       appBar={<AppBar title="수능 블라스트" leading={<ServiceHomeButton />} />}
     >
-      <div className="blast-page">
+      <div className="blast-page" data-look={look}>
         <header className="blast-stats" aria-label="현재 기록">
           <div className="blast-stats__score">
             <span className="blast-stats__label">책상정리력</span>
@@ -375,6 +379,18 @@ export function DeskBlastPage() {
             }}
           >
             {soundOff ? <VolumeX size={18} aria-hidden /> : <Volume2 size={18} aria-hidden />}
+          </button>
+          <button
+            type="button"
+            className="blast-stats__look"
+            aria-label={`화면 스타일 바꾸기, 지금은 ${LOOK_LABEL[look]}`}
+            onClick={() => {
+              const next: BlastLook = look === 'arcade' ? 'objects' : 'arcade'
+              saveLook(next)
+              setLook(next)
+            }}
+          >
+            {LOOK_LABEL[look]}
           </button>
           <div className="blast-stats__best">
             <span className="blast-stats__label">

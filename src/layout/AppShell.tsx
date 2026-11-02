@@ -6,6 +6,8 @@ type AppShellProps = PropsWithChildren<{
   fixedAction?: ReactNode
   surface?: 'base' | 'paper' | 'transparent'
   contentClassName?: string
+  /** Extra class on the shell itself, for a screen that needs its own colors behind the app bar. */
+  shellClassName?: string
 }>
 
 export function AppShell({
@@ -14,11 +16,12 @@ export function AppShell({
   fixedAction,
   surface = 'base',
   contentClassName = '',
+  shellClassName = '',
   children,
 }: AppShellProps) {
   return (
     <div className="app-stage">
-      <div className={`app-shell app-shell--${surface}`}>
+      <div className={['app-shell', `app-shell--${surface}`, shellClassName].filter(Boolean).join(' ')}>
         {appBar}
         <main className={['app-shell__content', contentClassName].filter(Boolean).join(' ')}>
           {children}
