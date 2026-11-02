@@ -86,6 +86,10 @@ export type SneakyPhoneSubmission = {
 }
 export type SneakyPhoneGrade = { finalScore: number; baseScore: number; bonus: number; ranked: boolean; rank: MinigameRank | null }
 
+export type DeskBlastRound = { roundId: string; expiresAt: string }
+export type DeskBlastSubmission = { score: number; lines: number; bestCombo: number; placements: number; playMs: number }
+export type DeskBlastGrade = { score: number; ranked: boolean; rank: MinigameRank | null }
+
 export type StudyTypeShare = { code: string; count: number; percent: number }
 export type StudyTypeStats = { total: number; myCode: string | null; distribution: StudyTypeShare[] }
 
@@ -102,6 +106,18 @@ export const submitGuessGodRound = (roundId: string, answers: Array<number | nul
 
 export const fetchGuessGodLeaderboard = (period: LeaderboardPeriod) =>
   apiFetch<Leaderboard>(`${BASE}/guess-god/leaderboard`, { query: { period }, quiet: true })
+
+export const createDeskBlastRound = () => apiFetch<DeskBlastRound>(`${BASE}/desk-blast/rounds`, { method: 'POST', quiet: true })
+
+export const submitDeskBlastRound = (roundId: string, result: DeskBlastSubmission) =>
+  apiFetch<DeskBlastGrade>(`${BASE}/desk-blast/rounds/${encodeURIComponent(roundId)}/submit`, {
+    method: 'POST',
+    body: result,
+    quiet: true,
+  })
+
+export const fetchDeskBlastLeaderboard = (period: LeaderboardPeriod) =>
+  apiFetch<Leaderboard>(`${BASE}/desk-blast/leaderboard`, { query: { period }, quiet: true })
 
 export const createSneakyPhoneRound = () => apiFetch<SneakyPhoneRound>(`${BASE}/sneaky-phone/rounds`, { method: 'POST', quiet: true })
 

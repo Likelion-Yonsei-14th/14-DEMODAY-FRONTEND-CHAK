@@ -193,7 +193,7 @@ export const changeAdminBenefitStatus = (id: number, status: AdminInquiryStatus)
 export type AdminMinigameDay = { date: string; members: number; guests: number }
 
 export type AdminMinigameGame = {
-  game: 'GUESS_GOD' | 'SNEAKY_PHONE'
+  game: 'GUESS_GOD' | 'SNEAKY_PHONE' | 'DESK_BLAST'
   startedToday: number
   submittedToday: number
   submittedLast7Days: number

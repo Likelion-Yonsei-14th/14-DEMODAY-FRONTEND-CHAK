@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
-import { GraduationCap, PencilLine, Route, Smartphone } from 'lucide-react'
+import { GraduationCap, LayoutGrid, PencilLine, Route, Smartphone } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { D1_COURSE_PATH } from './d1Course/d1CourseRoutes'
+import { DESK_BLAST_PATH } from './deskBlast/deskBlastRoutes'
 import { EXAM_CAREER_PATH } from './examCareer/examCareerRoutes'
 import { GUESS_GOD_PATH } from './guessGod/guessGodRoutes'
 import { SNEAKY_PHONE_PATH } from './sneakyPhone/sneakyPhoneRoutes'
@@ -52,6 +53,13 @@ const MINI_GAMES: readonly MiniGame[] = [
     title: '선생님 몰래 폰 하기',
     summary: '30초 타이밍 게임',
     icon: <Smartphone size={22} />,
+  },
+  {
+    id: 'desk-blast',
+    path: DESK_BLAST_PATH,
+    title: '수능 블라스트',
+    summary: '책상 정리 퍼즐',
+    icon: <LayoutGrid size={22} />,
   },
 ]
 
