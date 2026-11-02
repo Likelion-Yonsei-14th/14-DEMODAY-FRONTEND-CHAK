@@ -265,11 +265,20 @@ export const SUBJECT_DAY_ROLLS: readonly DayRoll[] = [
   { id: 'bust', label: '대폭망', weight: 1.5, range: [-14, -9] },
 ]
 
-/** One roll per exam that moves every subject together. */
+/** One roll per 모의고사·학력평가 that moves every subject together. */
 export const COMMON_DAY_ROLLS: readonly DayRoll[] = [
   { id: 'normal', label: '평소 같은 하루', weight: 85, range: [-1, 1] },
   { id: 'good', label: '컨디션 좋은 날', weight: 6, range: [2, 4] },
   { id: 'bad', label: '컨디션 나쁜 날', weight: 6, range: [-4, -2] },
+  { id: 'jackpot', label: '모든 게 잘 풀린 날', weight: 1.5, range: [7, 11] },
+  { id: 'bust', label: '모든 게 꼬인 날', weight: 1.5, range: [-11, -7] },
+]
+
+/** The same roll on 수능 day, where the condition is shown on its own: good and bad days come far more often. */
+export const CSAT_DAY_ROLLS: readonly DayRoll[] = [
+  { id: 'normal', label: '평소 같은 하루', weight: 47, range: [-1, 1] },
+  { id: 'good', label: '컨디션 좋은 날', weight: 25, range: [2, 4] },
+  { id: 'bad', label: '컨디션 나쁜 날', weight: 25, range: [-4, -2] },
   { id: 'jackpot', label: '모든 게 잘 풀린 날', weight: 1.5, range: [7, 11] },
   { id: 'bust', label: '모든 게 꼬인 날', weight: 1.5, range: [-11, -7] },
 ]
@@ -296,20 +305,26 @@ export const GRADE_CUTOFFS: readonly { grade: number; minScore: number }[] = [
 ]
 
 /**
- * Grades are relative: as the whole year group studies, the bar rises. This
- * is the average cohort skill gained since 고1 March, by months elapsed,
- * measured from the simulator itself with choice events picked evenly
- * (re-measure if GROWTH or CHOICE_EVENTS change). An exam
- * is graded on `score - shift`, so an average student keeps an average grade.
- * Retake-year exams use the shift of the same month in 고3.
+ * Grades are relative: as the whole year group studies, the bar rises. The
+ * bar rises by COHORT_SHIFT_SHARE of the average cohort skill gained since
+ * 고1 March, by months elapsed, measured from the simulator itself with
+ * choice events picked evenly (re-measure if GROWTH or CHOICE_EVENTS change).
+ * An exam is graded on `score - shift`. Rising by less than the whole gain
+ * lets an average student's grade climb a little towards the CSAT, so
+ * studying feels like it pays off. Retake-year exams use the shift of the
+ * same month in 고3.
  */
-export const COHORT_SKILL_SHIFT: readonly [months: number, shift: number][] = [
+const MEASURED_COHORT_GAIN: readonly [months: number, gain: number][] = [
   [0, 0],
   [12, 12.6],
   [24, 25.6],
   [27, 29],
   [32, 33.6],
 ]
+export const COHORT_SHIFT_SHARE = 0.85
+export const COHORT_SKILL_SHIFT: readonly [months: number, shift: number][] = MEASURED_COHORT_GAIN.map(
+  ([months, gain]) => [months, gain * COHORT_SHIFT_SHARE],
+)
 
 export function cohortShift(monthsSinceStart: number) {
   const points = COHORT_SKILL_SHIFT
