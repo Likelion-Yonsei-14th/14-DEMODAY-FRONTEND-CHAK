@@ -22,6 +22,7 @@ import {
   APPLICATION_GROUPS,
   attemptLabel,
   type ChoiceEvent,
+  type ChoiceOption,
   ELECTIVE_OPTIONS,
   MAJOR_FIELDS,
   STUDENT_NAME,
@@ -447,6 +448,45 @@ function EventDialog({ event, onChoose }: { event: ChoiceEvent; onChoose: (optio
   )
 }
 
+/** The wheel for a risky pick: one slice group per possible outcome, sized by its weight. */
+function PickWheel({
+  pick,
+  seed,
+  onDone,
+  onSkipAll,
+}: {
+  pick: { event: ChoiceEvent; option: ChoiceOption; record: CareerEventRecord }
+  seed: string
+  onDone: () => void
+  onSkipAll?: () => void
+}) {
+  const { event, option, record } = pick
+  const segments = useMemo<WheelSegment[]>(
+    () =>
+      option.outcomes.map((outcome, index) => ({
+        id: String(index),
+        label: outcome.tone === 'up' ? '잘 풀려요' : '꼬여요',
+        weight: outcome.weight,
+        tone: outcome.tone,
+        color: outcome.tone === 'up' ? '#3f8f6a' : '#e07a3a',
+        glyph: outcome.tone === 'up' ? '▲' : '▼',
+      })),
+    [option],
+  )
+  return (
+    <ChanceWheel
+      title={`${option.label}, 어떻게 될까?`}
+      caption={event.title}
+      segments={segments}
+      targetId={String(record.outcomeIndex ?? 0)}
+      seedKey={`${seed}:${event.id}:${option.id}`}
+      resultText={() => record.description}
+      onDone={onDone}
+      onSkipAll={onSkipAll}
+    />
+  )
+}
+
 /** A short wait before the CSAT score or the admission results come out. */
 function SuspenseCard({ kind, onDone }: { kind: 'csat' | 'admission'; onDone: () => void }) {
   const lines = SUSPENSE_LINES[kind]
@@ -753,6 +793,13 @@ export function ExamCareerPlayPage() {
   const admissionWait = suspense === 'admission' || suspense === 'admission-wheel'
   /** UI only: an outcome shown right away (스터디카페), before its exam runs. */
   const [revealed, setRevealed] = useState<CareerEventRecord | null>(null)
+  /** UI only: a risky pick whose outcome is spinning on a wheel before its exam runs. */
+  const [pickWheel, setPickWheel] = useState<{
+    event: ChoiceEvent
+    option: ChoiceOption
+    record: CareerEventRecord
+    answered: CareerState
+  } | null>(null)
 
   if (!saved) return <Navigate to={EXAM_CAREER_PATH} replace />
 
@@ -781,6 +828,21 @@ export function ExamCareerPlayPage() {
 
   const chooseEvent = (optionId: string) => {
     const answered = chooseEventOption(state, optionId)
+    const option = event?.options.find((item) => item.id === optionId)
+    const record = answered.pendingRecords.at(-1)
+    if (event && option && option.outcomes.length > 1 && answered !== state && record?.outcomeIndex !== undefined) {
+      // A real gamble: the wheel shows how it landed first, then the exam runs.
+      setPickWheel({ event, option, record, answered })
+      return
+    }
+    afterPick(answered)
+  }
+  const afterPick = (answered: CareerState) => {
+    if (entryEvent) {
+      // The opening pick only readies the first exam; its button comes next.
+      commit(answered)
+      return
+    }
     if (event?.revealAtOnce && answered !== state) {
       // The outcome pops up first; the exam runs once it has been read.
       commit(answered)
@@ -790,6 +852,14 @@ export function ExamCareerPlayPage() {
     // The exam the event led up to runs right away and its card shows the event's
     // outcome, except the CSAT, which gets a button of its own.
     commit(answered.status === 'playing' && upcoming?.kind !== 'csat' ? runExam(answered) : answered)
+  }
+  const closePickWheel = () => {
+    if (!pickWheel) return
+    const { answered, event: picked } = pickWheel
+    setPickWheel(null)
+    // The wheel already told the story, so the reveal dialog is skipped; the exam runs now.
+    if (picked.revealAtOnce && !entryEvent) commit(answered.status === 'playing' ? runExam(answered) : answered)
+    else afterPick(answered)
   }
   const closeRevealed = () => {
     setRevealed(null)
@@ -805,7 +875,7 @@ export function ExamCareerPlayPage() {
   }
 
   const choosing = state.status === 'choosing' && state.pendingChoice
-  const showActions = !suspense && !revealed && (state.status === 'playing' || state.status === 'decision')
+  const showActions = !suspense && !revealed && !pickWheel && (state.status === 'playing' || state.status === 'decision')
 
   return (
     <AppShell
@@ -857,7 +927,11 @@ export function ExamCareerPlayPage() {
         ) : undefined
       }
     >
-      {notice ? (
+      {pickWheel ? (
+        <div className="exam-career-play">
+          <PickWheel pick={pickWheel} seed={state.seed} onDone={closePickWheel} />
+        </div>
+      ) : notice ? (
         // The CSAT button only comes back once this has sunk in.
         <div className="exam-career-play">
           <NoticeCard title={notice.title} text={notice.text} onAcknowledge={() => commit(acknowledgeNotice(state))} />
@@ -868,7 +942,7 @@ export function ExamCareerPlayPage() {
           <EntryEvent
             key={entryEvent.id}
             event={entryEvent}
-            onChoose={(optionId) => commit(chooseEventOption(state, optionId))}
+            onChoose={chooseEvent}
           />
         </div>
       ) : choosing ? (
@@ -947,7 +1021,7 @@ export function ExamCareerPlayPage() {
         />
       )}
 
-      {event && !entryEvent && !suspense && <EventDialog key={`${state.attempt}-${state.nextExamIndex}-${event.id}`} event={event} onChoose={chooseEvent} />}
+      {event && !entryEvent && !suspense && !pickWheel && <EventDialog key={`${state.attempt}-${state.nextExamIndex}-${event.id}`} event={event} onChoose={chooseEvent} />}
     </AppShell>
   )
 }

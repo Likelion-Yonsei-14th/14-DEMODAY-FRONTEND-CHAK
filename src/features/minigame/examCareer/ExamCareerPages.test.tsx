@@ -67,9 +67,18 @@ function startCareer(track: '문과' | '이과') {
 function answerEvent() {
   const group = screen.queryByRole('group', { name: '이벤트 선택지' })
   if (group) fireEvent.click(within(group).getAllByRole('button')[0]!)
+  skipPickWheel()
   const confirm = screen.queryByRole('button', { name: '확인' })
   if (confirm) fireEvent.click(confirm)
   return Boolean(group || confirm)
+}
+
+/** A risky pick spins a wheel first; skip it and carry on. */
+function skipPickWheel() {
+  const skip = screen.queryByRole('button', { name: '건너뛰기' })
+  if (skip) fireEvent.click(skip)
+  const wheel = screen.queryByRole('status', { name: /어떻게 될까\?$/ })
+  if (wheel) fireEvent.click(within(wheel).getByRole('button', { name: '확인' }))
 }
 
 const PROCEED = /^다음 시험|넘어가기$|^선택과목 최종 확정하기$|^수능 보러 가기$/
@@ -116,6 +125,9 @@ describe('exam career mini game', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^다음 시험/ })).not.toBeInTheDocument()
     fireEvent.click(within(entry).getByRole('button', { name: /전교 1등을 노린다/ }))
+    // A gamble lands on a wheel first.
+    expect(screen.getByRole('status', { name: '전교 1등을 노린다, 어떻게 될까?' })).toBeInTheDocument()
+    skipPickWheel()
 
     // Then the March exam is offered; the pick's outcome comes out with it.
     expect(screen.queryByRole('region', { name: '고등학교 입학' })).not.toBeInTheDocument()
@@ -133,6 +145,7 @@ describe('exam career mini game', () => {
     fireEvent.click(screen.getByRole('button', { name: '다음 시험 · 고1 6월 학평' }))
     const style = screen.getByRole('dialog', { name: '고1 공부 스타일' })
     fireEvent.click(within(style).getByRole('button', { name: /학원 종합반 등록/ }))
+    skipPickWheel()
     expect(screen.getByRole('heading', { name: '6월 학평' })).toBeInTheDocument()
     expect(screen.getByText('고1 공부 스타일 · 학원 종합반 등록')).toBeInTheDocument()
     expect(loadCareer()?.state.pendingRecords).toHaveLength(0)
@@ -262,10 +275,12 @@ describe('exam career mini game', () => {
     ])
     fireEvent.click(within(cafe).getByRole('button', { name: '함께 공부하자고 제안한다' }))
 
-    const outcome = screen.getByRole('dialog', { name: '스터디카페의 운명의 짝 · 함께 공부하자고 제안한다' })
+    // The outcome spins on a wheel; its result line is the reveal, and the exam waits for it.
+    const wheel = screen.getByRole('status', { name: '함께 공부하자고 제안한다, 어떻게 될까?' })
     expect(loadCareer()!.state.history).toHaveLength(before.history.length)
     expect(screen.queryByRole('button', { name: /^다음 시험/ })).not.toBeInTheDocument()
-    fireEvent.click(within(outcome).getByRole('button', { name: '확인' }))
+    fireEvent.click(within(wheel).getByRole('button', { name: '건너뛰기' }))
+    fireEvent.click(within(wheel).getByRole('button', { name: '확인' }))
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '10월 학평' })).toBeInTheDocument()
