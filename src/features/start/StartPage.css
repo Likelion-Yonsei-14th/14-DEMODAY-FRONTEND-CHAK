@@ -252,6 +252,11 @@
   grid-area: arrow;
 }
 
+.home-page__links {
+  display: grid;
+  gap: 8px;
+}
+
 .home-page__new {
   justify-self: center;
   display: inline-flex;
