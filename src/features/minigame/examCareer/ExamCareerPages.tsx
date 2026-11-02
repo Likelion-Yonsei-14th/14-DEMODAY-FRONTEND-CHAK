@@ -818,8 +818,9 @@ export function ExamCareerPlayPage() {
     // A breakup notice can follow the D-30 pick, so look the pick's own record up.
     const record = [...answered.pendingRecords].reverse().find((item) => item.eventId === event?.id)
     if (event && option && option.outcomes.length > 1 && answered !== state && record?.outcomeIndex !== undefined) {
-      if (upcoming?.kind === 'csat' && !event.revealAtOnce) {
-        // Right before the CSAT the outcome stays hidden; it comes out with the CSAT grades.
+      if (upcoming?.kind === 'csat' && upcoming.attempt === 0 && !event.revealAtOnce) {
+        // The 현역 D-30 outcome stays hidden; its envelope is opened after the CSAT is scored.
+        // A retake's 마지막 승부 is opened right away, before the CSAT button.
         setCsatPick({ event, option })
         afterPick(answered)
         return
