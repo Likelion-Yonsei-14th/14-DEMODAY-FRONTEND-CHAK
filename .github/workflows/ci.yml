@@ -11,11 +11,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # The patch note check compares the pull request with its base branch.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 24
+
+      - name: Check career simulator Patch Note
+        if: github.event_name == 'pull_request'
+        run: node scripts/check-exam-career-patch-notes.mjs ${{ github.event.pull_request.base.sha }}
 
       - name: Install dependencies
         run: npm install

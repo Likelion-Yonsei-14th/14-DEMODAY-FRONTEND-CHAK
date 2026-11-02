@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { NotificationProvider } from '@/design-system/overlays'
 import { DEFAULT_ELECTIVES } from './examCareerConfig'
 import { ExamCareerIntroPage, ExamCareerPlayPage, ExamCareerResultPage } from './ExamCareerPages'
+import { PATCH_NOTES } from './examCareerPatchNotes'
 import {
   acknowledgeNotice,
   chooseElectives,
@@ -97,6 +98,36 @@ afterEach(() => {
 })
 
 describe('exam career mini game', () => {
+  it('folds the patch notes between the home button and the disclaimer', () => {
+    renderAt('/minigame/exam-career')
+    const latest = PATCH_NOTES[0]!
+    const summary = screen.getByText(`Patch Note · v${latest.version}`)
+    const notes = summary.closest('details')!
+    expect(notes).not.toHaveAttribute('open')
+    fireEvent.click(summary)
+    expect(notes).toHaveAttribute('open')
+    expect(within(notes).getByRole('heading', { name: 'v1.0.0' })).toBeInTheDocument()
+
+    // The last one; the app bar has an icon button of the same name.
+    const home = screen.getAllByRole('button', { name: '홈 화면으로 돌아가기' }).at(-1)!
+    const disclaimer = screen.getByText(/^재미로 보는 가상 시뮬레이션이에요/)
+    expect(home.compareDocumentPosition(notes) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(notes.compareDocumentPosition(disclaimer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('numbers the patch notes one step per merge, newest first', () => {
+    const versions = PATCH_NOTES.map((note) => note.version.split('.').map(Number) as [number, number, number])
+    expect(versions.at(-1)).toEqual([1, 0, 0])
+    // Each release is the one before it with either the minor or the patch number raised by one.
+    versions.slice(0, -1).forEach(([major, minor, patch], index) => {
+      const [, prevMinor, prevPatch] = versions[index + 1]!
+      expect(major).toBe(1)
+      const nextMinor = minor === prevMinor + 1 && patch === 0
+      const nextPatch = minor === prevMinor && patch === prevPatch + 1
+      expect(nextMinor || nextPatch).toBe(true)
+    })
+  })
+
   it('needs a name and a 문과/이과 pick, then starts high school with a choice on the page', () => {
     renderAt('/minigame/exam-career')
     expect(screen.getByRole('heading', { name: '수험생 커리어 시뮬레이터' })).toBeInTheDocument()

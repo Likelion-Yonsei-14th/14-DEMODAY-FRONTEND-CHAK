@@ -265,11 +265,20 @@ export const SUBJECT_DAY_ROLLS: readonly DayRoll[] = [
   { id: 'bust', label: '대폭망', weight: 1.5, range: [-14, -9] },
 ]
 
-/** One roll per exam that moves every subject together. */
+/** One roll per 모의고사·학력평가 that moves every subject together. */
 export const COMMON_DAY_ROLLS: readonly DayRoll[] = [
   { id: 'normal', label: '평소 같은 하루', weight: 85, range: [-1, 1] },
   { id: 'good', label: '컨디션 좋은 날', weight: 6, range: [2, 4] },
   { id: 'bad', label: '컨디션 나쁜 날', weight: 6, range: [-4, -2] },
+  { id: 'jackpot', label: '모든 게 잘 풀린 날', weight: 1.5, range: [7, 11] },
+  { id: 'bust', label: '모든 게 꼬인 날', weight: 1.5, range: [-11, -7] },
+]
+
+/** The same roll on 수능 day, where the condition is shown on its own: good and bad days come far more often. */
+export const CSAT_DAY_ROLLS: readonly DayRoll[] = [
+  { id: 'normal', label: '평소 같은 하루', weight: 47, range: [-1, 1] },
+  { id: 'good', label: '컨디션 좋은 날', weight: 25, range: [2, 4] },
+  { id: 'bad', label: '컨디션 나쁜 날', weight: 25, range: [-4, -2] },
   { id: 'jackpot', label: '모든 게 잘 풀린 날', weight: 1.5, range: [7, 11] },
   { id: 'bust', label: '모든 게 꼬인 날', weight: 1.5, range: [-11, -7] },
 ]
@@ -296,20 +305,26 @@ export const GRADE_CUTOFFS: readonly { grade: number; minScore: number }[] = [
 ]
 
 /**
- * Grades are relative: as the whole year group studies, the bar rises. This
- * is the average cohort skill gained since 고1 March, by months elapsed,
- * measured from the simulator itself with choice events picked evenly
- * (re-measure if GROWTH or CHOICE_EVENTS change). An exam
- * is graded on `score - shift`, so an average student keeps an average grade.
- * Retake-year exams use the shift of the same month in 고3.
+ * Grades are relative: as the whole year group studies, the bar rises. The
+ * bar rises by COHORT_SHIFT_SHARE of the average cohort skill gained since
+ * 고1 March, by months elapsed, measured from the simulator itself with
+ * choice events picked evenly (re-measure if GROWTH or CHOICE_EVENTS change).
+ * An exam is graded on `score - shift`. Rising by less than the whole gain
+ * lets an average student's grade climb a little towards the CSAT, so
+ * studying feels like it pays off. Retake-year exams use the shift of the
+ * same month in 고3.
  */
-export const COHORT_SKILL_SHIFT: readonly [months: number, shift: number][] = [
+const MEASURED_COHORT_GAIN: readonly [months: number, gain: number][] = [
   [0, 0],
   [12, 12.6],
   [24, 25.6],
   [27, 29],
   [32, 33.6],
 ]
+export const COHORT_SHIFT_SHARE = 0.85
+export const COHORT_SKILL_SHIFT: readonly [months: number, shift: number][] = MEASURED_COHORT_GAIN.map(
+  ([months, gain]) => [months, gain * COHORT_SHIFT_SHARE],
+)
 
 export function cohortShift(monthsSinceStart: number) {
   const points = COHORT_SKILL_SHIFT
@@ -402,10 +417,10 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '전교 1등을 노린다',
         outcomes: [
           {
-            weight: 2,
+            weight: 1,
             tone: 'up',
-            text: '입학하자마자 책상 앞에 앉았어요. 출발선이 조금 앞당겨졌어요.',
-            effects: [{ type: 'skill', target: 'all', amount: [2, 4] }],
+            text: '입학하자마자 책상 앞에 앉았어요. 출발선이 크게 앞당겨졌어요.',
+            effects: [{ type: 'skill', target: 'all', amount: [3, 6] }],
           },
           {
             weight: 1,
@@ -458,16 +473,16 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '학원 종합반 등록',
         outcomes: [
           {
-            weight: 2,
+            weight: 1,
             tone: 'up',
             text: '학원 진도에 맞춰 공부 습관이 잡혔어요.',
-            effects: [{ type: 'growth', target: 'all', factor: 1.35, exams: 3 }],
+            effects: [{ type: 'growth', target: 'all', factor: 1.6, exams: 3 }],
           },
           {
             weight: 1,
             tone: 'down',
             text: '학원 진도를 따라가지 못했어요. 숙제만 쌓이고 실력은 더디게 올라요.',
-            effects: [{ type: 'growth', target: 'all', factor: 0.75, exams: 2 }],
+            effects: [{ type: 'growth', target: 'all', factor: 0.7, exams: 2 }],
           },
         ],
       },
@@ -700,11 +715,11 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '독서실에서 끝장 공부',
         outcomes: [
           {
-            weight: 2,
+            weight: 1,
             tone: 'up',
             text: '독하게 마음먹은 효과가 나타나요. 모든 과목이 빠르게 올라요.',
             effects: [
-              { type: 'growth', target: 'all', factor: 1.9, exams: 3 },
+              { type: 'growth', target: 'all', factor: 2.2, exams: 3 },
               { type: 'potential', target: 'all', amount: [2, 5] },
             ],
           },
@@ -827,17 +842,17 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '기숙학원',
         outcomes: [
           {
-            weight: 2,
+            weight: 1,
             tone: 'up',
             text: '공부만 하는 환경 덕분에 실력이 빠르게 올라요.',
-            effects: [{ type: 'growth', target: 'all', factor: 1.9, exams: 3 }],
+            effects: [{ type: 'growth', target: 'all', factor: 2.3, exams: 3 }],
           },
           {
             weight: 1,
             tone: 'down',
             text: '갇힌 생활이 답답해서 슬럼프가 왔어요.',
             effects: [
-              { type: 'growth', target: 'all', factor: 1.1, exams: 3 },
+              { type: 'growth', target: 'all', factor: 1.0, exams: 3 },
               { type: 'day', target: 'all', amount: [-5, -2], exams: 1 },
             ],
           },
@@ -1400,6 +1415,45 @@ export const GENIUS_AWAKENING = {
     { type: 'growth', target: 'all', factor: 2.6, exams: 3 },
   ],
 } as const satisfies { id: string; title: string; description: string; tone: 'up'; effects: EventEffect[] }
+
+/**
+ * 재수 때마다 한 번, 그 해의 6월 모의평가 앞에서 오는 "벽 깨기". Nobody
+ * chooses it. 1년 더 공부해도 한계에 막혀 평평해지던 성장을 계단처럼
+ * 끊어 올려서, 도전을 거듭하면 거듭한 만큼 보상이 있게 한다. The ceiling
+ * rises by a draw that shrinks each year, and growth speeds up for the year.
+ * Index 0 is the 재수 year; later years reuse the last entry.
+ */
+export const RETAKE_BREAKTHROUGH = {
+  id: 'retake-breakthrough',
+  title: '벽을 깨는 순간',
+  steps: [
+    { potential: [6, 9], growthFactor: 1.25, text: '1년 더 매달린 끝에 막혀 있던 벽이 처음으로 흔들렸어요. 한계가 한 뼘 넓어졌어요.' },
+    { potential: [3, 5], growthFactor: 1.25, text: '또 한 번의 겨울을 버텼어요. 풀리지 않던 유형이 눈에 들어오면서 한계가 또 넓어졌어요.' },
+    { potential: [2, 3.5], growthFactor: 1.25, text: '이제는 공부 방법을 아는 사람이 됐어요. 쌓아 온 시간이 실력의 바닥을 끌어올렸어요.' },
+    { potential: [1.5, 3], growthFactor: 1.25, text: '오래 버틴 만큼 단단해졌어요. 남들이 못 보는 부분이 보이기 시작했어요.' },
+    { potential: [1, 2], growthFactor: 1.25, text: '긴 싸움 끝에 감이 한 번 더 열렸어요. 아직 오를 곳이 남아 있었어요.' },
+  ],
+  /** Every subject rises: the retake year is a whole-year effort, not one subject. */
+  target: 'all',
+  exams: 3,
+} as const
+
+/**
+ * 연속으로 목표에 못 미친 수능 횟수만큼, 재수 해의 시험날 운이 조금씩 따라 준다.
+ * Counted from history (no extra saved state): the unbroken run of 수능 results
+ * above `goalAverage` just before this exam. 대박 gets likelier and 대폭망 rarer.
+ */
+export const RETAKE_PERSEVERANCE = {
+  id: 'retake-perseverance',
+  title: '쌓이는 간절함',
+  goalAverage: 4,
+  jackpotPerMiss: 0.4,
+  bustReductionPerMiss: 0.12,
+  maxMisses: 4,
+  /** The note shows up in the June 모의평가 result once the run is this long. */
+  noteFromMisses: 2,
+  text: '여러 번 도전한 끈기가 빛을 발해요. 이번에는 운이 조금 따라 줄 것 같아요.',
+} as const
 
 // ---------- student name ----------
 
