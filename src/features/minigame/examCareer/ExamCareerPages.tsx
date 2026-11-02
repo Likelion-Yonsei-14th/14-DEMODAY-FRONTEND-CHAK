@@ -66,7 +66,8 @@ import {
   type ExamSlot,
   type SavedCareer,
 } from './examCareerEngine'
-import { createCareerSeed } from './examCareerRandom'
+import { createCareerSeed, runIdOf } from './examCareerRandom'
+import { saveExamCareerRun } from '@/api/examCareer'
 import { EXAM_CAREER_PATH, EXAM_CAREER_PLAY_PATH, examCareerResultPath } from './examCareerRoutes'
 import { parseShareCode, shareCodeOf, type SharedCareer } from './examCareerShare'
 import { PATCH_NOTES } from './examCareerPatchNotes'
@@ -168,7 +169,24 @@ function startNewCareer(track: Track, name: string): SavedCareer {
   clearCareer()
   const saved = { state: createCareer(createCareerSeed(), track, name) }
   saveCareer(saved)
+  saveExamCareerRun({ runId: runIdOf(saved.state.seed), track, finished: false })
   return saved
+}
+
+/** Tells the statistics a career is over; only the outcome goes, never the name or seed. */
+function reportFinished(state: CareerState) {
+  const code = shareCodeOf(state)
+  const career = parseShareCode(code ?? undefined)
+  if (!career) return
+  saveExamCareerRun({
+    runId: runIdOf(state.seed),
+    track: career.track,
+    finished: true,
+    attempt: career.attempt,
+    finalAverage: career.average,
+    enrolled: career.enrolled ?? 'none',
+    title: careerTitleOf(career).title,
+  })
 }
 
 export function ExamCareerIntroPage() {
@@ -791,6 +809,7 @@ export function ExamCareerPlayPage() {
     const nextSaved = { state: next }
     saveCareer(nextSaved)
     setSaved(nextSaved)
+    if (next.status === 'finished' && state.status !== 'finished') reportFinished(next)
     // The CSAT-day condition comes first, then the wait for the score.
     if (next.history.length > state.history.length && next.history.at(-1)!.kind === 'csat') setSuspense('csat-condition')
   }
