@@ -158,19 +158,24 @@ export function HomePage() {
           </button>
         </div>
 
-        <button
-          type="button"
-          className="home-page__new ds-hit-area"
-          onClick={() => navigate('/start')}
-        >
-          <Plus size={15} aria-hidden />
-          {classroomOpen ? '새 책상이나 반 만들기' : '새 책상 만들기'}
-        </button>
-        {isApiEnabled && (
-          <button type="button" className="home-page__new ds-hit-area" onClick={() => navigate('/friend-desks')}>
-            친구에게 만들어 준 책상
+        <div className="home-page__links">
+          <button
+            type="button"
+            className="home-page__new ds-hit-area"
+            onClick={() => navigate('/start')}
+          >
+            <Plus size={15} aria-hidden />
+            {classroomOpen ? '새 책상이나 반 만들기' : '새 책상 만들기'}
           </button>
-        )}
+          <button type="button" className="home-page__new ds-hit-area" onClick={() => navigate('/letters')}>
+            내가 쓴 편지
+          </button>
+          {isApiEnabled && (
+            <button type="button" className="home-page__new ds-hit-area" onClick={() => navigate('/friend-desks')}>
+              친구에게 만들어 준 책상
+            </button>
+          )}
+        </div>
 
         <MiniGameSection />
       </main>

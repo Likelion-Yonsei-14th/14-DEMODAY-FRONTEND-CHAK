@@ -1,0 +1,161 @@
+.my-letters-shell {
+  min-height: 100%;
+}
+
+.my-letters {
+  display: grid;
+  gap: 18px;
+  padding-top: 18px;
+  padding-bottom: 34px;
+}
+
+.my-letters__list {
+  display: grid;
+  gap: 10px;
+}
+
+.my-letter-card {
+  display: grid;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-base);
+  box-shadow: var(--highlight-inset);
+}
+
+.my-letter-card header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.my-letter-card header > div {
+  display: grid;
+  gap: 4px;
+}
+
+.my-letter-card header strong {
+  color: var(--color-content-primary);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.my-letter-card time {
+  color: var(--color-content-tertiary);
+  font-size: 10px;
+}
+
+.my-letter-card__status {
+  flex: none;
+  padding: 5px 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-subtle);
+  color: var(--color-content-secondary);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.my-letter-card__status--replied {
+  position: relative;
+  background: #f8f1e7;
+  color: var(--color-content-primary);
+}
+
+/* A reply this page hasn't shown yet: a dot on the chip's top-left corner. */
+.my-letter-card__new {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--color-surface-base);
+  border-radius: var(--radius-full);
+  background: var(--color-danger);
+}
+
+.my-letter-card__text {
+  margin: 0;
+  overflow: hidden;
+  color: var(--color-content-primary);
+  font-size: 13px;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.my-letter-card__reply {
+  display: grid;
+  gap: 6px;
+  padding: 14px 15px 10px;
+  border-radius: var(--radius-sm);
+  background: #f8f1e7;
+  box-shadow: var(--shadow-paper);
+}
+
+.my-letter-card__reply span {
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.my-letter-card__reply p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  color: var(--color-content-primary);
+  font-family: var(--font-hand);
+  font-size: 19px;
+  line-height: 1.5;
+}
+
+.my-letter-card__reply time {
+  justify-self: end;
+}
+
+.my-letter-card__desk {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 32px;
+  padding: 0 4px 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--color-content-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.my-letters__empty {
+  min-height: 380px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.my-letters__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-subtle);
+  color: var(--color-content-secondary);
+}
+
+.my-letters__empty h1 {
+  margin: 0;
+  font-size: var(--type-h3-size);
+}
+
+.my-letters__empty p {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: 13px;
+}
