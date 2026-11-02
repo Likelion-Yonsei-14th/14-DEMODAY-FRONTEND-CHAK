@@ -68,3 +68,17 @@ export function createCareerSeed() {
       : Math.random().toString(36).slice(2, 10)
   return `career-${Date.now().toString(36)}-${random}`
 }
+
+/**
+ * A UUID-shaped id for a career, made from its seed, so the start and the end
+ * of one play can be matched without sending the seed itself.
+ */
+export function runIdOf(seed: string) {
+  const part = (salt: number) => {
+    let hash = 2166136261 ^ salt
+    for (let index = 0; index < seed.length; index += 1) hash = Math.imul(hash ^ seed.charCodeAt(index), 16777619)
+    return (hash >>> 0).toString(16).padStart(8, '0')
+  }
+  const hex = [1, 2, 3, 4].map((salt) => part(salt * 7919)).join('')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`
+}

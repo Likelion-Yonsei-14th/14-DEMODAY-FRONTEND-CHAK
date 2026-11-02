@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import {
   fetchMinigameStats,
   type AdminD1CourseStats,
+  type AdminExamCareerStats,
   type AdminKeyCount,
   type AdminMinigameGame,
   type AdminMinigameStats,
@@ -9,6 +10,7 @@ import {
 import { ACTIVITIES, AREAS, BUDGETS, COMPANIONS } from '@/features/minigame/d1Course/d1CourseConfig'
 import { REGIONS } from '@/features/minigame/d1Course/d1CourseRegions'
 import { STUDY_TYPE_RESULTS, isStudyTypeCode } from '@/features/minigame/studyType/studyTypeResults'
+import { TRACKS, UNIVERSITY_TIERS } from '@/features/minigame/examCareer/examCareerConfig'
 import { BarList } from './AdminBarList'
 import { formatNumber } from './adminFormat'
 
@@ -93,6 +95,60 @@ function D1CourseSection({ stats }: { stats: AdminD1CourseStats }) {
   )
 }
 
+function ExamCareerSection({ stats }: { stats: AdminExamCareerStats }) {
+  const done = stats.finished
+  const rate = stats.started > 0 ? Math.round((done / stats.started) * 1000) / 10 : null
+  const attemptLabel = (key: string) => (key === '0' ? '현역' : `${key}수`)
+  const attempts = [...stats.attempts].sort((a, b) => Number(a.key) - Number(b.key))
+  const tierLabel = (key: string) =>
+    key === 'none' ? '진학하지 않음' : (UNIVERSITY_TIERS.find((tier) => tier.id === key)?.label ?? key)
+  const trackLabel = (key: string) => TRACKS[key as keyof typeof TRACKS]?.label ?? key
+  return (
+    <section className="admin__panel" aria-label="수험생 커리어 시뮬레이터">
+      <h2>수험생 커리어 시뮬레이터</h2>
+      <div className="admin-cards">
+        <div><span>전체 시작</span><strong>{formatNumber(stats.started)}</strong></div>
+        <div><span>오늘 시작</span><strong>{formatNumber(stats.startedToday)}</strong></div>
+        <div><span>최근 7일 시작</span><strong>{formatNumber(stats.startedLast7Days)}</strong></div>
+        <div><span>끝까지 한 판</span><strong>{formatNumber(done)}</strong></div>
+        <div><span>완주율</span><strong>{rate === null ? '-' : `${rate}%`}</strong></div>
+        <div><span>최근 7일 완주</span><strong>{formatNumber(stats.finishedLast7Days)}</strong></div>
+        <div>
+          <span>최종 수능 평균 등급</span>
+          <strong>{stats.averageFinalGrade === null ? '-' : stats.averageFinalGrade.toLocaleString('ko-KR')}</strong>
+        </div>
+      </div>
+      {stats.started === 0 ? (
+        <p className="admin__muted">아직 시작한 사람이 없어요.</p>
+      ) : (
+        <>
+          <h3>날짜별 시작과 완주</h3>
+          <BarList
+            rows={stats.days.map((day) => ({
+              label: day.date.slice(5),
+              value: day.started,
+              sub: `완주 ${day.finished}`,
+            }))}
+          />
+          <h3>계열 (시작 기준)</h3>
+          <BarList rows={choiceRows(stats.tracks, stats.started, trackLabel)} />
+          {done > 0 && (
+            <>
+              <h3>몇 수까지 갔나 (완주 기준)</h3>
+              <BarList rows={choiceRows(attempts, done, attemptLabel)} />
+              <h3>진학 결과 (완주 기준)</h3>
+              <BarList rows={choiceRows(stats.enrolled, done, tierLabel)} />
+              <h3>받은 칭호 (완주 기준)</h3>
+              <BarList rows={choiceRows(stats.titles, done, (key) => key)} />
+            </>
+          )}
+          <p className="admin__muted">시작만 하고 끝내지 않은 판도 시작 수에 들어가요. 이름이나 계정은 저장하지 않아요.</p>
+        </>
+      )}
+    </section>
+  )
+}
+
 export function MinigamesPage() {
   const [stats, setStats] = useState<AdminMinigameStats | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -125,6 +181,8 @@ export function MinigamesPage() {
       {!stats && !error && <p>불러오는 중...</p>}
 
       {stats?.games.map((game) => <GameSection key={game.game} stats={game} />)}
+
+      {stats?.examCareer && <ExamCareerSection stats={stats.examCareer} />}
 
       {stats?.d1Course && <D1CourseSection stats={stats.d1Course} />}
 

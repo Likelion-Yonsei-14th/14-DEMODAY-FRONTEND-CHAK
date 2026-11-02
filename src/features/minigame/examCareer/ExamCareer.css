@@ -389,6 +389,11 @@
   color: #7d322c;
 }
 
+.exam-career-event--plain {
+  background: var(--color-surface-muted);
+  color: var(--color-content-secondary);
+}
+
 .exam-career-batch {
   display: grid;
   gap: var(--space-2);
@@ -805,6 +810,471 @@
 @media (prefers-reduced-motion: reduce) {
   .exam-career-admissions li {
     animation: none;
+  }
+}
+
+/* A draw (a risky pick, the CSAT-day condition): an envelope the player opens */
+.exam-career-reveal {
+  gap: var(--space-3);
+  padding-block: var(--space-6);
+  text-align: center;
+}
+
+.exam-career-reveal__title {
+  margin: 0;
+  font-size: var(--type-title-m-size);
+  font-weight: 800;
+  word-break: keep-all;
+}
+
+.exam-career-reveal__caption {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-body-s-size);
+  word-break: keep-all;
+}
+
+.exam-career-reveal__stage {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  height: 220px;
+  overflow: hidden;
+  padding-bottom: var(--space-6);
+}
+
+.exam-career-reveal__hint {
+  position: absolute;
+  inset: auto 0 var(--space-1);
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-caption-size);
+}
+
+.exam-career-reveal__text {
+  margin: 0;
+  text-align: left;
+  animation: ec-fade-up .4s var(--ease-emphasized) both;
+}
+
+.exam-career-reveal__actions {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.exam-career-envelope {
+  position: relative;
+  width: 224px;
+  height: 134px;
+  padding: 0;
+  border: 0;
+  background: none;
+  perspective: 700px;
+  cursor: pointer;
+}
+
+.exam-career-envelope:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 6px;
+}
+
+.exam-career-envelope.is-open {
+  cursor: default;
+}
+
+.exam-career-envelope.is-shaking {
+  animation: ec-wiggle .62s ease-in-out;
+}
+
+.exam-career-envelope__back,
+.exam-career-envelope__letter,
+.exam-career-envelope__front,
+.exam-career-envelope__flap {
+  position: absolute;
+  display: block;
+}
+
+.exam-career-envelope__back {
+  inset: 0;
+  border-radius: 6px;
+  background: #cdb98b;
+}
+
+.exam-career-envelope__letter {
+  inset: auto 14px 8px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 112px;
+  border: 1px solid #d8cfb8;
+  border-radius: 4px;
+  background: #fffdf6;
+  color: var(--color-ink);
+  transition: transform .8s cubic-bezier(.2, .9, .3, 1.1);
+}
+
+.exam-career-envelope__letter strong {
+  font-size: var(--type-body-m-size);
+  font-weight: 800;
+  word-break: keep-all;
+}
+
+.exam-career-envelope--up .exam-career-envelope__letter { color: #2d7a55; }
+.exam-career-envelope--down .exam-career-envelope__letter { color: #b5651d; }
+
+.exam-career-envelope__front {
+  inset: 0;
+  z-index: 3;
+  border-radius: 6px;
+  background: #e6d6ac;
+  clip-path: polygon(0 0, 50% 58%, 100% 0, 100% 100%, 0 100%);
+}
+
+.exam-career-envelope__flap {
+  inset: 0 0 auto;
+  z-index: 4;
+  height: 78px;
+  background: #bba577;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top;
+  transition: transform .45s ease-in;
+}
+
+.exam-career-envelope.is-open .exam-career-envelope__flap {
+  z-index: 1;
+  transform: rotateX(180deg);
+}
+
+.exam-career-envelope.is-open .exam-career-envelope__letter {
+  transform: translateY(-84px);
+}
+
+.exam-career-confetti {
+  position: absolute;
+  inset: 55% auto auto 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.exam-career-confetti i {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+  opacity: 0;
+  animation: ec-confetti 1.2s ease-out forwards;
+}
+
+@keyframes ec-confetti {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  100% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--turn)); }
+}
+
+@keyframes ec-wiggle {
+  0%, 100% { transform: rotate(0); }
+  15% { transform: rotate(-3deg); }
+  35% { transform: rotate(3deg); }
+  55% { transform: rotate(-2deg); }
+  75% { transform: rotate(2deg); }
+}
+
+@keyframes ec-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+@keyframes ec-stamp {
+  from { opacity: 0; transform: scale(2.6) rotate(-5deg); }
+  to { opacity: 1; transform: scale(1) rotate(-5deg); }
+}
+
+@keyframes ec-flash {
+  from { opacity: .6; }
+  to { opacity: 0; }
+}
+
+@keyframes ec-beat {
+  50% { transform: scale(1.07); }
+}
+
+@keyframes ec-shake {
+  20% { transform: translate(-3px, 2px); }
+  50% { transform: translate(3px, -2px); }
+  80% { transform: translate(-2px, 1px); }
+}
+
+/* The admission results: three applications lying face down, turned over one by one */
+.exam-career-admission {
+  position: relative;
+  overflow: hidden;
+  transition: filter .6s;
+}
+
+.exam-career-admission.is-dim {
+  filter: saturate(.5) brightness(.95);
+}
+
+.exam-career-admission.is-flash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #fffdf6;
+  pointer-events: none;
+  animation: ec-flash .7s ease-out forwards;
+}
+
+.exam-career-apps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.exam-career-app__card {
+  position: relative;
+  width: 100%;
+  height: 132px;
+  padding: 0;
+  border: 0;
+  background: none;
+  perspective: 700px;
+  cursor: pointer;
+}
+
+.exam-career-app__card.is-flipped {
+  cursor: default;
+}
+
+.exam-career-app__card.is-beating {
+  animation: ec-beat .3s ease-in-out 3;
+}
+
+.exam-career-app__inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform .6s cubic-bezier(.3, 1.2, .4, 1);
+}
+
+.exam-career-app__card.is-flipped .exam-career-app__inner {
+  transform: rotateY(180deg);
+}
+
+.exam-career-app__face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px;
+  border: 1.5px solid;
+  border-radius: 8px;
+  backface-visibility: hidden;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.exam-career-app__face small {
+  font-size: var(--type-caption-size);
+}
+
+.exam-career-app__face--front {
+  border-color: #b98b56;
+  background: #fffdf6;
+  color: var(--color-ink);
+}
+
+.exam-career-app__face--front small { color: #8f6636; }
+.exam-career-app__face--front strong { font-size: var(--type-body-s-size); line-height: 1.35; }
+.exam-career-app__face--front em {
+  margin-top: var(--space-2);
+  color: var(--color-content-secondary);
+  font-size: var(--type-caption-size);
+  font-style: normal;
+}
+
+.exam-career-app__face--back {
+  transform: rotateY(180deg);
+}
+
+.exam-career-app__face--back.is-accepted {
+  border-color: #3f8f6a;
+  background: #dff0e6;
+  color: #2d7a55;
+}
+
+.exam-career-app__face--back.is-rejected {
+  border-color: #a9a295;
+  background: #ece7dd;
+  color: #7d776c;
+}
+
+.exam-career-app__stamp {
+  display: inline-block;
+  padding: 2px 10px;
+  border: 3px solid currentColor;
+  border-radius: 5px;
+  font-size: var(--type-body-l-size);
+  font-weight: 800;
+  opacity: 0;
+  transform: scale(2.4) rotate(-8deg);
+  transition: opacity .12s, transform .28s cubic-bezier(.3, 1.6, .5, 1);
+}
+
+.exam-career-app__card.is-flipped .exam-career-app__stamp {
+  opacity: 1;
+  transform: scale(1) rotate(-8deg);
+  transition-delay: .42s;
+}
+
+.exam-career-admission__soft {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-body-s-size);
+  line-height: 1.6;
+  text-align: center;
+}
+
+.exam-career-finale {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 96px;
+}
+
+.exam-career-finale__stamp {
+  padding: 4px 18px;
+  border: 4px solid #d03d20;
+  border-radius: 8px;
+  background: #fffdf6;
+  color: #d03d20;
+  font-size: var(--type-title-m-size);
+  font-weight: 800;
+  animation: ec-stamp .4s cubic-bezier(.3, 1.5, .5, 1) both;
+}
+
+.exam-career-finale__stamp.is-calm {
+  border-color: #2d7a55;
+  color: #2d7a55;
+  font-size: var(--type-body-l-size);
+}
+
+/* A good or bad day shows on the grade sheet itself */
+.exam-career-grades li {
+  position: relative;
+}
+
+.exam-career-grades li.is-jackpot .exam-career-grade {
+  animation: ec-gold .55s ease-out both;
+  animation-delay: var(--gold-delay, 0ms);
+}
+
+@keyframes ec-gold {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.28); background: #f2c94c; color: #5a3d00; }
+  100% { transform: scale(1); background: #f2c94c; color: #5a3d00; }
+}
+
+.exam-career-grades__tag {
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #d03d20;
+  color: #fffdf6;
+  font-size: var(--type-caption-size);
+  font-weight: 800;
+  animation: ec-tag .25s cubic-bezier(.3, 1.6, .5, 1) both;
+  animation-delay: var(--gold-delay, 0ms);
+}
+
+@keyframes ec-tag {
+  from { opacity: 0; transform: scale(2) rotate(-8deg); }
+  to { opacity: 1; transform: scale(1) rotate(-8deg); }
+}
+
+.exam-career-card--jackpot,
+.exam-career-card--bust {
+  position: relative;
+  overflow: hidden;
+}
+
+.exam-career-card--jackpot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #fffdf6;
+  pointer-events: none;
+  opacity: 0;
+  animation: ec-flash .7s ease-out both;
+  animation-delay: var(--flash-delay, 0ms);
+}
+
+.exam-career-card--jackpot.is-shaking {
+  animation: ec-shake .35s var(--flash-delay, 0ms) both;
+}
+
+.exam-career-card--bust .exam-career-grades {
+  animation: ec-sink .7s ease-out both;
+  animation-delay: var(--flash-delay, 0ms);
+}
+
+@keyframes ec-sink {
+  to { filter: brightness(.65) saturate(.55); }
+}
+
+.exam-career-banner {
+  justify-self: center;
+  padding: 3px 14px;
+  border: 3px solid #f2c94c;
+  border-radius: 6px;
+  color: #f2c94c;
+  font-size: var(--type-body-m-size);
+  font-weight: 800;
+  animation: ec-stamp .35s cubic-bezier(.3, 1.5, .5, 1) both;
+  animation-delay: var(--flash-delay, 0ms);
+}
+
+.exam-career-banner--bust {
+  border-color: #a9b3ad;
+  color: #a9b3ad;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exam-career-envelope,
+  .exam-career-envelope.is-shaking,
+  .exam-career-envelope__letter,
+  .exam-career-envelope__flap,
+  .exam-career-reveal__text,
+  .exam-career-app__inner,
+  .exam-career-app__stamp,
+  .exam-career-app__card.is-beating,
+  .exam-career-finale__stamp,
+  .exam-career-grades li.is-jackpot .exam-career-grade,
+  .exam-career-grades__tag,
+  .exam-career-card--jackpot::after,
+  .exam-career-card--jackpot.is-shaking,
+  .exam-career-card--bust .exam-career-grades,
+  .exam-career-banner {
+    animation: none;
+    transition: none;
+  }
+
+  .exam-career-grades li.is-jackpot .exam-career-grade {
+    background: #f2c94c;
+    color: #5a3d00;
+  }
+
+  .exam-career-card--bust .exam-career-grades {
+    filter: brightness(.65) saturate(.55);
   }
 }
 
