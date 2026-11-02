@@ -242,6 +242,59 @@ describe('hands', () => {
   })
 })
 
+describe('remembering what is on the desk', () => {
+  it('keeps each placed piece with the cells it covered, so it can be drawn whole', () => {
+    const state = withState({ hand: hand(piece(1, ['###'], 3), null, null) })
+
+    const moved = placePiece(state, 0, 2, 1)!
+
+    expect(moved.state.placed).toEqual([{ id: 1, kind: 3, cells: [[2, 1], [2, 2], [2, 3]] }])
+  })
+
+  it('adds pieces in the order they were put down', () => {
+    let state = withState({ hand: hand(piece(1, ['#'], 1), piece(2, ['##'], 2), null) })
+    state = placePiece(state, 0, 0, 0)!.state
+    state = placePiece(state, 1, 4, 4)!.state
+
+    expect(state.placed.map((entry) => entry.id)).toEqual([1, 2])
+    expect(state.placed.map((entry) => entry.kind)).toEqual([1, 2])
+  })
+
+  it('forgets a piece once every one of its cells has been cleared', () => {
+    // A single piece completes the row it sits in; the row goes, and so does the single.
+    const state = withState({
+      board: board([...rowCells(0, [0]), [7, 7]]),
+      placed: [{ id: 9, kind: 2, cells: rowCells(0, [0]) }],
+      hand: hand(piece(1, ['#'], 1), null, null),
+    })
+    // The board cells of piece 9 carry its id, so that it still counts as on the desk.
+    const marked = state.board.map((line, r) => line.map((cell, c) => (r === 0 && c > 0 ? 9 * 32 + 2 : cell)))
+
+    const moved = placePiece({ ...state, board: marked }, 0, 0, 0)!
+
+    expect(moved.state.placed).toEqual([])
+  })
+
+  it('keeps a piece that still has a cell on the desk after a line went', () => {
+    // A bar lying across rows 0 and 1 (as a 2x2) loses its top row but keeps the bottom one.
+    const state = withState({
+      board: board([...rowCells(0, [0]), [7, 7]]),
+      placed: [{ id: 9, kind: 6, cells: [[0, 1], [0, 2], [1, 1], [1, 2]] }],
+      hand: hand(piece(1, ['#'], 1), null, null),
+    })
+    const marked = state.board.map((line, r) => line.map((cell, c) => (r <= 1 && (c === 1 || c === 2) ? 9 * 32 + 6 : cell)))
+
+    const moved = placePiece({ ...state, board: marked }, 0, 0, 0)!
+
+    expect(moved.state.placed.map((entry) => entry.id)).toEqual([9])
+    expect(moved.state.board[1]![1]).toBe(9 * 32 + 6)
+  })
+
+  it('starts a game with nothing on the desk', () => {
+    expect(createGame(seededRng(1)).placed).toEqual([])
+  })
+})
+
 describe('game over', () => {
   it('ends when none of the remaining pieces fits anywhere', () => {
     // A checkerboard: no two empty cells touch and no line is full, so a pair fits nowhere.

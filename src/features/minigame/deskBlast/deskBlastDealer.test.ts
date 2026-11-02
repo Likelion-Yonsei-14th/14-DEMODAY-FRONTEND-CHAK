@@ -28,6 +28,7 @@ function solvableWithEngine(board: Board, defs: readonly ShapeDef[]): boolean {
   const hand: Piece[] = defs.map((item, index) => pieceFrom(item, index + 1))
   const state: GameState = {
     board,
+    placed: [],
     hand,
     score: 0,
     combo: 0,

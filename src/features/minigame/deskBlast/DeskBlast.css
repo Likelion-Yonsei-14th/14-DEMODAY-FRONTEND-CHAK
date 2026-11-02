@@ -15,7 +15,7 @@
 .blast-page {
   --blast-gap: 3px;
   --blast-cell-radius: 6px;
-  --blast-piece-cell: 22px;
+  --blast-piece-cell: 23px;
   display: grid;
   gap: var(--space-3);
   max-width: 440px;
@@ -293,22 +293,18 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-[data-look='arcade'] .blast-cell:not(.blast-item) {
+[data-look='arcade'] .blast-cell {
   background: #1a1822;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
 }
 
-[data-look='objects'] .blast-cell:not(.blast-item) {
+[data-look='objects'] .blast-cell {
   background: rgba(255, 255, 255, .06);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .13);
 }
 
 .blast-cell:disabled {
   cursor: default;
-}
-
-.blast-cell--ghost {
-  opacity: .55;
 }
 
 .blast-cell--will-clear {
@@ -321,124 +317,35 @@
 }
 
 /* ---------- Stationery ----------
- * One piece is one object: its cells close the gaps between them, and the
- * details (a pencil's tip, a highlighter's cap, a ruler's ticks) are drawn from
- * which sides of a cell touch the rest of the piece.
+ * Each piece is drawn whole, as the object it stands for, over the cells it covers.
  */
-.blast-item {
-  --it-a: #d9d9d9;
-  --it-b: #a9a9a9;
-  --it-m: color-mix(in srgb, var(--it-a) 50%, var(--it-b));
-  --it-gap: var(--blast-gap, 3px);
-  --sh-r: 0 0 0 0 transparent;
-  --sh-b: 0 0 0 0 transparent;
-  --sh-d: 0 0 0 0 transparent;
-  --it-deco: linear-gradient(transparent, transparent);
-  --it-hi: rgba(255, 255, 255, .6);
-  --it-lo: rgba(0, 0, 0, .24);
-  --it-body: linear-gradient(180deg, var(--it-a) 0%, var(--it-m) 48%, var(--it-b) 100%);
-  position: relative;
-  background: var(--it-deco), var(--it-body);
-  box-shadow:
-    inset 0 1px 0 var(--it-hi),
-    inset 0 -2.5px 0 var(--it-lo),
-    var(--it-lift, 0 0 0 0 transparent),
-    var(--sh-r),
-    var(--sh-b),
-    var(--sh-d);
+.blast-art {
+  --gap: var(--blast-gap);
+  position: absolute;
+  inset: var(--blast-gap);
+  pointer-events: none;
 }
 
-.blast-item.j-t { border-top-left-radius: 0; border-top-right-radius: 0; }
-.blast-item.j-b { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-.blast-item.j-l { border-top-left-radius: 0; border-bottom-left-radius: 0; }
-.blast-item.j-r { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-
-/* Where cells of one piece touch, there is no edge light or shade, and the color carries on across. */
-.blast-item.j-t { --it-hi: transparent; }
-.blast-item.j-b { --it-lo: transparent; }
-.blast-item.j-b:not(.j-t) { --it-body: linear-gradient(180deg, var(--it-a), var(--it-m)); }
-.blast-item.j-t:not(.j-b) { --it-body: linear-gradient(180deg, var(--it-m), var(--it-b)); }
-.blast-item.j-t.j-b { --it-body: linear-gradient(var(--it-m), var(--it-m)); }
-
-/* Touching cells of one piece close the gap between them. */
-.blast-item.j-r { --sh-r: var(--it-gap) 0 0 0 var(--it-m); }
-.blast-item.j-b { --sh-b: 0 var(--it-gap) 0 0 var(--it-m); }
-.blast-item.j-r.j-b { --sh-d: var(--it-gap) var(--it-gap) 0 0 var(--it-m); }
-
-/* Night look: saturated, a little glow of its own color. */
-[data-look='arcade'] .blast-item {
-  --it-lift: 0 0 10px -3px color-mix(in srgb, var(--it-b) 80%, transparent);
+.blast-art__piece {
+  position: absolute;
+  left: calc(var(--col) * ((100% - 7 * var(--gap)) / 8 + var(--gap)));
+  top: calc(var(--row) * ((100% - 7 * var(--gap)) / 8 + var(--gap)));
+  width: calc(var(--cols) * ((100% - 7 * var(--gap)) / 8) + (var(--cols) - 1) * var(--gap));
+  height: calc(var(--rows) * ((100% - 7 * var(--gap)) / 8) + (var(--rows) - 1) * var(--gap));
+  overflow: visible;
+  filter: drop-shadow(0 1.5px 1.5px rgba(0, 0, 0, .5));
 }
 
-/* Cream look: lying on the mat, with a soft shadow underneath. */
-[data-look='objects'] .blast-item {
-  --it-lift: 0 2px 3px rgba(10, 30, 20, .45);
+.blast-art__piece--ghost {
+  opacity: .6;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, .6));
 }
 
-/* 지우개 */
-[data-look='arcade'] .blast-item--eraser { --it-a: #ffa6bd; --it-b: #e0476f; --it-deco: linear-gradient(#fff6, #fff6) center / 100% 30% no-repeat; }
-[data-look='objects'] .blast-item--eraser { --it-a: #fbf8f1; --it-b: #d9d2c4; --it-deco: linear-gradient(#3b63c9, #3b63c9) center / 100% 34% no-repeat; }
-/* 초콜릿 */
-.blast-item--chocolate {
-  --it-deco: linear-gradient(rgba(0, 0, 0, .28), rgba(0, 0, 0, .28)) center / 2px 62% no-repeat, linear-gradient(rgba(0, 0, 0, .28), rgba(0, 0, 0, .28)) center / 62% 2px no-repeat;
+/* A filled cell is only a place to tap; the object over it is the picture. */
+.blast-cell--filled {
+  background: transparent !important;
+  box-shadow: none !important;
 }
-[data-look='arcade'] .blast-item--chocolate { --it-a: #c98355; --it-b: #7a4023; }
-[data-look='objects'] .blast-item--chocolate { --it-a: #8a5436; --it-b: #5b3220; }
-/* 형광펜: a cap at the start and a chiseled tip at the end */
-[data-look='arcade'] .blast-item--highlighter { --it-a: #efff6a; --it-b: #9fd10a; }
-[data-look='objects'] .blast-item--highlighter { --it-a: #e9f55a; --it-b: #b9d21c; }
-.blast-item--highlighter.j-r:not(.j-l) { --it-deco: linear-gradient(90deg, rgba(30, 45, 0, .5) 0 40%, transparent 40%); }
-.blast-item--highlighter.j-l:not(.j-r) { --it-deco: linear-gradient(270deg, rgba(255, 255, 255, .78) 0 24%, transparent 24%); }
-.blast-item--highlighter.j-b:not(.j-t) { --it-deco: linear-gradient(180deg, rgba(30, 45, 0, .5) 0 40%, transparent 40%); }
-.blast-item--highlighter.j-t:not(.j-b) { --it-deco: linear-gradient(0deg, rgba(255, 255, 255, .78) 0 24%, transparent 24%); }
-/* 연필: a pink eraser end, a metal band and a sharpened tip */
-[data-look='arcade'] .blast-item--pencil { --it-a: #ffdc5a; --it-b: #f0a000; }
-[data-look='objects'] .blast-item--pencil { --it-a: #f6c93a; --it-b: #d9a010; }
-.blast-item--pencil.j-r:not(.j-l) { --it-deco: linear-gradient(90deg, #ff9bb3 0 40%, #cfd5de 40% 56%, transparent 56%); }
-.blast-item--pencil.j-l:not(.j-r) { --it-deco: linear-gradient(270deg, #2a2a2e 0 22%, #f1d3a2 22% 56%, transparent 56%); }
-.blast-item--pencil.j-b:not(.j-t) { --it-deco: linear-gradient(180deg, #ff9bb3 0 40%, #cfd5de 40% 56%, transparent 56%); }
-.blast-item--pencil.j-t:not(.j-b) { --it-deco: linear-gradient(0deg, #2a2a2e 0 22%, #f1d3a2 22% 56%, transparent 56%); }
-/* 자: tick marks along one edge */
-[data-look='arcade'] .blast-item--ruler { --it-a: #8fbcff; --it-b: #3f78ee; }
-[data-look='objects'] .blast-item--ruler { --it-a: #cfe0f5; --it-b: #9db8dc; }
-.blast-item--ruler.j-l, .blast-item--ruler.j-r { --it-deco: repeating-linear-gradient(90deg, rgba(10, 30, 80, .6) 0 2px, transparent 2px 50%) top / 100% 36% no-repeat; }
-.blast-item--ruler.j-t, .blast-item--ruler.j-b { --it-deco: repeating-linear-gradient(180deg, rgba(10, 30, 80, .6) 0 2px, transparent 2px 50%) left / 36% 100% no-repeat; }
-/* 포스트잇: a sticky strip on top and a curl in the corner */
-[data-look='arcade'] .blast-item--sticky { --it-a: #fff27a; --it-b: #ffc400; }
-[data-look='objects'] .blast-item--sticky { --it-a: #fff09a; --it-b: #f6d646; }
-.blast-item--sticky:not(.j-t) { --it-deco: linear-gradient(rgba(255, 170, 20, .65), rgba(255, 170, 20, .65)) top / 100% 16% no-repeat; }
-.blast-item--sticky:not(.j-r):not(.j-b) { --it-deco: linear-gradient(135deg, transparent 0 55%, rgba(0, 0, 0, .2) 55% 78%, rgba(255, 255, 255, .9) 78%) bottom right / 46% 46% no-repeat; }
-.blast-item--sticky:not(.j-t):not(.j-r):not(.j-b) { --it-deco: linear-gradient(135deg, transparent 0 55%, rgba(0, 0, 0, .2) 55% 78%, rgba(255, 255, 255, .9) 78%) bottom right / 46% 46% no-repeat, linear-gradient(rgba(255, 170, 20, .65), rgba(255, 170, 20, .65)) top / 100% 16% no-repeat; }
-/* 메모지: ruled lines and a red margin */
-[data-look='arcade'] .blast-item--memo { --it-a: #f7f3ff; --it-b: #b5aee6; }
-[data-look='objects'] .blast-item--memo { --it-a: #ffffff; --it-b: #e4e7ef; }
-.blast-item--memo { --it-deco: repeating-linear-gradient(180deg, transparent 0 28%, rgba(60, 90, 200, .34) 28% 33%); }
-.blast-item--memo:not(.j-l) { --it-deco: linear-gradient(rgba(224, 70, 70, .7), rgba(224, 70, 70, .7)) 20% / 2px 100% no-repeat, repeating-linear-gradient(180deg, transparent 0 28%, rgba(60, 90, 200, .34) 28% 33%); }
-/* 문제집: a dark spine and a title label */
-[data-look='arcade'] .blast-item--workbook { --it-a: #4fe6bb; --it-b: #0f9f7e; }
-[data-look='objects'] .blast-item--workbook { --it-a: #2f8f80; --it-b: #1f6558; }
-.blast-item--workbook:not(.j-l) { --it-deco: linear-gradient(90deg, rgba(0, 0, 0, .34) 0 24%, transparent 24%); }
-.blast-item--workbook.j-l.j-r.j-t.j-b { --it-deco: linear-gradient(rgba(255, 255, 255, .85), rgba(255, 255, 255, .85)) center / 62% 30% no-repeat; }
-/* 클립 */
-[data-look='arcade'] .blast-item--clip { --it-a: #d3dbea; --it-b: #7886a3; }
-[data-look='objects'] .blast-item--clip { --it-a: #d7dbe2; --it-b: #8f98a8; }
-.blast-item--clip { --it-deco: radial-gradient(circle at 50% 50%, transparent 0 26%, rgba(30, 38, 52, .6) 28% 42%, transparent 44%); }
-/* 삼각자 */
-[data-look='arcade'] .blast-item--triangle { --it-a: #63efdf; --it-b: #0fb0a3; }
-[data-look='objects'] .blast-item--triangle { --it-a: #bfeadf; --it-b: #86c9b7; }
-.blast-item--triangle:not(.j-t) { --it-deco: repeating-linear-gradient(90deg, rgba(0, 60, 50, .5) 0 2px, transparent 2px 33%) top / 100% 28% no-repeat; }
-/* 테이프 */
-[data-look='arcade'] .blast-item--tape { --it-a: #ffad5c; --it-b: #ee6410; }
-[data-look='objects'] .blast-item--tape { --it-a: #f3a95c; --it-b: #d6781f; }
-.blast-item--tape { --it-deco: radial-gradient(circle at 50% 50%, transparent 0 22%, rgba(110, 50, 0, .45) 24% 40%, transparent 42%); }
-/* 스테이플러 */
-[data-look='arcade'] .blast-item--stapler { --it-a: #ff7f88; --it-b: #d6263b; }
-[data-look='objects'] .blast-item--stapler { --it-a: #e5574f; --it-b: #b4332f; }
-.blast-item--stapler:not(.j-t) { --it-deco: linear-gradient(#d6dce6, #d6dce6) top / 100% 28% no-repeat; }
-/* 접이 메모 */
-[data-look='arcade'] .blast-item--notefold { --it-a: #bda4ff; --it-b: #7646ef; }
-[data-look='objects'] .blast-item--notefold { --it-a: #cdbdf3; --it-b: #a48fdc; }
-.blast-item--notefold { --it-deco: linear-gradient(135deg, transparent 0 52%, rgba(255, 255, 255, .55) 52% 68%, transparent 68%); }
 
 /* ---------- Cells leaving the desk ---------- */
 .blast-burst {
@@ -454,6 +361,8 @@
 .blast-burst__cell {
   position: relative;
   border-radius: var(--blast-cell-radius);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--burst-color) 70%, #fff), var(--burst-color));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6), inset 0 -2px 0 rgba(0, 0, 0, .2);
   animation: blast-pop .52s cubic-bezier(.3, 1.4, .5, 1) both;
 }
 
@@ -605,13 +514,18 @@
 
 .blast-shape {
   --blast-gap: 2px;
-  display: grid;
-  gap: var(--blast-gap);
+  display: block;
+  width: calc(var(--cols) * var(--blast-piece-cell) + (var(--cols) - 1) * var(--blast-gap));
+  height: calc(var(--rows) * var(--blast-piece-cell) + (var(--rows) - 1) * var(--blast-gap));
   pointer-events: none;
+  filter: drop-shadow(0 1.5px 1.5px rgba(0, 0, 0, .4));
 }
 
-.blast-shape__cell {
-  border-radius: 5px;
+.blast-shape__art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
 
 .blast-tapnote {
@@ -632,10 +546,6 @@
 
 .blast-drag .blast-shape {
   --blast-gap: 3px;
-}
-
-.blast-drag .blast-shape__cell {
-  border-radius: var(--blast-cell-radius, 6px);
 }
 
 /* ---------- Result ---------- */

@@ -417,6 +417,7 @@ export function DeskBlastPage() {
           <div className="blast-board-wrap">
             <DeskBlastBoard
               board={game.board}
+              placed={game.placed}
               held={held}
               effects={effects}
               intensity={intensityOf(game.combo)}
