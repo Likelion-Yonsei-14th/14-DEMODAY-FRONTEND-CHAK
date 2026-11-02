@@ -1401,6 +1401,45 @@ export const GENIUS_AWAKENING = {
   ],
 } as const satisfies { id: string; title: string; description: string; tone: 'up'; effects: EventEffect[] }
 
+/**
+ * 재수 때마다 한 번, 그 해의 6월 모의평가 앞에서 오는 "벽 깨기". Nobody
+ * chooses it. 1년 더 공부해도 한계에 막혀 평평해지던 성장을 계단처럼
+ * 끊어 올려서, 도전을 거듭하면 거듭한 만큼 보상이 있게 한다. The ceiling
+ * rises by a draw that shrinks each year, and growth speeds up for the year.
+ * Index 0 is the 재수 year; later years reuse the last entry.
+ */
+export const RETAKE_BREAKTHROUGH = {
+  id: 'retake-breakthrough',
+  title: '벽을 깨는 순간',
+  steps: [
+    { potential: [6, 9], growthFactor: 1.25, text: '1년 더 매달린 끝에 막혀 있던 벽이 처음으로 흔들렸어요. 한계가 한 뼘 넓어졌어요.' },
+    { potential: [3, 5], growthFactor: 1.25, text: '또 한 번의 겨울을 버텼어요. 풀리지 않던 유형이 눈에 들어오면서 한계가 또 넓어졌어요.' },
+    { potential: [2, 3.5], growthFactor: 1.25, text: '이제는 공부 방법을 아는 사람이 됐어요. 쌓아 온 시간이 실력의 바닥을 끌어올렸어요.' },
+    { potential: [1.5, 3], growthFactor: 1.25, text: '오래 버틴 만큼 단단해졌어요. 남들이 못 보는 부분이 보이기 시작했어요.' },
+    { potential: [1, 2], growthFactor: 1.25, text: '긴 싸움 끝에 감이 한 번 더 열렸어요. 아직 오를 곳이 남아 있었어요.' },
+  ],
+  /** Every subject rises: the retake year is a whole-year effort, not one subject. */
+  target: 'all',
+  exams: 3,
+} as const
+
+/**
+ * 연속으로 목표에 못 미친 수능 횟수만큼, 재수 해의 시험날 운이 조금씩 따라 준다.
+ * Counted from history (no extra saved state): the unbroken run of 수능 results
+ * above `goalAverage` just before this exam. 대박 gets likelier and 대폭망 rarer.
+ */
+export const RETAKE_PERSEVERANCE = {
+  id: 'retake-perseverance',
+  title: '쌓이는 간절함',
+  goalAverage: 4,
+  jackpotPerMiss: 0.4,
+  bustReductionPerMiss: 0.12,
+  maxMisses: 4,
+  /** The note shows up in the June 모의평가 result once the run is this long. */
+  noteFromMisses: 2,
+  text: '여러 번 도전한 끈기가 빛을 발해요. 이번에는 운이 조금 따라 줄 것 같아요.',
+} as const
+
 // ---------- student name ----------
 
 export const STUDENT_NAME = { maxLength: 10, fallback: '수험생' } as const

@@ -6,7 +6,9 @@ import {
   DATE_NIGHT_EVENT,
   DEFAULT_ELECTIVES,
   LEGEND_LECTURE,
+  RETAKE_BREAKTHROUGH,
   RETAKE_CHOICE_EVENTS,
+  RETAKE_PERSEVERANCE,
   STUDY_CAFE_EVENT,
   GROWTH,
   SUBJECTS,
@@ -861,5 +863,74 @@ describe('balance (10,000 simulated students)', () => {
     expect(csatJackpots / count).toBeGreaterThan(0.001)
     expect(csatBusts / count).toBeGreaterThan(0.001)
     expect((csatJackpots + csatBusts) / count).toBeLessThan(0.05)
+  }, 60_000)
+})
+
+describe('retake pacing', () => {
+  const retakeJune = (seed: string, attempts: number) => {
+    const state = playThrough(seed, attempts)
+    return state.history.filter((result) => result.attempt === attempts && result.examId.endsWith('06p'))[0]!
+  }
+
+  it('opens every retake year with a breakthrough that lifts the ceiling', () => {
+    for (let index = 0; index < 60; index += 1) {
+      for (const attempt of [1, 2, 3]) {
+        const june = retakeJune(`breakthrough-${index}`, attempt)
+        const record = june.events.find((event) => event.eventId === RETAKE_BREAKTHROUGH.id)
+        expect(record?.tone).toBe('up')
+      }
+    }
+    // The first year has no breakthrough: it is only for retakes.
+    const first = playThrough('breakthrough-0', 0)
+    expect(first.history.every((result) => result.events.every((event) => event.eventId !== RETAKE_BREAKTHROUGH.id))).toBe(true)
+  })
+
+  it('adds the perseverance note only after a run of missed CSATs', () => {
+    let withNote = 0
+    let withoutNote = 0
+    for (let index = 0; index < 200; index += 1) {
+      const state = playThrough(`perseverance-${index}`, 2)
+      for (const june of state.history.filter((result) => result.attempt > 0 && result.examId.endsWith('06p'))) {
+        const misses = [...state.history]
+          .filter((result) => result.kind === 'csat' && result.attempt < june.attempt)
+          .reverse()
+        let run = 0
+        for (const csat of misses) {
+          if (csat.average <= RETAKE_PERSEVERANCE.goalAverage) break
+          run += 1
+        }
+        const has = june.events.some((event) => event.eventId === RETAKE_PERSEVERANCE.id)
+        expect(has).toBe(run >= RETAKE_PERSEVERANCE.noteFromMisses)
+        if (has) withNote += 1
+        else withoutNote += 1
+      }
+    }
+    expect(withNote).toBeGreaterThan(0)
+    expect(withoutNote).toBeGreaterThan(0)
+  }, 30_000)
+
+  it('keeps retaking worthwhile: the average CSAT keeps improving, with smaller steps', () => {
+    const count = 400
+    const sums = [0, 0, 0, 0, 0]
+    for (let index = 0; index < count; index += 1) {
+      let state = createCareer(`pacing-${index}`)
+      for (let attempt = 0; attempt <= 4; attempt += 1) {
+        for (;;) {
+          if (state.status === 'choosing') state = chooseElectives(state, keepElectives(state))
+          else if (state.status === 'event') state = chooseEventOption(state, firstOption(state))
+          else if (state.status === 'notice') state = acknowledgeNotice(state)
+          else if (state.status === 'playing') state = runExam(state)
+          else break
+        }
+        sums[attempt]! += state.history.at(-1)!.average
+        if (attempt < 4) state = decide(state, 'retake')
+      }
+    }
+    const means = sums.map((sum) => sum / count)
+    const steps = means.slice(1).map((mean, index) => means[index]! - mean)
+    // Every retake year improves on average...
+    for (const step of steps) expect(step).toBeGreaterThan(0.05)
+    // ...and the first retake pays the most.
+    expect(steps[0]!).toBeGreaterThan(steps[3]!)
   }, 60_000)
 })
