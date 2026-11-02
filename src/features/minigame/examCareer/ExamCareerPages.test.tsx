@@ -328,6 +328,22 @@ describe('exam career mini game', () => {
     }
   })
 
+  it('gilds a 대박 subject on the grade sheet and shows the tag', () => {
+    const base = playEngineUntil('page-jackpot-sheet', (current) => current.history.length >= 2)
+    const last = base.history.at(-1)!
+    saveCareer({
+      state: {
+        ...base,
+        history: [...base.history.slice(0, -1), { ...last, dayNotes: [{ subject: 'math', roll: 'jackpot', label: '대박' }] }],
+      },
+    })
+    renderAt('/minigame/exam-career/play')
+
+    const tags = screen.getAllByText('대박')
+    expect(tags).toHaveLength(1)
+    expect(tags[0]!.closest('li')).toHaveClass('is-jackpot')
+  })
+
   it('pops up the 스터디카페 outcome at once, then runs the exam', () => {
     let seed = 0
     while (createCareer(`page-cafe-${seed}`, 'humanities').profile.studyCafeExamId !== 'g1-10') seed += 1
@@ -439,14 +455,35 @@ describe('exam career mini game', () => {
     expect(screen.queryByRole('region', { name: /합격 발표가 났어요!|아쉽게도 모두 불합격이에요/ })).not.toBeInTheDocument()
     finishSuspense()
 
-    const results = screen.getByRole('region', { name: /합격 발표가 났어요!|아쉽게도 모두 불합격이에요/ })
+    // Three applications lie face down; each shows its school but not its result.
+    const board = screen.getByRole('region', { name: '합격 발표' })
     expect(screen.getByRole('heading', { name: '수능' })).toBeInTheDocument()
-    expect(within(results).getAllByRole('listitem')).toHaveLength(3)
+    expect(within(board).getAllByRole('listitem')).toHaveLength(3)
+    expect(within(board).queryByRole('button', { name: /진학하기$/ })).not.toBeInTheDocument()
+    fireEvent.click(within(board).getByRole('button', { name: '가군 원서 열기' }))
+    fireEvent.click(within(board).getByRole('button', { name: '나군 원서 열기' }))
+    // The last one takes a beat before it turns over.
+    fireEvent.click(within(board).getByRole('button', { name: '다군 원서 열기' }))
+    expect(within(board).getByText('마지막 원서예요…')).toBeInTheDocument()
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+    const results = screen.getByRole('region', { name: /합격 발표가 났어요!|아쉽게도 모두 불합격이에요/ })
     // The CSAT under the results shows its grades only, without its events.
     const csatCard = screen.getByRole('heading', { name: '수능' }).closest('section')!
     expect(csatCard.querySelector('.exam-career-events')).toBeNull()
     const enrollButton = within(results).queryAllByRole('button', { name: /진학하기$/ })[0]
     fireEvent.click(enrollButton ?? within(results).getByRole('button', { name: '진학하지 않고 마무리하기' }))
+    // A finale plays before the summary takes over.
+    if (enrollButton) {
+      expect(screen.getByText(/진학 확정$/)).toBeInTheDocument()
+      act(() => {
+        vi.advanceTimersByTime(2000)
+      })
+    }
 
     expect(screen.getByRole('heading', { name: '수험 생활 끝!' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '진학 결과' })).toBeInTheDocument()
