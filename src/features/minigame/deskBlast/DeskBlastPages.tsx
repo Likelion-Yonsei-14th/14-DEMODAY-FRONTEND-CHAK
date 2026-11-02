@@ -16,6 +16,8 @@ import {
   Timer,
   Download,
   Trophy,
+  Moon,
+  Sun,
   Volume2,
   VolumeX,
 } from 'lucide-react'
@@ -67,7 +69,7 @@ import {
   setMuted,
   unlockAudio,
 } from './deskBlastSound'
-import { LOOK_LABEL, readLook, saveLook, type BlastLook } from './deskBlastLook'
+import { readLook, saveLook, type BlastLook } from './deskBlastLook'
 import { hasSeenHint, loadBestScore, markHintSeen, saveBestScore } from './deskBlastStorage'
 import './DeskBlast.css'
 
@@ -349,7 +351,39 @@ export function DeskBlastPage() {
       surface="base"
       contentClassName="blast-shell"
       shellClassName={`blast-look-${look}`}
-      appBar={<AppBar title="수능 블라스트" leading={<ServiceHomeButton />} />}
+      appBar={
+        <AppBar
+          title="수능 블라스트"
+          leading={<ServiceHomeButton />}
+          trailing={
+            <>
+              <IconButton
+                label={soundOff ? '효과음 켜기' : '효과음 끄기'}
+                aria-pressed={!soundOff}
+                icon={soundOff ? <VolumeX size={20} aria-hidden /> : <Volume2 size={20} aria-hidden />}
+                onClick={() => {
+                  const next = !soundOff
+                  setMuted(next)
+                  setSoundOff(next)
+                  if (!next) {
+                    unlockAudio()
+                    playPick()
+                  }
+                }}
+              />
+              <IconButton
+                label={look === 'arcade' ? '라이트 모드로 바꾸기' : '다크 모드로 바꾸기'}
+                icon={look === 'arcade' ? <Moon size={20} aria-hidden /> : <Sun size={20} aria-hidden />}
+                onClick={() => {
+                  const next: BlastLook = look === 'arcade' ? 'objects' : 'arcade'
+                  saveLook(next)
+                  setLook(next)
+                }}
+              />
+            </>
+          }
+        />
+      }
     >
       <div className="blast-page" data-look={look}>
         <header className="blast-stats" aria-label="현재 기록">
@@ -363,35 +397,6 @@ export function DeskBlastPage() {
             <span className="blast-stats__label">콤보</span>
             <strong data-testid="blast-combo">{game.combo}</strong>
           </div>
-          <button
-            type="button"
-            className="blast-stats__sound"
-            aria-pressed={!soundOff}
-            aria-label={soundOff ? '효과음 켜기' : '효과음 끄기'}
-            onClick={() => {
-              const next = !soundOff
-              setMuted(next)
-              setSoundOff(next)
-              if (!next) {
-                unlockAudio()
-                playPick()
-              }
-            }}
-          >
-            {soundOff ? <VolumeX size={18} aria-hidden /> : <Volume2 size={18} aria-hidden />}
-          </button>
-          <button
-            type="button"
-            className="blast-stats__look"
-            aria-label={`화면 스타일 바꾸기, 지금은 ${LOOK_LABEL[look]}`}
-            onClick={() => {
-              const next: BlastLook = look === 'arcade' ? 'objects' : 'arcade'
-              saveLook(next)
-              setLook(next)
-            }}
-          >
-            {LOOK_LABEL[look]}
-          </button>
           <div className="blast-stats__best">
             <span className="blast-stats__label">
               <Trophy size={12} aria-hidden /> 최고
