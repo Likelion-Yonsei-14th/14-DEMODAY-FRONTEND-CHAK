@@ -270,6 +270,12 @@ export const router = createBrowserRouter([
           Component: (await import('@/features/supporter/MyLettersPage')).MyLettersPage,
         }),
       },
+      {
+        path: '/favorite-desks',
+        lazy: async () => ({
+          Component: (await import('@/features/supporter/FavoriteDesksPage')).FavoriteDesksPage,
+        }),
+      },
       { path: '/start', element: <StartPage /> },
       { path: '/home', element: <HomePage /> },
       { path: '/minigame/exam-career', element: <ExamCareerIntroPage /> },
