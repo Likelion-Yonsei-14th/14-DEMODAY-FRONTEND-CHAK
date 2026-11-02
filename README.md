@@ -122,6 +122,8 @@ npm run build
 
 GitHub Actions workflow는 push / pull request에서 동일한 lint, test, build 명령을 실행하도록 정의되어 있습니다.
 
+수험생 커리어 시뮬레이터(`src/features/minigame/examCareer/`)를 바꾸는 pull request는 게임 화면의 Patch Note에 새 버전을 함께 추가해야 하고, CI가 이를 확인합니다. 작성 방법은 [`src/features/minigame/examCareer/CLAUDE.md`](src/features/minigame/examCareer/CLAUDE.md)를 보세요.
+
 ## Assets
 
 - 책상 · 교실 · 사물함 사진, 부적, 보석, 스티커, 클립/테이프, 별/리본/가랜드, 전구, 리빙박스 이미지는 `public/assets/` 아래에 WebP로 있습니다.

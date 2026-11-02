@@ -841,16 +841,19 @@ describe('balance (10,000 simulated students)', () => {
     }
 
     const share = (grade: number) => csatGrades[grade]! / (count * SUBJECT_IDS.length)
-    // A little kinder than the real stanine split: centred around grade 4.
-    expect(share(1)).toBeGreaterThan(0.06)
-    expect(share(1)).toBeLessThan(0.16)
+    // Kinder than the real stanine split: by the CSAT it is centred between grades 3 and 4.
+    expect(share(1)).toBeGreaterThan(0.08)
+    expect(share(1)).toBeLessThan(0.21)
     expect(share(4)).toBeGreaterThan(0.12)
     expect(share(4)).toBeLessThan(0.24)
-    expect(share(9)).toBeLessThan(0.08)
+    expect(share(9)).toBeLessThan(0.06)
 
+    const meanFirst = Object.values(byType).reduce((sum, type) => sum + type.first, 0) / count
     const meanCsat = Object.values(byType).reduce((sum, type) => sum + type.csat, 0) / count
-    expect(meanCsat).toBeGreaterThan(3.6)
-    expect(meanCsat).toBeLessThan(4.8)
+    expect(meanCsat).toBeGreaterThan(3.3)
+    expect(meanCsat).toBeLessThan(4.1)
+    // Studying pays off: the average student ends better than they started.
+    expect(meanFirst - meanCsat).toBeGreaterThan(0.4)
 
     const improvement = (id: string) => (byType[id]!.first - byType[id]!.csat) / byType[id]!.n
     // Late bloomers and geniuses gain the most by the CSAT; early peakers fade.

@@ -124,11 +124,16 @@ describe('exam career mini game', () => {
     expect(notes.compareDocumentPosition(disclaimer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
-  it('numbers the patch notes as one patch per merge, newest first', () => {
-    const versions = PATCH_NOTES.map((note) => note.version)
-    expect(versions.at(-1)).toBe('1.0.0')
-    versions.forEach((version, index) => {
-      expect(version).toBe(`1.0.${versions.length - 1 - index}`)
+  it('numbers the patch notes one step per merge, newest first', () => {
+    const versions = PATCH_NOTES.map((note) => note.version.split('.').map(Number) as [number, number, number])
+    expect(versions.at(-1)).toEqual([1, 0, 0])
+    // Each release is the one before it with either the minor or the patch number raised by one.
+    versions.slice(0, -1).forEach(([major, minor, patch], index) => {
+      const [, prevMinor, prevPatch] = versions[index + 1]!
+      expect(major).toBe(1)
+      const nextMinor = minor === prevMinor + 1 && patch === 0
+      const nextPatch = minor === prevMinor && patch === prevPatch + 1
+      expect(nextMinor || nextPatch).toBe(true)
     })
   })
 

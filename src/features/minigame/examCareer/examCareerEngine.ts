@@ -9,6 +9,7 @@ import {
   CHOICE_EVENTS,
   cohortShift,
   COMMON_DAY_ROLLS,
+  CSAT_DAY_ROLLS,
   DEFAULT_ELECTIVES,
   ELECTIVE_OPTIONS,
   ELECTIVE_SUBJECTS,
@@ -795,7 +796,8 @@ export function runExam(state: CareerState): CareerState {
   // 3-4. Exam day: one shared condition, then each subject's own luck.
   const dayNotes: DayNote[] = []
   const commonRoll = streamFor(`${seed}:condition:${slot.id}:common`)
-  const common = commonRoll.weighted(tiltedRolls(COMMON_DAY_ROLLS, profile.luck), (roll) => roll.weight)
+  const dayRolls = slot.kind === 'csat' ? CSAT_DAY_ROLLS : COMMON_DAY_ROLLS
+  const common = commonRoll.weighted(tiltedRolls(dayRolls, profile.luck), (roll) => roll.weight)
   const commonValue = commonRoll.between(...common.range)
   if (common.id !== 'normal') dayNotes.push({ subject: 'all', roll: common.id, label: common.label })
 
