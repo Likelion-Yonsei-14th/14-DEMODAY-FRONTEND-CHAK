@@ -275,9 +275,7 @@ function ReleaseNotes() {
       <ol className="exam-career-releases">
         {RELEASE_NOTES.map((note) => (
           <li key={note.version}>
-            <h3>
-              v{note.version} <time dateTime={note.date}>{note.date.replaceAll('-', '.')}</time>
-            </h3>
+            <h3>v{note.version}</h3>
             <ul>
               {note.changes.map((change) => (
                 <li key={change}>{change}</li>

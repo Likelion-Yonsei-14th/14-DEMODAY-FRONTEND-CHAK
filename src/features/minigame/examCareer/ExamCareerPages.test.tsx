@@ -115,7 +115,7 @@ describe('exam career mini game', () => {
     expect(notes).not.toHaveAttribute('open')
     fireEvent.click(summary)
     expect(notes).toHaveAttribute('open')
-    expect(within(notes).getByRole('heading', { name: /^v1\.0\.0 / })).toBeInTheDocument()
+    expect(within(notes).getByRole('heading', { name: 'v1.0.0' })).toBeInTheDocument()
 
     // The last one; the app bar has an icon button of the same name.
     const home = screen.getAllByRole('button', { name: '홈 화면으로 돌아가기' }).at(-1)!

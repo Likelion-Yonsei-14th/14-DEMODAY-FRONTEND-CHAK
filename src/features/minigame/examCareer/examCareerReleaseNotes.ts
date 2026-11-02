@@ -1,7 +1,5 @@
 export type ReleaseNote = {
   version: string
-  /** The day it was merged, YYYY-MM-DD. */
-  date: string
   changes: readonly string[]
 }
 
@@ -12,12 +10,10 @@ export type ReleaseNote = {
 export const RELEASE_NOTES: readonly ReleaseNote[] = [
   {
     version: '1.0.9',
-    date: '2026-10-28',
     changes: ['검색 결과에 게임 제목과 소개가 보이도록 페이지 정보를 달고 사이트맵에 추가했어요.'],
   },
   {
     version: '1.0.8',
-    date: '2026-10-22',
     changes: [
       '연애 중에만 나오는 이벤트 "모의고사 전날 데이트"를 추가했어요.',
       '결과가 하나로 정해져 있던 선택지 9개에 일이 꼬이는 결과를 더했어요.',
@@ -30,42 +26,34 @@ export const RELEASE_NOTES: readonly ReleaseNote[] = [
   },
   {
     version: '1.0.7',
-    date: '2026-10-21',
     changes: ['진행 화면의 성적 변화 그래프도 눌러서 열고 닫을 수 있고, 열렸는지 화살표로 보여 줘요.'],
   },
   {
     version: '1.0.6',
-    date: '2026-10-21',
     changes: ['모바일에서 결과를 공유할 때 문구 끝에 빈 줄이 붙지 않아요.'],
   },
   {
     version: '1.0.5',
-    date: '2026-10-21',
     changes: ['공유한 결과 링크의 미리보기 카드에 게임 제목과 소개가 보여요.'],
   },
   {
     version: '1.0.4',
-    date: '2026-10-21',
     changes: ['1.0.3의 공유 방식 변경을 되돌렸어요.'],
   },
   {
     version: '1.0.3',
-    date: '2026-10-21',
     changes: ['카카오톡 공유를 썸네일이 있는 링크 카드 하나로 통일했어요.'],
   },
   {
     version: '1.0.2',
-    date: '2026-10-21',
     changes: ['재수 해의 6월 모의평가 성적표가 작년 수능과 비교해 알려 주고, 작은 변화도 따로 구분해요.'],
   },
   {
     version: '1.0.1',
-    date: '2026-10-21',
     changes: ['커리어 결과를 이미지로 저장하고 링크로 공유할 수 있어요.'],
   },
   {
     version: '1.0.0',
-    date: '2026-10-21',
     changes: ['수험생 커리어 시뮬레이터 출시'],
   },
 ]
