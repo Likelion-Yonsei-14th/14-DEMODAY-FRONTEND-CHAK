@@ -9,6 +9,7 @@ import {
   CHOICE_EVENTS,
   cohortShift,
   COMMON_DAY_ROLLS,
+  CSAT_DAY_ROLLS,
   DEFAULT_ELECTIVES,
   ELECTIVE_OPTIONS,
   ELECTIVE_SUBJECTS,
@@ -22,7 +23,9 @@ import {
   LUCK_TILT,
   RETAKE_CHOICE_EVENTS,
   RETAKE_EXAMS,
+  RETAKE_BREAKTHROUGH,
   RETAKE_JUNE_REPORT,
+  RETAKE_PERSEVERANCE,
   RETAKE_START_EVENTS,
   SCHOOL_YEARS,
   STUDENT,
@@ -88,6 +91,8 @@ export type CareerEventRecord = {
   title: string
   description: string
   tone: 'up' | 'down'
+  /** Which of the pick's outcomes was drawn, so the screen can show it on a wheel. */
+  outcomeIndex?: number
 }
 
 export type DayNote = { subject: Subject | 'all'; roll: DayRollId; label: string }
@@ -106,6 +111,8 @@ export type ExamResult = {
   events: CareerEventRecord[]
   /** Only the rolls worth mentioning (anything but an ordinary day). */
   dayNotes: DayNote[]
+  /** The shared condition of the exam day; absent in careers saved before the roulette. */
+  conditionRoll?: DayRollId
 }
 
 /**
@@ -583,6 +590,7 @@ function happen(
     title,
     description: outcome.text.replace('{subject}', subject ? subjectLabel(subject, electives).name : ''),
     tone: outcome.tone,
+    outcomeIndex: outcomes.indexOf(outcome),
   }
 }
 
@@ -655,6 +663,12 @@ function tiltedRolls(rolls: readonly DayRoll[], luck: number, swing = 1, bustRis
   })
 }
 
+/** The shared condition an exam was sat under (older saves only kept the notable ones). */
+export function conditionRollOf(result: ExamResult): DayRollId {
+  if (result.conditionRoll) return result.conditionRoll
+  return result.dayNotes.find((note) => note.subject === 'all')?.roll ?? 'normal'
+}
+
 /** How last year's CSAT compares with this retake year's June 모의평가. */
 function juneTrend(history: ExamResult[], june: ExamResult): keyof typeof RETAKE_JUNE_REPORT.cases {
   const lastCsat = [...history].reverse().find((result) => result.kind === 'csat' && result.attempt === june.attempt - 1)
@@ -667,6 +681,18 @@ function juneTrend(history: ExamResult[], june: ExamResult): keyof typeof RETAKE
   if (gain > 0) return 'slight-up'
   if (gain < 0) return 'slight-down'
   return 'same'
+}
+
+/** How many 수능 in a row, most recent first, ended above the goal average. */
+function missedCsatRun(history: readonly ExamResult[]): number {
+  let run = 0
+  for (let index = history.length - 1; index >= 0; index -= 1) {
+    const result = history[index]!
+    if (result.kind !== 'csat') continue
+    if (result.average <= RETAKE_PERSEVERANCE.goalAverage) break
+    run += 1
+  }
+  return run
 }
 
 /**
@@ -708,6 +734,35 @@ export function runExam(state: CareerState): CareerState {
     events.push(happen(LEGEND_LECTURE.outcomes, LEGEND_LECTURE.id, LEGEND_LECTURE.title, key, working, electives))
   }
 
+  // A retake year opens with a breakthrough that raises the ceiling, and a long
+  // run of misses leaves the exam days a little luckier.
+  const missRun = slot.attempt > 0 ? Math.min(missedCsatRun(state.history), RETAKE_PERSEVERANCE.maxMisses) : 0
+  if (slot.attempt > 0 && slot.key === '06p') {
+    const step = RETAKE_BREAKTHROUGH.steps[Math.min(slot.attempt, RETAKE_BREAKTHROUGH.steps.length) - 1]!
+    const key = `${seed}:event:${slot.id}:${RETAKE_BREAKTHROUGH.id}`
+    const random = streamFor(key)
+    const focus = focusOf(working.skill, key)
+    applyEffects(
+      [
+        { type: 'potential', target: RETAKE_BREAKTHROUGH.target, amount: [step.potential[0], step.potential[1]] },
+        { type: 'growth', target: RETAKE_BREAKTHROUGH.target, factor: step.growthFactor, exams: RETAKE_BREAKTHROUGH.exams },
+      ],
+      RETAKE_BREAKTHROUGH.id,
+      working,
+      random,
+      focus,
+    )
+    events.push({ eventId: RETAKE_BREAKTHROUGH.id, title: RETAKE_BREAKTHROUGH.title, description: step.text, tone: 'up' })
+    if (missRun >= RETAKE_PERSEVERANCE.noteFromMisses) {
+      events.push({
+        eventId: RETAKE_PERSEVERANCE.id,
+        title: RETAKE_PERSEVERANCE.title,
+        description: RETAKE_PERSEVERANCE.text,
+        tone: 'up',
+      })
+    }
+  }
+
   // 2. Growth and elective adaptation since the last exam.
   const months = state.lastAbsoluteMonth === null ? 0 : slot.absoluteMonth - state.lastAbsoluteMonth
   const volatility = volatilityFor(working.stability)
@@ -741,7 +796,8 @@ export function runExam(state: CareerState): CareerState {
   // 3-4. Exam day: one shared condition, then each subject's own luck.
   const dayNotes: DayNote[] = []
   const commonRoll = streamFor(`${seed}:condition:${slot.id}:common`)
-  const common = commonRoll.weighted(tiltedRolls(COMMON_DAY_ROLLS, profile.luck), (roll) => roll.weight)
+  const dayRolls = slot.kind === 'csat' ? CSAT_DAY_ROLLS : COMMON_DAY_ROLLS
+  const common = commonRoll.weighted(tiltedRolls(dayRolls, profile.luck), (roll) => roll.weight)
   const commonValue = commonRoll.between(...common.range)
   if (common.id !== 'normal') dayNotes.push({ subject: 'all', roll: common.id, label: common.label })
 
@@ -759,8 +815,8 @@ export function runExam(state: CareerState): CareerState {
       SUBJECT_DAY_ROLLS,
       profile.luck,
       oddsOf('swing'),
-      oddsOf('bust-risk'),
-      oddsOf('jackpot-chance'),
+      oddsOf('bust-risk') * (1 - RETAKE_PERSEVERANCE.bustReductionPerMiss * missRun),
+      oddsOf('jackpot-chance') * (1 + RETAKE_PERSEVERANCE.jackpotPerMiss * missRun),
     )
     const roll = random.weighted(rolls, (item) => item.weight)
     // Steadier students swing less on the day, too.
@@ -790,6 +846,7 @@ export function runExam(state: CareerState): CareerState {
     average: averageGrade(grades),
     events,
     dayNotes,
+    conditionRoll: common.id,
   }
   working.effects = working.effects
     .map((effect) => ({ ...effect, examsLeft: effect.examsLeft - 1 }))

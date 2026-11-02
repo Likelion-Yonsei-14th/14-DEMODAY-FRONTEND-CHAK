@@ -66,6 +66,8 @@ import {
 import { createCareerSeed } from './examCareerRandom'
 import { EXAM_CAREER_PATH, EXAM_CAREER_PLAY_PATH, examCareerResultPath } from './examCareerRoutes'
 import { parseShareCode, shareCodeOf, type SharedCareer } from './examCareerShare'
+import { PATCH_NOTES } from './examCareerPatchNotes'
+import { careerTitleOf } from './examCareerTitle'
 import { destinationText, downloadBlob, renderShareImage } from './examCareerShareImage'
 import { ExamCareerChart } from './ExamCareerChart'
 import './ExamCareer.css'
@@ -254,9 +256,31 @@ export function ExamCareerIntroPage() {
           </Button>
         </div>
 
+        <PatchNotes />
+
         <p className="exam-career-disclaimer">{DISCLAIMER}</p>
       </div>
     </AppShell>
+  )
+}
+
+/** What changed in the game, folded at the bottom of the start screen. */
+function PatchNotes() {
+  return (
+    <Collapsible title={`Patch Note · v${PATCH_NOTES[0]!.version}`}>
+      <ol className="exam-career-patch-notes">
+        {PATCH_NOTES.map((note) => (
+          <li key={note.version}>
+            <h3>v{note.version}</h3>
+            <ul>
+              {note.changes.map((change) => (
+                <li key={change}>{change}</li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ol>
+    </Collapsible>
   )
 }
 
@@ -870,6 +894,17 @@ export function ExamCareerPlayPage() {
   )
 }
 
+/** The title earned by a career, shown like a medal between the grades and the destination. */
+function CareerTitleBadge({ name, title, blurb }: { name?: string; title: string; blurb: string }) {
+  return (
+    <section className="exam-career-title" aria-label="획득한 칭호">
+      <span className="exam-career-title__kicker">{name ? `${name}님의 칭호` : '친구의 칭호'}</span>
+      <strong className="exam-career-title__name">{title}</strong>
+      <p>{blurb}</p>
+    </section>
+  )
+}
+
 function useShareActions(career: SharedCareer | null, code: string | null, name: string) {
   const { showToast } = useFeedback()
   const [image, setImage] = useState<{ blob: Blob; url: string } | null>(null)
@@ -891,7 +926,7 @@ function useShareActions(career: SharedCareer | null, code: string | null, name:
     return shareOrCopyLink(
       {
         title,
-        text: `${attemptLabel(career.attempt)} 수능 평균 ${career.average}등급, ${destinationText(career)}! 너도 수험생 커리어를 시작해 볼래?`,
+        text: `「${careerTitleOf(career).title}」 ${attemptLabel(career.attempt)} 수능 평균 ${career.average}등급, ${destinationText(career)}! 너도 수험생 커리어를 시작해 볼래?`,
         url: buildPrototypeShareUrl(examCareerResultPath(code)),
       },
       showToast,
@@ -992,6 +1027,8 @@ export function ExamCareerResultPage() {
           <GradeList result={career} />
         </section>
 
+        <CareerTitleBadge {...careerTitleOf(career)} />
+
         <section className="exam-career-section exam-career-destination">
           <h2>진학 결과</h2>
           <p className="exam-career-destination__result">{destinationText(career)}</p>
@@ -1026,7 +1063,9 @@ function CareerSummaryView({ saved, onRestart }: { saved: SavedCareer; onRestart
   const { profile } = saved.state
   const enrolled = summary.admission?.enrolled ?? null
   const code = shareCodeOf(saved.state)
-  const share = useShareActions(parseShareCode(code ?? undefined), code, profile.name)
+  const sharedCareer = parseShareCode(code ?? undefined)
+  const share = useShareActions(sharedCareer, code, profile.name)
+  const careerTitle = sharedCareer ? careerTitleOf(sharedCareer) : null
 
   // The summary replaces the play screen in place; start it from the top.
   useEffect(() => {
@@ -1066,6 +1105,8 @@ function CareerSummaryView({ saved, onRestart }: { saved: SavedCareer; onRestart
             <GradeList result={final} />
           </section>
         )}
+
+        {careerTitle && <CareerTitleBadge name={profile.name} {...careerTitle} />}
 
         <section className="exam-career-section exam-career-destination">
           <h2>진학 결과</h2>

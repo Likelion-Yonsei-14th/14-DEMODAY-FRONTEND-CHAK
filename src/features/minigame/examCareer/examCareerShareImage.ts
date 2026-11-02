@@ -1,6 +1,7 @@
 import { attemptLabel, MAJOR_FIELDS, SUBJECTS, TRACKS } from './examCareerConfig'
 import { subjectLabel, universityLabel } from './examCareerEngine'
 import type { SharedCareer } from './examCareerShare'
+import { careerTitleOf } from './examCareerTitle'
 
 /** 4:5, the ratio most messengers and stories show without cropping. */
 const WIDTH = 1080
@@ -77,7 +78,8 @@ export function destinationText(career: SharedCareer) {
 export async function renderShareImage(career: SharedCareer, name: string, playUrl: string): Promise<Blob> {
   const labels = SUBJECTS.map((subject) => subjectLabel(subject.id, career.electives))
   const destination = destinationText(career)
-  await ensureFonts(`수험생 커리어 시뮬레이터${name}최종 수능 평균등급${labels.map((label) => label.name + (label.elective ?? '')).join('')}${destination}너도 시작해 볼래?`)
+  const { title } = careerTitleOf(career)
+  await ensureFonts(`수험생 커리어 시뮬레이터${name}최종 수능 평균등급${labels.map((label) => label.name + (label.elective ?? '')).join('')}${destination}${title}너도 시작해 볼래?`)
   const logo = await loadImage(LOGO_SRC).catch(() => null)
 
   const canvas = document.createElement('canvas')
@@ -159,16 +161,29 @@ export async function renderShareImage(career: SharedCareer, name: string, playU
     context.fillText(`${grade}등급`, centerX, boardY + 385)
   })
 
+  // The earned title, as a brass medal under the blackboard.
+  context.font = `800 46px ${FONT}`
+  const medalWidth = Math.min(WIDTH - 240, context.measureText(title).width + 96)
+  context.fillStyle = '#f6ecd5'
+  roundedRect(context, (WIDTH - medalWidth) / 2, 868, medalWidth, 80, 40)
+  context.fill()
+  context.strokeStyle = '#b98b56'
+  context.lineWidth = 4
+  roundedRect(context, (WIDTH - medalWidth) / 2, 868, medalWidth, 80, 40)
+  context.stroke()
+  context.fillStyle = '#2f5b48'
+  context.fillText(title, WIDTH / 2, 922)
+
   context.fillStyle = SECONDARY
-  context.font = `600 32px ${FONT}`
-  context.fillText('진학 결과', WIDTH / 2, 930)
+  context.font = `600 30px ${FONT}`
+  context.fillText('진학 결과', WIDTH / 2, 1000)
   context.fillStyle = career.enrolled ? '#d93a1f' : INK
-  context.font = `800 ${career.enrolled ? 52 : 44}px ${FONT}`
-  context.fillText(career.enrolled ? universityLabel(career.enrolled) : '진학하지 않고 마무리', WIDTH / 2, 1000)
+  context.font = `800 ${career.enrolled ? 48 : 42}px ${FONT}`
+  context.fillText(career.enrolled ? universityLabel(career.enrolled) : '진학하지 않고 마무리', WIDTH / 2, 1060)
   if (career.enrolled) {
     context.fillStyle = INK
-    context.font = `600 36px ${FONT}`
-    context.fillText(MAJOR_FIELDS[career.track], WIDTH / 2, 1056)
+    context.font = `600 32px ${FONT}`
+    context.fillText(MAJOR_FIELDS[career.track], WIDTH / 2, 1106)
   }
 
   context.strokeStyle = '#e8e2d9'
