@@ -402,10 +402,10 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '전교 1등을 노린다',
         outcomes: [
           {
-            weight: 2,
+            weight: 1,
             tone: 'up',
-            text: '입학하자마자 책상 앞에 앉았어요. 출발선이 조금 앞당겨졌어요.',
-            effects: [{ type: 'skill', target: 'all', amount: [2, 4] }],
+            text: '입학하자마자 책상 앞에 앉았어요. 출발선이 크게 앞당겨졌어요.',
+            effects: [{ type: 'skill', target: 'all', amount: [3, 6] }],
           },
           {
             weight: 1,
@@ -458,16 +458,16 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '학원 종합반 등록',
         outcomes: [
           {
-            weight: 2,
+            weight: 1,
             tone: 'up',
             text: '학원 진도에 맞춰 공부 습관이 잡혔어요.',
-            effects: [{ type: 'growth', target: 'all', factor: 1.35, exams: 3 }],
+            effects: [{ type: 'growth', target: 'all', factor: 1.6, exams: 3 }],
           },
           {
             weight: 1,
             tone: 'down',
             text: '학원 진도를 따라가지 못했어요. 숙제만 쌓이고 실력은 더디게 올라요.',
-            effects: [{ type: 'growth', target: 'all', factor: 0.75, exams: 2 }],
+            effects: [{ type: 'growth', target: 'all', factor: 0.7, exams: 2 }],
           },
         ],
       },
@@ -700,11 +700,11 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '독서실에서 끝장 공부',
         outcomes: [
           {
-            weight: 2,
+            weight: 1,
             tone: 'up',
             text: '독하게 마음먹은 효과가 나타나요. 모든 과목이 빠르게 올라요.',
             effects: [
-              { type: 'growth', target: 'all', factor: 1.9, exams: 3 },
+              { type: 'growth', target: 'all', factor: 2.2, exams: 3 },
               { type: 'potential', target: 'all', amount: [2, 5] },
             ],
           },
@@ -827,17 +827,17 @@ export const CHOICE_EVENTS: readonly ChoiceEvent[] = [
         label: '기숙학원',
         outcomes: [
           {
-            weight: 2,
+            weight: 1,
             tone: 'up',
             text: '공부만 하는 환경 덕분에 실력이 빠르게 올라요.',
-            effects: [{ type: 'growth', target: 'all', factor: 1.9, exams: 3 }],
+            effects: [{ type: 'growth', target: 'all', factor: 2.3, exams: 3 }],
           },
           {
             weight: 1,
             tone: 'down',
             text: '갇힌 생활이 답답해서 슬럼프가 왔어요.',
             effects: [
-              { type: 'growth', target: 'all', factor: 1.1, exams: 3 },
+              { type: 'growth', target: 'all', factor: 1.0, exams: 3 },
               { type: 'day', target: 'all', amount: [-5, -2], exams: 1 },
             ],
           },

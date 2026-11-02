@@ -90,6 +90,8 @@ export type CareerEventRecord = {
   title: string
   description: string
   tone: 'up' | 'down'
+  /** Which of the pick's outcomes was drawn, so the screen can show it on a wheel. */
+  outcomeIndex?: number
 }
 
 export type DayNote = { subject: Subject | 'all'; roll: DayRollId; label: string }
@@ -587,6 +589,7 @@ function happen(
     title,
     description: outcome.text.replace('{subject}', subject ? subjectLabel(subject, electives).name : ''),
     tone: outcome.tone,
+    outcomeIndex: outcomes.indexOf(outcome),
   }
 }
 
