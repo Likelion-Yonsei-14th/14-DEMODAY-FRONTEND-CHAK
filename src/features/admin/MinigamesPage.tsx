@@ -17,6 +17,7 @@ import { formatNumber } from './adminFormat'
 const GAME_TITLES: Record<AdminMinigameGame['game'], string> = {
   GUESS_GOD: '오늘의 찍신은 나야!',
   SNEAKY_PHONE: '선생님 몰래 폰 하기',
+  DESK_BLAST: '수능 블라스트',
 }
 
 function GameSection({ stats }: { stats: AdminMinigameGame }) {

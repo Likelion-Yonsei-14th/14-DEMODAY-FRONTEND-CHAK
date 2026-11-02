@@ -8,13 +8,14 @@ function Location() {
 }
 
 describe('mini game section', () => {
-  it('lists the five games under one heading and opens each one', () => {
+  it('lists the six games under one heading and opens each one', () => {
     const games: Array<[string, string]> = [
       ['나의 수험생 유형은?', '/minigame/study-type'],
       ['오늘의 찍신은 나야!', '/minigame/guess-god'],
       ['수험생 커리어 시뮬레이터', '/minigame/exam-career'],
       ['수능 끝 D+1 코스 짜기', '/minigame/d1-course'],
       ['선생님 몰래 폰 하기', '/minigame/sneaky-phone'],
+      ['수능 블라스트', '/minigame/desk-blast'],
     ]
 
     for (const [title, path] of games) {
