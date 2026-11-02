@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import {
   ArrowLeft,
-  Check,
   ChevronDown,
   Download,
   GraduationCap,
@@ -11,7 +10,6 @@ import {
   Sparkles,
   TrendingDown,
   TrendingUp,
-  X,
 } from 'lucide-react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { AppBar, BottomSheet, Button, Dialog, IconButton, TextField, useFeedback } from '@/design-system'
@@ -60,6 +58,7 @@ import {
   summarize,
   universityLabel,
   type CareerEventRecord,
+  type DayNote,
   type CareerState,
   type ElectiveChoicePoint,
   type ExamResult,
@@ -74,7 +73,9 @@ import { PATCH_NOTES } from './examCareerPatchNotes'
 import { careerTitleOf } from './examCareerTitle'
 import { destinationText, downloadBlob, renderShareImage } from './examCareerShareImage'
 import { ExamCareerChart } from './ExamCareerChart'
-import { OutcomeShuffle, type ShuffleOutcome } from './OutcomeShuffle'
+import { AdmissionReveal } from './AdmissionReveal'
+import { EnvelopeReveal, type RevealTone } from './EnvelopeReveal'
+import { Confetti } from './RevealEffects'
 import './ExamCareer.css'
 
 /** Where "back to the service" goes: the entry route picks /home or /start. */
@@ -324,7 +325,20 @@ function GradeChange({ current, previous }: { current: number; previous: number 
 
 type GradedExam = Pick<ExamResult, 'grades' | 'electives'>
 
-function GradeList({ result, previous }: { result: GradedExam; previous?: GradedExam }) {
+function GradeList({
+  result,
+  previous,
+  notes = [],
+  stagger = 60,
+}: {
+  result: GradedExam
+  previous?: GradedExam
+  /** The exam day's rolls; a 대박 gilds the grade it landed on. */
+  notes?: DayNote[]
+  /** Milliseconds between one grade appearing and the next. */
+  stagger?: number
+}) {
+  const allJackpot = notes.some((note) => note.subject === 'all' && note.roll === 'jackpot')
   const labels = SUBJECTS.map((subject) => subjectLabel(subject.id, result.electives))
   const hasElective = labels.some((label) => label.elective)
   // Each tile spans the same rows (subject, elective, grade, change) so the grades line up.
@@ -333,13 +347,25 @@ function GradeList({ result, previous }: { result: GradedExam; previous?: Graded
     <ul className="exam-career-grades">
       {SUBJECTS.map((subject, order) => {
         const label = labels[order]!
+        const jackpot = allJackpot || notes.some((note) => note.subject === subject.id && note.roll === 'jackpot')
+        // A single subject is gilded right after its own grade shows; a perfect day waits for the whole sheet.
+        const goldDelay = allJackpot ? SUBJECTS.length * stagger + 120 : order * stagger + 280
         return (
-          <li key={subject.id} style={{ animationDelay: `${order * 60}ms`, gridRow: `span ${rows}` }}>
+          <li
+            key={subject.id}
+            className={jackpot ? 'is-jackpot' : undefined}
+            style={{
+              animationDelay: `${order * stagger}ms`,
+              gridRow: `span ${rows}`,
+              ['--gold-delay' as string]: `${goldDelay}ms`,
+            }}
+          >
             <span className="exam-career-grades__subject">{label.name}</span>
             {hasElective && <span className="exam-career-grades__elective">{label.elective}</span>}
             <span className={`exam-career-grade exam-career-grade--${result.grades[subject.id]}`}>
               {result.grades[subject.id]}등급
             </span>
+            {jackpot && <span className="exam-career-grades__tag">대박</span>}
             {previous !== undefined && (
               <GradeChange current={result.grades[subject.id]} previous={previous.grades[subject.id]} />
             )}
@@ -359,16 +385,31 @@ function ExamCard({
   previous?: ExamResult
   showEvents?: boolean
 }) {
+  // The CSAT is read slowly, one grade at a time; a mock exam keeps a brisk pace.
+  const stagger = result.kind === 'csat' ? 320 : 120
+  const perfectDay = result.dayNotes.find((note) => note.subject === 'all' && note.roll === 'jackpot')
+  const awfulDay = result.dayNotes.find((note) => note.subject === 'all' && note.roll === 'bust')
+  const wholeSheet = SUBJECTS.length * stagger + 120
   return (
-    <section className={`exam-career-card exam-career-card--${result.kind}`} aria-live="polite">
+    <section
+      className={`exam-career-card exam-career-card--${result.kind}${perfectDay ? ' exam-career-card--jackpot is-shaking' : ''}${awfulDay ? ' exam-career-card--bust' : ''}`}
+      style={{ ['--flash-delay' as string]: `${wholeSheet}ms` }}
+      aria-live="polite"
+    >
       <header className="exam-career-card__head">
         <span>{result.yearLabel}</span>
         <h2>{result.label}</h2>
         <p>
           평균 <strong>{result.average}</strong>등급
         </p>
+        {(perfectDay || awfulDay) && (
+          <span className={`exam-career-banner${awfulDay ? ' exam-career-banner--bust' : ''}`}>
+            {(perfectDay ?? awfulDay)!.label}
+          </span>
+        )}
       </header>
-      <GradeList result={result} previous={previous ?? undefined} />
+      {perfectDay && <Confetti count={30} spread={200} rise={170} />}
+      <GradeList result={result} previous={previous ?? undefined} notes={result.dayNotes} stagger={stagger} />
       {showEvents && (result.events.length > 0 || result.dayNotes.length > 0) && (
         <ul className="exam-career-events">
           {result.events.map((event) => (
@@ -489,7 +530,7 @@ function EventDialog({ event, onChoose }: { event: ChoiceEvent; onChoose: (optio
   )
 }
 
-/** A risky pick: its outcome panels flip by until they stop on the one that happened. */
+/** A risky pick: an envelope that holds what happened, opened by the player. */
 function PickShuffle({
   pick,
   onDone,
@@ -500,23 +541,17 @@ function PickShuffle({
   onStop?: () => void
 }) {
   const { event, option, record } = pick
-  const targetIndex = record.outcomeIndex ?? 0
-  const outcomes = useMemo(
-    () =>
-      option.outcomes.map((outcome, index) => ({
-        tone: outcome.tone,
-        label: outcome.tone === 'up' ? '잘 풀렸어요' : '꼬였어요',
-        // The drawn one reads as it happened; the others only flash by.
-        text: index === targetIndex ? record.description : outcome.text.replace('{subject}', '한 과목'),
-      })),
-    [option, record, targetIndex],
-  )
+  const drawn = option.outcomes[record.outcomeIndex ?? 0]
+  const totalWeight = option.outcomes.reduce((sum, outcome) => sum + outcome.weight, 0)
   return (
-    <OutcomeShuffle
+    <EnvelopeReveal
       title={`${option.label}, 어떻게 될까?`}
       caption={event.title}
-      outcomes={outcomes}
-      targetIndex={targetIndex}
+      tone={record.tone}
+      label={record.tone === 'up' ? '잘 풀렸어요' : '꼬였어요'}
+      text={record.description}
+      // Only a lucky draw against the odds is thrown with full confetti.
+      big={record.tone === 'up' && drawn !== undefined && drawn.weight / totalWeight <= 0.4}
       onDone={onDone}
       onStop={onStop}
     />
@@ -559,24 +594,27 @@ function SuspenseCard({ kind, onDone }: { kind: 'csat' | 'admission'; onDone: ()
   )
 }
 
-/** The CSAT-day conditions in flip order: good and bad days take turns so the flips read as a swing. */
-const CONDITION_PANELS: readonly (ShuffleOutcome & { id: DayRollId })[] = [
-  { id: 'good', tone: 'up', label: '컨디션 좋은 날', text: '머리가 맑아요. 아는 문제는 다 맞힐 것 같아요.' },
-  { id: 'bad', tone: 'down', label: '컨디션 나쁜 날', text: '긴장해서 손이 떨려요. 실력만큼 풀기 어려울 것 같아요.' },
-  { id: 'jackpot', tone: 'up', label: '모든 게 잘 풀린 날', text: '찍은 문제까지 맞는 날이에요. 대박이에요!' },
-  { id: 'normal', tone: 'plain', label: '평소 같은 하루', text: '연습한 그대로 풀었어요. 실력만큼 나올 거예요.' },
-  { id: 'bust', tone: 'down', label: '모든 게 꼬인 날', text: '첫 교시부터 꼬였어요. 대폭망이에요...' },
-]
+/** What each CSAT-day condition reads as once its envelope is open. */
+const CONDITION_PANELS: Record<DayRollId, { tone: RevealTone; label: string; text: string }> = {
+  good: { tone: 'up', label: '컨디션 좋은 날', text: '머리가 맑아요. 아는 문제는 다 맞힐 것 같아요.' },
+  bad: { tone: 'down', label: '컨디션 나쁜 날', text: '긴장해서 손이 떨려요. 실력만큼 풀기 어려울 것 같아요.' },
+  jackpot: { tone: 'up', label: '모든 게 잘 풀린 날', text: '찍은 문제까지 맞는 날이에요. 대박이에요!' },
+  normal: { tone: 'plain', label: '평소 같은 하루', text: '연습한 그대로 풀었어요. 실력만큼 나올 거예요.' },
+  bust: { tone: 'down', label: '모든 게 꼬인 날', text: '첫 교시부터 꼬였어요. 대폭망이에요...' },
+}
 
-/** The shared condition of the CSAT day: the panels flip by, then stop on the one drawn. */
+/** The shared condition of the CSAT day, in an envelope the player opens. */
 function CsatConditionShuffle({ result, onDone }: { result: ExamResult; onDone: () => void }) {
-  const roll = conditionRollOf(result)
+  const roll = conditionRollOf(result) ?? 'normal'
+  const panel = CONDITION_PANELS[roll]
   return (
-    <OutcomeShuffle
+    <EnvelopeReveal
       title="수능 날의 컨디션은?"
       caption="이날 하루가 모든 과목에 영향을 줘요."
-      outcomes={[...CONDITION_PANELS]}
-      targetIndex={Math.max(0, CONDITION_PANELS.findIndex((panel) => panel.id === roll))}
+      tone={panel.tone}
+      label={panel.label}
+      text={panel.text}
+      big={roll === 'jackpot'}
       continueLabel="채점 결과 기다리기"
       onDone={onDone}
     />
@@ -634,59 +672,6 @@ function ApplicationPicker({
       >
         {complete ? '원서 접수하기' : '가·나·다군을 모두 골라 주세요'}
       </Button>
-    </section>
-  )
-}
-
-function AdmissionResults({
-  state,
-  onEnroll,
-  onRetake,
-}: {
-  state: CareerState
-  onEnroll: (tierId: UniversityTierId | null) => void
-  onRetake: () => void
-}) {
-  const record = state.admissions.at(-1)
-  if (!record) return null
-  const accepted = [...new Set(record.applications.filter((item) => item.accepted).map((item) => item.tierId))]
-  const major = MAJOR_FIELDS[state.profile.track]
-
-  return (
-    <section className="exam-career-section exam-career-electives" aria-labelledby="exam-career-admission-title">
-      <h2 id="exam-career-admission-title">
-        {accepted.length > 0 ? '합격 발표가 났어요!' : '아쉽게도 모두 불합격이에요'}
-      </h2>
-      <ul className="exam-career-admissions">
-        {record.applications.map((item) => (
-          <li key={item.group} className={item.accepted ? 'is-accepted' : 'is-rejected'}>
-            <span className="exam-career-admissions__group">{item.group}</span>
-            <span>
-              {universityLabel(item.tierId)}
-              <small>{chanceLabel(item.chance).label} 지원</small>
-            </span>
-            <strong>
-              {item.accepted ? <Check size={16} aria-hidden /> : <X size={16} aria-hidden />}
-              {item.accepted ? '합격' : '불합격'}
-            </strong>
-          </li>
-        ))}
-      </ul>
-      <div className="exam-career-actions">
-        {accepted.map((tierId) => (
-          <Button key={tierId} variant="brand" fullWidth onClick={() => onEnroll(tierId)}>
-            {universityLabel(tierId)} {major} 진학하기
-          </Button>
-        ))}
-        <Button variant="secondary" fullWidth leadingIcon={<RotateCcw size={18} aria-hidden />} onClick={onRetake}>
-          {attemptLabel(state.attempt + 1)} 도전하기
-        </Button>
-        {accepted.length === 0 && (
-          <Button variant="tertiary" fullWidth onClick={() => onEnroll(null)}>
-            진학하지 않고 마무리하기
-          </Button>
-        )}
-      </div>
     </section>
   )
 }
@@ -981,8 +966,10 @@ export function ExamCareerPlayPage() {
           {suspense === 'admission' && <SuspenseCard kind="admission" onDone={endSuspense} />}
 
           {state.status === 'admission' && !suspense && (
-            <AdmissionResults
-              state={state}
+            <AdmissionReveal
+              record={state.admissions.at(-1)!}
+              major={MAJOR_FIELDS[state.profile.track]}
+              attempt={state.attempt}
               onEnroll={(tierId) => commit(enroll(state, tierId))}
               onRetake={() => commit(decide(state, 'retake'))}
             />
