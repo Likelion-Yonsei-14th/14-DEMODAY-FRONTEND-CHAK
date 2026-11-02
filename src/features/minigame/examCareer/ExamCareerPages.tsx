@@ -69,6 +69,7 @@ import {
 import { createCareerSeed } from './examCareerRandom'
 import { EXAM_CAREER_PATH, EXAM_CAREER_PLAY_PATH, examCareerResultPath } from './examCareerRoutes'
 import { parseShareCode, shareCodeOf, type SharedCareer } from './examCareerShare'
+import { RELEASE_NOTES } from './examCareerReleaseNotes'
 import { careerTitleOf } from './examCareerTitle'
 import { destinationText, downloadBlob, renderShareImage } from './examCareerShareImage'
 import { ExamCareerChart } from './ExamCareerChart'
@@ -259,9 +260,33 @@ export function ExamCareerIntroPage() {
           </Button>
         </div>
 
+        <ReleaseNotes />
+
         <p className="exam-career-disclaimer">{DISCLAIMER}</p>
       </div>
     </AppShell>
+  )
+}
+
+/** What changed in the game, folded at the bottom of the start screen. */
+function ReleaseNotes() {
+  return (
+    <Collapsible title={`릴리즈 노트 · v${RELEASE_NOTES[0]!.version}`}>
+      <ol className="exam-career-releases">
+        {RELEASE_NOTES.map((note) => (
+          <li key={note.version}>
+            <h3>
+              v{note.version} <time dateTime={note.date}>{note.date.replaceAll('-', '.')}</time>
+            </h3>
+            <ul>
+              {note.changes.map((change) => (
+                <li key={change}>{change}</li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ol>
+    </Collapsible>
   )
 }
 
