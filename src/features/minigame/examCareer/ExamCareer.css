@@ -925,3 +925,33 @@
     animation: none;
   }
 }
+
+/* A title earned at the end: a brass medal on the paper background. */
+.exam-career-title {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 20px 18px;
+  border: 2px solid #b98b56;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #fffdf6, #f6ecd5);
+  text-align: center;
+}
+.exam-career-title__kicker {
+  color: #8f6636;
+  font-size: 13px;
+  font-weight: 700;
+}
+.exam-career-title__name {
+  color: #2f5b48;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+.exam-career-title p {
+  margin: 0;
+  color: #5b5348;
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: keep-all;
+}
