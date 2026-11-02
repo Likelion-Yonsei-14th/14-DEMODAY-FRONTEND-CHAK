@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   ArrowLeft,
   Check,
@@ -42,6 +42,8 @@ import {
   acknowledgeNotice,
   chooseEventOption,
   choiceEventBefore,
+  commonConditionOdds,
+  conditionRollOf,
   clearCareer,
   createCareer,
   decide,
@@ -57,6 +59,7 @@ import {
   summarize,
   universityLabel,
   type CareerEventRecord,
+  type AdmissionRecord,
   type CareerState,
   type ElectiveChoicePoint,
   type ExamResult,
@@ -68,6 +71,7 @@ import { EXAM_CAREER_PATH, EXAM_CAREER_PLAY_PATH, examCareerResultPath } from '.
 import { parseShareCode, shareCodeOf, type SharedCareer } from './examCareerShare'
 import { destinationText, downloadBlob, renderShareImage } from './examCareerShareImage'
 import { ExamCareerChart } from './ExamCareerChart'
+import { ChanceWheel, type WheelSegment } from './ChanceWheel'
 import './ExamCareer.css'
 
 /** Where "back to the service" goes: the entry route picks /home or /start. */
@@ -479,6 +483,74 @@ function SuspenseCard({ kind, onDone }: { kind: 'csat' | 'admission'; onDone: ()
   )
 }
 
+/** Slice colours follow the game's palette: paper for a normal day, chalkboard green and brass for good ones, brick and ember for bad ones. */
+const CONDITION_LOOK: Record<string, Pick<WheelSegment, 'tone' | 'color' | 'glyph'>> = {
+  normal: { tone: 'plain', color: '#e9dec6' },
+  good: { tone: 'up', color: '#3f8f6a', glyph: '▲' },
+  jackpot: { tone: 'up', color: '#e0a21a', glyph: '★' },
+  bad: { tone: 'down', color: '#e07a3a', glyph: '▼' },
+  bust: { tone: 'down', color: '#a8322a', glyph: '✕' },
+}
+const CONDITION_RESULT: Record<string, string> = {
+  jackpot: '모든 게 잘 풀린 날! 대박이에요',
+  good: '컨디션이 좋은 날이에요',
+  normal: '평소 같은 하루예요',
+  bad: '컨디션이 좋지 않은 날이에요',
+  bust: '모든 게 꼬인 날... 대폭망이에요',
+}
+
+/** The roulette for the shared condition of the CSAT day; the slices are the student's real odds. */
+function CsatConditionWheel({ result, luck, onDone }: { result: ExamResult; luck: number; onDone: () => void }) {
+  const segments = useMemo<WheelSegment[]>(
+    () =>
+      commonConditionOdds(luck).map((odd) => ({
+        id: odd.id,
+        label: odd.label,
+        weight: odd.weight,
+        ...(CONDITION_LOOK[odd.id] ?? CONDITION_LOOK.normal!),
+      })),
+    [luck],
+  )
+  return (
+    <ChanceWheel
+      title="수능 날의 컨디션은?"
+      caption="이날 하루가 모든 과목에 영향을 줘요. 칸의 크기가 실제 확률이에요."
+      segments={segments}
+      targetId={conditionRollOf(result)}
+      seedKey={`${result.examId}:condition`}
+      resultText={(segment) => CONDITION_RESULT[segment.id] ?? segment.label}
+      continueLabel="성적표 보기"
+      onDone={onDone}
+    />
+  )
+}
+
+/** One roulette per 가·나·다군 application, each landing on what the draw already decided. */
+function AdmissionWheels({ record, seed, onDone }: { record: AdmissionRecord; seed: string; onDone: () => void }) {
+  const [index, setIndex] = useState(0)
+  const application = record.applications[index]
+  if (!application) return null
+  const last = index === record.applications.length - 1
+  const segments: WheelSegment[] = [
+    { id: 'pass', label: '합격', weight: application.chance, tone: 'up', color: '#3f8f6a', glyph: '○' },
+    { id: 'fail', label: '불합격', weight: Math.max(0.01, 1 - application.chance), tone: 'down', color: '#d9a58f', glyph: '✕' },
+  ]
+  return (
+    <ChanceWheel
+      key={application.group}
+      title={`${application.group} · ${universityLabel(application.tierId)}`}
+      caption={`${chanceLabel(application.chance).label} 지원이에요. 칸의 크기가 합격 확률이에요.`}
+      segments={segments}
+      targetId={application.accepted ? 'pass' : 'fail'}
+      seedKey={`${seed}:${record.attempt}:${application.group}`}
+      resultText={(segment) => (segment.id === 'pass' ? '합격이에요!' : '아쉽게 불합격이에요')}
+      continueLabel={last ? '결과 보기' : '다음 군 보기'}
+      onDone={() => (last ? onDone() : setIndex(index + 1))}
+      onSkipAll={last ? undefined : onDone}
+    />
+  )
+}
+
 function latestCsat(state: CareerState) {
   return [...state.history].reverse().find((result) => result.kind === 'csat' && result.attempt === state.attempt)
 }
@@ -672,8 +744,13 @@ export function ExamCareerPlayPage() {
   const navigate = useNavigate()
   const [saved, setSaved] = useState<SavedCareer | null>(loadCareer)
   /** UI only: the wait before a CSAT score or admission results. Not saved. */
-  const [suspense, setSuspense] = useState<'csat' | 'admission' | null>(null)
+  const [suspense, setSuspense] = useState<'csat' | 'csat-wheel' | 'admission' | 'admission-wheel' | null>(null)
   const endSuspense = useCallback(() => setSuspense(null), [])
+  const spinWheel = useCallback(
+    (kind: 'csat' | 'admission') => setSuspense(kind === 'csat' ? 'csat-wheel' : 'admission-wheel'),
+    [],
+  )
+  const admissionWait = suspense === 'admission' || suspense === 'admission-wheel'
   /** UI only: an outcome shown right away (스터디카페), before its exam runs. */
   const [revealed, setRevealed] = useState<CareerEventRecord | null>(null)
 
@@ -817,7 +894,10 @@ export function ExamCareerPlayPage() {
             />
           )}
 
-          {suspense === 'admission' && <SuspenseCard kind="admission" onDone={endSuspense} />}
+          {suspense === 'admission' && <SuspenseCard kind="admission" onDone={() => spinWheel('admission')} />}
+          {suspense === 'admission-wheel' && state.admissions.at(-1) && (
+            <AdmissionWheels record={state.admissions.at(-1)!} seed={state.seed} onDone={endSuspense} />
+          )}
 
           {state.status === 'admission' && !suspense && (
             <AdmissionResults
@@ -828,14 +908,16 @@ export function ExamCareerPlayPage() {
           )}
 
           {suspense === 'csat' ? (
-            <SuspenseCard kind="csat" onDone={endSuspense} />
+            <SuspenseCard kind="csat" onDone={() => spinWheel('csat')} />
+          ) : suspense === 'csat-wheel' && latest ? (
+            <CsatConditionWheel result={latest} luck={state.profile.luck} onDone={endSuspense} />
           ) : startingFresh ? (
             <UpcomingCard slot={upcoming!} electives={state.electives} />
           ) : (
             // While the admission results are on their way, the wait has the stage to itself.
             // Under the admission results the CSAT shows its grades only; its events were already read.
             latest &&
-            suspense !== 'admission' && (
+            !admissionWait && (
               <ExamCard
                 key={latest.examId}
                 result={latest}
