@@ -874,6 +874,30 @@ describe('sound', () => {
   })
 })
 
+describe('top right corner', () => {
+  it('has the sound switch and the dark/light switch in the app bar, and none between the score and the combo', () => {
+    renderPage()
+
+    const appBar = document.querySelector('.ds-app-bar') as HTMLElement
+    const stats = document.querySelector('.blast-stats') as HTMLElement
+    expect(within(appBar).getByRole('button', { name: '효과음 끄기' })).toBeInTheDocument()
+    expect(within(appBar).getByRole('button', { name: '라이트 모드로 바꾸기' })).toBeInTheDocument()
+    expect(within(stats).queryAllByRole('button')).toHaveLength(0)
+  })
+
+  it('shows a moon in the dark look and a sun in the light one', () => {
+    renderPage()
+    const trailing = document.querySelector('.ds-app-bar__side--trailing') as HTMLElement
+    expect(trailing.querySelector('svg.lucide-moon')).not.toBeNull()
+    expect(trailing.querySelector('svg.lucide-sun')).toBeNull()
+
+    fireEvent.click(within(trailing).getByRole('button', { name: '라이트 모드로 바꾸기' }))
+
+    expect(trailing.querySelector('svg.lucide-sun')).not.toBeNull()
+    expect(trailing.querySelector('svg.lucide-moon')).toBeNull()
+  })
+})
+
 describe('looks', () => {
   it('starts as the night desk, dark all the way up to the app bar', () => {
     renderPage()
@@ -885,11 +909,11 @@ describe('looks', () => {
   it('switches to the cream desk with the button, and remembers it', () => {
     const first = renderPage()
 
-    fireEvent.click(screen.getByRole('button', { name: /화면 스타일 바꾸기/ }))
+    fireEvent.click(screen.getByRole('button', { name: /(라이트|다크) 모드로 바꾸기/ }))
 
     expect(document.querySelector('.blast-page')).toHaveAttribute('data-look', 'objects')
     expect(document.querySelector('.app-shell')).toHaveClass('blast-look-objects')
-    expect(screen.getByRole('button', { name: '화면 스타일 바꾸기, 지금은 실물 문구' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '다크 모드로 바꾸기' })).toBeInTheDocument()
     first.unmount()
 
     renderPage()
