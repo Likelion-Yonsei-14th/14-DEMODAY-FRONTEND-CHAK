@@ -238,12 +238,15 @@ describe('exam career mini game', () => {
 
     finishSuspense()
     expect(screen.queryByRole('status', { name: '수능 채점 중' })).not.toBeInTheDocument()
-    // The condition roulette comes before the grades; the real odds are its slices.
-    const wheel = screen.getByRole('status', { name: '수능 날의 컨디션은?' })
-    expect(within(wheel).getAllByRole('listitem')).toHaveLength(5)
+    // The condition panels flip by before the grades and stop on the day that was drawn.
+    const condition = screen.getByRole('status', { name: '수능 날의 컨디션은?' })
     expect(screen.queryByRole('heading', { name: '수능' })).not.toBeInTheDocument()
-    fireEvent.click(within(wheel).getByRole('button', { name: '건너뛰기' }))
-    fireEvent.click(within(wheel).getByRole('button', { name: '성적표 보기' }))
+    expect(within(condition).queryByRole('button', { name: '성적표 보기' })).not.toBeInTheDocument()
+    fireEvent.click(within(condition).getByRole('button', { name: '건너뛰기' }))
+    const drawnDay = loadCareer()!.state.history.at(-1)!.conditionRoll
+    const dayLabel = { normal: '평소 같은 하루', good: '컨디션 좋은 날', bad: '컨디션 나쁜 날', jackpot: '모든 게 잘 풀린 날', bust: '모든 게 꼬인 날' }
+    expect(within(condition).getByText(dayLabel[drawnDay!])).toBeInTheDocument()
+    fireEvent.click(within(condition).getByRole('button', { name: '성적표 보기' }))
     expect(screen.getByRole('heading', { name: '수능' })).toBeInTheDocument()
     expect(screen.getByText(/^수능 D-30 · /)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '대학 지원하기' })).toBeInTheDocument()

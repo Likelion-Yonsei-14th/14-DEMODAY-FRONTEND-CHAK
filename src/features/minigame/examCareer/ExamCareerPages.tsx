@@ -23,6 +23,7 @@ import {
   attemptLabel,
   type ChoiceEvent,
   type ChoiceOption,
+  type DayRollId,
   ELECTIVE_OPTIONS,
   MAJOR_FIELDS,
   STUDENT_NAME,
@@ -43,7 +44,6 @@ import {
   acknowledgeNotice,
   chooseEventOption,
   choiceEventBefore,
-  commonConditionOdds,
   conditionRollOf,
   clearCareer,
   createCareer,
@@ -72,8 +72,7 @@ import { parseShareCode, shareCodeOf, type SharedCareer } from './examCareerShar
 import { careerTitleOf } from './examCareerTitle'
 import { destinationText, downloadBlob, renderShareImage } from './examCareerShareImage'
 import { ExamCareerChart } from './ExamCareerChart'
-import { ChanceWheel, type WheelSegment } from './ChanceWheel'
-import { OutcomeShuffle } from './OutcomeShuffle'
+import { OutcomeShuffle, type ShuffleOutcome } from './OutcomeShuffle'
 import './ExamCareer.css'
 
 /** Where "back to the service" goes: the entry route picks /home or /start. */
@@ -463,6 +462,7 @@ function PickShuffle({
     () =>
       option.outcomes.map((outcome, index) => ({
         tone: outcome.tone,
+        label: outcome.tone === 'up' ? '잘 풀렸어요' : '꼬였어요',
         // The drawn one reads as it happened; the others only flash by.
         text: index === targetIndex ? record.description : outcome.text.replace('{subject}', '한 과목'),
       })),
@@ -515,42 +515,24 @@ function SuspenseCard({ kind, onDone }: { kind: 'csat' | 'admission'; onDone: ()
   )
 }
 
-/** Slice colours follow the game's palette: paper for a normal day, chalkboard green and brass for good ones, brick and ember for bad ones. */
-const CONDITION_LOOK: Record<string, Pick<WheelSegment, 'tone' | 'color' | 'glyph'>> = {
-  normal: { tone: 'plain', color: '#e9dec6' },
-  good: { tone: 'up', color: '#3f8f6a', glyph: '▲' },
-  jackpot: { tone: 'up', color: '#e0a21a', glyph: '★' },
-  bad: { tone: 'down', color: '#e07a3a', glyph: '▼' },
-  bust: { tone: 'down', color: '#a8322a', glyph: '✕' },
-}
-const CONDITION_RESULT: Record<string, string> = {
-  jackpot: '모든 게 잘 풀린 날! 대박이에요',
-  good: '컨디션이 좋은 날이에요',
-  normal: '평소 같은 하루예요',
-  bad: '컨디션이 좋지 않은 날이에요',
-  bust: '모든 게 꼬인 날... 대폭망이에요',
-}
+/** The CSAT-day conditions in flip order: good and bad days take turns so the flips read as a swing. */
+const CONDITION_PANELS: readonly (ShuffleOutcome & { id: DayRollId })[] = [
+  { id: 'good', tone: 'up', label: '컨디션 좋은 날', text: '머리가 맑아요. 아는 문제는 다 맞힐 것 같아요.' },
+  { id: 'bad', tone: 'down', label: '컨디션 나쁜 날', text: '긴장해서 손이 떨려요. 실력만큼 풀기 어려울 것 같아요.' },
+  { id: 'jackpot', tone: 'up', label: '모든 게 잘 풀린 날', text: '찍은 문제까지 맞는 날이에요. 대박이에요!' },
+  { id: 'normal', tone: 'plain', label: '평소 같은 하루', text: '연습한 그대로 풀었어요. 실력만큼 나올 거예요.' },
+  { id: 'bust', tone: 'down', label: '모든 게 꼬인 날', text: '첫 교시부터 꼬였어요. 대폭망이에요...' },
+]
 
-/** The roulette for the shared condition of the CSAT day; the slices are the student's real odds. */
-function CsatConditionWheel({ result, luck, onDone }: { result: ExamResult; luck: number; onDone: () => void }) {
-  const segments = useMemo<WheelSegment[]>(
-    () =>
-      commonConditionOdds(luck).map((odd) => ({
-        id: odd.id,
-        label: odd.label,
-        weight: odd.weight,
-        ...(CONDITION_LOOK[odd.id] ?? CONDITION_LOOK.normal!),
-      })),
-    [luck],
-  )
+/** The shared condition of the CSAT day: the panels flip by, then stop on the one drawn. */
+function CsatConditionShuffle({ result, onDone }: { result: ExamResult; onDone: () => void }) {
+  const roll = conditionRollOf(result)
   return (
-    <ChanceWheel
+    <OutcomeShuffle
       title="수능 날의 컨디션은?"
-      caption="이날 하루가 모든 과목에 영향을 줘요. 칸의 크기가 실제 확률이에요."
-      segments={segments}
-      targetId={conditionRollOf(result)}
-      seedKey={`${result.examId}:condition`}
-      resultText={(segment) => CONDITION_RESULT[segment.id] ?? segment.label}
+      caption="이날 하루가 모든 과목에 영향을 줘요."
+      outcomes={[...CONDITION_PANELS]}
+      targetIndex={Math.max(0, CONDITION_PANELS.findIndex((panel) => panel.id === roll))}
       continueLabel="성적표 보기"
       onDone={onDone}
     />
@@ -750,9 +732,9 @@ export function ExamCareerPlayPage() {
   const navigate = useNavigate()
   const [saved, setSaved] = useState<SavedCareer | null>(loadCareer)
   /** UI only: the wait before a CSAT score or admission results. Not saved. */
-  const [suspense, setSuspense] = useState<'csat' | 'csat-wheel' | 'admission' | null>(null)
+  const [suspense, setSuspense] = useState<'csat' | 'csat-condition' | 'admission' | null>(null)
   const endSuspense = useCallback(() => setSuspense(null), [])
-  const spinCsatWheel = useCallback(() => setSuspense('csat-wheel'), [])
+  const showCsatCondition = useCallback(() => setSuspense('csat-condition'), [])
   /** UI only: an outcome shown right away (스터디카페), before its exam runs. */
   const [revealed, setRevealed] = useState<CareerEventRecord | null>(null)
   /** UI only: a risky pick whose outcome panels flip by before its exam runs. */
@@ -941,9 +923,9 @@ export function ExamCareerPlayPage() {
           )}
 
           {suspense === 'csat' ? (
-            <SuspenseCard kind="csat" onDone={spinCsatWheel} />
-          ) : suspense === 'csat-wheel' && latest ? (
-            <CsatConditionWheel result={latest} luck={state.profile.luck} onDone={endSuspense} />
+            <SuspenseCard kind="csat" onDone={showCsatCondition} />
+          ) : suspense === 'csat-condition' && latest ? (
+            <CsatConditionShuffle result={latest} onDone={endSuspense} />
           ) : startingFresh ? (
             <UpcomingCard slot={upcoming!} electives={state.electives} />
           ) : (

@@ -662,13 +662,6 @@ function tiltedRolls(rolls: readonly DayRoll[], luck: number, swing = 1, bustRis
   })
 }
 
-export type ConditionOdd = { id: DayRollId; label: string; weight: number }
-
-/** The odds of each shared exam-day condition for this student, as the roulette draws them. */
-export function commonConditionOdds(luck: number): ConditionOdd[] {
-  return tiltedRolls(COMMON_DAY_ROLLS, luck).map(({ id, label, weight }) => ({ id, label, weight }))
-}
-
 /** The shared condition an exam was sat under (older saves only kept the notable ones). */
 export function conditionRollOf(result: ExamResult): DayRollId {
   if (result.conditionRoll) return result.conditionRoll
