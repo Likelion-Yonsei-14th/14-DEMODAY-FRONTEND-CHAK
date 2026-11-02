@@ -50,6 +50,7 @@ const row = (r: number, skip: number[] = []) =>
   Array.from({ length: SIZE }, (_, c) => [r, c] as [number, number]).filter(([, c]) => !skip.includes(c))
 const state = (overrides: Partial<GameState>): GameState => ({
   board: boardOf([]),
+  placed: [],
   hand: [piece(1, ['#']), piece(2, ['##']), piece(3, ['###'])],
   score: 0,
   combo: 0,
@@ -679,23 +680,57 @@ describe('stationery on the desk', () => {
     expect(screen.getByTestId('blast-piece-2')).toHaveAccessibleName('블록 3, 포스트잇 4칸')
   })
 
-  it('draws a placed piece as its object, joined along the sides its cells touch', () => {
+  it('draws each waiting piece as its object', () => {
+    engine.next = state({ hand: [piece(1, ['#'], 1), piece(2, ['###'], 3), piece(3, ['##', '##'], 6)] })
+    renderPage()
+
+    expect(screen.getByTestId('blast-piece-0').querySelector('svg')).toHaveAttribute('data-kind', 'eraser')
+    expect(screen.getByTestId('blast-piece-1').querySelector('svg')).toHaveAttribute('data-kind', 'highlighter')
+    expect(screen.getByTestId('blast-piece-2').querySelector('svg')).toHaveAttribute('data-kind', 'sticky')
+  })
+
+  it('draws a placed piece as one object over all its cells', () => {
     engine.next = state({ hand: [piece(1, ['###'], 3), piece(2, ['#'], 1), null] })
     renderPage()
 
     tapPiece(0)
     fireEvent.click(cell(4, 4))
 
-    expect(cell(4, 3).className).toContain('blast-item--highlighter')
-    expect(cell(4, 3).className).toContain('j-r')
-    expect(cell(4, 3).className).not.toContain('j-l')
-    expect(cell(4, 4).className).toContain('j-l')
-    expect(cell(4, 4).className).toContain('j-r')
-    expect(cell(4, 5).className).toContain('j-l')
-    expect(cell(4, 5).className).not.toContain('j-r')
+    const art = screen.getByTestId('blast-art-highlighter')
+    expect(art.tagName.toLowerCase()).toBe('svg')
+    expect(art.getAttribute('style')).toContain('--row: 4')
+    expect(art.getAttribute('style')).toContain('--col: 3')
+    expect(art.getAttribute('style')).toContain('--cols: 3')
+    expect(art.getAttribute('style')).toContain('--rows: 1')
+    expect(document.querySelectorAll('.blast-art__piece')).toHaveLength(1)
   })
 
-  it('shows the landing spot while dragging in the look of the piece', () => {
+  it('keeps the object when the cells are tapped through it', () => {
+    engine.next = state({ hand: [piece(1, ['##'], 2), piece(2, ['#'], 1), null] })
+    renderPage()
+    tapPiece(0)
+    fireEvent.click(cell(2, 2))
+
+    expect(cell(2, 1)).toHaveAccessibleName(/채워짐/)
+    expect(screen.getByTestId('blast-art-clip')).toBeInTheDocument()
+  })
+
+  it('draws pieces that are still on the desk and none that were cleared away', () => {
+    engine.next = state({
+      board: boardOf([...row(0, [0]), [7, 7]]),
+      hand: [piece(1, ['#'], 1), piece(2, ['##'], 2), null],
+    })
+    renderPage()
+    tapPiece(1)
+    fireEvent.click(cell(5, 5))
+    tapPiece(0)
+    fireEvent.click(cell(0, 0))
+
+    expect(screen.getByTestId('blast-art-clip')).toBeInTheDocument()
+    expect(screen.queryByTestId('blast-art-eraser')).toBeNull()
+  })
+
+  it('shows the landing spot while dragging as the object, not as colored cells', () => {
     engine.next = state({ hand: [piece(1, ['##'], 2), null, null] })
     renderPage()
     sizeBoard()
@@ -703,7 +738,18 @@ describe('stationery on the desk', () => {
     pointer(screen.getByTestId('blast-piece-0'), 'pointerdown', 200, 500)
     pointer(window, 'pointermove', 100 + 40, 3 * 40 + 40 + 56)
 
-    expect(document.querySelectorAll('.blast-cell--ghost.blast-item--chocolate')).toHaveLength(2)
+    expect(screen.getByTestId('blast-art-ghost')).toHaveAttribute('data-kind', 'clip')
+  })
+
+  it('shows no landing object while the piece is over a taken cell', () => {
+    engine.next = state({ board: boardOf([[5, 3]]) })
+    renderPage()
+    sizeBoard()
+
+    pointer(screen.getByTestId('blast-piece-0'), 'pointerdown', 200, 500)
+    pointer(window, 'pointermove', 3 * 40 + 20, 5 * 40 + 40 + 56)
+
+    expect(screen.queryByTestId('blast-art-ghost')).toBeNull()
   })
 })
 

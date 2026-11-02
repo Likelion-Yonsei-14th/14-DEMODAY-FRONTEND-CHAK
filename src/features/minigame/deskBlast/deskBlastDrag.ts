@@ -57,3 +57,12 @@ export function useExpiring<T extends { key: number }>(ttlMs: number) {
 
   return [items, add] as const
 }
+
+/** Small pieces are shown larger, so every object can be told apart down in the tray. */
+export function trayCellSize(piece: Piece): number {
+  const longest = Math.max(piece.rows, piece.cols)
+  if (longest <= 2) return 30
+  if (longest === 3) return 27
+  if (longest === 4) return 24
+  return 20
+}

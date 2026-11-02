@@ -5,7 +5,7 @@
  */
 
 import { dealHand } from './deskBlastDealer'
-import { BOARD_SIZE, HAND_SIZE, encodeCell, type Board, type Cell, type Piece, type Rng } from './deskBlastShapes'
+import { BOARD_SIZE, HAND_SIZE, cellPieceId, encodeCell, type Board, type Cell, type Piece, type Rng } from './deskBlastShapes'
 
 export { BOARD_SIZE, HAND_SIZE }
 export type { Board, Cell, Piece, Rng }
@@ -20,8 +20,18 @@ export const COMBO_GRACE = 2
 
 export type GameStatus = 'playing' | 'over'
 
+/** A piece that has been put on the desk, with where its cells went. Kept so it can be drawn whole. */
+export type PlacedPiece = {
+  id: number
+  kind: number
+  /** The cells it covered when it was put down; some may have been cleared since. */
+  cells: readonly (readonly [number, number])[]
+}
+
 export type GameState = {
   board: Board
+  /** The pieces on the desk that still have a cell left, oldest first. */
+  placed: readonly PlacedPiece[]
   /** A used slot is null; a new hand of three is dealt once all three are used. */
   hand: readonly (Piece | null)[]
   score: number
@@ -90,6 +100,7 @@ export function createGame(rng: Rng = Math.random): GameState {
   const board = emptyBoard()
   return {
     board,
+    placed: [],
     hand: dealHand(board, rng, 1),
     score: 0,
     combo: 0,
@@ -181,9 +192,18 @@ export function placePiece(
     nextPieceId += HAND_SIZE
   }
 
+  // Only pieces that still have a cell on the desk are kept, and the new one joins them.
+  const alive = new Set<number>()
+  for (const line of next) for (const cell of line) if (cell !== 0) alive.add(cellPieceId(cell))
+  const placed = [
+    ...state.placed,
+    { id: piece.id, kind: piece.kind, cells: piece.shape.map(([dr, dc]) => [row + dr, col + dc] as const) },
+  ].filter((entry) => alive.has(entry.id))
+
   const over = !handCanMove(next, hand)
   const after: GameState = {
     board: next,
+    placed,
     hand,
     score: state.score + gained,
     combo,
