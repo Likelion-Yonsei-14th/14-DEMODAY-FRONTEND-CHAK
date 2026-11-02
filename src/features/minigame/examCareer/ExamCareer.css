@@ -897,8 +897,8 @@
   word-break: keep-all;
 }
 
-/* Release notes, folded at the bottom of the start screen */
-.exam-career-releases {
+/* Patch notes, folded at the bottom of the start screen */
+.exam-career-patch-notes {
   display: grid;
   gap: var(--space-4);
   margin: var(--space-3) 0 0;
@@ -906,14 +906,14 @@
   list-style: none;
 }
 
-.exam-career-releases h3 {
+.exam-career-patch-notes h3 {
   margin: 0 0 var(--space-1);
   font-size: var(--type-body-m-size);
   font-weight: 800;
 }
 
 
-.exam-career-releases ul {
+.exam-career-patch-notes ul {
   display: grid;
   gap: 2px;
   margin: 0;
