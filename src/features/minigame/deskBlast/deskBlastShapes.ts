@@ -2,7 +2,7 @@
  * The pieces of 수능 블라스트. Each shape is one piece of desk stationery: an
  * eraser, a paper clip, a highlighter, a pencil and a ruler for the straight ones,
  * a sticky note, an exam ticket and a workbook for the rectangles, and a set
- * square, an L-square, scissors, a stamp and a folded note for the bent ones.
+ * square, an L-square, a tumbler, a folded note and a desk lamp for the bent ones.
  * Nothing here depends on the board, so the dealer and the engine can both use it.
  */
 
@@ -30,14 +30,14 @@ export const ITEMS: readonly Item[] = [
   { kind: 8, id: 'workbook', name: '문제집' },
   { kind: 9, id: 'triangle', name: '삼각자' },
   { kind: 10, id: 'square', name: '곱자' },
-  { kind: 11, id: 'scissors', name: '가위' },
-  { kind: 12, id: 'stamp', name: '도장' },
-  { kind: 13, id: 'notefold', name: '접이 메모' },
+  { kind: 11, id: 'tumbler', name: '텀블러' },
+  { kind: 12, id: 'notefold', name: '접이 메모' },
+  { kind: 13, id: 'lamp', name: '스탠드' },
 ]
 
 /** The main color of each item, for the bits that are not drawn as the whole object (cleared pieces, the share card). */
 export const ITEM_COLORS: readonly string[] = [
-  '#3b63c9', '#aeb6c4', '#c4e03a', '#f6c93a', '#7ea6f0', '#ffd84a', '#f4efe3', '#e9503c', '#4ec9b8', '#8d97a8', '#e0525a', '#c2402f', '#a78bff',
+  '#3b63c9', '#aeb6c4', '#c4e03a', '#f6c93a', '#7ea6f0', '#ffd84a', '#f4efe3', '#e9503c', '#4ec9b8', '#8d97a8', '#e6dcc8', '#a78bff', '#34406b',
 ]
 
 export const itemColor = (kind: ItemKind): string => ITEM_COLORS[kind - 1] ?? ITEM_COLORS[0]!
@@ -65,12 +65,12 @@ export const CANONICAL: Readonly<Record<ItemKind, Canonical>> = {
   9: { width: 2, height: 2, cells: [[0, 0], [0, 1], [1, 0]] },
   // L-square: the corner top left, arms of three.
   10: { width: 3, height: 3, cells: [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0]] },
-  // Scissors: the blades up the left, the two finger rings along the bottom.
-  11: { width: 2, height: 3, cells: [[0, 0], [1, 0], [2, 0], [2, 1]] },
-  // Stamp: the grip up, the wide base below.
-  12: { width: 3, height: 2, cells: [[0, 1], [1, 0], [1, 1], [1, 2]] },
+  // Tumbler: standing up the left, the handle out to the right from the middle.
+  11: { width: 2, height: 3, cells: [[0, 0], [1, 0], [1, 1], [2, 0]] },
   // Folded note: a zigzag.
-  13: { width: 3, height: 2, cells: [[0, 1], [0, 2], [1, 0], [1, 1]] },
+  12: { width: 3, height: 2, cells: [[0, 1], [0, 2], [1, 0], [1, 1]] },
+  // Desk lamp: the pole up the left on its base, the shade hanging top right.
+  13: { width: 2, height: 3, cells: [[0, 0], [0, 1], [1, 0], [2, 0]] },
 }
 
 export const itemOf = (kind: ItemKind): Item => ITEMS[kind - 1] ?? ITEMS[0]!
@@ -111,21 +111,21 @@ const RAW: ReadonlyArray<{ kind: ItemKind; rows: readonly string[]; weight: numb
   { kind: 10, rows: ['..#', '..#', '###'], weight: 1 },
   { kind: 10, rows: ['###', '#..', '#..'], weight: 1 },
   { kind: 10, rows: ['###', '..#', '..#'], weight: 1 },
-  // Scissors: four cells, a long bent one.
-  { kind: 11, rows: ['#.', '#.', '##'], weight: 2 },
-  { kind: 11, rows: ['.#', '.#', '##'], weight: 2 },
-  { kind: 11, rows: ['##', '#.', '#.'], weight: 2 },
-  { kind: 11, rows: ['##', '.#', '.#'], weight: 2 },
-  // Stamp: a T.
-  { kind: 12, rows: ['###', '.#.'], weight: 2 },
-  { kind: 12, rows: ['.#.', '###'], weight: 2 },
-  { kind: 12, rows: ['#.', '##', '#.'], weight: 2 },
-  { kind: 12, rows: ['.#', '##', '.#'], weight: 2 },
+  // Tumbler: a T, the handle the cell that sticks out.
+  { kind: 11, rows: ['#.', '##', '#.'], weight: 2 },
+  { kind: 11, rows: ['.#', '##', '.#'], weight: 2 },
+  { kind: 11, rows: ['###', '.#.'], weight: 2 },
+  { kind: 11, rows: ['.#.', '###'], weight: 2 },
   // Folded note: S and Z.
-  { kind: 13, rows: ['.##', '##.'], weight: 2 },
-  { kind: 13, rows: ['##.', '.##'], weight: 2 },
-  { kind: 13, rows: ['#.', '##', '.#'], weight: 2 },
-  { kind: 13, rows: ['.#', '##', '#.'], weight: 2 },
+  { kind: 12, rows: ['.##', '##.'], weight: 2 },
+  { kind: 12, rows: ['##.', '.##'], weight: 2 },
+  { kind: 12, rows: ['#.', '##', '.#'], weight: 2 },
+  { kind: 12, rows: ['.#', '##', '#.'], weight: 2 },
+  // Desk lamp: an L of four.
+  { kind: 13, rows: ['##', '#.', '#.'], weight: 2 },
+  { kind: 13, rows: ['##', '.#', '.#'], weight: 2 },
+  { kind: 13, rows: ['#.', '#.', '##'], weight: 2 },
+  { kind: 13, rows: ['.#', '.#', '##'], weight: 2 },
 ]
 
 export const SHAPE_DEFS: readonly ShapeDef[] = RAW.map(({ kind, rows, weight }) => {
