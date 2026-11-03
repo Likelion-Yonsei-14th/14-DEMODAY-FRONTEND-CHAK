@@ -7,10 +7,22 @@
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(self)" },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(self)"
+        },
         {
           "key": "Content-Security-Policy",
           "value": "default-src 'self'; script-src 'self' https://js.tosspayments.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://hangeul.pstatic.net https://cdn.jsdelivr.net; font-src 'self' data: https://unpkg.com https://hangeul.pstatic.net https://cdn.jsdelivr.net; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://api.tosspayments.com https://*.amazonaws.com; frame-src https://*.tosspayments.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
@@ -23,15 +35,153 @@
       "source": "/api/:path*",
       "destination": "https://d1itub0wenvsst.cloudfront.net/api/:path*"
     },
-    { "source": "/minigame/exam-career/result/:path*", "destination": "/og/exam-career.html" },
-    { "source": "/minigame/d1-course/result/:path*", "destination": "/og/d1-course.html" },
-    { "source": "/minigame/study-type/result/:path*", "destination": "/og/study-type.html" },
-    { "source": "/minigame/guess-god/result/:path*", "destination": "/og/guess-god.html" },
-    { "source": "/promotion", "destination": "/og/promotion.html" },
-    { "source": "/about", "destination": "/about.html" },
-    { "source": "/desk/:path*", "destination": "/og/desk.html" },
-    { "source": "/prototype/claim", "destination": "/og/claim.html" },
-    { "source": "/prototype/classroom/:classroomId/join", "destination": "/og/classroom-join.html" },
+    {
+      "source": "/minigame/study-type/result/perfect-planner",
+      "destination": "/og/study-type-perfect-planner.html"
+    },
+    {
+      "source": "/minigame/study-type/result/routine-master",
+      "destination": "/og/study-type-routine-master.html"
+    },
+    {
+      "source": "/minigame/study-type/result/study-leader",
+      "destination": "/og/study-type-study-leader.html"
+    },
+    {
+      "source": "/minigame/study-type/result/challenge-collector",
+      "destination": "/og/study-type-challenge-collector.html"
+    },
+    {
+      "source": "/minigame/study-type/result/last-minute-awakener",
+      "destination": "/og/study-type-last-minute-awakener.html"
+    },
+    {
+      "source": "/minigame/study-type/result/easygoing-solo",
+      "destination": "/og/study-type-easygoing-solo.html"
+    },
+    {
+      "source": "/minigame/study-type/result/all-nighter-captain",
+      "destination": "/og/study-type-all-nighter-captain.html"
+    },
+    {
+      "source": "/minigame/study-type/result/cafe-first",
+      "destination": "/og/study-type-cafe-first.html"
+    },
+    {
+      "source": "/minigame/guess-god/result/0",
+      "destination": "/og/guess-god-0.html"
+    },
+    {
+      "source": "/minigame/guess-god/result/1",
+      "destination": "/og/guess-god-1.html"
+    },
+    {
+      "source": "/minigame/guess-god/result/2",
+      "destination": "/og/guess-god-2.html"
+    },
+    {
+      "source": "/minigame/guess-god/result/3",
+      "destination": "/og/guess-god-3.html"
+    },
+    {
+      "source": "/minigame/guess-god/result/4",
+      "destination": "/og/guess-god-4.html"
+    },
+    {
+      "source": "/minigame/guess-god/result/5",
+      "destination": "/og/guess-god-5.html"
+    },
+    {
+      "source": "/minigame/guess-god/result/6",
+      "destination": "/og/guess-god-6.html"
+    },
+    {
+      "source": "/minigame/guess-god/result/7",
+      "destination": "/og/guess-god-7.html"
+    },
+    {
+      "source": "/minigame/guess-god/result/8",
+      "destination": "/og/guess-god-8.html"
+    },
+    {
+      "source": "/minigame/guess-god/result/9",
+      "destination": "/og/guess-god-9.html"
+    },
+    {
+      "source": "/minigame/guess-god/result/10",
+      "destination": "/og/guess-god-10.html"
+    },
+    {
+      "source": "/minigame/desk-blast",
+      "destination": "/og/desk-blast.html"
+    },
+    {
+      "source": "/minigame/sneaky-phone",
+      "destination": "/og/sneaky-phone.html"
+    },
+    {
+      "source": "/minigame/study-type",
+      "destination": "/og/study-type-intro.html"
+    },
+    {
+      "source": "/minigame/exam-career",
+      "destination": "/og/exam-career-intro.html"
+    },
+    {
+      "source": "/minigame/d1-course",
+      "destination": "/og/d1-course-intro.html"
+    },
+    {
+      "source": "/minigame/guess-god",
+      "destination": "/og/guess-god-intro.html"
+    },
+    {
+      "source": "/minigame/exam-career/result/:path*",
+      "destination": "/og/exam-career.html"
+    },
+    {
+      "source": "/minigame/d1-course/result/:path*",
+      "destination": "/og/d1-course.html"
+    },
+    {
+      "source": "/minigame/study-type/result/:path*",
+      "destination": "/og/study-type.html"
+    },
+    {
+      "source": "/minigame/guess-god/result/:path*",
+      "destination": "/og/guess-god.html"
+    },
+    {
+      "source": "/promotion",
+      "destination": "/og/promotion.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/about.html"
+    },
+    {
+      "source": "/desk/:token/:rest*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(kakaotalk-scrap|facebookexternalhit|Twitterbot|Slackbot|Discordbot|TelegramBot|WhatsApp|LinkedInBot|Yeti|Googlebot|bingbot|Daum).*"
+        }
+      ],
+      "destination": "/api/og-desk?token=:token"
+    },
+    {
+      "source": "/desk/:path*",
+      "destination": "/og/desk.html"
+    },
+    {
+      "source": "/prototype/claim",
+      "destination": "/og/claim.html"
+    },
+    {
+      "source": "/prototype/classroom/:classroomId/join",
+      "destination": "/og/classroom-join.html"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
