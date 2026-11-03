@@ -156,6 +156,10 @@
       "destination": "/og/promotion.html"
     },
     {
+      "source": "/about",
+      "destination": "/about.html"
+    },
+    {
       "source": "/desk/:token/:rest*",
       "has": [
         {
