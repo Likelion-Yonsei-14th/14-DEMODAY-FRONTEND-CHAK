@@ -2,6 +2,9 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://www.chak.live/</loc><priority>1.0</priority></url>
   <url><loc>https://www.chak.live/about</loc><priority>0.8</priority></url>
+  <url><loc>https://www.chak.live/cheers</loc><priority>0.8</priority></url>
+  <url><loc>https://www.chak.live/cheers/day</loc><priority>0.7</priority></url>
+  <url><loc>https://www.chak.live/cheers/rolling-paper</loc><priority>0.7</priority></url>
   <url><loc>https://www.chak.live/minigame/study-type</loc><priority>0.7</priority></url>
   <url><loc>https://www.chak.live/minigame/exam-career</loc><priority>0.7</priority></url>
   <url><loc>https://www.chak.live/minigame/d1-course</loc><priority>0.7</priority></url>
