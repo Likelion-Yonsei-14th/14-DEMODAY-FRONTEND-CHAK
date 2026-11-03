@@ -6,6 +6,13 @@
  * prefers hands with only a few ways to place all three, so the player has to
  * use them well, without ever being dealt something that cannot be done.
  *
+ * On top of that, now and then it deals a **reward hand**: it plays the three
+ * pieces out on the current desk, looking for the way that clears the most
+ * lines at once and, when the desk is small enough, wipes it clean. How often
+ * that happens rises as the desk fills and as the player goes without a big
+ * clear, and falls as the score climbs, so the game builds up, pays off in a
+ * sweep, and gets harder.
+ *
  * Works on bit rows (one byte per row) instead of the board, so checking
  * thousands of placements is cheap.
  */
@@ -135,7 +142,11 @@ const TOTAL_ATTEMPTS_CROWDED = 40
 
 function sampleDef(rng: Rng, fill: number): ShapeDef {
   // The fuller the desk, the more small pieces come up, so there is something to work with.
-  const weight = (def: ShapeDef) => def.weight * (def.shape.length <= 3 ? 1 + fill * 2 : 1)
+  // An open desk gets big pieces, which fill it up and make the game tense; a crowded one gets small pieces to work with.
+  // Bars and rectangles pack into whole lines; zigzags and T-shapes leave holes, so they come less while the desk has room.
+  const packs = (def: ShapeDef) => (def.kind <= 8 ? 1.5 : def.kind >= 12 && fill < 0.5 ? 0.5 : 1)
+  const weight = (def: ShapeDef) =>
+    def.weight * packs(def) * (fill < 0.35 ? 1 + def.shape.length * 0.45 : def.shape.length <= 3 ? 1 + fill * 2 : 1)
   const total = SHAPE_DEFS.reduce((sum, def) => sum + weight(def), 0)
   let roll = rng() * total
   for (const def of SHAPE_DEFS) {
@@ -183,9 +194,161 @@ function choose(candidates: readonly Candidate[], fill: number, rng: Rng): Candi
   return clearing.length > 0 && rng() < 0.5 ? pickFrom(clearing) : pool[Math.floor(rng() * rng() * pool.length)]!
 }
 
-export function dealHand(board: Board, rng: Rng, firstId: number): Piece[] {
+/** What the engine tells the dealer about how the game has gone. */
+export type DealContext = {
+  /** Hands dealt since the last big clear (three lines at once, or an empty desk). */
+  dryHands?: number
+  score?: number
+}
+
+type Play = { picks: ShapeDef[]; lines: number; allClear: boolean; fill: number; value: number }
+
+const REWARD_BEAM = 14
+/** The reward search tries this many small handfuls of shapes; a beam over all of them at once fills up with look-alikes. */
+const REWARD_POOLS = 4
+const SWEEP_POOLS = 8
+const REWARD_POOL_SIZE = 7
+
+type Step = { rows: number[]; picks: ShapeDef[]; lines: number; sq: number }
+
+const popcountRows = (rows: Rows) => rows.reduce((sum, row) => sum + popcount(row), 0)
+
+/**
+ * How close the lines of a desk are to being full: squares of how many cells each
+ * row and column holds. Many nearly full lines score high, so it rewards stacking
+ * the pieces so that a few more will clear a lot, instead of scattering them.
+ */
+export function linePotential(rows: Rows): number {
+  let total = 0
+  for (const bits of rows) {
+    const count = popcount(bits)
+    total += count * count
+  }
+  for (let col = 0; col < BOARD_SIZE; col += 1) {
+    let count = 0
+    for (const bits of rows) if (bits & (1 << col)) count += 1
+    total += count * count
+  }
+  return total
+}
+
+/**
+ * Plays three pieces out on `rows`, trying many shapes and places and keeping
+ * the most promising partial plays at each step (a beam search that ranks them
+ * by how close they leave the lines to full), and returns the finished plays
+ * that clear the most. Each play is a real solution, so its hand can always be
+ * placed. A play that clears several lines with one piece is worth more than
+ * the same lines spread over three, and one that leaves the desk empty is worth
+ * the most.
+ */
+export function bestPlays(rows: Rows, pool: readonly ShapeDef[], rng: Rng, beam = REWARD_BEAM): Array<{ picks: ShapeDef[]; lines: number; allClear: boolean; fill: number; value: number }> {
+  let level: Step[] = [{ rows: rows.slice(), picks: [], lines: 0, sq: 0 }]
+  for (let step = 0; step < HAND_SIZE; step += 1) {
+    const last = step === HAND_SIZE - 1
+    const next: Array<Step & { value: number }> = []
+    for (const node of level) {
+      for (const def of pool) {
+        const item = MASKED_BY_DEF.get(def)!
+        for (let row = 0; row + def.height <= BOARD_SIZE; row += 1) {
+          for (let col = 0; col < item.masks.length; col += 1) {
+            if (!fits(node.rows, item, row, col)) continue
+            const dropped = drop(node.rows, item, row, col)
+            const lines = node.lines + dropped.lines
+            // What clearing pays: lines at once count squared, as the score does.
+            const sq = node.sq + dropped.lines * dropped.lines
+            const empty = dropped.lines > 0 && dropped.rows.every((bits) => bits === 0)
+            // Along the way, favor desks whose lines are nearly full; at the end, favor what actually cleared.
+            const value = last
+              ? sq * 60 + (empty ? 2500 : 0) - popcountRows(dropped.rows) * 3 + rng() * 25
+              : sq * 300 + linePotential(dropped.rows) + rng() * 8
+            next.push({ rows: dropped.rows, picks: [...node.picks, def], lines, sq, value })
+          }
+        }
+      }
+    }
+    if (next.length === 0) return []
+    next.sort((a, b) => b.value - a.value)
+    // The same desk reached by a different order of pieces is the same desk: keep one, so the beam is not full of copies.
+    const seen = new Set<string>()
+    const unique = next.filter((node) => {
+      const key = node.rows.join(',')
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+    level = last ? unique.slice(0, 6) : unique.slice(0, beam)
+    if (last) {
+      return (level as Array<Step & { value: number }>).map((node) => ({
+        picks: node.picks,
+        lines: node.lines,
+        allClear: node.lines > 0 && node.rows.every((bits) => bits === 0),
+        fill: fillRatio(node.rows),
+        value: node.value,
+      }))
+    }
+  }
+  return []
+}
+
+/** Every play found by a few searches, each over its own small handful of shapes, best first. */
+export function searchPlays(rows: Rows, rng: Rng, pools = REWARD_POOLS): Play[] {
+  const found: Play[] = []
+  for (let attempt = 0; attempt < pools; attempt += 1) {
+    const pool = [...SHAPE_DEFS].sort(() => rng() - 0.5).slice(0, REWARD_POOL_SIZE)
+    found.push(...bestPlays(rows, pool, rng))
+  }
+  return found.sort((a, b) => b.value - a.value)
+}
+
+/** 1 at the start, falling to 0.3 by 25,000 points: the game gets harder as it goes on. */
+export const easeAt = (score: number) => 1 - 0.7 * Math.min(Math.max(score, 0) / 25_000, 1)
+
+/** How likely a reward hand is, from the desk, the dry spell and how far the game has gone. */
+export function rewardChance(fill: number, dryHands: number, score: number): number {
+  const dry = Math.min(dryHands, 4)
+  const base = fill >= 0.62 ? 0.9 : fill >= 0.45 ? 0.6 : fill >= 0.2 ? 0.16 + 0.12 * dry : 0.08 + 0.06 * dry
+  // The further the game goes, the less often it is handed out: the game gets harder.
+  const ease = easeAt(score)
+  return Math.min(0.92, base * ease)
+}
+
+/** How likely the sweep (a hand that wipes the desk) is dealt, when one exists. */
+export function wipeChance(dryHands: number, score: number): number {
+  const ease = easeAt(score)
+  return Math.min(0.92, (0.55 + 0.12 * Math.min(dryHands, 4)) * ease)
+}
+
+
+const asHand = (play: Play, rng: Rng) => [...play.picks].sort(() => rng() - 0.5)
+
+export function dealHand(board: Board, rng: Rng, firstId: number, context: DealContext = {}): Piece[] {
   const rows = toRows(board)
   const fill = fillRatio(rows)
+  const dry = context.dryHands ?? 0
+  const score = context.score ?? 0
+  const wantsReward = rng() < rewardChance(fill, dry, score)
+
+  // Only worth the search when something can be cleared: a desk small enough to wipe, or a reward is due.
+  if (fill <= 0.5 || wantsReward) {
+    // A sparse desk is the one that can be wiped, so it gets the longer search.
+    const plays = searchPlays(rows, rng, fill < 0.2 ? SWEEP_POOLS : REWARD_POOLS)
+    // The sweep: a hand that leaves the desk empty is taken, most of the time, whenever one exists.
+    const sweeps = plays.filter((play) => play.allClear)
+    if (sweeps.length > 0 && rng() < wipeChance(dry, score)) {
+      return asHand(sweeps[Math.floor(rng() * sweeps.length)]!, rng).map((def, index) => pieceFrom(def, firstId + index))
+    }
+    // A reward: the best few ways to clear lines.
+    const worthIt = plays.filter((play) => play.lines >= (fill >= 0.45 ? 1 : 2))
+    if (wantsReward && worthIt.length > 0) {
+      const pick = worthIt.slice(0, 4)[Math.floor(rng() * Math.min(4, worthIt.length))]!
+      return asHand(pick, rng).map((def, index) => pieceFrom(def, firstId + index))
+    }
+  }
+  return dealOrdinaryHand(rows, fill, rng, firstId)
+}
+
+/** The hands that are not a reward: anything on an open desk, tighter ones as it fills. */
+function dealOrdinaryHand(rows: Rows, fill: number, rng: Rng, firstId: number): Piece[] {
   const attempts = fill < 0.3 ? TOTAL_ATTEMPTS_OPEN : TOTAL_ATTEMPTS_CROWDED
 
   const candidates: Candidate[] = []

@@ -44,6 +44,10 @@ export type GameState = {
   placements: number
   status: GameStatus
   nextPieceId: number
+  /** Hands dealt since the last big clear (three lines at once, or an empty desk). */
+  dryHands: number
+  /** A big clear happened while this hand was being placed. */
+  bigClearInHand: boolean
 }
 
 export type PlaceResult = {
@@ -110,6 +114,8 @@ export function createGame(rng: Rng = Math.random): GameState {
     placements: 0,
     status: 'playing',
     nextPieceId: 1 + HAND_SIZE,
+    dryHands: 0,
+    bigClearInHand: false,
   }
 }
 
@@ -187,8 +193,12 @@ export function placePiece(
 
   let hand: readonly (Piece | null)[] = state.hand.map((item, index) => (index === slot ? null : item))
   let nextPieceId = state.nextPieceId
+  let dryHands = state.dryHands
+  let bigClearInHand = state.bigClearInHand || lines >= 3 || allClear
   if (hand.every((item) => item === null)) {
-    hand = dealHand(next, rng, nextPieceId)
+    dryHands = bigClearInHand ? 0 : dryHands + 1
+    bigClearInHand = false
+    hand = dealHand(next, rng, nextPieceId, { dryHands, score: state.score + gained })
     nextPieceId += HAND_SIZE
   }
 
@@ -213,6 +223,8 @@ export function placePiece(
     placements: state.placements + 1,
     status: over ? 'over' : 'playing',
     nextPieceId,
+    dryHands,
+    bigClearInHand,
   }
 
   return {

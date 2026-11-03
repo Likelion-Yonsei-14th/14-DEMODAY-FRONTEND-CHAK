@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+// Whole games last far longer now, so the simulations get more than the 5 s default.
+vi.setConfig({ testTimeout: 120_000 })
 import { analyzeHand, dealHand, fillRatio, isHandSolvable, toRows } from './deskBlastDealer'
 import {
   BOARD_SIZE,
@@ -38,6 +41,8 @@ function solvableWithEngine(board: Board, defs: readonly ShapeDef[]): boolean {
     placements: 0,
     status: 'playing',
     nextPieceId: 10,
+    dryHands: 0,
+    bigClearInHand: false,
   }
   const rng = seededRng(1)
   const go = (current: GameState, left: number[]): boolean => {
@@ -175,7 +180,7 @@ describe('dealing', () => {
       const rows = toRows(board)
       if (fillRatio(rows) < 0.55) continue
 
-      const hand = dealHand(board, seededRng(seed), 1)
+      const hand = dealHand(board, seededRng(seed), 1, { score: 25_000, dryHands: 0 })
       const dealt = analyzeHand(rows, hand.map((piece) => SHAPE_DEFS.find((item) => item.shape === piece.shape)!), 6000, 60)
       if (!dealt.solvable) continue
 
