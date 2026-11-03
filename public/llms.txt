@@ -1,0 +1,17 @@
+# 착 (CHAK) · 수능 착
+
+> 수능 착은 수능을 앞둔 수험생에게 친구와 가족의 응원 메시지를 링크 하나로 모아 전하는 수험생 응원 책상 서비스입니다. 응원을 남기는 사람은 로그인하지 않아도 됩니다. 수험생은 모인 응원을 읽고 답장할 수 있고, 수험생 미니게임도 함께 제공합니다.
+
+서비스 주소: https://www.chak.live/
+운영: 멋쟁이사자처럼 연세대학교 14기 3팀
+문의: chak.live.team@gmail.com
+
+## 소개와 안내
+- [수능 착이란? 서비스 소개](https://www.chak.live/about): 서비스 설명, 사용 방법, 자주 묻는 질문
+- [수능 응원 문구 모음 100선](https://www.chak.live/cheers): 친구·부모님·선생님·선후배·재수생에게 보내는 수능 응원 메시지 예시
+- [수능 당일 응원 메시지 보내는 법](https://www.chak.live/cheers/day): 아침·점심·시험 후 메시지 예시와 피하면 좋은 말
+- [수능 D-day 응원 롤링페이퍼 만들기](https://www.chak.live/cheers/rolling-paper): 링크 하나로 친구들의 응원을 모으는 방법
+
+## 정책
+- [개인정보처리방침](https://www.chak.live/privacy)
+- [이용약관](https://www.chak.live/terms)

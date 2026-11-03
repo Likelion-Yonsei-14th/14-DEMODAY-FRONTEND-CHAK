@@ -39,6 +39,22 @@ describe('link cards', () => {
     expect(readFileSync('public/sitemap.xml', 'utf8')).toContain('<loc>https://www.chak.live/about</loc>')
   })
 
+  it('serves the static cheers pages and lists them for crawlers', () => {
+    const sitemap = readFileSync('public/sitemap.xml', 'utf8')
+    const pages = [
+      { path: '/cheers', file: 'cheers.html' },
+      { path: '/cheers/day', file: 'cheers-day.html' },
+      { path: '/cheers/rolling-paper', file: 'cheers-rolling-paper.html' },
+    ]
+    for (const { path, file } of pages) {
+      const html = readFileSync(`public/${file}`, 'utf8')
+      expect(html).toContain(`<link rel="canonical" href="https://www.chak.live${path}" />`)
+      expect(html).toContain('"@type": "FAQPage"')
+      expect(vercel.rewrites).toContainEqual({ source: path, destination: `/${file}` })
+      expect(sitemap).toContain(`<loc>https://www.chak.live${path}</loc>`)
+    }
+  })
+
   it('writes a card into index.html, keeping the shared address', () => {
     const html = withOgCard(indexHtml, cardOf('exam-career'))
     expect(metaContent(html, 'og:title')).toBe('수험생 커리어 시뮬레이터')
