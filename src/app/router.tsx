@@ -315,11 +315,7 @@ export const router = createBrowserRouter([
       { path: '/minigame/desk-blast', element: <DeskBlastPage /> },
       // Development only: the link-card thumbnails are photographed from here (scripts/make-og-images.mjs).
       ...(import.meta.env.DEV
-        ? [
-            { path: '/__og/:name', lazy: async () => ({ Component: (await import('@/features/ogImages/OgPreviewPage')).default }) },
-            // Every 수능 블라스트 piece in every orientation, for working on the drawings.
-            { path: '/__blast-art', lazy: async () => ({ Component: (await import('@/features/minigame/deskBlast/DeskBlastArtPreviewPage')).default }) },
-          ]
+        ? [{ path: '/__og/:name', lazy: async () => ({ Component: (await import('@/features/ogImages/OgPreviewPage')).default }) }]
         : []),
       { path: '/minigame/sneaky-phone', element: <SneakyPhoneIntroPage /> },
       { path: '/minigame/sneaky-phone/play', element: <SneakyPhonePlayPage /> },
