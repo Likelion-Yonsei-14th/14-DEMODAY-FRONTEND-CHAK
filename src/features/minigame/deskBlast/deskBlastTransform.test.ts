@@ -57,7 +57,7 @@ describe('turning an object to fit a block', () => {
 
   it('flips instead of turning when only a flip fits', () => {
     // The zigzag drawn one way and the block the other way.
-    const placement = findTransform(CANONICAL[13]!, [[0, 0], [0, 1], [1, 1], [1, 2]])!
+    const placement = findTransform(CANONICAL[12]!, [[0, 0], [0, 1], [1, 1], [1, 2]])!
 
     expect(placement.turn).toBeGreaterThanOrEqual(4)
   })

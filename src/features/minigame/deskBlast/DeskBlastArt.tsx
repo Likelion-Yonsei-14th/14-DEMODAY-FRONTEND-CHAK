@@ -1,6 +1,6 @@
 import { useId, type CSSProperties, type ReactNode } from 'react'
 import { findTransform, normalize, type Cells } from './deskBlastTransform'
-import { CANONICAL, itemOf, type ItemKind } from './deskBlastShapes'
+import { CANONICAL, itemOf, type Canonical, type ItemKind } from './deskBlastShapes'
 
 /**
  * Each block is drawn as the object it stands for, as one picture over all its
@@ -8,7 +8,26 @@ import { CANONICAL, itemOf, type ItemKind } from './deskBlastShapes'
  * 4 wide and 1 tall), and is turned or flipped to match the block.
  */
 
-type Draw = (id: string) => ReactNode
+/**
+ * `readable(x, y)` is a transform for writing centered on (x, y): it undoes the
+ * block's flip and half turn there, so writing runs left to right (or top to
+ * bottom, when the block stands on its side) whichever way the object lies.
+ */
+type Draw = (id: string, readable: (x: number, y: number) => string | undefined) => ReactNode
+
+type Turn = readonly [number, number, number, number]
+
+/** The local turn that, after the block's own turn `m`, leaves writing upright or turned a quarter clockwise. */
+function readableAt(m: Turn | null) {
+  return (x: number, y: number) => {
+    if (!m) return undefined
+    const [a, b, c, d] = m
+    // The inverse of a turn or flip is its transpose; then turn a quarter if the writing now runs down.
+    const local: Turn = a !== 0 ? [a, c, b, d] : [b, d, -a, -c]
+    if (local[0] === 1 && local[1] === 0 && local[2] === 0 && local[3] === 1) return undefined
+    return `translate(${x} ${y}) matrix(${local.join(' ')} 0 0) translate(${-x} ${-y})`
+  }
+}
 
 const INK = 'rgba(20, 14, 8, .28)'
 
@@ -171,9 +190,6 @@ const ticketWide: Draw = (id) => (
     <text x=".26" y=".43" fontSize=".28" fontWeight="900" fill="#fff" letterSpacing="-.01em">
       수험표
     </text>
-    <text x="2.74" y=".42" fontSize=".15" fontWeight="800" fill="#c8d1f0" textAnchor="end">
-      CSAT
-    </text>
     <Portrait x={0.24} y={0.74} size={0.92} />
     <path d="M1.4 .84 H2.0 M1.4 1.1 H2.0 M1.4 1.36 H2.0" stroke="#8b8478" strokeWidth=".06" strokeLinecap="round" />
     <path d="M2.08 .84 H2.72 M2.08 1.1 H2.62 M2.08 1.36 H2.7" stroke="#2d2a24" strokeWidth=".06" strokeLinecap="round" />
@@ -212,13 +228,10 @@ const workbook: Draw = (id) => (
     <path d="M.25 .3 V.7 M.25 1.1 V1.5 M.25 1.9 V2.3 M.25 2.6 V2.8" stroke="#ffb8a8" strokeOpacity=".7" strokeWidth=".04" strokeLinecap="round" />
     <rect x=".62" y=".34" width="1.8" height=".36" rx=".06" fill="#fff" opacity=".92" />
     <path d="M.78 .52 H1.5" stroke="#cf3f2b" strokeWidth=".07" strokeLinecap="round" />
-    <text x=".6" y="1.08" fontSize=".22" fontWeight="800" fill="#ffe4dc" letterSpacing=".02em">
-      실전 모의고사
-    </text>
-    <text x="1.5" y="2.02" fontSize=".92" fontWeight="900" fill="#fff" textAnchor="middle" letterSpacing="-.04em">
+    <text x="1.5" y="1.98" fontSize="1.14" fontWeight="900" fill="#fff" textAnchor="middle" letterSpacing="-.04em">
       N제
     </text>
-    <rect x=".62" y="2.3" width="1.8" height=".05" fill="#fff" opacity=".6" />
+    <rect x=".62" y="2.26" width="1.8" height=".05" fill="#fff" opacity=".6" />
     <path d="M.62 2.5 H1.7" stroke="#ffd6cc" strokeWidth=".06" strokeLinecap="round" />
   </g>
 )
@@ -270,64 +283,198 @@ const square: Draw = (id) => {
   )
 }
 
-/** 가위: closed, blades up, two finger rings below. */
-const scissors: Draw = (id) => (
+/** 텀블러: the big-handle kind, a straw through a flat lid, the body narrowing toward the base. No logo. */
+const tumbler: Draw = (id) => (
   <g>
     <defs>
-      <Grad id={`${id}-bl`} x1={0} y1={0} x2={1} y2={0} stops={[[0, '#e8ecf2'], [0.5, '#fafbfd'], [1, '#a4adbd']]} />
-      <Grad id={`${id}-r1`} stops={[[0, '#ff6a64'], [1, '#c92c2c']]} />
-      <Grad id={`${id}-r2`} stops={[[0, '#4a4e5a'], [1, '#22252d']]} />
+      <Grad id={`${id}-b`} x1={0} y1={0} x2={1} y2={0} stops={[[0, '#fffcf5'], [0.4, '#f3ecdf'], [1, '#d3c6ac']]} />
+      <Grad id={`${id}-h`} x1={0} y1={0} x2={1} y2={0} stops={[[0, '#f1e9da'], [1, '#c9bb9d']]} />
+      <Grad id={`${id}-l`} x1={0} y1={0} x2={1} y2={0} stops={[[0, '#fffdf8'], [0.5, '#ece3d2'], [1, '#cdbfa3']]} />
     </defs>
-    <path d="M.5 .06 L.78 1.74 H.3 L.28 1.7 Z" fill={`url(#${id}-bl)`} stroke={INK} strokeWidth=".02" strokeLinejoin="round" />
-    <path d="M.5 .08 L.52 1.7" stroke="#7c8699" strokeWidth=".03" />
-    <path d="M.34 1.7 L.14 2.22 H.52 L.54 1.7 Z" fill={`url(#${id}-r1)`} stroke={INK} strokeWidth=".02" strokeLinejoin="round" />
-    <path d="M.6 1.7 L.98 2.16 H1.46 L.8 1.7 Z" fill={`url(#${id}-r2)`} stroke={INK} strokeWidth=".02" strokeLinejoin="round" />
-    <circle cx=".56" cy="2.56" r=".42" fill={`url(#${id}-r1)`} stroke={INK} strokeWidth=".02" />
-    <circle cx=".56" cy="2.56" r=".23" fill="#2d2a24" opacity=".85" />
-    <circle cx="1.5" cy="2.56" r=".42" fill={`url(#${id}-r2)`} stroke={INK} strokeWidth=".02" />
-    <circle cx="1.5" cy="2.56" r=".23" fill="#2d2a24" opacity=".85" />
-    <circle cx=".52" cy="1.54" r=".085" fill="#d8a93a" stroke={INK} strokeWidth=".015" />
-    <path d="M.42 2.32 q.1 -.14 .26 -.12" fill="none" stroke="#fff" strokeOpacity=".5" strokeWidth=".04" strokeLinecap="round" />
+    {/* Straw */}
+    <path d="M.58 .62 L.66 .06" stroke={INK} strokeWidth=".13" strokeLinecap="round" />
+    <path d="M.58 .62 L.66 .06" stroke="#e4d8c0" strokeWidth=".1" strokeLinecap="round" />
+    <path d="M.6 .5 L.65 .12" stroke="#fff" strokeOpacity=".6" strokeWidth=".025" strokeLinecap="round" />
+    {/* Handle, big and chunky, behind the body */}
+    <path
+      d="M.8 1.16 H1.26 Q1.5 1.16 1.5 1.4 V1.6 Q1.5 1.84 1.26 1.84 H.8 Z M.8 1.3 H1.22 Q1.36 1.3 1.36 1.44 V1.56 Q1.36 1.7 1.22 1.7 H.8 Z"
+      fillRule="evenodd"
+      fill={`url(#${id}-h)`}
+      stroke={INK}
+      strokeWidth=".02"
+    />
+    <path d="M1.28 1.21 Q1.44 1.23 1.45 1.4" fill="none" stroke="#fff" strokeOpacity=".45" strokeWidth=".035" strokeLinecap="round" />
+    {/* Body: straight down, then narrowing to fit a cup holder */}
+    <path
+      d="M.04 .64 H.96 L.92 1.86 Q.9 2.04 .8 2.14 L.78 2.78 Q.77 2.86 .7 2.86 H.3 Q.23 2.86 .22 2.78 L.2 2.14 Q.1 2.04 .08 1.86 Z"
+      fill={`url(#${id}-b)`}
+      stroke={INK}
+      strokeWidth=".02"
+      strokeLinejoin="round"
+    />
+    <path d="M.18 .8 L.2 1.84 Q.24 2.04 .32 2.12 L.33 2.72" fill="none" stroke="#fff" strokeOpacity=".5" strokeWidth=".06" strokeLinecap="round" />
+    <path d="M.21 2.68 H.79" stroke="#a8977a" strokeOpacity=".5" strokeWidth=".03" />
+    {/* Lid */}
+    <rect x=".01" y=".4" width=".98" height=".3" rx=".08" fill={`url(#${id}-l)`} stroke={INK} strokeWidth=".02" />
+    <path d="M.08 .5 H.92" stroke="#fff" strokeOpacity=".6" strokeWidth=".02" />
+    <ellipse cx=".6" cy=".46" rx=".1" ry=".04" fill="#a8977a" opacity=".6" />
   </g>
 )
 
-/** 도장: a wooden grip, a wooden collar, and the red face. */
-const stamp: Draw = (id) => (
-  <g>
+/** Letter shapes for handwriting: [width, height], height below 0 dips under the line. Kept low and even, now and then a taller letter or a tail. */
+const HAND: ReadonlyArray<readonly [number, number]> = [
+  [0.08, 0.04], [0.1, 0.05], [0.07, 0.03], [0.09, 0.08], [0.11, 0.04], [0.08, -0.04],
+  [0.09, 0.05], [0.07, 0.03], [0.1, 0.07], [0.08, 0.04], [0.09, -0.04], [0.08, 0.06],
+]
+
+/**
+ * A line of handwriting that is not any real word: letter strokes of mixed
+ * widths, heights and tails, split into words of the given lengths.
+ */
+function scribble(x: number, y: number, words: readonly number[], seed = 0) {
+  let cursor = x
+  let n = seed
+  return words
+    .map((length) => {
+      const end = cursor + length
+      let d = `M${cursor.toFixed(3)} ${y}`
+      while (cursor < end) {
+        const [w, h] = HAND[n % HAND.length]!
+        n += 1
+        // A slight lean forward, as written by hand.
+        d += ` q${(w * 0.65).toFixed(3)} ${-h} ${w} 0`
+        cursor += w
+      }
+      cursor += 0.1
+      return d
+    })
+    .join(' ')
+}
+
+/** 접이 메모: two sheets joined by a fold, in a zigzag, written over in pen. */
+const notefold: Draw = (id, readable) => {
+  const pen = '#2c3357'
+  return (
+    <g>
+      <defs>
+        <Grad id={`${id}-n1`} stops={[[0, '#fffdf6'], [1, '#efe7d6']]} />
+        <Grad id={`${id}-n2`} stops={[[0, '#f1ebff'], [1, '#dccfff']]} />
+        <Grad id={`${id}-f`} stops={[[0, 'rgba(0,0,0,0)'], [0.5, 'rgba(40,20,90,.3)'], [1, 'rgba(0,0,0,0)']]} />
+      </defs>
+      {/* Bottom sheet */}
+      <rect x=".08" y="1.04" width="1.86" height=".88" rx=".05" fill={`url(#${id}-n2)`} stroke={INK} strokeWidth=".02" />
+      <path d="M.2 1.36 H1.82 M.2 1.58 H1.82 M.2 1.8 H1.82" stroke="#9f84f0" strokeOpacity=".35" strokeWidth=".015" />
+      <g transform={readable(1.01, 1.48)}>
+      <path d={scribble(0.26, 1.34, [0.3, 0.2, 0.36, 0.22], 1)} fill="none" stroke={pen} strokeOpacity=".75" strokeWidth=".03" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={scribble(0.26, 1.56, [0.42, 0.26, 0.3], 5)} fill="none" stroke={pen} strokeOpacity=".75" strokeWidth=".03" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={scribble(0.26, 1.78, [0.22, 0.34], 9)} fill="none" stroke={pen} strokeOpacity=".75" strokeWidth=".03" strokeLinecap="round" strokeLinejoin="round" />
+      </g>
+      {/* Top sheet */}
+      <rect x="1.06" y=".1" width="1.86" height=".88" rx=".05" fill={`url(#${id}-n1)`} stroke={INK} strokeWidth=".02" />
+      <path d="M1.18 .42 H2.8 M1.18 .64 H2.8 M1.18 .86 H2.8" stroke="#c9bfa8" strokeOpacity=".6" strokeWidth=".015" />
+      <g transform={readable(1.99, 0.54)}>
+      <path d="M1.2 .34 l.05 .05 l.09 -.11" fill="none" stroke="#e0525a" strokeWidth=".035" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={scribble(1.42, 0.4, [0.36, 0.24, 0.4], 3)} fill="none" stroke={pen} strokeOpacity=".8" strokeWidth=".03" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={scribble(1.24, 0.62, [0.28, 0.44, 0.2], 7)} fill="none" stroke={pen} strokeOpacity=".8" strokeWidth=".03" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M1.86 .67 q.24 .04 .5 -.01" fill="none" stroke="#e0525a" strokeOpacity=".8" strokeWidth=".03" strokeLinecap="round" />
+      <path d={scribble(1.24, 0.84, [0.38, 0.26], 2)} fill="none" stroke={pen} strokeOpacity=".8" strokeWidth=".03" strokeLinecap="round" strokeLinejoin="round" />
+      </g>
+      {/* The fold between them */}
+      <rect x="1.04" y=".84" width=".92" height=".32" fill={`url(#${id}-f)`} />
+    </g>
+  )
+}
+
+/** The lamp's dome shade, its opening tilted down and to the right, lit inside. */
+function LampShade({ id, x, y, scale }: { id: string; x: number; y: number; scale: number }) {
+  return (
+    <g transform={`translate(${x} ${y}) rotate(-25) scale(${scale})`}>
+      <ellipse cx="0" cy=".34" rx=".34" ry=".11" fill={`url(#${id}-g)`} />
+      <path d="M-.36 .2 Q-.36 -.24 0 -.26 Q.36 -.24 .36 .2 Z" fill={`url(#${id}-s)`} stroke={INK} strokeWidth=".022" strokeLinejoin="round" />
+      <path d="M-.24 .08 Q-.24 -.14 -.06 -.18" fill="none" stroke="#fff" strokeOpacity=".4" strokeWidth=".04" strokeLinecap="round" />
+      <ellipse cx="0" cy=".2" rx=".33" ry=".08" fill="#fff6c8" stroke="#e8b63c" strokeWidth=".015" />
+      <rect x="-.06" y="-.34" width=".12" height=".1" rx=".03" fill="#4c5a8c" stroke={INK} strokeWidth=".015" />
+    </g>
+  )
+}
+
+/** The two arms of a desk lamp, from the base through the elbow to the head, each with its spring. */
+function LampArms({ id, base, elbow, head }: { id: string; base: readonly [number, number]; elbow: readonly [number, number]; head: readonly [number, number] }) {
+  const arms = `M${base[0]} ${base[1]} L${elbow[0]} ${elbow[1]} L${head[0]} ${head[1]}`
+  const offset = (a: readonly [number, number], b: readonly [number, number]) => {
+    const dx = b[0] - a[0]
+    const dy = b[1] - a[1]
+    const length = Math.hypot(dx, dy)
+    const nx = (-dy / length) * 0.08
+    const ny = (dx / length) * 0.08
+    const from = 0.25
+    const to = 0.7
+    return `M${a[0] + dx * from + nx} ${a[1] + dy * from + ny} L${a[0] + dx * to + nx} ${a[1] + dy * to + ny}`
+  }
+  return (
+    <g>
+      <path d={arms} fill="none" stroke={INK} strokeWidth=".11" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={arms} fill="none" stroke={`url(#${id}-m)`} strokeWidth=".08" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={`${offset(base, elbow)} ${offset(elbow, head)}`} fill="none" stroke="#b9c0cc" strokeWidth=".06" strokeDasharray=".025 .02" />
+      {[base, elbow, head].map(([cx, cy]) => (
+        <g key={`${cx},${cy}`}>
+          <circle cx={cx} cy={cy} r=".08" fill="#4c5a8c" stroke={INK} strokeWidth=".02" />
+          <circle cx={cx} cy={cy} r=".03" fill="#c9d0dc" />
+        </g>
+      ))}
+    </g>
+  )
+}
+
+function LampDefs({ id }: { id: string }) {
+  return (
     <defs>
-      <Grad id={`${id}-w`} x1={0} y1={0} x2={1} y2={0} stops={[[0, '#b97a43'], [0.45, '#e2ac72'], [1, '#9a5f30']]} />
-      <Grad id={`${id}-w2`} stops={[[0, '#a2662f'], [1, '#5f3a1a']]} />
-      <Grad id={`${id}-f`} stops={[[0, '#ef4a3b'], [1, '#b32218']]} />
+      <Grad id={`${id}-m`} x1={0} y1={0} x2={1} y2={0} stops={[[0, '#8a93a3'], [0.45, '#eef1f5'], [1, '#6d7686']]} />
+      <Grad id={`${id}-b`} stops={[[0, '#4c5a8c'], [1, '#262f52']]} />
+      <Grad id={`${id}-s`} x1={0} y1={0} x2={1} y2={1} stops={[[0, '#6273b0'], [0.55, '#34406b'], [1, '#222a48']]} />
+      <radialGradient id={`${id}-g`} cx=".5" cy=".3" r=".6">
+        <stop offset="0" stopColor="#fff3b0" stopOpacity=".95" />
+        <stop offset="1" stopColor="#ffd25a" stopOpacity="0" />
+      </radialGradient>
     </defs>
-    <path d="M1.26 1.0 V.3 Q1.26 .06 1.5 .06 Q1.74 .06 1.74 .3 V1.0 Z" fill={`url(#${id}-w)`} stroke={INK} strokeWidth=".02" strokeLinejoin="round" />
-    <path d="M1.26 .4 H1.74 M1.26 .66 H1.74" stroke="#6a3f1b" strokeOpacity=".6" strokeWidth=".035" />
-    <ellipse cx="1.44" cy=".2" rx=".1" ry=".05" fill="#fff" opacity=".5" />
-    <rect x=".12" y="1.0" width="2.76" height=".42" rx=".1" fill={`url(#${id}-w2)`} stroke={INK} strokeWidth=".02" />
-    <rect x=".2" y="1.04" width="2.6" height=".06" rx=".03" fill="#fff" opacity=".25" />
-    <rect x=".26" y="1.42" width="2.48" height=".5" rx=".07" fill={`url(#${id}-f)`} stroke={INK} strokeWidth=".02" />
-    <path d="M.5 1.64 q.15 -.14 .3 0 t.3 0 t.3 0 t.3 0 t.3 0 t.3 0 t.3 0" fill="none" stroke="#ffb3a8" strokeOpacity=".5" strokeWidth=".04" strokeLinecap="round" />
+  )
+}
+
+/** 스탠드: a weighted round base, two jointed arms with springs, and a dome shade over to the right. */
+const lamp: Draw = (id) => (
+  <g>
+    <LampDefs id={id} />
+    <path d="M.1 2.92 Q.1 2.62 .5 2.6 Q.9 2.62 .9 2.92 Z" fill={`url(#${id}-b)`} stroke={INK} strokeWidth=".02" strokeLinejoin="round" />
+    <path d="M.24 2.72 Q.34 2.65 .48 2.64" fill="none" stroke="#fff" strokeOpacity=".4" strokeWidth=".04" strokeLinecap="round" />
+    <rect x=".64" y="2.74" width=".14" height=".08" rx=".03" fill="#ffcf5a" stroke={INK} strokeWidth=".015" />
+    <LampArms id={id} base={[0.58, 2.54]} elbow={[0.3, 1.4]} head={[0.98, 0.4]} />
+    <path d="M.98 .4 L1.26 .3" stroke={INK} strokeWidth=".1" strokeLinecap="round" />
+    <path d="M.98 .4 L1.26 .3" stroke={`url(#${id}-m)`} strokeWidth=".07" strokeLinecap="round" />
+    <LampShade id={id} x={1.46} y={0.5} scale={1} />
   </g>
 )
 
-/** 접이 메모: two sheets joined by a fold, in a zigzag. */
-const notefold: Draw = (id) => (
+/** 스탠드 with its foot along the bottom: the same round base and arms bent the same way, the cord trailing off to a plug in the corner. */
+const lampLowBase: Draw = (id) => (
   <g>
-    <defs>
-      <Grad id={`${id}-n1`} stops={[[0, '#d9cbff'], [1, '#b79fff']]} />
-      <Grad id={`${id}-n2`} stops={[[0, '#c9b6ff'], [1, '#9f84f0']]} />
-      <Grad id={`${id}-f`} stops={[[0, 'rgba(0,0,0,0)'], [0.5, 'rgba(40,20,90,.34)'], [1, 'rgba(0,0,0,0)']]} />
-    </defs>
-    <rect x=".08" y="1.04" width="1.86" height=".88" rx=".05" fill={`url(#${id}-n2)`} stroke={INK} strokeWidth=".02" />
-    <rect x="1.06" y=".1" width="1.86" height=".88" rx=".05" fill={`url(#${id}-n1)`} stroke={INK} strokeWidth=".02" />
-    <rect x="1.04" y=".84" width=".92" height=".32" fill={`url(#${id}-f)`} />
-    <path d="M1.3 .34 H2.66 M1.3 .56 H2.5 M1.3 .78 H2.3" stroke="#6b4fc7" strokeOpacity=".45" strokeWidth=".04" strokeLinecap="round" />
-    <path d="M.3 1.3 H1.66 M.3 1.52 H1.5 M.3 1.74 H1.3" stroke="#4d34a8" strokeOpacity=".4" strokeWidth=".04" strokeLinecap="round" />
-    <circle cx="2.78" cy=".24" r=".05" fill="#6b4fc7" opacity=".5" />
-    <circle cx=".22" cy="1.8" r=".05" fill="#4d34a8" opacity=".5" />
+    <LampDefs id={id} />
+    <path d="M.86 2.82 C1.1 2.86 1.2 2.6 1.4 2.68 S1.56 2.84 1.66 2.78" fill="none" stroke="#262f52" strokeWidth=".05" strokeLinecap="round" />
+    <rect x="1.64" y="2.68" width=".22" height=".18" rx=".04" fill="#f4efe3" stroke={INK} strokeWidth=".02" />
+    <path d="M1.86 2.73 H1.94 M1.86 2.81 H1.94" stroke="#9aa2b0" strokeWidth=".03" strokeLinecap="round" />
+    <path d="M.1 2.92 Q.1 2.62 .5 2.6 Q.9 2.62 .9 2.92 Z" fill={`url(#${id}-b)`} stroke={INK} strokeWidth=".02" strokeLinejoin="round" />
+    <path d="M.24 2.72 Q.34 2.65 .48 2.64" fill="none" stroke="#fff" strokeOpacity=".4" strokeWidth=".04" strokeLinecap="round" />
+    <rect x=".64" y="2.74" width=".14" height=".08" rx=".03" fill="#ffcf5a" stroke={INK} strokeWidth=".015" />
+    <LampArms id={id} base={[0.6, 2.54]} elbow={[0.26, 1.5]} head={[0.5, 0.44]} />
+    <LampShade id={id} x={0.66} y={0.58} scale={0.74} />
   </g>
 )
 
-type Art = { draw: Draw; portrait?: Draw }
+/**
+ * `upright` is a second drawing for blocks the first one would only fit upside
+ * down (a lamp must keep its base at the bottom); its cells are the object's
+ * other upright shape.
+ */
+type Art = { draw: Draw; portrait?: Draw; upright?: { canonical: Canonical; draw: Draw } }
 
 const ART: Readonly<Record<ItemKind, Art>> = {
   1: { draw: eraser },
@@ -340,9 +487,9 @@ const ART: Readonly<Record<ItemKind, Art>> = {
   8: { draw: workbook },
   9: { draw: triangle },
   10: { draw: square },
-  11: { draw: scissors },
-  12: { draw: stamp },
-  13: { draw: notefold },
+  11: { draw: tumbler },
+  12: { draw: notefold },
+  13: { draw: lamp, upright: { canonical: { width: 2, height: 3, cells: [[0, 0], [1, 0], [2, 0], [2, 1]] }, draw: lampLowBase } },
 }
 
 const cleanId = (raw: string) => raw.replace(/[^a-zA-Z0-9_-]/g, '')
@@ -368,10 +515,16 @@ export function PieceArt({ kind, cells, visible, className, style, 'data-testid'
   const canonical = CANONICAL[kind]!
   const art = ART[kind]!
 
-  const turned = findTransform(canonical, cells)
+  // As drawn (0) or mirrored left to right (4): the two ways that keep the object's top up.
+  const keepsUp = (turn: number | undefined) => turn === 0 || turn === 4
+  const main = findTransform(canonical, cells)
+  const other = art.upright && !keepsUp(main?.turn) ? findTransform(art.upright.canonical, cells) : null
+  const useOther = other !== null && keepsUp(other.turn)
+  const turned = useOther ? other : main
   const portrait = art.portrait !== undefined && box.height > box.width
   const matrix = portrait ? null : turned?.matrix ?? [1, 0, 0, 1, 0, 0]
-  const body = portrait ? art.portrait!(uid) : art.draw(uid)
+  const readable = readableAt(matrix ? [matrix[0], matrix[1], matrix[2], matrix[3]] : null)
+  const body = portrait ? art.portrait!(uid, readable) : useOther ? art.upright!.draw(uid, readable) : art.draw(uid, readable)
 
   // What is left of a piece after a clear: keep only the cells that remain, closing the gaps between them.
   const top = Math.min(...cells.map(([r]) => r))
