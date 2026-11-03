@@ -1,4 +1,7 @@
 import { downloadBlob } from '../examCareer/examCareerShareImage'
+import { drawBoard } from './deskBlastShareBoard'
+import type { Board, PlacedPiece } from './deskBlastEngine'
+import type { BlastLook } from './deskBlastLook'
 
 export { downloadBlob }
 
@@ -12,8 +15,6 @@ const LOGO_SRC = '/assets/brand/chak-mark.svg'
 const INK = '#292722'
 const SECONDARY = '#6f6961'
 const BRAND = '#d93a1f'
-/** Canvas can't read CSS variables, so the stationery colors in DeskBlast.css are repeated as hex. */
-const PIECE_COLORS = ['#f07fa0', '#9a6342', '#c4e03a', '#ffc21a', '#7ea6f0', '#ffe14d', '#e3e9f7', '#2f9c82', '#9aa4b5', '#47b9a8', '#f08a24', '#d94a52', '#8e72f0']
 
 export type ShareCardData = {
   score: number
@@ -22,6 +23,10 @@ export type ShareCardData = {
   typeName: string
   line: string
   newBest: boolean
+  /** The desk as it ended, drawn onto the card so it reads as the block puzzle it is. */
+  board: Board
+  placed: readonly PlacedPiece[]
+  look: BlastLook
 }
 
 export const SHARE_FILE_NAME = 'chak-desk-blast.png'
@@ -89,8 +94,67 @@ export function wrapLines(measure: (text: string) => number, text: string, maxWi
   return lines
 }
 
+/** Heights of each part of the card, top to bottom, for a given number of text lines. */
+export const CARD = {
+  logoY: 70,
+  logoHeight: 80,
+  titleBaseline: 238,
+  boardY: 290,
+  /** The most the desk is drawn at; it shrinks when long text needs the room. */
+  boardMax: 780,
+  boardMin: 560,
+  scoreLabelGap: 80,
+  scoreSize: 168,
+  /** How far a comma or other low mark in the score reaches below its baseline. */
+  scoreDescent: 36,
+  pillHeight: 52,
+  typeSize: 72,
+  typeLine: 84,
+  memeSize: 40,
+  memeLine: 54,
+  statSize: 34,
+  ctaHeight: 100,
+  bottomMargin: 36,
+} as const
+
+/** The biggest desk that still leaves the text and the button on the card. */
+export function fitBoardSize(typeLines: number, memeLines: number, newBest: boolean) {
+  for (let size = CARD.boardMax; size > CARD.boardMin; size -= 10) {
+    if (cardLayout(typeLines, memeLines, newBest, size).bottom <= SHARE_HEIGHT - 12) return size
+  }
+  return CARD.boardMin
+}
+
+/** Where the parts under the board go, so a long type name or meme line pushes the rest down without overlapping the button. */
+export function cardLayout(typeLines: number, memeLines: number, newBest: boolean, boardSize: number) {
+  const boardBottom = CARD.boardY + boardSize
+  const labelBaseline = boardBottom + CARD.scoreLabelGap
+  const scoreBaseline = labelBaseline + CARD.scoreSize + 4
+  // A comma in the big score hangs below the baseline, so the tag and the type name start beneath that.
+  const scoreBottom = scoreBaseline + CARD.scoreDescent
+  const pillY = scoreBottom + 8
+  const afterScore = newBest ? pillY + CARD.pillHeight : scoreBottom
+  // The type name's top is about 0.8 of its size above its baseline.
+  const typeBaseline = afterScore + Math.round(CARD.typeSize * 0.8) + 22
+  const memeBaseline = typeBaseline + (typeLines - 1) * CARD.typeLine + 70
+  const statBaseline = memeBaseline + (memeLines - 1) * CARD.memeLine + 80
+  const ctaY = Math.max(statBaseline + 44, SHARE_HEIGHT - CARD.bottomMargin - CARD.ctaHeight - 62)
+  return {
+    labelBaseline,
+    scoreBaseline,
+    pillY,
+    typeBaseline,
+    memeBaseline,
+    statBaseline,
+    ctaY,
+    urlBaseline: ctaY + CARD.ctaHeight + 52,
+    /** The lowest point drawn; must stay on the card. */
+    bottom: ctaY + CARD.ctaHeight + 52 + 8,
+  }
+}
+
 export async function renderBlastShareImage(data: ShareCardData): Promise<Blob> {
-  await ensureFonts(`${SHARE_TITLE}책상정리력${data.score}${data.typeName}${data.line}최고 콤보${data.lines}${SHARE_URL_TEXT}${SHARE_CTA}`)
+  await ensureFonts(`${SHARE_TITLE}책상정리력${data.score}${data.typeName}${data.line}최고 콤보 정리한 줄 ${data.bestCombo}콤보 ${data.lines}줄 ${SHARE_URL_TEXT}${SHARE_CTA}`)
   const logo = await loadImage(LOGO_SRC).catch(() => null)
 
   const canvas = document.createElement('canvas')
@@ -102,98 +166,68 @@ export async function renderBlastShareImage(data: ShareCardData): Promise<Blob> 
   const cx = SHARE_WIDTH / 2
   context.fillStyle = '#efebe4'
   context.fillRect(0, 0, SHARE_WIDTH, SHARE_HEIGHT)
-
-  // A row of the game's colored tiles above the card.
-  const tile = 64
-  const gap = 8
-  const rowWidth = 9 * tile + 8 * gap
-  for (let index = 0; index < 9; index += 1) {
-    context.fillStyle = PIECE_COLORS[index % PIECE_COLORS.length]!
-    roundedRect(context, cx - rowWidth / 2 + index * (tile + gap), 150, tile, tile, 16)
-    context.fill()
-  }
-
-  const cardX = 80
-  const cardY = 290
-  const cardWidth = SHARE_WIDTH - 160
-  const cardHeight = SHARE_HEIGHT - 580
-  context.save()
-  context.shadowColor = 'rgba(30, 20, 10, .16)'
-  context.shadowBlur = 48
-  context.shadowOffsetY = 16
-  context.fillStyle = '#fbf9f5'
-  roundedRect(context, cardX, cardY, cardWidth, cardHeight, 56)
-  context.fill()
-  context.restore()
-
   context.textAlign = 'center'
   context.textBaseline = 'alphabetic'
 
   if (logo) {
-    const logoHeight = 92
-    const logoWidth = (logo.naturalWidth / logo.naturalHeight || 1) * logoHeight
-    context.drawImage(logo, cx - logoWidth / 2, cardY + 56, logoWidth, logoHeight)
+    const logoWidth = (logo.naturalWidth / logo.naturalHeight || 1) * CARD.logoHeight
+    context.drawImage(logo, cx - logoWidth / 2, CARD.logoY, logoWidth, CARD.logoHeight)
   } else {
     context.fillStyle = BRAND
-    context.font = `800 72px ${FONT}`
-    context.fillText('착', cx, cardY + 130)
+    context.font = `800 64px ${FONT}`
+    context.fillText('착', cx, CARD.logoY + 62)
   }
-
   context.fillStyle = INK
-  context.font = `800 64px ${FONT}`
-  context.fillText(SHARE_TITLE, cx, cardY + 250)
+  context.font = `800 56px ${FONT}`
+  context.fillText(SHARE_TITLE, cx, CARD.titleBaseline)
+
+  context.font = `800 ${CARD.typeSize}px ${FONT}`
+  const typeLines = wrapLines((text) => context.measureText(text).width, data.typeName, SHARE_WIDTH - 140)
+  context.font = `600 ${CARD.memeSize}px ${FONT}`
+  const memeLines = wrapLines((text) => context.measureText(text).width, `“${data.line}”`, SHARE_WIDTH - 200)
+  const boardSize = fitBoardSize(typeLines.length, memeLines.length, data.newBest)
+  const layout = cardLayout(typeLines.length, memeLines.length, data.newBest, boardSize)
+
+  // The desk as the game ended: this is what says it is a block puzzle.
+  await drawBoard(context, { x: (SHARE_WIDTH - boardSize) / 2, y: CARD.boardY, size: boardSize }, data)
+  context.textAlign = 'center'
 
   context.fillStyle = SECONDARY
-  context.font = `700 38px ${FONT}`
-  context.fillText('책상정리력', cx, cardY + 380)
+  context.font = `700 34px ${FONT}`
+  context.fillText('책상정리력', cx, layout.labelBaseline)
   context.fillStyle = BRAND
-  context.font = `800 190px ${FONT}`
-  context.fillText(data.score.toLocaleString('ko-KR'), cx, cardY + 560)
+  context.font = `800 ${CARD.scoreSize}px ${FONT}`
+  context.fillText(data.score.toLocaleString('ko-KR'), cx, layout.scoreBaseline)
   if (data.newBest) {
     context.fillStyle = '#ffedb3'
-    roundedRect(context, cx - 130, cardY + 606, 260, 60, 30)
+    roundedRect(context, cx - 120, layout.pillY, 240, CARD.pillHeight, 26)
     context.fill()
     context.fillStyle = '#7a5b12'
-    context.font = `800 32px ${FONT}`
-    context.fillText('최고 기록!', cx, cardY + 648)
+    context.font = `800 30px ${FONT}`
+    context.fillText('최고 기록!', cx, layout.pillY + 37)
   }
 
   context.fillStyle = INK
-  context.font = `800 80px ${FONT}`
-  const typeLines = wrapLines((text) => context.measureText(text).width, data.typeName, cardWidth - 120)
-  typeLines.forEach((line, index) => context.fillText(line, cx, cardY + 800 + index * 96))
-  const afterType = cardY + 800 + (typeLines.length - 1) * 96
+  context.font = `800 ${CARD.typeSize}px ${FONT}`
+  typeLines.forEach((line, index) => context.fillText(line, cx, layout.typeBaseline + index * CARD.typeLine))
 
   context.fillStyle = SECONDARY
-  context.font = `600 42px ${FONT}`
-  const memeLines = wrapLines((text) => context.measureText(text).width, `“${data.line}”`, cardWidth - 160)
-  memeLines.forEach((line, index) => context.fillText(line, cx, afterType + 110 + index * 62))
-  const afterMeme = afterType + 110 + (memeLines.length - 1) * 62
+  context.font = `600 ${CARD.memeSize}px ${FONT}`
+  memeLines.forEach((line, index) => context.fillText(line, cx, layout.memeBaseline + index * CARD.memeLine))
 
-  const statY = Math.max(afterMeme + 120, cardY + cardHeight - 330)
-  const half = cardWidth / 2
-  context.fillStyle = '#f2ede4'
-  roundedRect(context, cardX + 56, statY, cardWidth - 112, 170, 32)
-  context.fill()
-  context.fillStyle = SECONDARY
-  context.font = `700 32px ${FONT}`
-  context.fillText('최고 콤보', cardX + half / 2 + 28, statY + 62)
-  context.fillText('정리한 줄', cardX + half + half / 2 - 28, statY + 62)
   context.fillStyle = INK
-  context.font = `800 66px ${FONT}`
-  context.fillText(`${data.bestCombo}콤보`, cardX + half / 2 + 28, statY + 138)
-  context.fillText(`${data.lines}줄`, cardX + half + half / 2 - 28, statY + 138)
+  context.font = `700 ${CARD.statSize}px ${FONT}`
+  context.fillText(`최고 콤보 ${data.bestCombo} · 정리한 줄 ${data.lines}`, cx, layout.statBaseline)
 
-  const ctaY = SHARE_HEIGHT - 260
   context.fillStyle = BRAND
-  roundedRect(context, cx - 330, ctaY, 660, 112, 56)
+  roundedRect(context, cx - 330, layout.ctaY, 660, CARD.ctaHeight, 50)
   context.fill()
   context.fillStyle = '#ffffff'
-  context.font = `800 46px ${FONT}`
-  context.fillText(SHARE_CTA, cx, ctaY + 72)
-  context.fillStyle = INK
   context.font = `800 44px ${FONT}`
-  context.fillText(SHARE_URL_TEXT, cx, ctaY + 190)
+  context.fillText(SHARE_CTA, cx, layout.ctaY + 66)
+  context.fillStyle = INK
+  context.font = `800 40px ${FONT}`
+  context.fillText(SHARE_URL_TEXT, cx, layout.urlBaseline)
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('image could not be created'))), 'image/png')

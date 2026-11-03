@@ -206,6 +206,8 @@ export function DeskBlastPage() {
       line: deskTypeLine(type, score),
       newBest,
       previousBest,
+      board: final.board,
+      placed: final.placed,
     })
     window.clearTimeout(resultTimer.current)
     resultTimer.current = window.setTimeout(() => {
@@ -471,6 +473,7 @@ export function DeskBlastPage() {
       {result && resultOpen && (
         <BlastResultSheet
           result={result}
+          look={look}
           grade={grade}
           onRestart={restart}
           onHome={() => navigate(SERVICE_HOME)}
@@ -482,11 +485,13 @@ export function DeskBlastPage() {
 
 function BlastResultSheet({
   result,
+  look,
   grade,
   onRestart,
   onHome,
 }: {
   result: BlastResult
+  look: BlastLook
   grade: DeskBlastGrade | null
   onRestart: () => void
   onHome: () => void
@@ -505,6 +510,9 @@ function BlastResultSheet({
       typeName: result.typeName,
       line: result.line,
       newBest: result.newBest,
+      board: result.board,
+      placed: result.placed,
+      look,
     }
     renderBlastShareImage(data)
       .then((blob) => {
@@ -516,7 +524,7 @@ function BlastResultSheet({
     return () => {
       cancelled = true
     }
-  }, [result])
+  }, [result, look])
 
   const file = useMemo(() => (image ? new File([image], SHARE_FILE_NAME, { type: 'image/png' }) : null), [image])
   const canShareFile = file !== null && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })
