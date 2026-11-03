@@ -179,7 +179,7 @@ export function FriendDesksPage() {
           // Here the desk is always for a friend, so skip "who is it for?".
           resetDeskCreationDraft()
           setDeskCreationDraft({ createdFor: 'other' })
-          navigate('/prototype/create/recipient', { state: { from: '/friend-desks' } })
+          navigate('/create/recipient', { state: { from: '/friend-desks' } })
         }}
       >
         새 책상 만들기

@@ -41,7 +41,7 @@ function renderPage() {
       <Routes>
         <Route path="/claim/:claimToken" element={<ClaimLinkPage />} />
         <Route path="/auth/login" element={<p>로그인 화면</p>} />
-        <Route path="/prototype/my/desk" element={<p>내 책상 화면</p>} />
+        <Route path="/my/desk" element={<p>내 책상 화면</p>} />
         <Route path="/home" element={<p>홈 화면</p>} />
       </Routes>
     </MemoryRouter>,

@@ -139,7 +139,7 @@ export function OwnerDeskGate() {
 
   if (!isApiEnabled) return <Outlet />
   if (!authenticated) return <Navigate to="/auth/login" replace />
-  if (state === 'no-desk') return <Navigate to="/prototype/create" replace />
+  if (state === 'no-desk') return <Navigate to="/create" replace />
   if (state === 'loading') return <Notice>내 책상을 불러오고 있어요...</Notice>
   if (state === 'error') return <Notice>내 책상을 불러오지 못했어요. 잠시 후 다시 시도해주세요.</Notice>
   return <Outlet />

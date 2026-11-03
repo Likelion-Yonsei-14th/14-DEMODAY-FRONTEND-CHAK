@@ -156,7 +156,7 @@ const BASE_PAGES: readonly OgPage[] = [
   },
   {
     page: 'claim',
-    source: '/prototype/claim',
+    source: '/claim',
     card: {
       title: '친구들이 응원 책상을 만들어 두었어요',
       description: '지금 열어서 내 책상을 받아 보세요.',
@@ -165,7 +165,7 @@ const BASE_PAGES: readonly OgPage[] = [
   },
   {
     page: 'classroom-join',
-    source: '/prototype/classroom/:classroomId/join',
+    source: '/classroom/:classroomId/join',
     card: {
       title: '우리 반 응원 공간에 들어와!',
       description: '이름만 적으면 내 사물함이 생겨요. 칠판과 사물함에 서로 응원을 남겨요.',

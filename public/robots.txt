@@ -1,6 +1,15 @@
 User-agent: *
 Disallow: /admin
 Disallow: /prototype
+Disallow: /my/
+Disallow: /create
+Disallow: /manage
+Disallow: /composer
+Disallow: /reader
+Disallow: /wrapped
+Disallow: /offers
+Disallow: /classroom
+Disallow: /support/
 Disallow: /system
 Disallow: /auth/
 Disallow: /account

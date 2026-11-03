@@ -175,11 +175,11 @@
       "destination": "/og/desk.html"
     },
     {
-      "source": "/prototype/claim",
+      "source": "/claim",
       "destination": "/og/claim.html"
     },
     {
-      "source": "/prototype/classroom/:classroomId/join",
+      "source": "/classroom/:classroomId/join",
       "destination": "/og/classroom-join.html"
     },
     {
@@ -188,6 +188,11 @@
     }
   ],
   "redirects": [
+    {
+      "source": "/prototype/:path+",
+      "destination": "/:path+",
+      "permanent": false
+    },
     {
       "source": "/(.*)",
       "has": [

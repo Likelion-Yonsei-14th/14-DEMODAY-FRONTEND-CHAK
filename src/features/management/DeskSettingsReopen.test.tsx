@@ -13,7 +13,7 @@ afterEach(() => setClosed(false))
 function renderSettings() {
   render(
     <NotificationProvider>
-      <MemoryRouter initialEntries={['/prototype/my/settings']}>
+      <MemoryRouter initialEntries={['/my/settings']}>
         <DeskSettingsPage />
       </MemoryRouter>
     </NotificationProvider>,

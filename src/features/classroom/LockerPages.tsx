@@ -102,7 +102,7 @@ export function ClassroomLockerPage() {
   if (!member) {
     return (
       <Navigate
-        to={`/prototype/classroom/${classroomId ?? classroom.id}/join`}
+        to={`/classroom/${classroomId ?? classroom.id}/join`}
         replace
       />
     )
@@ -111,7 +111,7 @@ export function ClassroomLockerPage() {
   if (!locker) {
     return (
       <Navigate
-        to={`/prototype/classroom/${classroomId ?? classroom.id}/map`}
+        to={`/classroom/${classroomId ?? classroom.id}/map`}
         replace
       />
     )
@@ -177,7 +177,7 @@ export function ClassroomLockerPage() {
     }
 
     navigate(
-      `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/message/${messageId}${location.search}`,
+      `/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/message/${messageId}${location.search}`,
       {
         state: {
           from: 'classroom-locker',
@@ -216,7 +216,7 @@ export function ClassroomLockerPage() {
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() =>
                 navigate(
-                  `/prototype/classroom/${classroomId ?? classroom.id}/map`,
+                  `/classroom/${classroomId ?? classroom.id}/map`,
                 )
               }
             />
@@ -266,7 +266,7 @@ export function ClassroomLockerPage() {
           onClose={() => setChoiceOpen(false)}
           onChoose={(choice) => {
             const store = usePrototypeStore.getState()
-            const lockerPath = `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}`
+            const lockerPath = `/classroom/${classroomId ?? classroom.id}/locker/${locker.id}`
             setChoiceOpen(false)
             store.setSupporterObjectChoice(choice)
             if (choice === 'sticker') {
@@ -315,7 +315,7 @@ export function ClassroomLockerPage() {
               leadingIcon={<Paintbrush size={17} aria-hidden />}
               onClick={() =>
                 navigate(
-                  `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/decorate`,
+                  `/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/decorate`,
                 )
               }
             >
@@ -401,7 +401,7 @@ export function ClassroomLockerPlacementPage() {
   if (!locker) {
     return (
       <Navigate
-        to={`/prototype/classroom/${classroomId ?? classroom.id}/map`}
+        to={`/classroom/${classroomId ?? classroom.id}/map`}
         replace
       />
     )
@@ -479,7 +479,7 @@ export function ClassroomLockerPlacementPage() {
         )
       }
       navigate(
-        `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/complete`,
+        `/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/complete`,
         { replace: true },
       )
     }, 420)
@@ -498,7 +498,7 @@ export function ClassroomLockerPlacementPage() {
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() =>
                 navigate(
-                  `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/${stickerMode ? 'sticker' : 'compose'}`,
+                  `/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/${stickerMode ? 'sticker' : 'compose'}`,
                 )
               }
             />
@@ -547,7 +547,7 @@ export function ClassroomLockerPlacementPage() {
               className="charm-summary__change"
               onClick={() =>
                 navigate(
-                  `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/charm`,
+                  `/classroom/${classroomId ?? classroom.id}/locker/${locker.id}/charm`,
                 )
               }
             >
@@ -740,7 +740,7 @@ export function ClassroomLockerCompletePage() {
   if (!locker) {
     return (
       <Navigate
-        to={`/prototype/classroom/${classroomId ?? classroom.id}/map`}
+        to={`/classroom/${classroomId ?? classroom.id}/map`}
         replace
       />
     )
@@ -756,7 +756,7 @@ export function ClassroomLockerCompletePage() {
           fullWidth
           onClick={() =>
             navigate(
-              `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}`,
+              `/classroom/${classroomId ?? classroom.id}/locker/${locker.id}`,
               { replace: true },
             )
           }
@@ -783,7 +783,7 @@ export function ClassroomLockerCompletePage() {
           fullWidth
           onClick={() =>
             navigate(
-              `/prototype/classroom/${classroomId ?? classroom.id}/map`,
+              `/classroom/${classroomId ?? classroom.id}/map`,
             )
           }
         >

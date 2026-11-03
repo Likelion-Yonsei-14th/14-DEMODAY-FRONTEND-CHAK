@@ -49,12 +49,12 @@ export function ClaimIntroPage() {
 
   const next = () => {
     if (alreadyClaimed) {
-      navigate('/prototype/my/desk')
+      navigate('/my/desk')
       return
     }
 
     beginClaim()
-    navigate('/prototype/claim/backlog')
+    navigate('/claim/backlog')
   }
 
   return (
@@ -134,13 +134,13 @@ export function ClaimBacklogPage() {
 
   const continueWith = (deferred: boolean) => {
     setDeferred(deferred)
-    navigate('/prototype/claim/read-mode')
+    navigate('/claim/read-mode')
   }
 
   return (
     <ClaimShell
       title="응원 책상 받기"
-      back={() => navigate('/prototype/claim')}
+      back={() => navigate('/claim')}
       action={
         <div className="claim-flow__backlog-actions">
           <Button
@@ -225,13 +225,13 @@ export function ClaimReadModePage() {
 
   const finish = () => {
     completeClaim()
-    navigate('/prototype/claim/complete', { replace: true })
+    navigate('/claim/complete', { replace: true })
   }
 
   return (
     <ClaimShell
       title="응원 책상 받기"
-      back={() => navigate('/prototype/claim/backlog')}
+      back={() => navigate('/claim/backlog')}
       action={
         <Button variant="brand" fullWidth onClick={finish}>
           이대로 시작하기
@@ -339,7 +339,7 @@ export function ClaimCompletePage() {
         <Button
           variant="brand"
           fullWidth
-          onClick={() => navigate('/prototype/my/desk', { replace: true })}
+          onClick={() => navigate('/my/desk', { replace: true })}
         >
           내 책상 보기
         </Button>

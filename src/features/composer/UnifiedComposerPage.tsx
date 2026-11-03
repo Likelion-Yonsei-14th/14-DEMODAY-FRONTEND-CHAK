@@ -91,10 +91,10 @@ export function UnifiedComposerPage() {
   // Writing a charm's cheer comes after picking the charm, so back goes there
   const charmFirst = objectChoice === 'charm'
   const backPath = classroomMode
-    ? `/prototype/classroom/${classroomId}/locker/${lockerId}${charmFirst ? '/charm' : ''}`
+    ? `/classroom/${classroomId}/locker/${lockerId}${charmFirst ? '/charm' : ''}`
     : supporterPath(supporterToken, charmFirst ? '/charm' : '')
   const placementPath = classroomMode
-    ? `/prototype/classroom/${classroomId}/locker/${lockerId}/placement`
+    ? `/classroom/${classroomId}/locker/${lockerId}/placement`
     : supporterPath(supporterToken, '/placement')
   const [tool, setTool] = useState<ComposerTool>('background')
   const [visibilityOpen, setVisibilityOpen] = useState(false)
