@@ -180,7 +180,7 @@ describe('dealing', () => {
       const rows = toRows(board)
       if (fillRatio(rows) < 0.55) continue
 
-      const hand = dealHand(board, seededRng(seed), 1)
+      const hand = dealHand(board, seededRng(seed), 1, { score: 25_000, dryHands: 0 })
       const dealt = analyzeHand(rows, hand.map((piece) => SHAPE_DEFS.find((item) => item.shape === piece.shape)!), 6000, 60)
       if (!dealt.solvable) continue
 
