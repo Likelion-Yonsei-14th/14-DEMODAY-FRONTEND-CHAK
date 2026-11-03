@@ -39,6 +39,8 @@ build/Release
 
 # Dependency directories
 node_modules/
+# also as a plain name, so a node_modules symlink (as a worktree makes) is never committed
+node_modules
 jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)
