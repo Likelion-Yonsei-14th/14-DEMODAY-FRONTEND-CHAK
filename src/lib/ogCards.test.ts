@@ -24,7 +24,16 @@ describe('link cards', () => {
     expect(indexHtml).toContain('<meta name="robots" content="index,follow" />')
     expect(indexHtml).toContain('<link rel="canonical" href="https://www.chak.live/" />')
     expect(indexHtml).toContain('"@type": "WebSite"')
-    expect(indexHtml).toContain('<h1>착! 수험생 응원 책상</h1>')
+    expect(indexHtml).toContain('<h1>수능 착 · 수험생 응원 책상</h1>')
+    expect(indexHtml).toContain('"수능 착"')
+  })
+
+  it('serves the static about page at /about and lists it for crawlers', () => {
+    const about = readFileSync('public/about.html', 'utf8')
+    expect(about).toContain('<link rel="canonical" href="https://www.chak.live/about" />')
+    expect(about).toContain('"@type": "FAQPage"')
+    expect(vercel.rewrites).toContainEqual({ source: '/about', destination: '/about.html' })
+    expect(readFileSync('public/sitemap.xml', 'utf8')).toContain('<loc>https://www.chak.live/about</loc>')
   })
 
   it('writes a card into index.html, keeping the shared address', () => {
