@@ -1,3 +1,5 @@
+import type { Board, PlacedPiece } from './deskBlastEngine'
+
 /** What a finished game shows on the result card. */
 export type BlastResult = {
   score: number
@@ -8,6 +10,9 @@ export type BlastResult = {
   line: string
   newBest: boolean
   previousBest: number
+  /** The desk as the game ended, for the share image. */
+  board: Board
+  placed: readonly PlacedPiece[]
 }
 
 export const formatPlayTime = (ms: number) => {
