@@ -78,7 +78,7 @@ export function HomePage() {
 
   const startDesk = () => {
     resetDeskCreationDraft()
-    navigate('/prototype/create')
+    navigate('/create')
   }
 
   return (
@@ -112,7 +112,7 @@ export function HomePage() {
             type="button"
             className="home-page__door home-page__door--desk"
             disabled={serverCheck && deskCheck === 'unknown'}
-            onClick={deskUnsure ? retryDeskCheck : hasDesk ? () => navigate('/prototype/my/desk') : startDesk}
+            onClick={deskUnsure ? retryDeskCheck : hasDesk ? () => navigate('/my/desk') : startDesk}
           >
             <span className="home-page__door-label">
               {deskUnsure || hasDesk ? <UserRound size={14} aria-hidden /> : <Plus size={14} aria-hidden />}
@@ -143,7 +143,7 @@ export function HomePage() {
               if (!classroomOpen) {
                 setClassroomNotice(true)
               } else if (hasClass) {
-                navigate(`/prototype/classroom/${classroom.id}/map`)
+                navigate(`/classroom/${classroom.id}/map`)
               } else {
                 showToast('아직 반이 생성되지 않았어요.')
               }

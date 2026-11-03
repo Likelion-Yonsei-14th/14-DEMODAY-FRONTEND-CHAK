@@ -36,7 +36,7 @@ export function BlackboardPage() {
   if (!member) {
     return (
       <Navigate
-        to={`/prototype/classroom/${classroomId ?? classroom.id}/join`}
+        to={`/classroom/${classroomId ?? classroom.id}/join`}
         replace
       />
     )
@@ -57,7 +57,7 @@ export function BlackboardPage() {
               label="교실로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() =>
-                navigate(`/prototype/classroom/${id}/map`)
+                navigate(`/classroom/${id}/map`)
               }
             />
           }
@@ -70,7 +70,7 @@ export function BlackboardPage() {
           leadingIcon={<PencilLine size={18} aria-hidden />}
           onClick={() =>
             navigate(
-              `/prototype/classroom/${id}/blackboard/write`,
+              `/classroom/${id}/blackboard/write`,
             )
           }
         >
@@ -167,7 +167,7 @@ export function BlackboardWritePage() {
   if (!member) {
     return (
       <Navigate
-        to={`/prototype/classroom/${classroomId ?? classroom.id}/join`}
+        to={`/classroom/${classroomId ?? classroom.id}/join`}
         replace
       />
     )
@@ -246,7 +246,7 @@ export function BlackboardWritePage() {
         ? canvasRef.current?.toDataURL('image/png')
         : undefined,
     })
-    navigate(`/prototype/classroom/${id}/blackboard`, {
+    navigate(`/classroom/${id}/blackboard`, {
       replace: true,
     })
   }
@@ -263,7 +263,7 @@ export function BlackboardWritePage() {
               label="칠판으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() =>
-                navigate(`/prototype/classroom/${id}/blackboard`)
+                navigate(`/classroom/${id}/blackboard`)
               }
             />
           }

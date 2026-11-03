@@ -97,17 +97,17 @@ Useful routes:
 | `/start` | 서비스 진입 (신규) |
 | `/home` | 재로그인 후 홈: 내 책상 가기 / 우리 반 가기 |
 | `/prototype` | 전체 prototype index |
-| `/prototype/create` | personal desk creation |
-| `/prototype/my/desk` | Owner personal desk (`?desk=full`: 책상 꽉 참 미리보기) |
-| `/prototype/support/jisu` | Supporter가 보는 책상 |
-| `/prototype/claim` | recipient Claim |
-| `/prototype/classroom/create` | Class / Group creation |
-| `/prototype/classroom/:classroomId/map` | 교실 지도 |
-| `/prototype/classroom/:classroomId/locker/:lockerId` | 사물함 |
-| `/prototype/classroom/:classroomId/locker/:lockerId/decorate` | 사물함 꾸미기 (주인만) |
-| `/prototype/wrapped` | post-exam Personal Wrapped |
-| `/prototype/classroom/:classroomId/wrapped` | Class Wrapped |
-| `/prototype/offers` | student benefits |
+| `/create` | personal desk creation |
+| `/my/desk` | Owner personal desk (`?desk=full`: 책상 꽉 참 미리보기) |
+| `/support/jisu` | Supporter가 보는 책상 |
+| `/claim` | recipient Claim |
+| `/classroom/create` | Class / Group creation |
+| `/classroom/:classroomId/map` | 교실 지도 |
+| `/classroom/:classroomId/locker/:lockerId` | 사물함 |
+| `/classroom/:classroomId/locker/:lockerId/decorate` | 사물함 꾸미기 (주인만) |
+| `/wrapped` | post-exam Personal Wrapped |
+| `/classroom/:classroomId/wrapped` | Class Wrapped |
+| `/offers` | student benefits |
 | `/system` | live code design system |
 
 책상과 사물함 화면은 `?scene=day` / `?scene=night`로 낮/밤을 고정해서 볼 수 있습니다. 프로토타입 상태는 브라우저 `localStorage`(`eun-demoday-prototype`)에 저장되므로, 브라우저마다 데이터가 다릅니다.

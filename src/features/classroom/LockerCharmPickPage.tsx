@@ -30,13 +30,13 @@ export function LockerCharmPickPage() {
   if (!locker) {
     return (
       <Navigate
-        to={`/prototype/classroom/${classroomId ?? classroom.id}/map`}
+        to={`/classroom/${classroomId ?? classroom.id}/map`}
         replace
       />
     )
   }
 
-  const lockerPath = `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}`
+  const lockerPath = `/classroom/${classroomId ?? classroom.id}/locker/${locker.id}`
   const current =
     parseUniversityCharmId(charmDraft.assetId) ??
     parseUniversityCharmId(universityCharmId(charmUniversities[0]!.id, 'jersey'))!

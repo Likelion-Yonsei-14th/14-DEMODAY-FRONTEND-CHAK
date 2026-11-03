@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom'
+import { createBrowserRouter, Navigate, useLocation, type RouteObject } from 'react-router-dom'
 import { ComingSoonPage } from '@/features/common/ComingSoon'
 import { RouteErrorPage } from '@/app/RouteErrorPage'
 import { App } from '@/app/App'
@@ -137,11 +137,16 @@ import {
  * 개발과 테스트에서는 모두 그대로 열려 있다.
  */
 const NOT_READY_PATHS: Array<{ pattern: RegExp; title: string }> = [
-  { pattern: /^\/prototype\/classroom(\/|$)/, title: '우리 반' },
-  { pattern: /^\/prototype\/wrapped(\/|$)/, title: '응원 결산' },
-  { pattern: /^\/prototype\/offers(\/|$)/, title: '혜택' },
+  { pattern: /^\/classroom(\/|$)/, title: '우리 반' },
+  { pattern: /^\/wrapped(\/|$)/, title: '응원 결산' },
+  { pattern: /^\/offers(\/|$)/, title: '혜택' },
 ]
-const INTERNAL_PATHS = [/^\/prototype$/, /^\/prototype\/(composer|reader|manage)$/, /^\/system$/]
+export function LegacyPrototypeRedirect() {
+  const { pathname, search, hash } = useLocation()
+  return <Navigate to={`${pathname.replace(/^\/prototype/, '') || '/'}${search}${hash}`} replace />
+}
+
+const INTERNAL_PATHS = [/^\/prototype$/, /^\/(composer|reader|manage)$/, /^\/system$/]
 
 export function gateRoutes(routes: RouteObject[], production: boolean): RouteObject[] {
   if (!production) return routes
@@ -315,22 +320,22 @@ export const router = createBrowserRouter([
       { path: '/minigame/sneaky-phone', element: <SneakyPhoneIntroPage /> },
       { path: '/minigame/sneaky-phone/play', element: <SneakyPhonePlayPage /> },
 
-      { path: '/prototype/create', element: <DeskCreateWhoPage /> },
+      { path: '/create', element: <DeskCreateWhoPage /> },
       {
-        path: '/prototype/create/recipient',
+        path: '/create/recipient',
         element: <DeskCreateRecipientPage />,
       },
       {
-        path: '/prototype/create/read-mode',
+        path: '/create/read-mode',
         element: <DeskCreateReadModePage />,
       },
       {
-        path: '/prototype/create/complete',
+        path: '/create/complete',
         element: <DeskCreateCompletePage />,
       },
 
       // Canonical supporter desk routes, keyed by supporter token (the
-      // backend looks a desk up by this). `/prototype/support/jisu*` below
+      // backend looks a desk up by this). `/support/jisu*` below
       // stays mounted at the same components so old links keep working,
       // but every link this app generates now points here.
       {
@@ -345,7 +350,7 @@ export const router = createBrowserRouter([
           { path: 'complete', element: <SupportCompletePage /> },
           {
             path: 'cards',
-            element: <Navigate to="/prototype/my/desk/cards" replace />,
+            element: <Navigate to="/my/desk/cards" replace />,
           },
           { path: 'message/:messageId', element: <MessageViewerPage /> },
           { path: 'replies', element: <SupporterRepliesPage /> },
@@ -354,201 +359,201 @@ export const router = createBrowserRouter([
         ],
       },
 
-      { path: '/prototype/support/jisu', element: <SupportDeskPage /> },
+      { path: '/support/jisu', element: <SupportDeskPage /> },
       {
-        path: '/prototype/support/jisu/compose',
+        path: '/support/jisu/compose',
         element: <UnifiedComposerPage />,
       },
       {
-        path: '/prototype/support/jisu/charm',
+        path: '/support/jisu/charm',
         element: <CharmPickPage />,
       },
       {
-        path: '/prototype/support/jisu/sticker',
+        path: '/support/jisu/sticker',
         element: <StickerPickPage />,
       },
       {
-        path: '/prototype/support/jisu/placement',
+        path: '/support/jisu/placement',
         element: <PlacementPreviewPage />,
       },
       {
-        path: '/prototype/support/jisu/complete',
+        path: '/support/jisu/complete',
         element: <SupportCompletePage />,
       },
 
       {
         element: <OwnerDeskGate />,
         children: [
-          { path: '/prototype/my/desk', element: <OwnerDeskPage /> },
-          { path: '/prototype/my/desk/cards', element: <EnvelopeStackPage /> },
-          { path: '/prototype/my/settings', element: <DeskSettingsPage /> },
+          { path: '/my/desk', element: <OwnerDeskPage /> },
+          { path: '/my/desk/cards', element: <EnvelopeStackPage /> },
+          { path: '/my/settings', element: <DeskSettingsPage /> },
           {
-            path: '/prototype/my/settings/blocked',
+            path: '/my/settings/blocked',
             element: <BlockedSupportersPage />,
           },
           {
-            path: '/prototype/my/settings/connect',
+            path: '/my/settings/connect',
             element: <ConnectRoomsPage />,
           },
           {
-            path: '/prototype/my/settings/end',
+            path: '/my/settings/end',
             element: <EndRoomPage />,
           },
           {
-            path: '/prototype/my/message/:messageId',
+            path: '/my/message/:messageId',
             element: <MessageViewerPage />,
           },
           {
-            path: '/prototype/my/message/:messageId/reply',
+            path: '/my/message/:messageId/reply',
             element: <MessageReplyPage />,
           },
         ],
       },
       {
-        path: '/prototype/desk',
-        element: <Navigate to="/prototype/my/desk" replace />,
+        path: '/desk',
+        element: <Navigate to="/my/desk" replace />,
       },
       {
-        path: '/prototype/support/jisu/cards',
-        element: <Navigate to="/prototype/my/desk/cards" replace />,
+        path: '/support/jisu/cards',
+        element: <Navigate to="/my/desk/cards" replace />,
       },
       {
-        path: '/prototype/support/jisu/message/:messageId',
+        path: '/support/jisu/message/:messageId',
         element: <MessageViewerPage />,
       },
       {
-        path: '/prototype/support/jisu/replies',
+        path: '/support/jisu/replies',
         element: <SupporterRepliesPage />,
       },
       {
-        path: '/prototype/support/jisu/sent',
+        path: '/support/jisu/sent',
         element: <SentMessagesPage />,
       },
       {
-        path: '/prototype/support/jisu/settings',
+        path: '/support/jisu/settings',
         element: <SupporterSettingsPage />,
       },
 
-      { path: '/prototype/composer', element: <ComposerPage /> },
-      { path: '/prototype/reader', element: <ReaderPage /> },
-      { path: '/prototype/manage', element: <CreatorManagementPage /> },
-      { path: '/prototype/claim', element: <ClaimIntroPage /> },
+      { path: '/composer', element: <ComposerPage /> },
+      { path: '/reader', element: <ReaderPage /> },
+      { path: '/manage', element: <CreatorManagementPage /> },
+      { path: '/claim', element: <ClaimIntroPage /> },
       {
-        path: '/prototype/claim/backlog',
+        path: '/claim/backlog',
         element: <ClaimBacklogPage />,
       },
       {
-        path: '/prototype/claim/read-mode',
+        path: '/claim/read-mode',
         element: <ClaimReadModePage />,
       },
       {
-        path: '/prototype/claim/complete',
+        path: '/claim/complete',
         element: <ClaimCompletePage />,
       },
       {
-        path: '/prototype/classroom',
+        path: '/classroom',
         element: <ClassroomEntryRedirect />,
       },
       {
-        path: '/prototype/classroom/create',
+        path: '/classroom/create',
         element: <ClassroomCreatePage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/complete',
+        path: '/classroom/:classroomId/complete',
         element: <ClassroomCreateCompletePage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/join',
+        path: '/classroom/:classroomId/join',
         element: <ClassroomJoinPage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/map',
+        path: '/classroom/:classroomId/map',
         element: <ClassroomMapPage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/settings',
+        path: '/classroom/:classroomId/settings',
         element: <ClassroomSettingsPage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/wrapped',
+        path: '/classroom/:classroomId/wrapped',
         element: <ClassWrappedPage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/wrapped/share',
+        path: '/classroom/:classroomId/wrapped/share',
         element: <ClassWrappedSharePage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/blackboard',
+        path: '/classroom/:classroomId/blackboard',
         element: <BlackboardPage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/blackboard/write',
+        path: '/classroom/:classroomId/blackboard/write',
         element: <BlackboardWritePage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/locker/:lockerId',
+        path: '/classroom/:classroomId/locker/:lockerId',
         element: <ClassroomLockerPage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/locker/:lockerId/compose',
+        path: '/classroom/:classroomId/locker/:lockerId/compose',
         element: <UnifiedComposerPage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/locker/:lockerId/decorate',
+        path: '/classroom/:classroomId/locker/:lockerId/decorate',
         element: <LockerDecoratePage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/locker/:lockerId/charm',
+        path: '/classroom/:classroomId/locker/:lockerId/charm',
         element: <LockerCharmPickPage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/locker/:lockerId/sticker',
+        path: '/classroom/:classroomId/locker/:lockerId/sticker',
         element: <LockerStickerPickPage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/locker/:lockerId/placement',
+        path: '/classroom/:classroomId/locker/:lockerId/placement',
         element: <ClassroomLockerPlacementPage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/locker/:lockerId/complete',
+        path: '/classroom/:classroomId/locker/:lockerId/complete',
         element: <ClassroomLockerCompletePage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/locker/:lockerId/message/:messageId',
+        path: '/classroom/:classroomId/locker/:lockerId/message/:messageId',
         element: <MessageViewerPage />,
       },
       {
-        path: '/prototype/classroom/:classroomId/locker/:lockerId/message/:messageId/reply',
+        path: '/classroom/:classroomId/locker/:lockerId/message/:messageId/reply',
         element: <MessageReplyPage />,
       },
-      { path: '/prototype/wrapped', element: <WrappedHomePage /> },
+      { path: '/wrapped', element: <WrappedHomePage /> },
       {
-        path: '/prototype/wrapped/intro',
+        path: '/wrapped/intro',
         element: <WrappedIntroPage />,
       },
       {
-        path: '/prototype/wrapped/insight',
+        path: '/wrapped/insight',
         element: <WrappedInsightPage />,
       },
       {
-        path: '/prototype/wrapped/friends',
+        path: '/wrapped/friends',
         element: <WrappedFriendsPage />,
       },
       {
-        path: '/prototype/wrapped/records',
+        path: '/wrapped/records',
         element: <WrappedRecordsPage />,
       },
       {
-        path: '/prototype/wrapped/share',
+        path: '/wrapped/share',
         element: <WrappedSharePage />,
       },
-      { path: '/prototype/offers', element: <OffersPage /> },
+      { path: '/offers', element: <OffersPage /> },
       {
-        path: '/prototype/offers/:offerId',
+        path: '/offers/:offerId',
         element: <OfferDetailPage />,
       },
       {
-        path: '/prototype/offers/:offerId/coupon',
+        path: '/offers/:offerId/coupon',
         element: <OfferCouponPage />,
       },
       { path: '/minigame/study-type', element: <StudyTypeIntroPage /> },
@@ -568,6 +573,8 @@ export const router = createBrowserRouter([
         element: <GuessGodResultPage />,
       },
       // Unknown addresses go through the front door: /home if signed in, welcome otherwise.
+      // Addresses from before the `/prototype` prefix was dropped (bookmarks, links already shared).
+      { path: '/prototype/*', element: <LegacyPrototypeRedirect /> },
       { path: '*', element: <Navigate to="/" replace /> },
     ], import.meta.env.PROD),
   },

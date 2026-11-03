@@ -24,8 +24,8 @@ function renderHome() {
       <MemoryRouter initialEntries={['/home']}>
         <Routes>
           <Route path="/home" element={<HomePage />} />
-          <Route path="/prototype/create" element={<p>책상 만들기 화면</p>} />
-          <Route path="/prototype/my/desk" element={<p>내 책상 화면</p>} />
+          <Route path="/create" element={<p>책상 만들기 화면</p>} />
+          <Route path="/my/desk" element={<p>내 책상 화면</p>} />
         </Routes>
       </MemoryRouter>
     </NotificationProvider>,

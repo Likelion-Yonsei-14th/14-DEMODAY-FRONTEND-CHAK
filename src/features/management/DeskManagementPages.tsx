@@ -123,7 +123,7 @@ export function DeskSettingsPage() {
             <IconButton
               label="내 책상으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate('/prototype/my/desk')}
+              onClick={() => navigate('/my/desk')}
             />
           }
         />
@@ -246,7 +246,7 @@ export function DeskSettingsPage() {
             type="button"
             className="desk-settings__row"
             onClick={() =>
-              navigate('/prototype/my/settings/blocked')
+              navigate('/my/settings/blocked')
             }
           >
             <Ban size={18} aria-hidden />
@@ -263,7 +263,7 @@ export function DeskSettingsPage() {
             type="button"
             className="desk-settings__row"
             onClick={() =>
-              navigate('/prototype/my/settings/connect')
+              navigate('/my/settings/connect')
             }
           >
             <Link2 size={18} aria-hidden />
@@ -293,7 +293,7 @@ export function DeskSettingsPage() {
           <button
             type="button"
             className="desk-settings__danger"
-            onClick={() => navigate('/prototype/my/settings/end')}
+            onClick={() => navigate('/my/settings/end')}
           >
             응원 받기 종료
           </button>
@@ -365,7 +365,7 @@ export function BlockedSupportersPage() {
             <IconButton
               label="설정으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate('/prototype/my/settings')}
+              onClick={() => navigate('/my/settings')}
             />
           }
         />
@@ -437,7 +437,7 @@ export function ConnectRoomsPage() {
             <IconButton
               label="설정으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate('/prototype/my/settings')}
+              onClick={() => navigate('/my/settings')}
             />
           }
         />
@@ -495,12 +495,12 @@ export function EndRoomPage() {
   const endRoom = usePrototypeStore((state) => state.endRoom)
 
   if (settings.roomClosed) {
-    return <Navigate to="/prototype/my/desk" replace />
+    return <Navigate to="/my/desk" replace />
   }
 
   const confirm = () => {
     endRoom()
-    navigate('/prototype/my/desk', { replace: true })
+    navigate('/my/desk', { replace: true })
   }
 
   return (
@@ -514,7 +514,7 @@ export function EndRoomPage() {
             <IconButton
               label="설정으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate('/prototype/my/settings')}
+              onClick={() => navigate('/my/settings')}
             />
           }
         />
@@ -524,7 +524,7 @@ export function EndRoomPage() {
           <Button
             variant="secondary"
             fullWidth
-            onClick={() => navigate('/prototype/my/settings')}
+            onClick={() => navigate('/my/settings')}
           >
             계속 응원 받기
           </Button>
@@ -573,7 +573,7 @@ export function CreatorManagementPage() {
   const share = async (kind: 'owner' | 'support') => {
     const path =
       kind === 'owner'
-        ? '/prototype/claim'
+        ? '/claim'
         : supporterPath(getOwnSupporterToken())
     const url = buildPrototypeShareUrl(path)
 

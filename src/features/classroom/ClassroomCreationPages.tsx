@@ -32,7 +32,7 @@ export function ClassroomEntryRedirect() {
 
   return (
     <Navigate
-      to={`/prototype/classroom/${classroom.id}/${next}`}
+      to={`/classroom/${classroom.id}/${next}`}
       replace
     />
   )
@@ -51,7 +51,7 @@ export function ClassroomCreatePage() {
     // The creator makes their own locker first, so the class isn't empty
     // when the first friend opens the link.
     navigate(
-      `/prototype/classroom/${classroomId}/join?from=create`,
+      `/classroom/${classroomId}/join?from=create`,
       { replace: true },
     )
   }
@@ -123,7 +123,7 @@ export function ClassroomCreateCompletePage() {
 
   const share = async () => {
     const url = buildPrototypeShareUrl(
-      `/prototype/classroom/${id}/join`,
+      `/classroom/${id}/join`,
     )
 
     await shareOrCopyLink(
@@ -147,7 +147,7 @@ export function ClassroomCreateCompletePage() {
             variant="brand"
             fullWidth
             onClick={() =>
-              navigate(`/prototype/classroom/${id}/map`, { replace: true })
+              navigate(`/classroom/${id}/map`, { replace: true })
             }
           >
             교실로 들어가기
@@ -157,7 +157,7 @@ export function ClassroomCreateCompletePage() {
             variant="brand"
             fullWidth
             onClick={() =>
-              navigate(`/prototype/classroom/${id}/join?from=create`)
+              navigate(`/classroom/${id}/join?from=create`)
             }
           >
             내 사물함 만들러 가기
@@ -213,7 +213,7 @@ export function ClassroomJoinPage() {
 
     // The creator shares the link next; everyone else goes to the class.
     navigate(
-      `/prototype/classroom/${classroomId ?? classroom.id}/${creating ? 'complete' : 'map'}`,
+      `/classroom/${classroomId ?? classroom.id}/${creating ? 'complete' : 'map'}`,
       { replace: true },
     )
   }
@@ -232,7 +232,7 @@ export function ClassroomJoinPage() {
               onClick={() =>
                 navigate(
                   creating
-                    ? `/prototype/classroom/${classroomId ?? classroom.id}/complete`
+                    ? `/classroom/${classroomId ?? classroom.id}/complete`
                     : homePath,
                 )
               }

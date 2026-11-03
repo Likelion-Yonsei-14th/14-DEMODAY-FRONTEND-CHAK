@@ -24,9 +24,9 @@ describe('making a desk for a friend', () => {
   function renderCreate() {
     return render(
       <NotificationProvider>
-        <MemoryRouter initialEntries={['/prototype/create/read-mode']}>
+        <MemoryRouter initialEntries={['/create/read-mode']}>
           <Routes>
-            <Route path="/prototype/create/read-mode" element={<DeskCreateReadModePage />} />
+            <Route path="/create/read-mode" element={<DeskCreateReadModePage />} />
             <Route path="/friend-desks/created" element={<p>친구 책상 완료</p>} />
           </Routes>
         </MemoryRouter>
@@ -62,9 +62,9 @@ describe('deleting my own desk', () => {
   function renderSettings() {
     return render(
       <NotificationProvider>
-        <MemoryRouter initialEntries={['/prototype/my/settings']}>
+        <MemoryRouter initialEntries={['/my/settings']}>
           <Routes>
-            <Route path="/prototype/my/settings" element={<DeskSettingsPage />} />
+            <Route path="/my/settings" element={<DeskSettingsPage />} />
             <Route path="/home" element={<p>홈 화면</p>} />
           </Routes>
         </MemoryRouter>
