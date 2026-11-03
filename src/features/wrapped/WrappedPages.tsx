@@ -104,7 +104,7 @@ export function WrappedHomePage() {
         <Button
           variant="brand"
           fullWidth
-          onClick={() => navigate('/prototype/wrapped/intro')}
+          onClick={() => navigate('/wrapped/intro')}
         >
           내 응원 기록 보기
         </Button>
@@ -141,7 +141,7 @@ export function WrappedIntroPage() {
           title="나의 응원 기록"
           leading={
             <WrappedBack
-              to="/prototype/wrapped"
+              to="/wrapped"
               label="이전으로"
             />
           }
@@ -151,7 +151,7 @@ export function WrappedIntroPage() {
         <Button
           variant="brand"
           fullWidth
-          onClick={() => navigate('/prototype/wrapped/insight')}
+          onClick={() => navigate('/wrapped/insight')}
         >
           어떤 마음들이 모였는지 보기
         </Button>
@@ -204,7 +204,7 @@ export function WrappedInsightPage() {
           title="응원 속 마음"
           leading={
             <WrappedBack
-              to="/prototype/wrapped/intro"
+              to="/wrapped/intro"
               label="이전으로"
             />
           }
@@ -214,7 +214,7 @@ export function WrappedInsightPage() {
         <Button
           variant="brand"
           fullWidth
-          onClick={() => navigate('/prototype/wrapped/friends')}
+          onClick={() => navigate('/wrapped/friends')}
         >
           함께한 친구들 보기
         </Button>
@@ -271,7 +271,7 @@ export function WrappedFriendsPage() {
           title="함께한 친구들"
           leading={
             <WrappedBack
-              to="/prototype/wrapped/insight"
+              to="/wrapped/insight"
               label="이전으로"
             />
           }
@@ -281,7 +281,7 @@ export function WrappedFriendsPage() {
         <Button
           variant="brand"
           fullWidth
-          onClick={() => navigate('/prototype/wrapped/records')}
+          onClick={() => navigate('/wrapped/records')}
         >
           전체 기록 보기
         </Button>
@@ -339,7 +339,7 @@ export function WrappedRecordsPage() {
           title="전체 기록"
           leading={
             <WrappedBack
-              to="/prototype/wrapped/friends"
+              to="/wrapped/friends"
               label="이전으로"
             />
           }
@@ -349,7 +349,7 @@ export function WrappedRecordsPage() {
         <Button
           variant="brand"
           fullWidth
-          onClick={() => navigate('/prototype/wrapped/share')}
+          onClick={() => navigate('/wrapped/share')}
         >
           내 기록 한 장으로 보기
         </Button>
@@ -438,7 +438,7 @@ export function WrappedSharePage() {
           title="공유하기"
           leading={
             <WrappedBack
-              to="/prototype/wrapped/records"
+              to="/wrapped/records"
               label="이전으로"
             />
           }
@@ -475,7 +475,7 @@ export function WrappedSharePage() {
         <button
           type="button"
           className="wrapped-share-page__offers"
-          onClick={() => navigate('/prototype/offers')}
+          onClick={() => navigate('/offers')}
         >
           <Gift size={17} aria-hidden />
           <span>
@@ -499,7 +499,7 @@ export function OffersPage() {
           title="수험생 혜택"
           leading={
             <WrappedBack
-              to="/prototype/wrapped/share"
+              to="/wrapped/share"
               label="응원 기록으로 돌아가기"
             />
           }
@@ -523,7 +523,7 @@ export function OffersPage() {
           {offers.map((offer) => (
             <Link
               className="offer-card"
-              to={`/prototype/offers/${offer.id}`}
+              to={`/offers/${offer.id}`}
               key={offer.id}
             >
               <span className="offer-card__category">
@@ -549,7 +549,7 @@ export function OfferDetailPage() {
   const offer = offers.find((item) => item.id === offerId)
 
   if (!offer) {
-    return <Navigate to="/prototype/offers" replace />
+    return <Navigate to="/offers" replace />
   }
 
   return (
@@ -561,7 +561,7 @@ export function OfferDetailPage() {
           title="혜택 상세"
           leading={
             <WrappedBack
-              to="/prototype/offers"
+              to="/offers"
               label="혜택 목록으로 돌아가기"
             />
           }
@@ -572,7 +572,7 @@ export function OfferDetailPage() {
           variant="brand"
           fullWidth
           onClick={() =>
-            navigate(`/prototype/offers/${offer.id}/coupon`)
+            navigate(`/offers/${offer.id}/coupon`)
           }
         >
           혜택 사용하기
@@ -608,7 +608,7 @@ export function OfferDetailPage() {
         <button
           type="button"
           className="offer-detail__back"
-          onClick={() => navigate('/prototype/offers')}
+          onClick={() => navigate('/offers')}
         >
           다른 혜택 더 보기
         </button>
@@ -625,7 +625,7 @@ export function OfferCouponPage() {
   const offer = offers.find((item) => item.id === offerId)
 
   if (!offer) {
-    return <Navigate to="/prototype/offers" replace />
+    return <Navigate to="/offers" replace />
   }
 
   const saveCoupon = async () => {
@@ -653,7 +653,7 @@ export function OfferCouponPage() {
           title="수험생 쿠폰"
           leading={
             <WrappedBack
-              to={`/prototype/offers/${offer.id}`}
+              to={`/offers/${offer.id}`}
               label="혜택 상세로 돌아가기"
             />
           }
@@ -665,7 +665,7 @@ export function OfferCouponPage() {
           fullWidth
           onClick={() => {
             showToast('혜택 사용을 완료했어요.')
-            navigate('/prototype/offers', { replace: true })
+            navigate('/offers', { replace: true })
           }}
         >
           사용 완료

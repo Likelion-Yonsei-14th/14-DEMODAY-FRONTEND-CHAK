@@ -155,7 +155,7 @@ export function EnvelopeStackPage() {
 
     window.setTimeout(() => {
       navigate(
-        `/prototype/my/message/${message.id}${location.search}`,
+        `/my/message/${message.id}${location.search}`,
         {
           state: { from: 'owner-cards', openedFromEnvelope: true },
         },
@@ -181,7 +181,7 @@ export function EnvelopeStackPage() {
             <IconButton
               label="내 책상으로 돌아가기"
               icon={<ArrowLeft size={21} aria-hidden />}
-              onClick={() => navigate(`/prototype/my/desk${location.search}`)}
+              onClick={() => navigate(`/my/desk${location.search}`)}
             />
           }
 

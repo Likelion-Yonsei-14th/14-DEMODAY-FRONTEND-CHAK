@@ -100,8 +100,8 @@ describe('classroom entries in a production build', () => {
     wrap('/home', (
       <>
         <Route path="/home" element={<HomePage />} />
-        <Route path="/prototype/classroom/:id/map" element={<p>교실</p>} />
-        <Route path="/prototype/classroom/create" element={<p>교실 만들기</p>} />
+        <Route path="/classroom/:id/map" element={<p>교실</p>} />
+        <Route path="/classroom/create" element={<p>교실 만들기</p>} />
       </>
     ))
 
@@ -116,7 +116,7 @@ describe('classroom entries in a production build', () => {
     wrap('/start', (
       <>
         <Route path="/start" element={<StartPage />} />
-        <Route path="/prototype/classroom/create" element={<p>교실 만들기</p>} />
+        <Route path="/classroom/create" element={<p>교실 만들기</p>} />
       </>
     ))
 
@@ -132,7 +132,7 @@ describe('outside production everything stays open for development', () => {
     wrap('/start', (
       <>
         <Route path="/start" element={<StartPage />} />
-        <Route path="/prototype/classroom/create" element={<p>교실 만들기</p>} />
+        <Route path="/classroom/create" element={<p>교실 만들기</p>} />
       </>
     ))
     fireEvent.click(screen.getByRole('button', { name: /우리끼리 서로 응원할래요/ }))

@@ -51,7 +51,7 @@ export function ClassroomSettingsPage() {
   if (!member) {
     return (
       <Navigate
-        to={`/prototype/classroom/${classroomId ?? classroom.id}/join`}
+        to={`/classroom/${classroomId ?? classroom.id}/join`}
         replace
       />
     )
@@ -77,7 +77,7 @@ export function ClassroomSettingsPage() {
 
   const share = async () => {
     const url = buildPrototypeShareUrl(
-      `/prototype/classroom/${id}/join`,
+      `/classroom/${id}/join`,
     )
 
     await shareOrCopyLink(
@@ -104,7 +104,7 @@ export function ClassroomSettingsPage() {
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() =>
                 navigate(
-                  `/prototype/classroom/${id}/map`,
+                  `/classroom/${id}/map`,
                 )
               }
             />

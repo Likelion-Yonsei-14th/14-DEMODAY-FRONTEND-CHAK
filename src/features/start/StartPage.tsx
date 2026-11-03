@@ -34,7 +34,7 @@ export function StartPage() {
 
   const startPersonal = () => {
     resetDeskCreationDraft()
-    navigate('/prototype/create')
+    navigate('/create')
   }
 
   return (
@@ -102,7 +102,7 @@ export function StartPage() {
             title="우리끼리 서로 응원할래요"
             description="우리 반 교실에서 칠판을 채우고, 각자 사물함에 응원을 남겨요."
             icon={<UsersRound size={22} aria-hidden />}
-            onClick={() => (isClassroomAvailable() ? navigate('/prototype/classroom/create') : setClassroomNotice(true))}
+            onClick={() => (isClassroomAvailable() ? navigate('/classroom/create') : setClassroomNotice(true))}
           />
         </section>
 

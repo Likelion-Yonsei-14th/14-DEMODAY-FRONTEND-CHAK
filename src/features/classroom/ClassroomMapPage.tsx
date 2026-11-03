@@ -79,7 +79,7 @@ export function ClassroomMapPage() {
   if (!member) {
     return (
       <Navigate
-        to={`/prototype/classroom/${classroomId ?? classroom.id}/join`}
+        to={`/classroom/${classroomId ?? classroom.id}/join`}
         replace
       />
     )
@@ -101,7 +101,7 @@ export function ClassroomMapPage() {
   const hiddenLockerCount = classroom.lockers.length - bankLockers.length
 
   const inviteFriends = async () => {
-    const url = buildPrototypeShareUrl(`/prototype/classroom/${id}/join`)
+    const url = buildPrototypeShareUrl(`/classroom/${id}/join`)
     await shareOrCopyLink(
       {
         title: `${classroom.name}에 들어와!`,
@@ -137,7 +137,7 @@ export function ClassroomMapPage() {
                   icon={<Sparkles size={20} aria-hidden />}
                   onClick={() =>
                     navigate(
-                      `/prototype/classroom/${id}/wrapped`,
+                      `/classroom/${id}/wrapped`,
                     )
                   }
                 />
@@ -147,7 +147,7 @@ export function ClassroomMapPage() {
                 icon={<Settings size={20} aria-hidden />}
                 onClick={() =>
                   navigate(
-                    `/prototype/classroom/${id}/settings`,
+                    `/classroom/${id}/settings`,
                   )
                 }
               />
@@ -183,7 +183,7 @@ export function ClassroomMapPage() {
               aria-label="칠판 보기"
               onClick={() =>
                 navigate(
-                  `/prototype/classroom/${id}/blackboard`,
+                  `/classroom/${id}/blackboard`,
                 )
               }
             >
@@ -260,7 +260,7 @@ export function ClassroomMapPage() {
                     }
                     onClick={() =>
                       locker
-                        ? navigate(`/prototype/classroom/${id}/locker/${locker.id}`)
+                        ? navigate(`/classroom/${id}/locker/${locker.id}`)
                         : inviteFriends()
                     }
                   />
@@ -337,7 +337,7 @@ export function ClassroomMapPage() {
                   key={locker.id}
                   className="classroom-lockers-sheet__item"
                   onClick={() =>
-                    navigate(`/prototype/classroom/${id}/locker/${locker.id}`)
+                    navigate(`/classroom/${id}/locker/${locker.id}`)
                   }
                 >
                   <LockerMiniDoor

@@ -105,7 +105,7 @@ export function MessageReplyPage() {
   )
 
   if (!sourceMessage) {
-    return <Navigate to="/prototype/my/desk" replace />
+    return <Navigate to="/my/desk" replace />
   }
 
   if (alreadyReplied) {
@@ -440,10 +440,10 @@ function readerPath(
   messageId: string,
 ) {
   if (classroomId && lockerId) {
-    return `/prototype/classroom/${classroomId}/locker/${lockerId}/message/${messageId}`
+    return `/classroom/${classroomId}/locker/${lockerId}/message/${messageId}`
   }
 
-  return `/prototype/my/message/${messageId}`
+  return `/my/message/${messageId}`
 }
 
 function messagePreview(message: Message) {

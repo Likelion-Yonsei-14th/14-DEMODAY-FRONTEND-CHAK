@@ -44,7 +44,7 @@ export function ClassWrappedPage() {
     classroomId &&
     classroomId !== classroom.id
   ) {
-    return <Navigate to="/prototype/classroom" replace />
+    return <Navigate to="/classroom" replace />
   }
 
   const record = buildClassRecord(classroom, messages)
@@ -63,7 +63,7 @@ export function ClassWrappedPage() {
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() =>
                 navigate(
-                  `/prototype/classroom/${classroom.id}/map`,
+                  `/classroom/${classroom.id}/map`,
                 )
               }
             />
@@ -77,7 +77,7 @@ export function ClassWrappedPage() {
           leadingIcon={<Share2 size={18} aria-hidden />}
           onClick={() =>
             navigate(
-              `/prototype/classroom/${classroom.id}/wrapped/share`,
+              `/classroom/${classroom.id}/wrapped/share`,
             )
           }
         >
@@ -160,7 +160,7 @@ export function ClassWrappedPage() {
           className="class-wrapped__board-link"
           onClick={() =>
             navigate(
-              `/prototype/classroom/${classroom.id}/blackboard`,
+              `/classroom/${classroom.id}/blackboard`,
             )
           }
         >
@@ -182,7 +182,7 @@ export function ClassWrappedSharePage() {
     classroomId &&
     classroomId !== classroom.id
   ) {
-    return <Navigate to="/prototype/classroom" replace />
+    return <Navigate to="/classroom" replace />
   }
 
   const record = buildClassRecord(classroom, messages)
@@ -225,7 +225,7 @@ export function ClassWrappedSharePage() {
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() =>
                 navigate(
-                  `/prototype/classroom/${classroom.id}/wrapped`,
+                  `/classroom/${classroom.id}/wrapped`,
                 )
               }
             />
