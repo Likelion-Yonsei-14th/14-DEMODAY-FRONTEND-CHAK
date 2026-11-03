@@ -601,12 +601,35 @@ describe('the end', () => {
       lines: 3,
       typeName: '책상 방치형',
       newBest: true,
+      look: 'arcade',
     })
     const save = await within(dialog).findByRole('button', { name: '이미지 저장' })
     fireEvent.click(save)
 
     expect(share.downloadBlob).toHaveBeenCalledTimes(1)
     expect(share.downloadBlob.mock.calls[0]![1]).toBe('chak-desk-blast.png')
+  })
+
+  it('hands the last desk to the share image: the board as it ended, the pieces on it, and the look', async () => {
+    renderPage()
+    await finish()
+
+    await waitFor(() => expect(share.renderBlastShareImage).toHaveBeenCalledTimes(1))
+    const data = share.renderBlastShareImage.mock.calls[0]![0]
+    expect(data.board).toHaveLength(8)
+    expect(data.board[0][1]).not.toBe(0)
+    // The last move put the single piece at row 1, column 2 (0-based 0, 1).
+    expect(data.placed).toEqual([{ id: 1, kind: 1, cells: [[0, 1]] }])
+    expect(['arcade', 'objects']).toContain(data.look)
+  })
+
+  it('draws the share image in the look the player chose', async () => {
+    window.localStorage.setItem('chak:desk-blast:look', 'objects')
+    renderPage()
+    await finish()
+
+    await waitFor(() => expect(share.renderBlastShareImage).toHaveBeenCalled())
+    expect(share.renderBlastShareImage.mock.calls[0]![0].look).toBe('objects')
   })
 
   it('says so when the image cannot be made, without breaking the card', async () => {
