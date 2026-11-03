@@ -206,7 +206,7 @@ export function OwnerDeskPage() {
 
     window.setTimeout(() => {
       navigate(
-        `/prototype/my/message/${messageId}${location.search}`,
+        `/my/message/${messageId}${location.search}`,
         {
           state: { from: 'owner-desk' },
         },
@@ -234,7 +234,7 @@ export function OwnerDeskPage() {
             <IconButton
               label="응원 책상 설정"
               icon={<Settings size={20} aria-hidden />}
-              onClick={() => navigate('/prototype/my/settings')}
+              onClick={() => navigate('/my/settings')}
             />
           }
         />
@@ -329,7 +329,7 @@ export function OwnerDeskPage() {
               size="m"
               onClick={() => {
                 clearClaimBacklogDeferred()
-                navigate('/prototype/my/desk/cards')
+                navigate('/my/desk/cards')
               }}
             >
               보기
@@ -380,7 +380,7 @@ export function OwnerDeskPage() {
           onClose={() => setBasketOpen(false)}
           onOpenMessage={(messageId) => {
             setBasketOpen(false)
-            navigate(`/prototype/my/message/${messageId}${location.search}`, {
+            navigate(`/my/message/${messageId}${location.search}`, {
               state: { from: 'owner-desk' },
             })
           }}

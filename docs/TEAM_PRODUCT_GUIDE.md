@@ -845,16 +845,16 @@ Repository:
 
 ## Personal Desk Creation
 
-- `/prototype/create`
-- `/prototype/create/recipient`
-- `/prototype/create/read-mode`
-- `/prototype/create/complete`
+- `/create`
+- `/create/recipient`
+- `/create/read-mode`
+- `/create/complete`
 
 ## Supporter
 
 - Support Desk
 - Object choice (편지 / 부적 / 스티커)
-- Sticker pick (`/prototype/support/jisu/sticker`)
+- Sticker pick (`/support/jisu/sticker`)
 - Unified Composer
 - Placement
 - Complete

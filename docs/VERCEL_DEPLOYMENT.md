@@ -21,8 +21,8 @@ The app uses React Router with BrowserRouter-style client routing. `vercel.json`
 rewrites all browser routes to `/index.html`, so direct visits such as:
 
 - `/prototype`
-- `/prototype/support/jisu`
-- `/prototype/support/jisu/compose`
+- `/support/jisu`
+- `/support/jisu/compose`
 - `/system`
 
 load correctly instead of returning a Vercel 404.
@@ -75,8 +75,8 @@ per environment rather than committing secrets to the repository.
 Check these URLs on the generated Vercel deployment:
 
 1. `/` redirects/lands on the prototype entry.
-2. `/prototype/support/jisu` loads directly after a browser refresh.
-3. `/prototype/support/jisu/compose` loads directly after a browser refresh.
+2. `/support/jisu` loads directly after a browser refresh.
+3. `/support/jisu/compose` loads directly after a browser refresh.
 4. Background assets under `/assets/backgrounds/` render.
 5. `/system` loads.
 6. Mobile viewport interaction works for the composer tabs and canvas.

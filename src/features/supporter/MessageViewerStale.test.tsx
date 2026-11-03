@@ -34,9 +34,9 @@ const lockedCopy = {
 function renderViewer() {
   return render(
     <NotificationProvider>
-      <MemoryRouter initialEntries={['/prototype/my/message/7']}>
+      <MemoryRouter initialEntries={['/my/message/7']}>
         <Routes>
-          <Route path="/prototype/my/message/:messageId" element={<MessageViewerPage />} />
+          <Route path="/my/message/:messageId" element={<MessageViewerPage />} />
         </Routes>
       </MemoryRouter>
     </NotificationProvider>,

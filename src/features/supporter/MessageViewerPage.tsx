@@ -105,14 +105,14 @@ export function MessageViewerPage() {
   const state = location.state as ReaderLocationState | null
   const supporterView =
     state?.from === 'support-desk' ||
-    location.pathname.startsWith('/prototype/support/') ||
+    location.pathname.startsWith('/support/') ||
     location.pathname.startsWith('/desk/')
   const classroomLocker = classroom.lockers.find(
     (locker) => locker.id === lockerId,
   )
   const classroomView = Boolean(
     classroomLocker &&
-      location.pathname.startsWith('/prototype/classroom/'),
+      location.pathname.startsWith('/classroom/'),
   )
   const classroomOwner = Boolean(
     classroomView &&
@@ -273,7 +273,7 @@ export function MessageViewerPage() {
   const back = () => {
     if (classroomView && classroomLocker) {
       navigate(
-        `/prototype/classroom/${classroomId ?? classroom.id}/locker/${classroomLocker.id}`,
+        `/classroom/${classroomId ?? classroom.id}/locker/${classroomLocker.id}`,
       )
       return
     }
@@ -287,8 +287,8 @@ export function MessageViewerPage() {
     // else (desk objects, charms, links) goes back to the desk
     const path =
       state?.from === 'owner-cards'
-        ? '/prototype/my/desk/cards'
-        : '/prototype/my/desk'
+        ? '/my/desk/cards'
+        : '/my/desk'
 
     navigate(`${path}${location.search}`)
   }
@@ -790,8 +790,8 @@ export function MessageViewerPage() {
               setReplyOptionsOpen(false)
               navigate(
                 classroomView
-                  ? `/prototype/classroom/${classroomId}/locker/${lockerId}/message/${message.id}/reply?scope=single`
-                  : `/prototype/my/message/${message.id}/reply?scope=single`,
+                  ? `/classroom/${classroomId}/locker/${lockerId}/message/${message.id}/reply?scope=single`
+                  : `/my/message/${message.id}/reply?scope=single`,
               )
             }}
           >
@@ -806,8 +806,8 @@ export function MessageViewerPage() {
                 setReplyOptionsOpen(false)
                 navigate(
                   classroomView
-                    ? `/prototype/classroom/${classroomId}/locker/${lockerId}/message/${message.id}/reply?scope=daily`
-                    : `/prototype/my/message/${message.id}/reply?scope=daily`,
+                    ? `/classroom/${classroomId}/locker/${lockerId}/message/${message.id}/reply?scope=daily`
+                    : `/my/message/${message.id}/reply?scope=daily`,
                 )
               }}
             >

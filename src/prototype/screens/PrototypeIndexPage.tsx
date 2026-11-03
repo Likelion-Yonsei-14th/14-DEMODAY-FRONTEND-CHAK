@@ -31,7 +31,7 @@ const routes = [
     phase: 'LIVE',
   },
   {
-    path: '/prototype/create',
+    path: '/create',
     title: 'Desk Creation',
     description: '본인/주변인 선택 → 읽기 방식 설정 → 응원 책상 생성',
     phase: 'LIVE',
@@ -43,19 +43,19 @@ const routes = [
     phase: 'LIVE',
   },
   {
-    path: '/prototype/my/desk',
+    path: '/my/desk',
     title: 'Owner Desk',
     description: '수험생 본인 · 책상 오브젝트 열람 ↔ 봉투 Stack 전환 · Common Reader',
     phase: 'LIVE',
   },
   {
-    path: '/prototype/composer',
+    path: '/composer',
     title: 'Unified Composer Spec',
     description: '배경 · 글자 · 문구 · 스티커 · 사진 편집 + 응원 소재/질문 제안',
     phase: 'LIVE',
   },
   {
-    path: '/prototype/reader',
+    path: '/reader',
     title: 'Common Reader',
     description: 'Desk/Locker 오브젝트를 눌렀을 때 열리는 공통 Reader',
     phase: 'LIVE',
@@ -67,25 +67,25 @@ const routes = [
     phase: 'LIVE',
   },
   {
-    path: '/prototype/my/settings',
+    path: '/my/settings',
     title: 'Owner Settings',
     description: '열기 방식 · 공개/알림 · 초대 · 차단 · 다른 공간 연결 · 응원 종료',
     phase: 'LIVE',
   },
   {
-    path: '/prototype/manage',
+    path: '/manage',
     title: 'Creator Management',
     description: 'Claim 전 링크·연결 코드·초기 설정 관리 → Claim 후 Supporter 전환',
     phase: 'LIVE',
   },
   {
-    path: '/prototype/claim',
+    path: '/claim',
     title: 'Creator / Claim',
     description: '친구가 먼저 만든 Desk를 실제 수험생이 소유권 이전',
     phase: 'LIVE',
   },
   {
-    path: '/prototype/classroom',
+    path: '/classroom',
     title: 'Classroom',
     description: '교실 맵 탐색 · 함께 쓰는 칠판 · 학생별 사물함 · Daily 열람',
     phase: 'LIVE',
@@ -103,7 +103,7 @@ const routes = [
     phase: 'LIVE',
   },
   {
-    path: '/prototype/classroom/classroom-3-2/wrapped',
+    path: '/classroom/classroom-3-2/wrapped',
     title: 'Class Wrapped',
     description: '반 전체 응원 총량 · 자주 남은 말/이모지 · 비경쟁 공동 기록 · 공유',
     phase: 'LIVE',
@@ -115,7 +115,7 @@ const routes = [
     phase: 'LIVE',
   },
   {
-    path: '/prototype/wrapped',
+    path: '/wrapped',
     title: 'Post-exam Wrapped',
     description: '수능 종료 → AI 응원 기록 → 친구 Reveal → 전체 기록 → 공유 → 혜택·쿠폰',
     phase: 'LIVE',
@@ -130,22 +130,22 @@ const routes = [
 
 const qaStates = [
   {
-    path: '/prototype/my/desk?daily=before',
+    path: '/my/desk?daily=before',
     title: 'Daily · 열리기 전',
     description: '오늘 묶음이 아직 잠겨 있는 상태',
   },
   {
-    path: '/prototype/my/desk?daily=after',
+    path: '/my/desk?daily=after',
     title: 'Daily · 열린 뒤',
     description: '오늘 묶음이 활성화된 상태',
   },
   {
-    path: '/prototype/my/desk?capsule=before',
+    path: '/my/desk?capsule=before',
     title: '한 번에 열어보기 · 열리기 전',
     description: '모아둔 응원이 모두 잠긴 상태',
   },
   {
-    path: '/prototype/my/desk?capsule=after',
+    path: '/my/desk?capsule=after',
     title: '한 번에 열어보기 · 열린 뒤',
     description: '모아둔 응원이 한 번에 활성화된 상태',
   },

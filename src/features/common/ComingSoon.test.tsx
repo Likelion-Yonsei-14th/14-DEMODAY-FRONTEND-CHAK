@@ -24,9 +24,9 @@ describe('coming soon notices', () => {
 
   it('has a page that sends people back to the start', () => {
     render(
-      <MemoryRouter initialEntries={['/prototype/classroom/abc/join']}>
+      <MemoryRouter initialEntries={['/classroom/abc/join']}>
         <Routes>
-          <Route path="/prototype/classroom/:id/join" element={<ComingSoonPage title="우리 반" />} />
+          <Route path="/classroom/:id/join" element={<ComingSoonPage title="우리 반" />} />
           <Route path="/" element={<Where />} />
         </Routes>
       </MemoryRouter>,
@@ -39,15 +39,15 @@ describe('coming soon notices', () => {
 
 describe('production route gating', () => {
   const routes = [
-    { path: '/prototype/classroom', element: <p>교실 목록</p> },
-    { path: '/prototype/classroom/:classroomId/join', element: <p>가입</p> },
-    { path: '/prototype/wrapped/intro', element: <p>wrapped</p> },
-    { path: '/prototype/offers/:offerId', element: <p>offer</p> },
+    { path: '/classroom', element: <p>교실 목록</p> },
+    { path: '/classroom/:classroomId/join', element: <p>가입</p> },
+    { path: '/wrapped/intro', element: <p>wrapped</p> },
+    { path: '/offers/:offerId', element: <p>offer</p> },
     { path: '/prototype', element: <p>목차</p> },
-    { path: '/prototype/composer', element: <p>placeholder</p> },
+    { path: '/composer', element: <p>placeholder</p> },
     { path: '/system', element: <p>디자인</p> },
-    { path: '/prototype/my/desk', element: <p>내 책상</p> },
-    { path: '/prototype/create', element: <p>책상 만들기</p> },
+    { path: '/my/desk', element: <p>내 책상</p> },
+    { path: '/create', element: <p>책상 만들기</p> },
     { path: '/home', element: <p>홈</p> },
   ]
 
@@ -66,7 +66,7 @@ describe('production route gating', () => {
   }
 
   it('shows a coming soon screen for classroom, wrapped and offers in production', () => {
-    for (const path of ['/prototype/classroom', '/prototype/classroom/c1/join', '/prototype/wrapped/intro', '/prototype/offers/o1']) {
+    for (const path of ['/classroom', '/classroom/c1/join', '/wrapped/intro', '/offers/o1']) {
       open(path, true)
       expect(screen.getByRole('heading', { name: /^(우리 반|응원 결산|혜택)은 아직 개발 중이에요$/ })).toBeInTheDocument()
       document.body.innerHTML = ''
@@ -74,7 +74,7 @@ describe('production route gating', () => {
   })
 
   it('sends internal pages back to the start in production', () => {
-    for (const path of ['/prototype', '/prototype/composer', '/system']) {
+    for (const path of ['/prototype', '/composer', '/system']) {
       open(path, true)
       expect(screen.getByText('처음 화면')).toBeInTheDocument()
       document.body.innerHTML = ''
@@ -82,13 +82,13 @@ describe('production route gating', () => {
   })
 
   it('leaves the real pages alone, and everything open outside production', () => {
-    open('/prototype/my/desk', true)
+    open('/my/desk', true)
     expect(screen.getByText('내 책상')).toBeInTheDocument()
     document.body.innerHTML = ''
-    open('/prototype/create', true)
+    open('/create', true)
     expect(screen.getByText('책상 만들기')).toBeInTheDocument()
     document.body.innerHTML = ''
-    open('/prototype/classroom', false)
+    open('/classroom', false)
     expect(screen.getByText('교실 목록')).toBeInTheDocument()
   })
 })

@@ -32,13 +32,13 @@ export function LockerStickerPickPage() {
   if (!locker) {
     return (
       <Navigate
-        to={`/prototype/classroom/${classroomId ?? classroom.id}/map`}
+        to={`/classroom/${classroomId ?? classroom.id}/map`}
         replace
       />
     )
   }
 
-  const lockerPath = `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}`
+  const lockerPath = `/classroom/${classroomId ?? classroom.id}/locker/${locker.id}`
   const selected = getLockerSticker(stickerDraft.stickerId)
   const price = selected?.price ?? 0
   const goPlace = () => navigate(`${lockerPath}/placement`)

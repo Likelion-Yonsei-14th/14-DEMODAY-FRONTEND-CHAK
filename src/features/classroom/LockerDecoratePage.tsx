@@ -50,13 +50,13 @@ export function LockerDecoratePage() {
   if (!locker || !member || member.lockerId !== locker.id) {
     return (
       <Navigate
-        to={`/prototype/classroom/${classroomId ?? classroom.id}/map`}
+        to={`/classroom/${classroomId ?? classroom.id}/map`}
         replace
       />
     )
   }
 
-  const lockerPath = `/prototype/classroom/${classroomId ?? classroom.id}/locker/${locker.id}`
+  const lockerPath = `/classroom/${classroomId ?? classroom.id}/locker/${locker.id}`
   const charges = getLockerDecorCharges(saved, draft)
   const total = charges.reduce((sum, charge) => sum + charge.price, 0)
   const changed =

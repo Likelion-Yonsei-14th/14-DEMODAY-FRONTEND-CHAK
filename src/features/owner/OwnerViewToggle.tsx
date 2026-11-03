@@ -17,7 +17,7 @@ export function OwnerViewToggle({ mode }: OwnerViewToggleProps) {
         type="button"
         className={mode === 'desk' ? 'owner-view-toggle__item owner-view-toggle__item--active ds-hit-area' : 'owner-view-toggle__item ds-hit-area'}
         aria-pressed={mode === 'desk'}
-        onClick={() => go('/prototype/my/desk')}
+        onClick={() => go('/my/desk')}
       >
         <LayoutGrid size={15} aria-hidden />
         책상 보기
@@ -26,7 +26,7 @@ export function OwnerViewToggle({ mode }: OwnerViewToggleProps) {
         type="button"
         className={mode === 'mail' ? 'owner-view-toggle__item owner-view-toggle__item--active ds-hit-area' : 'owner-view-toggle__item ds-hit-area'}
         aria-pressed={mode === 'mail'}
-        onClick={() => go('/prototype/my/desk/cards')}
+        onClick={() => go('/my/desk/cards')}
       >
         <Mail size={15} aria-hidden />
         봉투 보기

@@ -63,7 +63,7 @@ export function ClaimLinkPage() {
   }, [authenticated, claimToken])
 
   // Without a backend there is no real link to open: the offline prototype has its own walkthrough.
-  if (!isApiEnabled) return <Navigate to="/prototype/claim" replace />
+  if (!isApiEnabled) return <Navigate to="/claim" replace />
 
   const goHome = () => navigate('/home', { replace: true })
 
@@ -111,7 +111,7 @@ export function ClaimLinkPage() {
           <h1>이미 내 응원 책상이<br />있어요.</h1>
         </section>
         <p>응원 책상은 한 사람에 하나만 가질 수 있어서 이 책상은 받을 수 없어요.</p>
-        <Button variant="brand" fullWidth onClick={() => navigate('/prototype/my/desk')}>내 책상 보기</Button>
+        <Button variant="brand" fullWidth onClick={() => navigate('/my/desk')}>내 책상 보기</Button>
       </Shell>
     )
   }
@@ -140,7 +140,7 @@ export function ClaimLinkPage() {
               : '곧 응원이 도착할 거예요.'}
           </span>
         </div>
-        <Button variant="brand" fullWidth onClick={() => navigate('/prototype/my/desk', { replace: true })}>
+        <Button variant="brand" fullWidth onClick={() => navigate('/my/desk', { replace: true })}>
           내 책상 보기
         </Button>
       </Shell>

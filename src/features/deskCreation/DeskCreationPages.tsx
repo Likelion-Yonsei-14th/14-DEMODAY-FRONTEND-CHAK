@@ -51,11 +51,11 @@ export function DeskCreateWhoPage() {
 
     if (draft.createdFor === 'self') {
       setDraft({ recipientDisplayName: currentUser.displayName })
-      navigate('/prototype/create/read-mode')
+      navigate('/create/read-mode')
       return
     }
 
-    navigate('/prototype/create/recipient')
+    navigate('/create/recipient')
   }
 
   return (
@@ -116,7 +116,7 @@ export function DeskCreateRecipientPage() {
   const draft = usePrototypeStore((state) => state.deskCreationDraft)
   const setDraft = usePrototypeStore((state) => state.setDeskCreationDraft)
   // Started from "내가 만든 친구 책상", which skips the "who is it for?" step.
-  const backTo = (location.state as { from?: string } | null)?.from ?? '/prototype/create'
+  const backTo = (location.state as { from?: string } | null)?.from ?? '/create'
 
   const name = draft.recipientDisplayName
   const valid = name.trim().length > 0
@@ -130,7 +130,7 @@ export function DeskCreateRecipientPage() {
           variant="brand"
           fullWidth
           disabled={!valid}
-          onClick={() => navigate('/prototype/create/read-mode')}
+          onClick={() => navigate('/create/read-mode')}
         >
           다음
         </Button>
@@ -195,7 +195,7 @@ export function DeskCreateReadModePage() {
   const finish = async () => {
     if (!isApiEnabled) {
       createDesk()
-      navigate('/prototype/create/complete', { replace: true })
+      navigate('/create/complete', { replace: true })
       return
     }
 
@@ -240,12 +240,12 @@ export function DeskCreateReadModePage() {
           roomClosed: created.roomClosed,
         },
       })
-      navigate('/prototype/create/complete', { replace: true })
+      navigate('/create/complete', { replace: true })
     } catch (error) {
       setSaving(false)
       if (error instanceof ApiError && error.code === 'DESK_ALREADY_EXISTS') {
         showToast('이미 만든 책상이 있어요. 내 책상으로 이동할게요.')
-        navigate('/prototype/my/desk', { replace: true })
+        navigate('/my/desk', { replace: true })
         return
       }
       showToast('책상을 만들지 못했어요. 잠시 후 다시 시도해주세요.')
@@ -254,8 +254,8 @@ export function DeskCreateReadModePage() {
 
   const backPath =
     draft.createdFor === 'other'
-      ? '/prototype/create/recipient'
-      : '/prototype/create'
+      ? '/create/recipient'
+      : '/create'
 
   return (
     <CreationShell
@@ -371,7 +371,7 @@ export function DeskCreateCompletePage() {
 
     const url =
       kind === 'owner'
-        ? buildPrototypeShareUrl('/prototype/claim')
+        ? buildPrototypeShareUrl('/claim')
         : buildPrototypeShareUrl(supporterPath(getOwnSupporterToken()))
     const title =
       kind === 'owner'
@@ -398,7 +398,7 @@ export function DeskCreateCompletePage() {
           <Button
             variant="brand"
             fullWidth
-            onClick={() => navigate('/prototype/my/desk')}
+            onClick={() => navigate('/my/desk')}
           >
             내 책상 보기
           </Button>
@@ -464,7 +464,7 @@ export function DeskCreateCompletePage() {
               <Button
                 variant="tertiary"
                 fullWidth
-                onClick={() => navigate('/prototype/manage')}
+                onClick={() => navigate('/manage')}
               >
                 만든 응원 책상 관리하기
               </Button>
