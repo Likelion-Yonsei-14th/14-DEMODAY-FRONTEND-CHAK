@@ -308,6 +308,10 @@ export const router = createBrowserRouter([
       { path: '/account/delete', element: <DeleteAccountPage /> },
       { path: '/prototype', element: <PrototypeIndexPage /> },
       { path: '/minigame/desk-blast', element: <DeskBlastPage /> },
+      // Development only: the link-card thumbnails are photographed from here (scripts/make-og-images.mjs).
+      ...(import.meta.env.DEV
+        ? [{ path: '/__og/:name', lazy: async () => ({ Component: (await import('@/features/ogImages/OgPreviewPage')).default }) }]
+        : []),
       { path: '/minigame/sneaky-phone', element: <SneakyPhoneIntroPage /> },
       { path: '/minigame/sneaky-phone/play', element: <SneakyPhonePlayPage /> },
 
