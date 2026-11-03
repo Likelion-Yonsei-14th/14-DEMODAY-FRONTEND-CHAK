@@ -60,6 +60,8 @@ const state = (overrides: Partial<GameState>): GameState => ({
   placements: 0,
   status: 'playing',
   nextPieceId: 4,
+  dryHands: 0,
+  bigClearInHand: false,
   ...overrides,
 })
 

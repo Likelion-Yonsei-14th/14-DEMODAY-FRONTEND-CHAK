@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+// Whole games last far longer now, so the simulations get more than the 5 s default.
+vi.setConfig({ testTimeout: 120_000 })
 import {
   ALL_CLEAR_BONUS,
   BOARD_SIZE,
