@@ -105,6 +105,9 @@ export const CARD = {
   boardMin: 560,
   scoreLabelGap: 80,
   scoreSize: 168,
+  /** How far a comma or other low mark in the score reaches below its baseline. */
+  scoreDescent: 36,
+  pillHeight: 52,
   typeSize: 72,
   typeLine: 84,
   memeSize: 40,
@@ -127,9 +130,12 @@ export function cardLayout(typeLines: number, memeLines: number, newBest: boolea
   const boardBottom = CARD.boardY + boardSize
   const labelBaseline = boardBottom + CARD.scoreLabelGap
   const scoreBaseline = labelBaseline + CARD.scoreSize + 4
-  const pillY = scoreBaseline + 18
-  const afterScore = newBest ? pillY + 56 : scoreBaseline + 22
-  const typeBaseline = afterScore + 78
+  // A comma in the big score hangs below the baseline, so the tag and the type name start beneath that.
+  const scoreBottom = scoreBaseline + CARD.scoreDescent
+  const pillY = scoreBottom + 8
+  const afterScore = newBest ? pillY + CARD.pillHeight : scoreBottom
+  // The type name's top is about 0.8 of its size above its baseline.
+  const typeBaseline = afterScore + Math.round(CARD.typeSize * 0.8) + 22
   const memeBaseline = typeBaseline + (typeLines - 1) * CARD.typeLine + 70
   const statBaseline = memeBaseline + (memeLines - 1) * CARD.memeLine + 80
   const ctaY = Math.max(statBaseline + 44, SHARE_HEIGHT - CARD.bottomMargin - CARD.ctaHeight - 62)
@@ -194,7 +200,7 @@ export async function renderBlastShareImage(data: ShareCardData): Promise<Blob> 
   context.fillText(data.score.toLocaleString('ko-KR'), cx, layout.scoreBaseline)
   if (data.newBest) {
     context.fillStyle = '#ffedb3'
-    roundedRect(context, cx - 120, layout.pillY, 240, 52, 26)
+    roundedRect(context, cx - 120, layout.pillY, 240, CARD.pillHeight, 26)
     context.fill()
     context.fillStyle = '#7a5b12'
     context.font = `800 30px ${FONT}`

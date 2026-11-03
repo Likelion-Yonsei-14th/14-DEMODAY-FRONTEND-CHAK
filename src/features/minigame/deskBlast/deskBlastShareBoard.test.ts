@@ -221,9 +221,37 @@ describe('fitting the desk and the text on one card', () => {
     expect(best.typeBaseline).toBeGreaterThan(plain.typeBaseline)
   })
 
-  it('never puts the type name against the score', () => {
-    const layout = cardLayout(1, 1, false, 700)
+  it('keeps the type name clear of the big score, even of the comma that hangs below it', () => {
+    for (const newBest of [false, true]) {
+      const layout = cardLayout(1, 1, newBest, 700)
+      const scoreLowest = layout.scoreBaseline + CARD.scoreDescent
+      const typeTop = layout.typeBaseline - CARD.typeSize * 0.8
 
-    expect(layout.typeBaseline - layout.scoreBaseline).toBeGreaterThan(CARD.typeSize)
+      expect(typeTop - scoreLowest, `newBest=${newBest}`).toBeGreaterThanOrEqual(12)
+    }
+  })
+
+  it('keeps the "new best" tag under the score, clear of the comma, and above the type name', () => {
+    const layout = cardLayout(1, 1, true, 700)
+    const scoreLowest = layout.scoreBaseline + CARD.scoreDescent
+    const typeTop = layout.typeBaseline - CARD.typeSize * 0.8
+
+    expect(layout.pillY).toBeGreaterThanOrEqual(scoreLowest)
+    expect(layout.pillY + CARD.pillHeight).toBeLessThan(typeTop)
+  })
+
+  it('leaves a gap between every text line and the next, for any amount of text', () => {
+    for (const [typeLines, memeLines, newBest] of cases) {
+      const size = fitBoardSize(typeLines, memeLines, newBest)
+      const layout = cardLayout(typeLines, memeLines, newBest, size)
+      const typeBottom = layout.typeBaseline + (typeLines - 1) * CARD.typeLine + 14
+      const memeTop = layout.memeBaseline - CARD.memeSize * 0.8
+      const memeBottom = layout.memeBaseline + (memeLines - 1) * CARD.memeLine + 12
+      const statTop = layout.statBaseline - CARD.statSize * 0.8
+
+      expect(memeTop - typeBottom, `${typeLines}/${memeLines}/${newBest} type to meme`).toBeGreaterThanOrEqual(8)
+      expect(statTop - memeBottom, `${typeLines}/${memeLines}/${newBest} meme to stats`).toBeGreaterThanOrEqual(8)
+      expect(layout.ctaY - (layout.statBaseline + 14), `${typeLines}/${memeLines}/${newBest} stats to button`).toBeGreaterThanOrEqual(8)
+    }
   })
 })
