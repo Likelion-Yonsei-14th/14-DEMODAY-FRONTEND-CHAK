@@ -29,14 +29,14 @@ describe('student types', () => {
     const at = (score: number) => deskTypeOf(score).name
 
     expect(at(0)).toBe('책상 방치형')
-    expect(at(1999)).toBe('책상 방치형')
-    expect(at(2000)).toBe('정리하는 척 공부 회피형')
-    expect(at(4999)).toBe('정리하는 척 공부 회피형')
-    expect(at(5000)).toBe('책상정리 고인물')
-    expect(at(9999)).toBe('책상정리 고인물')
-    expect(at(10000)).toBe('책상만 전교 1등')
-    expect(at(14999)).toBe('책상만 전교 1등')
-    expect(at(15000)).toBe('공부보다 정리가 체질')
+    expect(at(3999)).toBe('책상 방치형')
+    expect(at(4000)).toBe('정리하는 척 공부 회피형')
+    expect(at(9999)).toBe('정리하는 척 공부 회피형')
+    expect(at(10000)).toBe('책상정리 고인물')
+    expect(at(19999)).toBe('책상정리 고인물')
+    expect(at(20000)).toBe('책상만 전교 1등')
+    expect(at(29999)).toBe('책상만 전교 1등')
+    expect(at(30000)).toBe('공부보다 정리가 체질')
     expect(at(1_000_000)).toBe('공부보다 정리가 체질')
   })
 

@@ -448,7 +448,7 @@ describe('the desk getting tidier', () => {
     expect(screen.getByTestId('clutter-coffee')).toHaveAttribute('data-cleared', 'false')
     view.unmount()
 
-    engine.next = state({ score: 1600 })
+    engine.next = state({ score: 3200 })
     renderPage()
 
     expect(screen.getByTestId('clutter-coffee')).toHaveAttribute('data-cleared', 'true')
@@ -490,7 +490,7 @@ describe('the end', () => {
   })
 
   it('picks the type by score', async () => {
-    engine.next = { ...lastMove(), score: 4999 }
+    engine.next = { ...lastMove(), score: 9999 }
     renderPage()
 
     const dialog = await finish()
