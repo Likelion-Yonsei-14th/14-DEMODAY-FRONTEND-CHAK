@@ -51,6 +51,15 @@ describe('read mode', () => {
     expect(api.capsuleUnlockAt).toMatch(/Z$/)
     expect(api.dailyUnlockTime).toBeNull()
   })
+
+  it('reads a time capsule back as the same local date and time', () => {
+    const api = readModeToApi({ type: 'time-capsule', unlockAt: '2026-11-19T20:00' })
+    const desk = { ...api, id: 1 } as unknown as ApiPublicDesk
+    expect(readModeFromApi(desk)).toEqual({
+      type: 'time-capsule',
+      unlockAt: '2026-11-19T20:00',
+    })
+  })
 })
 
 describe('message mapping', () => {

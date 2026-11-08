@@ -58,7 +58,19 @@ export function readModeFromApi(desk: ApiPublicDesk): ReadMode {
   if (desk.readModeType === 'DAILY') {
     return { type: 'daily', unlockTime: (desk.dailyUnlockTime ?? '22:00:00').slice(0, 5) }
   }
-  return { type: 'time-capsule', unlockAt: desk.capsuleUnlockAt ?? new Date().toISOString() }
+  const unlockAt = desk.capsuleUnlockAt ? new Date(desk.capsuleUnlockAt) : new Date()
+  return { type: 'time-capsule', unlockAt: toLocalDateTimeValue(unlockAt) }
+}
+
+/**
+ * The server sends an instant in UTC ("…T11:00:00Z"), but the app keeps the
+ * capsule time as the owner's own wall clock ("YYYY-MM-DDTHH:mm") so date and
+ * time pickers can show it as-is.
+ */
+function toLocalDateTimeValue(date: Date) {
+  if (Number.isNaN(date.getTime())) return ''
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
 // ---------- objects ----------
