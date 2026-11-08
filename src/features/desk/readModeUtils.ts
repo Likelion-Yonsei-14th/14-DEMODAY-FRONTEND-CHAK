@@ -25,6 +25,32 @@ export function joinDateTime(date: string, time: string) {
   return clampCapsuleUnlockAt(`${date || fallbackDate}T${time || fallbackTime}`)
 }
 
+export const CAPSULE_EXAM_DAY_MESSAGE =
+  '수능 당일은 시험이 끝난 오후 6시부터 열 수 있어요.'
+export const CAPSULE_BEFORE_EXAM_MESSAGE =
+  '응원은 수능이 끝난 뒤에 열 수 있어요.'
+
+/**
+ * For the capsule date/time pickers: same as joinDateTime, but when the
+ * picked moment falls before the exam is over and gets moved, tells the
+ * owner why their choice changed.
+ */
+export function pickCapsuleUnlockAt(
+  date: string,
+  time: string,
+  notify: (message: string) => void,
+) {
+  const unlockAt = joinDateTime(date, time)
+  if (date && time && unlockAt !== `${date}T${time.slice(0, 5)}`) {
+    notify(
+      unlockAt.startsWith(date)
+        ? CAPSULE_EXAM_DAY_MESSAGE
+        : CAPSULE_BEFORE_EXAM_MESSAGE,
+    )
+  }
+  return unlockAt
+}
+
 export function formatReadMode(mode: ReadMode) {
   if (mode.type === 'daily') {
     return `매일 ${formatTime(mode.unlockTime)}`
