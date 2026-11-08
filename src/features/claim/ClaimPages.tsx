@@ -12,6 +12,7 @@ import {
   Button,
   ChoiceCard,
   IconButton,
+  useFeedback,
 } from '@/design-system'
 import { getCapsuleMinDate } from '@/features/csat/csatSchedule'
 import { AppShell } from '@/layout/AppShell'
@@ -21,6 +22,7 @@ import {
   DEFAULT_CAPSULE_UNLOCK_AT,
   formatReadMode,
   joinDateTime,
+  pickCapsuleUnlockAt,
   splitDateTime,
 } from '@/features/desk/readModeUtils'
 import {
@@ -194,6 +196,7 @@ export function ClaimBacklogPage() {
 
 export function ClaimReadModePage() {
   const navigate = useNavigate()
+  const { showToast } = useFeedback()
   const readMode = usePrototypeStore((state) => state.claimReadMode)
   const setReadMode = usePrototypeStore((state) => state.setClaimReadMode)
   const completeClaim = usePrototypeStore((state) => state.completeClaim)
@@ -295,9 +298,10 @@ export function ClaimReadModePage() {
                 onChange={(event) =>
                   setReadMode({
                     type: 'time-capsule',
-                    unlockAt: joinDateTime(
+                    unlockAt: pickCapsuleUnlockAt(
                       event.target.value,
                       capsule.time,
+                      showToast,
                     ),
                   })
                 }
@@ -312,9 +316,10 @@ export function ClaimReadModePage() {
                 onChange={(event) =>
                   setReadMode({
                     type: 'time-capsule',
-                    unlockAt: joinDateTime(
+                    unlockAt: pickCapsuleUnlockAt(
                       capsule.date,
                       event.target.value,
+                      showToast,
                     ),
                   })
                 }

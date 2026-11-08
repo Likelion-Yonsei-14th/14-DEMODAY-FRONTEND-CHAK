@@ -26,6 +26,7 @@ import {
   DEFAULT_CAPSULE_UNLOCK_AT,
   formatReadMode,
   joinDateTime,
+  pickCapsuleUnlockAt,
   splitDateTime,
 } from '@/features/desk/readModeUtils'
 import { ApiError } from '@/api/client'
@@ -323,9 +324,10 @@ export function DeskCreateReadModePage() {
                   setDraft({
                     readMode: {
                       type: 'time-capsule',
-                      unlockAt: joinDateTime(
+                      unlockAt: pickCapsuleUnlockAt(
                         event.target.value,
                         capsule.time,
+                        showToast,
                       ),
                     },
                   })
@@ -342,9 +344,10 @@ export function DeskCreateReadModePage() {
                   setDraft({
                     readMode: {
                       type: 'time-capsule',
-                      unlockAt: joinDateTime(
+                      unlockAt: pickCapsuleUnlockAt(
                         capsule.date,
                         event.target.value,
+                        showToast,
                       ),
                     },
                   })
