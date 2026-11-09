@@ -1,0 +1,3 @@
+document.addEventListener('click',function(e){var b=e.target.closest('button.cp');if(!b)return;var t=b.getAttribute('data-t');function ok(){var o=b.textContent;b.textContent='복사됨';b.classList.add('done');setTimeout(function(){b.textContent=o;b.classList.remove('done')},1400)}
+if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,function(){fb(t,ok)})}else{fb(t,ok)}
+function fb(t,done){var a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();try{if(document.execCommand('copy'))done()}catch(_){}document.body.removeChild(a)}});
