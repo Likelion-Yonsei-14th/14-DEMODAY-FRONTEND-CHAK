@@ -96,6 +96,7 @@ export function OwnerDeskGate() {
     s.authSession.status === 'authenticated' ? s.authSession.userId : undefined,
   )
   const [state, setState] = useState<LoadState | 'no-desk'>(isApiEnabled ? 'loading' : 'ready')
+  const guestDesk = usePrototypeStore((s) => s.guestDeskPending)
 
   useEffect(() => {
     if (!isApiEnabled || !authenticated) return
@@ -138,7 +139,8 @@ export function OwnerDeskGate() {
   }, [authenticated, userId])
 
   if (!isApiEnabled) return <Outlet />
-  if (!authenticated) return <Navigate to="/auth/login" replace />
+  // A guest's just-made desk lives only in this tab until they log in and save it.
+  if (!authenticated) return guestDesk ? <Outlet /> : <Navigate to="/auth/login" replace />
   if (state === 'no-desk') return <Navigate to="/create" replace />
   if (state === 'loading') return <Notice>내 책상을 불러오고 있어요...</Notice>
   if (state === 'error') return <Notice>내 책상을 불러오지 못했어요. 잠시 후 다시 시도해주세요.</Notice>

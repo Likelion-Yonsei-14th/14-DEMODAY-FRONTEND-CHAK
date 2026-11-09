@@ -29,6 +29,11 @@ import {
 } from '@/features/supporter/seededMessages'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { OwnerViewToggle } from './OwnerViewToggle'
+import {
+  GuestDeskDialog,
+  GuestDeskNotice,
+} from '@/features/deskCreation/guestDesk'
+import { useIsGuestDesk } from '@/features/deskCreation/guestDeskState'
 import './OwnerDeskPage.css'
 
 export function OwnerDeskPage() {
@@ -51,6 +56,11 @@ export function OwnerDeskPage() {
   )
   const moveToBasket = usePrototypeStore((state) => state.moveToBasket)
   const [basketOpen, setBasketOpen] = useState(false)
+  // A guest's desk is not saved yet: no link to share and no server settings.
+  const guest = useIsGuestDesk()
+  const [guestDialogOpen, setGuestDialogOpen] = useState(false)
+  const askForCheers = () =>
+    guest ? setGuestDialogOpen(true) : shareMyDeskLink(showToast)
 
   const messages = useMemo(
     () =>
@@ -234,7 +244,7 @@ export function OwnerDeskPage() {
             <IconButton
               label="응원 책상 설정"
               icon={<Settings size={20} aria-hidden />}
-              onClick={() => navigate('/my/settings')}
+              onClick={() => (guest ? setGuestDialogOpen(true) : navigate('/my/settings'))}
             />
           }
         />
@@ -245,13 +255,15 @@ export function OwnerDeskPage() {
           <button
             type="button"
             className="owner-desk__ask ds-hit-area"
-            onClick={() => shareMyDeskLink(showToast)}
+            onClick={askForCheers}
           >
             <Share2 size={15} aria-hidden />
             응원 부탁
           </button>
           <OwnerViewToggle mode="desk" />
         </section>
+
+        {guest && <GuestDeskNotice />}
 
         <section className="owner-desk__intro">
           <h2>
@@ -299,7 +311,7 @@ export function OwnerDeskPage() {
               size="m"
               fullWidth
               leadingIcon={<Share2 size={17} aria-hidden />}
-              onClick={() => shareMyDeskLink(showToast)}
+              onClick={askForCheers}
             >
               {ASK_FOR_CHEERS_LABEL}
             </Button>
@@ -386,6 +398,10 @@ export function OwnerDeskPage() {
           }}
         />
 
+        <GuestDeskDialog
+          open={guestDialogOpen}
+          onClose={() => setGuestDialogOpen(false)}
+        />
       </main>
     </AppShell>
   )

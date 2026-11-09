@@ -151,6 +151,12 @@ type PrototypeState = {
   resetComposerDraft: () => void
   setDeskCreationDraft: (patch: Partial<DeskCreationDraft>) => void
   resetDeskCreationDraft: () => void
+  /**
+   * A guest finished making a desk that lives only in this tab until they log
+   * in and it is saved. Deliberately not persisted: leaving the site drops it.
+   */
+  guestDeskPending: boolean
+  setGuestDeskPending: (pending: boolean) => void
   createDeskFromDraft: () => void
   beginClaim: () => void
   setClaimReadMode: (readMode: ReadMode) => void
@@ -210,6 +216,8 @@ export const usePrototypeStore = create<PrototypeState>()(
       messages: [],
       composerDraft: emptyComposerDraft,
       deskCreationDraft: emptyDeskCreationDraft,
+      guestDeskPending: false,
+      setGuestDeskPending: (guestDeskPending) => set({ guestDeskPending }),
       claimReadMode: mockDesk.readMode,
       claimState: 'claimed',
       claimBacklogDeferred: false,
