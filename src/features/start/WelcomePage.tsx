@@ -127,6 +127,13 @@ export function WelcomePage() {
                   </button>
                 </p>
               )}
+              <button
+                type="button"
+                className="welcome-page__guest ds-hit-area"
+                onClick={() => navigate('/start')}
+              >
+                로그인 없이 둘러보기
+              </button>
             </>
           ) : (
             <>
