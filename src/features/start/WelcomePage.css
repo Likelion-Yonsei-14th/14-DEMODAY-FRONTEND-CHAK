@@ -99,8 +99,7 @@
   text-align: center;
 }
 
-.welcome-page__switch button,
-.welcome-page__guest {
+.welcome-page__switch button {
   padding: 0;
   border: 0;
   background: none;
@@ -115,12 +114,30 @@
   text-underline-offset: 3px;
 }
 
-.welcome-page__guest {
-  justify-self: center;
+.welcome-page__account-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
   margin-top: 6px;
-  padding: 6px 8px;
+}
+
+.welcome-page__text-link {
+  padding: 8px 12px;
+  border: 0;
+  background: none;
   color: var(--color-content-secondary);
-  font-size: 13px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.welcome-page__divider {
+  width: 1px;
+  height: 12px;
+  background: var(--color-content-secondary);
+  opacity: .4;
 }
 
 .welcome-page__games {
