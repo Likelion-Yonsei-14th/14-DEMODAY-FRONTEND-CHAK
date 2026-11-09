@@ -1,0 +1,24 @@
+.guest-desk-notice {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #fff6e8;
+  box-shadow: inset 0 0 0 1px rgba(205, 160, 110, .35);
+  text-align: left;
+}
+
+.guest-desk-notice > div {
+  display: grid;
+  gap: 4px;
+}
+
+.guest-desk-notice > div > strong {
+  font-size: 15px;
+}
+
+.guest-desk-notice > div > span {
+  color: var(--color-content-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
