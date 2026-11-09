@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   ArrowLeft,
   CalendarDays,
@@ -7,7 +7,7 @@ import {
   UserRound,
   UsersRound,
 } from 'lucide-react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   AppBar,
   Button,
@@ -31,6 +31,12 @@ import {
 } from '@/features/desk/readModeUtils'
 import { ApiError } from '@/api/client'
 import { isApiEnabled } from '@/api/config'
+import { GuestDeskDialog, GuestDeskNotice } from './guestDesk'
+import {
+  SAVE_AFTER_LOGIN,
+  useIsGuestDesk,
+  useLoginToSaveGuestDesk,
+} from './guestDeskState'
 import { createFriendDesk, createMyDesk } from '@/api/desks'
 import { deskFromApi, readModeToApi } from '@/api/mappers'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -163,6 +169,10 @@ export function DeskCreateReadModePage() {
   const createDesk = usePrototypeStore((state) => state.createDeskFromDraft)
   const { showToast } = useFeedback()
   const [saving, setSaving] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const signedIn = usePrototypeStore(
+    (state) => state.authSession.status === 'authenticated',
+  )
 
   const daily = draft.readMode.type === 'daily'
   const dailyTime =
@@ -194,17 +204,22 @@ export function DeskCreateReadModePage() {
   }
 
   const finish = async () => {
-    if (!isApiEnabled) {
+    const state = usePrototypeStore.getState()
+    // A guest makes the desk right away, kept only in this tab; logging in saves it.
+    if (state.authSession.status !== 'authenticated') {
       createDesk()
+      state.setGuestDeskPending(true)
       navigate('/create/complete', { replace: true })
       return
     }
 
-    const state = usePrototypeStore.getState()
-    if (state.authSession.status !== 'authenticated') {
-      navigate('/auth/login', { replace: true })
+    if (!isApiEnabled) {
+      createDesk()
+      state.setGuestDeskPending(false)
+      navigate('/create/complete', { replace: true })
       return
     }
+
     if (draft.createdFor === 'other') {
       // A desk for a friend stays with me (links, delete) until they claim it; it is not "my desk".
       setSaving(true)
@@ -213,6 +228,7 @@ export function DeskCreateReadModePage() {
           displayName: draft.recipientDisplayName.trim(),
           ...readModeToApi(draft.readMode),
         })
+        state.setGuestDeskPending(false)
         navigate('/friend-desks/created', { replace: true, state: { desk: created } })
       } catch (error) {
         setSaving(false)
@@ -241,6 +257,7 @@ export function DeskCreateReadModePage() {
           roomClosed: created.roomClosed,
         },
       })
+      state.setGuestDeskPending(false)
       navigate('/create/complete', { replace: true })
     } catch (error) {
       setSaving(false)
@@ -252,6 +269,16 @@ export function DeskCreateReadModePage() {
       showToast('책상을 만들지 못했어요. 잠시 후 다시 시도해주세요.')
     }
   }
+
+  // Returning from logging in to save a guest desk: finish the desk without a second tap.
+  const savedAfterLogin = useRef(false)
+  useEffect(() => {
+    if (!signedIn || !searchParams.has(SAVE_AFTER_LOGIN) || savedAfterLogin.current) return
+    savedAfterLogin.current = true
+    setSearchParams({}, { replace: true })
+    void finish()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on the way back from login
+  }, [signedIn, searchParams])
 
   const backPath =
     draft.createdFor === 'other'
@@ -367,8 +394,18 @@ export function DeskCreateCompletePage() {
   const desk = usePrototypeStore((state) => state.currentDesk)
   const selfCreated = desk.createdFor !== 'other'
   const [sharing, setSharing] = useState(false)
+  // A guest's desk has no link yet: sharing asks them to log in and save it first.
+  const guest = useIsGuestDesk()
+  const loginToSave = useLoginToSaveGuestDesk()
+  const [guestDialogOpen, setGuestDialogOpen] = useState(false)
+  const shareMine = () =>
+    guest ? setGuestDialogOpen(true) : shareMyDeskLink(showToast)
 
   const share = async (kind: 'owner' | 'support') => {
+    if (guest) {
+      setGuestDialogOpen(true)
+      return
+    }
     if (sharing) return
     setSharing(true)
 
@@ -405,6 +442,11 @@ export function DeskCreateCompletePage() {
           >
             내 책상 보기
           </Button>
+        ) : guest ? (
+          // A friend's desk is only reachable by its link, which exists once saved.
+          <Button variant="brand" fullWidth onClick={loginToSave}>
+            로그인하고 책상 저장하기
+          </Button>
         ) : (
           <Button
             variant="brand"
@@ -436,13 +478,15 @@ export function DeskCreateCompletePage() {
           <strong>{formatReadMode(desk.readMode)}</strong>
         </div>
 
+        {guest && <GuestDeskNotice />}
+
         <div className="desk-create__complete-actions">
           {selfCreated ? (
             <Button
               variant="secondary"
               fullWidth
               leadingIcon={<Share2 size={18} aria-hidden />}
-              onClick={() => shareMyDeskLink(showToast)}
+              onClick={shareMine}
             >
               {ASK_FOR_CHEERS_LABEL}
             </Button>
@@ -464,17 +508,23 @@ export function DeskCreateCompletePage() {
               >
                 응원 링크 보내기
               </Button>
-              <Button
-                variant="tertiary"
-                fullWidth
-                onClick={() => navigate('/manage')}
-              >
-                만든 응원 책상 관리하기
-              </Button>
+              {!guest && (
+                <Button
+                  variant="tertiary"
+                  fullWidth
+                  onClick={() => navigate('/manage')}
+                >
+                  만든 응원 책상 관리하기
+                </Button>
+              )}
             </>
           )}
         </div>
       </main>
+      <GuestDeskDialog
+        open={guestDialogOpen}
+        onClose={() => setGuestDialogOpen(false)}
+      />
     </AppShell>
   )
 }
