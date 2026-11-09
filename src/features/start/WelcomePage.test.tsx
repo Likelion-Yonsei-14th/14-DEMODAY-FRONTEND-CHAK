@@ -10,6 +10,7 @@ function renderWelcome() {
       <Routes>
         <Route path="/" element={<WelcomePage />} />
         <Route path="/home" element={<p>홈 화면</p>} />
+        <Route path="/create" element={<p>책상 만들기 첫 단계</p>} />
         <Route path="/minigame/study-type" element={<p>유형 테스트 소개</p>} />
         <Route path="/minigame/guess-god" element={<p>찍신 소개</p>} />
       </Routes>
@@ -37,6 +38,14 @@ describe('first screen', () => {
     for (const title of ['나의 수험생 유형은?', '오늘의 찍신은 나야!', '수험생 커리어 시뮬레이터', '수능 끝 D+1 코스 짜기', '선생님 몰래 폰 하기']) {
       expect(screen.getByRole('button', { name: new RegExp(title.replace(/[?+!]/g, '\\$&')) })).toBeInTheDocument()
     }
+  })
+
+  it('leads a first-timer with no login history to making a desk', () => {
+    renderWelcome()
+
+    fireEvent.click(screen.getByRole('button', { name: '응원 책상 만들기' }))
+
+    expect(screen.getByText('책상 만들기 첫 단계')).toBeInTheDocument()
   })
 
   it('sends a signed-in member straight home instead', () => {

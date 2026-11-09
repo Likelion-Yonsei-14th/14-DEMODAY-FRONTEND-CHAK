@@ -39,9 +39,17 @@ export function WelcomePage() {
       ? null
       : storedLastLogin
   const signIn = usePrototypeStore((state) => state.signIn)
+  const resetDeskCreationDraft = usePrototypeStore(
+    (state) => state.resetDeskCreationDraft,
+  )
 
   if (authSession.status === 'authenticated') {
     return <Navigate to="/home" replace />
+  }
+
+  const startDesk = () => {
+    resetDeskCreationDraft()
+    navigate('/create')
   }
 
   const continueLastLogin = () => {
@@ -122,32 +130,30 @@ export function WelcomePage() {
             </>
           ) : (
             <>
-              <Button
-                variant="brand"
-                fullWidth
-                onClick={() => navigate(isApiEnabled ? '/auth/login' : '/auth/signup')}
-              >
-                처음이에요, 시작할게요
+              {/* A first-timer starts by making a desk; signing in comes when it is saved. */}
+              <Button variant="brand" fullWidth onClick={startDesk}>
+                응원 책상 만들기
               </Button>
-              {!isApiEnabled && (
-                <Button
-                  variant="secondary"
-                  fullWidth
+              <div className="welcome-page__account-row">
+                <button
+                  type="button"
+                  className="welcome-page__text-link ds-hit-area"
                   onClick={() => navigate('/auth/login')}
                 >
-                  이미 계정이 있어요
-                </Button>
-              )}
+                  로그인
+                </button>
+                <span className="welcome-page__divider" aria-hidden />
+                {/* With a backend, signing up is the same Kakao/Google login. */}
+                <button
+                  type="button"
+                  className="welcome-page__text-link ds-hit-area"
+                  onClick={() => navigate('/auth/signup')}
+                >
+                  회원가입
+                </button>
+              </div>
             </>
           )}
-
-          <button
-            type="button"
-            className="welcome-page__guest ds-hit-area"
-            onClick={() => navigate('/start')}
-          >
-            로그인 없이 둘러보기
-          </button>
         </section>
 
         <div className="welcome-page__games">
