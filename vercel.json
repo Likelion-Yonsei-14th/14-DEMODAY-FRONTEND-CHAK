@@ -159,6 +159,9 @@
       "source": "/about",
       "destination": "/about.html"
     },
+    { "source": "/cheers", "destination": "/cheers.html" },
+    { "source": "/cheers/day", "destination": "/cheers-day.html" },
+    { "source": "/cheers/rolling-paper", "destination": "/cheers-rolling-paper.html" },
     {
       "source": "/desk/:token/:rest*",
       "has": [
