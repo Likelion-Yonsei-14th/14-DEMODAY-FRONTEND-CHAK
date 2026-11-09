@@ -38,7 +38,7 @@ export function getDeskSticker(id: string | undefined): DeskSticker {
 /** What a supporter chooses to leave before anything else. */
 export type SupporterObjectChoice = Extract<
   DeskObjectType,
-  'letter' | 'charm' | 'sticker'
+  'letter' | 'charm' | 'sticker' | 'pepero'
 >
 
 export function isStickerMessage(message: Pick<Message, 'kind'> | undefined) {
