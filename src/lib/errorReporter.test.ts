@@ -51,6 +51,7 @@ describe('errorReporter', () => {
     reportError({ kind: 'unhandled_rejection', message: 'The user aborted a request.' })
     reportError({ kind: 'js_error', message: 'x', stack: 'at chrome-extension://abc/content.js:1:1' })
     reportError({ kind: 'js_error', message: 'Uncaught Error: Error invoking postMessage: Java object is gone', stack: 'at sendDataToNative (iabjs://x:1:1)' })
+    reportError({ kind: 'js_error', message: "TypeError: undefined is not an object (evaluating 'window.webkit.messageHandlers')" })
     expect(fetchMock).not.toHaveBeenCalled()
   })
 

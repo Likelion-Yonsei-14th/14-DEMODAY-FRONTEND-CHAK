@@ -29,8 +29,16 @@ const NOISE = [
   /Non-Error promise rejection captured/i,
   // Scripts that Instagram/Facebook in-app browsers inject into the page; the bridge dies when the user leaves.
   /Java object is gone|Error invoking postMessage|iabjs:\/\//i,
+  // The iOS flavour of the same: the injected script talks to the native app via window.webkit.
+  /window\.webkit\.messageHandlers/i,
 ]
 
+let suppressed = false
+
+/** Stops all reporting, e.g. while the page is reloading itself. */
+export function suppressErrorReporting() {
+  suppressed = true
+}
 
 const recent = new Map<string, number>()
 let sent = 0
@@ -62,7 +70,7 @@ export function getLastReportId() {
  */
 export function reportError(report: ErrorReport) {
   try {
-    if (!enabled() || isNoise(report)) return
+    if (suppressed || !enabled() || isNoise(report)) return
     // An offline browser fails every request; that is not our bug.
     if (report.kind === 'network_error' && navigator.onLine === false) return
 
