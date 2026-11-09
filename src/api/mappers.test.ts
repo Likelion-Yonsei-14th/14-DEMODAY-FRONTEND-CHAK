@@ -174,3 +174,26 @@ describe('send requests', () => {
     expect(request.object).toMatchObject({ representationType: 'STICKER', assetId: 'sticker-1' })
   })
 })
+
+describe('빼빼로 (app-only object type)', () => {
+  it('travels as GENERIC_CARD with metadata.objectKind, so the backend enum accepts it', () => {
+    const request = letterRequest({
+      draft: { ...emptyComposerDraft, visibility: 'public' },
+      objectType: 'pepero',
+      placement: { x: 40, y: 50, rotation: 1, scale: 1 },
+      zone: 'center',
+      order: 0,
+      zIndex: 30,
+      assetId: 'pepero-almond',
+    })
+    expect(request.object.representationType).toBe('GENERIC_CARD')
+    expect(request.object.assetId).toBe('pepero-almond')
+    expect(request.object.metadata).toMatchObject({ objectKind: 'pepero' })
+  })
+
+  it('reads back as pepero, and plain GENERIC_CARD stays generic-card', () => {
+    expect(objectTypeFromApi('GENERIC_CARD', 'pepero')).toBe('pepero')
+    expect(objectTypeFromApi('GENERIC_CARD')).toBe('generic-card')
+    expect(objectTypeFromApi('GENERIC_CARD', 'bogus')).toBe('generic-card')
+  })
+})

@@ -156,6 +156,7 @@ const objectSizeByType: Record<
   ticket: { width: 21, height: 11 },
   'generic-card': { width: 20, height: 14 },
   sticker: { width: 13, height: 13 },
+  pepero: { width: 14, height: 19 },
 }
 
 /** Keeps the whole object, not just its centre, inside the placement area. */
@@ -296,4 +297,5 @@ export const deskObjectLabels: Record<DeskObjectType, string> = {
   ticket: '약속 티켓',
   'generic-card': '응원 카드',
   sticker: '스티커',
+  pepero: '빼빼로',
 }

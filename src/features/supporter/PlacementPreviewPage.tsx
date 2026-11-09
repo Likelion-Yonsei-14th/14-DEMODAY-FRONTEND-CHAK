@@ -42,6 +42,7 @@ import {
   resolveCharmPhrase,
 } from './charmDesigns'
 import { GEM_PRICE, countGemCost } from './gems'
+import { getPeperoDesign } from './peperoDesigns'
 import { GemDecoratorSheet } from './GemDecoratorSheet'
 import { PaymentSheet } from '@/features/payment/PaymentSheet'
 import { formatChaltteok } from '@/features/chaltteok/chaltteok'
@@ -97,11 +98,19 @@ export function PlacementPreviewPage() {
   const resumed = useResumeState<PlacementResume>()
   // The shape was decided before writing: a letter, or the charm picked first
   const charmMode = objectChoice === 'charm'
+  const peperoMode = objectChoice === 'pepero'
   const objectType: DeskObjectType = stickerMode
     ? 'sticker'
     : charmMode
       ? 'charm'
-      : 'letter'
+      : peperoMode
+        ? 'pepero'
+        : 'letter'
+  const peperoDesign = getPeperoDesign(
+    usePrototypeStore((state) => state.peperoDraft.assetId),
+  )
+  // Artwork id for object types that are not charms
+  const plainAssetId = peperoMode ? peperoDesign.id : undefined
   const charmDraft = usePrototypeStore((state) => state.charmDraft)
   const charmDesignId = charmDesigns.some((design) => design.id === charmDraft.assetId)
     ? charmDraft.assetId
@@ -246,6 +255,7 @@ export function PlacementPreviewPage() {
               charmPhrase: finalCharmPhrase,
             }
           : undefined,
+        assetId: plainAssetId,
         gems,
         paymentOrderId: paidOrderId,
       })
@@ -275,6 +285,7 @@ export function PlacementPreviewPage() {
               }
             : undefined,
           gems,
+          plainAssetId,
         )
       }
       navigate(supporterPath(supporterToken, '/complete'), { replace: true })
@@ -364,6 +375,29 @@ export function PlacementPreviewPage() {
           </section>
         )}
 
+        {peperoMode && (
+          <section className="charm-summary" aria-label="고른 빼빼로">
+            <span className="charm-summary__preview desk-object--pepero" aria-hidden>
+              <DeskObjectVisual
+                type="pepero"
+                assetId={peperoDesign.id}
+                seed={peperoDesign.id}
+              />
+            </span>
+            <span className="charm-summary__text">
+              <strong>{peperoDesign.name} 빼빼로 · 무료</strong>
+              <span>상자 안에 편지가 들어 있어요</span>
+            </span>
+            <button
+              type="button"
+              className="charm-summary__change"
+              onClick={() => navigate(supporterPath(supporterToken, '/pepero'))}
+            >
+              바꾸기
+            </button>
+          </section>
+        )}
+
         {!stickerMode && (
           <button
             type="button"
@@ -386,7 +420,7 @@ export function PlacementPreviewPage() {
           </p>
         )}
 
-        {!stickerMode && !charmMode && (
+        {!stickerMode && !charmMode && !peperoMode && (
         <section className="placement-object-tone-picker" aria-label="색">
           <span className="placement-object-tone-picker__label">색</span>
           <div className="placement-object-tone-picker__options">
@@ -433,7 +467,7 @@ export function PlacementPreviewPage() {
                 ? stickerId
                 : charmMode
                   ? charmDesignId
-                  : undefined,
+                  : plainAssetId,
               material: charmMode ? charmMaterial : undefined,
               charmPhrase: charmMode ? finalCharmPhrase : undefined,
               gems,
@@ -471,7 +505,9 @@ export function PlacementPreviewPage() {
                 ? `${finalCharmPhrase} 부적 · ${
                     charmMaterial === 'acrylic' ? '아크릴 3D' : '평면 스티커'
                   }`
-                : deskObjectLabels[objectType]}
+                : peperoMode
+                  ? `${peperoDesign.name} 빼빼로`
+                  : deskObjectLabels[objectType]}
             </strong>
           </div>
           {gems.length > 0 && (
@@ -547,7 +583,7 @@ export function PlacementPreviewPage() {
           open={decoratorOpen}
           onClose={() => setDecoratorOpen(false)}
           type={objectType}
-          assetId={charmMode ? charmDesignId : undefined}
+          assetId={charmMode ? charmDesignId : plainAssetId}
           material={charmMode ? charmMaterial : undefined}
           charmPhrase={charmMode ? finalCharmPhrase : undefined}
           color={objectColor}

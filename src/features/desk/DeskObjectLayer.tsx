@@ -18,6 +18,7 @@ import { getGemImage } from '@/features/supporter/gems'
 import { UniversityCharm } from '@/features/classroom/UniversityCharm'
 import { parseUniversityCharmId } from '@/features/classroom/universities'
 import { useDeskDaypart } from './useDeskDaypart'
+import { PeperoBox } from './PeperoBox'
 import './DeskObjectLayer.css'
 
 /**
@@ -303,6 +304,15 @@ export function DeskObjectVisual({
           alt=""
           draggable={false}
         />
+      </span>
+    )
+  }
+
+  if (type === 'pepero') {
+    return (
+      <span className="desk-object__visual" style={style} aria-hidden>
+        <PeperoBox assetId={assetId} />
+        {gemLayer}
       </span>
     )
   }

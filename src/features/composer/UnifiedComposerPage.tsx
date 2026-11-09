@@ -90,9 +90,14 @@ export function UnifiedComposerPage() {
   )
   // Writing a charm's cheer comes after picking the charm, so back goes there
   const charmFirst = objectChoice === 'charm'
+  // Same for the 빼빼로 box (desk only)
+  const peperoFirst = objectChoice === 'pepero' && !classroomMode
   const backPath = classroomMode
     ? `/classroom/${classroomId}/locker/${lockerId}${charmFirst ? '/charm' : ''}`
-    : supporterPath(supporterToken, charmFirst ? '/charm' : '')
+    : supporterPath(
+        supporterToken,
+        charmFirst ? '/charm' : peperoFirst ? '/pepero' : '',
+      )
   const placementPath = classroomMode
     ? `/classroom/${classroomId}/locker/${lockerId}/placement`
     : supporterPath(supporterToken, '/placement')

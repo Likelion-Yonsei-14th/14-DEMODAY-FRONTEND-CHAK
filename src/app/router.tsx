@@ -104,6 +104,7 @@ import {
 import { LockerStickerPickPage } from '@/features/classroom/LockerStickerPage'
 import { LockerCharmPickPage } from '@/features/classroom/LockerCharmPickPage'
 import { CharmPickPage } from '@/features/supporter/CharmPickPage'
+import { PeperoPickPage } from '@/features/supporter/PeperoPickPage'
 import { LockerDecoratePage } from '@/features/classroom/LockerDecoratePage'
 import { PrototypeIndexPage } from '@/prototype/screens/PrototypeIndexPage'
 import {
@@ -345,6 +346,7 @@ export const router = createBrowserRouter([
           { index: true, element: <SupportDeskPage /> },
           { path: 'compose', element: <UnifiedComposerPage /> },
           { path: 'charm', element: <CharmPickPage /> },
+          { path: 'pepero', element: <PeperoPickPage /> },
           { path: 'sticker', element: <StickerPickPage /> },
           { path: 'placement', element: <PlacementPreviewPage /> },
           { path: 'complete', element: <SupportCompletePage /> },
@@ -367,6 +369,10 @@ export const router = createBrowserRouter([
       {
         path: '/support/jisu/charm',
         element: <CharmPickPage />,
+      },
+      {
+        path: '/support/jisu/pepero',
+        element: <PeperoPickPage />,
       },
       {
         path: '/support/jisu/sticker',

@@ -201,7 +201,9 @@ export function SupportDeskPage() {
                       ? '/sticker'
                       : choice === 'charm'
                         ? '/charm'
-                        : '/compose',
+                        : choice === 'pepero'
+                          ? '/pepero'
+                          : '/compose',
                   ),
                 )
               }}
