@@ -11,6 +11,7 @@ function renderWelcome() {
         <Route path="/" element={<WelcomePage />} />
         <Route path="/home" element={<p>홈 화면</p>} />
         <Route path="/create" element={<p>책상 만들기 첫 단계</p>} />
+        <Route path="/start" element={<p>시작 화면</p>} />
         <Route path="/minigame/study-type" element={<p>유형 테스트 소개</p>} />
         <Route path="/minigame/guess-god" element={<p>찍신 소개</p>} />
       </Routes>
@@ -46,6 +47,19 @@ describe('first screen', () => {
     fireEvent.click(screen.getByRole('button', { name: '응원 책상 만들기' }))
 
     expect(screen.getByText('책상 만들기 첫 단계')).toBeInTheDocument()
+  })
+
+  it('only offers browsing without login to someone who has logged in here before', () => {
+    renderWelcome()
+    expect(screen.queryByRole('button', { name: '로그인 없이 둘러보기' })).not.toBeInTheDocument()
+  })
+
+  it('still lets a signed-out returning visitor browse without logging in', () => {
+    usePrototypeStore.setState({ lastLogin: { provider: 'google', email: 'a@b.com' } })
+    renderWelcome()
+
+    fireEvent.click(screen.getByRole('button', { name: '로그인 없이 둘러보기' }))
+    expect(screen.getByText('시작 화면')).toBeInTheDocument()
   })
 
   it('sends a signed-in member straight home instead', () => {

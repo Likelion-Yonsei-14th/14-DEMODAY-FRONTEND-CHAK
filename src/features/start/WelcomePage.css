@@ -99,7 +99,8 @@
   text-align: center;
 }
 
-.welcome-page__switch button {
+.welcome-page__switch button,
+.welcome-page__guest {
   padding: 0;
   border: 0;
   background: none;
@@ -112,6 +113,14 @@
   font-weight: 800;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.welcome-page__guest {
+  justify-self: center;
+  margin-top: 6px;
+  padding: 6px 8px;
+  color: var(--color-content-secondary);
+  font-size: 13px;
 }
 
 .welcome-page__account-row {
