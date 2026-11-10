@@ -28,11 +28,22 @@ import type {
 
 // ---------- enums ----------
 
-export const objectTypeToApi = (type: DeskObjectType) =>
-  type.replaceAll('-', '_').toUpperCase()
+/**
+ * App-only object types the backend enum does not know yet. They travel as an
+ * existing server type and are told apart by metadata.objectKind, so they
+ * work without a backend deploy.
+ */
+const CLIENT_OBJECT_KINDS: Partial<Record<DeskObjectType, string>> = {
+  pepero: 'GENERIC_CARD',
+}
 
-export const objectTypeFromApi = (type: string) =>
-  type.toLowerCase().replaceAll('_', '-') as DeskObjectType
+export const objectTypeToApi = (type: DeskObjectType) =>
+  CLIENT_OBJECT_KINDS[type] ?? type.replaceAll('-', '_').toUpperCase()
+
+export const objectTypeFromApi = (type: string, objectKind?: string) =>
+  objectKind && objectKind in CLIENT_OBJECT_KINDS
+    ? (objectKind as DeskObjectType)
+    : (type.toLowerCase().replaceAll('_', '-') as DeskObjectType)
 
 // ---------- read mode ----------
 
@@ -82,6 +93,8 @@ type ObjectMetadata = {
   charmPhrase?: string
   gems?: DeskGem[]
   locked?: boolean
+  /** App-only object type riding on a server type (see CLIENT_OBJECT_KINDS). */
+  objectKind?: string
 }
 
 export function objectFromApi(
@@ -94,7 +107,7 @@ export function objectFromApi(
   return {
     id: `desk-object-${messageId}`,
     messageId,
-    representationType: objectTypeFromApi(object.representationType),
+    representationType: objectTypeFromApi(object.representationType, meta.objectKind),
     assetId: object.assetId ?? undefined,
     color: object.color ?? undefined,
     x: object.x,
@@ -253,6 +266,8 @@ export type SendLetterInput = {
   order: number
   zIndex: number
   charm?: { assetId: string; material: CharmMaterial; charmPhrase?: string }
+  /** Artwork of a non-charm object, e.g. the 빼빼로 flavor. */
+  assetId?: string
   gems?: DeskGem[]
   paymentOrderId?: number
 }
@@ -268,7 +283,7 @@ export function letterRequest(input: SendLetterInput): ApiSendMessageRequest {
     card: { pages: getMessagePages(draft) },
     object: {
       representationType: objectTypeToApi(input.objectType),
-      assetId: input.charm?.assetId,
+      assetId: input.charm?.assetId ?? input.assetId,
       color: input.objectColor,
       x: placement.x,
       y: placement.y,
@@ -278,6 +293,9 @@ export function letterRequest(input: SendLetterInput): ApiSendMessageRequest {
       metadata: {
         zone: input.zone,
         order: input.order,
+        ...(input.objectType in CLIENT_OBJECT_KINDS
+          ? { objectKind: input.objectType }
+          : {}),
         ...(input.charm
           ? { material: input.charm.material, charmPhrase: input.charm.charmPhrase }
           : {}),

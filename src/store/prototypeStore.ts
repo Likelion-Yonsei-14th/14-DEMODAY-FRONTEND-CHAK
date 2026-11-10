@@ -32,6 +32,7 @@ import {
   deskStickers,
   type SupporterObjectChoice,
 } from '@/features/supporter/deskStickers'
+import { DEFAULT_PEPERO_ID } from '@/features/supporter/peperoDesigns'
 import type {
   AuthProvider,
   AuthSession,
@@ -111,6 +112,9 @@ type PrototypeState = {
   setCharmDraft: (
     patch: Partial<{ assetId: string; material: CharmMaterial; phrase: string }>,
   ) => void
+  /** 빼빼로 flavor picked before writing the letter that goes in the box. */
+  peperoDraft: { assetId: string }
+  setPeperoDraft: (patch: Partial<{ assetId: string }>) => void
   setSupporterObjectChoice: (choice: SupporterObjectChoice) => void
   setStickerDraft: (patch: Partial<{ stickerId: string; senderName: string }>) => void
   placeSticker: (placement: DeskPlacement) => void
@@ -194,6 +198,8 @@ type PrototypeState = {
       charmPhrase?: string
     },
     gems?: DeskGem[],
+    /** Artwork of a non-charm object, e.g. the 빼빼로 flavor. */
+    assetId?: string,
   ) => void
   markMessageRead: (messageId: string) => void
   /** Replaces the desk view with data loaded from the backend. */
@@ -291,6 +297,9 @@ export const usePrototypeStore = create<PrototypeState>()(
       charmDraft: { assetId: 'charm-yeot', material: 'flat', phrase: '' },
       setCharmDraft: (patch) =>
         set((state) => ({ charmDraft: { ...state.charmDraft, ...patch } })),
+      peperoDraft: { assetId: DEFAULT_PEPERO_ID },
+      setPeperoDraft: (patch) =>
+        set((state) => ({ peperoDraft: { ...state.peperoDraft, ...patch } })),
       setSupporterObjectChoice: (supporterObjectChoice) =>
         set({ supporterObjectChoice }),
       setStickerDraft: (patch) =>
@@ -944,6 +953,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         objectColor,
         charm,
         gems,
+        assetId,
       ) =>
         set((state) => {
           const stamp = Date.now().toString(36)
@@ -984,6 +994,7 @@ export const usePrototypeStore = create<PrototypeState>()(
                   representationType,
                   color: objectColor,
                   ...(representationType === 'charm' && charm ? charm : {}),
+                  ...(representationType !== 'charm' && assetId ? { assetId } : {}),
                   ...(gems?.length ? { gems } : {}),
                   zone,
                   order: state.currentDesk.objects.length,
@@ -1092,6 +1103,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         lockerDecor: state.lockerDecor,
         supporterObjectChoice: state.supporterObjectChoice,
         charmDraft: state.charmDraft,
+        peperoDraft: state.peperoDraft,
         stickerDraft: state.stickerDraft,
       }),
     },

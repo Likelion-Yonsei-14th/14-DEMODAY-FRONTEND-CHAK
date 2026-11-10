@@ -1,13 +1,14 @@
 import { BottomSheet, ChoiceCard } from '@/design-system'
 import { DeskObjectVisual } from '@/features/desk/DeskObjectLayer'
 import { deskStickers, type SupporterObjectChoice } from './deskStickers'
+import { DEFAULT_PEPERO_ID, isPeperoSeason } from './peperoDesigns'
 
 type ObjectChoiceSheetProps = {
   open: boolean
   recipientName: string
   onClose: () => void
   onChoose: (choice: SupporterObjectChoice) => void
-  /** Which options to offer; all of them by default. */
+  /** Which options to offer; all of them by default (빼빼로 only in season). */
   types?: SupporterObjectChoice[]
   /** Where it will be placed, e.g. '책상' or '사물함'. */
   placeLabel?: string
@@ -23,6 +24,12 @@ const choices: {
   description: (recipientName: string) => string
   color: string
 }[] = [
+  {
+    type: 'pepero',
+    title: '빼빼로 · 11.11 한정',
+    description: () => '빼빼로 한 상자에 편지를 꽂아서 놓고 가요.',
+    color: '#4A2A1C',
+  },
   {
     type: 'letter',
     title: '편지',
@@ -55,6 +62,12 @@ export function ObjectChoiceSheet({
   descriptions,
   charmPreviewAssetId = 'charm-yeot',
 }: ObjectChoiceSheetProps) {
+  const offered =
+    types ??
+    choices
+      .map((choice) => choice.type)
+      .filter((type) => type !== 'pepero' || isPeperoSeason())
+
   return (
     <BottomSheet
       open={open}
@@ -64,7 +77,7 @@ export function ObjectChoiceSheet({
     >
       <div className="object-choice">
         {choices
-          .filter((choice) => !types || types.includes(choice.type))
+          .filter((choice) => offered.includes(choice.type))
           .map((choice) => (
           <ChoiceCard
             key={choice.type}
@@ -90,7 +103,9 @@ export function ObjectChoiceSheet({
                       ? deskStickers[0]!.id
                       : choice.type === 'charm'
                         ? charmPreviewAssetId
-                        : undefined
+                        : choice.type === 'pepero'
+                          ? DEFAULT_PEPERO_ID
+                          : undefined
                   }
                   material="flat"
                 />
