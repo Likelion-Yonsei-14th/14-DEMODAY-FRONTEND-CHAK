@@ -25,6 +25,8 @@ export type DeskObjectType =
   | 'ticket'
   | 'generic-card'
   | 'sticker'
+  /** 빼빼로데이 gift box; the server stores it as GENERIC_CARD + metadata.objectKind. */
+  | 'pepero'
 
 /** Charm finish: a free flat sticker, or the paid clear-acrylic keychain. */
 export type CharmMaterial = 'flat' | 'acrylic'

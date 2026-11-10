@@ -17,6 +17,8 @@ export type SendToServerInput = {
   objectColor?: string
   placement: DeskPlacement
   charm?: { assetId: string; material: CharmMaterial; charmPhrase?: string }
+  /** Artwork of a non-charm object, e.g. the 빼빼로 flavor. */
+  assetId?: string
   gems?: DeskGem[]
   paymentOrderId?: number
 }
@@ -56,6 +58,7 @@ export async function sendToServer(input: SendToServerInput): Promise<void> {
         order: count,
         zIndex,
         charm: input.charm,
+        assetId: input.assetId,
         gems: input.gems,
         paymentOrderId: input.paymentOrderId,
       })
