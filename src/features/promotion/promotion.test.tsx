@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '@/api/client'
-import { BRAND_TIERS, formatWon, LOCAL_PRODUCTS, PROMOTION_DATES, promotionStatus, tight } from './promotionContent'
+import { INTEREST_OPTIONS, PROMOTION_DATES, promotionStatus, tight } from './promotionContent'
 
 const api = vi.hoisted(() => ({ submitPromotionInquiry: vi.fn() }))
 vi.mock('@/api/promotion', () => api)
@@ -19,25 +19,18 @@ const plain = (pattern: RegExp) => (content: string) => pattern.test(content.rep
 describe('promotion schedule', () => {
   it('stays open until the final payment deadline in Korean time, then closes', () => {
     expect(promotionStatus(at('2026-10-24T03:00:00Z'))).toBe('OPEN')
-    expect(promotionStatus(at('2026-11-12T14:59:00Z'))).toBe('OPEN') // 11/12 23:59 KST
-    expect(promotionStatus(at('2026-11-12T15:01:00Z'))).toBe('CLOSED')
-    expect(PROMOTION_DATES.replyDeadline.short).toBe('11.2')
+    expect(promotionStatus(at('2026-11-18T14:59:00Z'))).toBe('OPEN') // 11/18 23:59 KST
+    expect(promotionStatus(at('2026-11-18T15:01:00Z'))).toBe('CLOSED')
+    expect(PROMOTION_DATES.finalDeadline.short).toBe('11.18')
   })
 
-  it('formats prices the way the BM does', () => {
-    expect(formatWon(49_000)).toBe('4.9만원')
-    expect(formatWon(129_000)).toBe('12.9만원')
-    expect(formatWon(200_000)).toBe('20만원')
-  })
-
-  it('keeps the BM price table: launch partner price is always below the base price', () => {
-    expect(LOCAL_PRODUCTS.map((p) => p.price)).toEqual([49_000, 99_000, 129_000])
-    expect(BRAND_TIERS.map((t) => [t.regular, t.launch])).toEqual([
-      [140_000, 110_000],
-      [290_000, 230_000],
-      [440_000, 350_000],
-      [null, null],
+  it('names the plans the way the leaflet does, without prices, and keeps the server values', () => {
+    expect(INTEREST_OPTIONS.map((option) => option.value)).toEqual([
+      'LOCAL_A', 'LOCAL_B', 'LOCAL_C', 'BRAND_S', 'BRAND_M', 'BRAND_L', 'ENTERPRISE', 'JOINT', 'OTHER',
     ])
+    expect(INTEREST_OPTIONS[0].label).toContain('혜택함 입점')
+    expect(INTEREST_OPTIONS[1].label).toContain('응원 화면 광고 모달')
+    expect(INTEREST_OPTIONS.some((option) => option.label.includes('만원'))).toBe(false)
   })
 })
 
@@ -79,57 +72,64 @@ describe('promotion page', () => {
     vi.setSystemTime(at('2026-10-25T03:00:00Z'))
   }
 
-  it('shows the three Local products with their prices', () => {
+  const body = () => (document.body.textContent ?? '').replace(/\u00a0/g, ' ').replace(/\u2060/g, '')
+
+  it('opens with the leaflet cover: cheering before the exam, discounts after', () => {
     open()
     renderAt('/promotion')
-    const local = screen.getByRole('region', { name: 'Local 상품 (매장 1곳)' })
-    expect(local).toHaveTextContent('수능 후 방문형')
-    expect(local).toHaveTextContent('4.9만원')
-    expect(local).toHaveTextContent('9.9만원')
-    expect(local).toHaveTextContent('12.9만원')
-    expect(local).toHaveTextContent('VAT 별도')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('수능 전엔 매일 응원을, 수능 후엔 할인을.')
+    expect(screen.getByText('2026 수능 광고 파트너 모집')).toBeInTheDocument()
+    expect(body()).toContain('쿠폰은 예시예요')
+    expect(body()).toContain('입금은 11월 18일(수)까지 받아요.')
   })
 
-  it('shows the Brand tiers with launch partner prices and Enterprise as a quote', () => {
+  it('shows the two-stage package: modal first (B), benefit box second (A), both as C', () => {
     open()
     renderAt('/promotion')
-    const table = screen.getByRole('table')
-    const row = (name: string) => screen.getByRole('rowheader', { name }).closest('tr') as HTMLElement
-    expect(row('Brand S')).toHaveTextContent('14만원')
-    expect(row('Brand S')).toHaveTextContent('11만원')
-    expect(row('Brand M')).toHaveTextContent('29만원')
-    expect(row('Brand M')).toHaveTextContent('23만원')
-    expect(row('Brand L')).toHaveTextContent('44만원')
-    expect(row('Brand L')).toHaveTextContent('35만원')
-    expect(row('Enterprise')).toHaveTextContent('별도 협의')
-    expect(table).toHaveTextContent('런칭 파트너가')
+    const products = screen.getByRole('region', { name: '2단계 광고 패키지' })
+    const names = within(products).getAllByRole('heading', { level: 3 }).map((h) => h.textContent)
+    expect(names.slice(0, 2)).toEqual(['응원 화면 광고 모달', '수험생 혜택함 입점'])
+    expect(products).toHaveTextContent('1단계B안')
+    expect(products).toHaveTextContent('2단계A안')
+    expect(products).toHaveTextContent('C안 · 1+2단계 패키지')
+    expect(products).toHaveTextContent('혜택함 상단 우선 노출')
   })
 
-  it('explains franchise scope, joint promotions and extra options', () => {
+  it('asks to inquire for the price instead of listing one', () => {
     open()
     renderAt('/promotion')
-    const text = (document.body.textContent ?? '').replace(/\u00a0/g, ' ').replace(/\u2060/g, '')
-    for (const phrase of ['참여를 희망한 가맹점', '본사가 지정한 일부 매장', '무료 쿠폰', '공동 SNS 프로모션', '카테고리 또는 상권 독점 캠페인']) {
-      expect(text).toContain(phrase)
+    expect(body()).toContain('매장 1곳부터 참여할 수 있어요')
+    expect(body()).not.toContain('만원')
+    expect(body()).not.toContain('VAT')
+    expect(body()).not.toContain('Brand S')
+  })
+
+  it('shows the real daily visitors and marks the forecast as a forecast', () => {
+    open()
+    renderAt('/promotion')
+    const local = screen.getByRole('region', { name: '수능이 끝나면, 우리 매장으로.' })
+    expect(local).toHaveTextContent('9배')
+    expect(local).toHaveTextContent('일 접속자 131명 → 1,170명')
+    expect(local).toHaveTextContent('3,000명은 예상치예요')
+    expect(local).toHaveTextContent('예상 DAU')
+  })
+
+  it('lists the three steps and the leaflet schedule', () => {
+    open()
+    renderAt('/promotion')
+    const how = screen.getByRole('region', { name: '착과 함께할 준비, 3단계면 충분해요' })
+    for (const phrase of ['참여 의사 전달', '광고 정보 제출', '광고 노출 시작', '수정은 1회까지예요', '11/18최종 입금 마감', '11/19수능 당일 · 마지막 응원', '11/20~30혜택함 오픈']) {
+      expect(how).toHaveTextContent(phrase)
     }
-    expect(screen.getByText(plain(/서울 매장 20곳만 참여하면 Brand M/))).toBeInTheDocument()
+    expect(body()).not.toContain('11월 2일')
+    expect(body()).not.toContain('11월 12일')
   })
 
-  it('says the audience is only students and the people around them', () => {
+  it('gives the phone, email and person to contact', () => {
     open()
     renderAt('/promotion')
-    expect(screen.getByRole('heading', { name: '착은 보는 사람이 처음부터 정해져 있어요' })).toBeInTheDocument()
-    expect(screen.getByText(plain(/수험생과 그 친구, 가족만 쓰는 서비스/))).toBeInTheDocument()
-    expect(screen.getByText(plain(/일반 광고는 수험생이 아닌 사람에게도/))).toBeInTheDocument()
-  })
-
-  it('no longer promises the old package (view guarantee, early bird)', () => {
-    open()
-    renderAt('/promotion')
-    const text = document.body.textContent ?? ''
-    expect(text).not.toContain('시청 1만')
-    expect(text).not.toContain('얼리버드')
-    expect(text).not.toContain('19.9만원')
+    expect(screen.getByRole('link', { name: '010-3924-4047' })).toHaveAttribute('href', 'tel:010-3924-4047')
+    expect(body()).toContain('담당 조민준')
   })
 
   it('links to the consultation form and lists the ad specs', () => {
