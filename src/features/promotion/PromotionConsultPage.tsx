@@ -77,7 +77,7 @@ export function PromotionConsultPage() {
         ) : (
           <form className="promo-form" onSubmit={submit} noValidate>
             <label>
-              <span>브랜드 이름</span>
+              <span>매장 이름</span>
               <input value={company} onChange={(e) => setCompany(e.target.value)} maxLength={100} autoComplete="organization" required />
             </label>
             <label>

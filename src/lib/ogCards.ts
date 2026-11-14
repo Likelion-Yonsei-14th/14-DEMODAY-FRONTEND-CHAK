@@ -141,7 +141,7 @@ const BASE_PAGES: readonly OgPage[] = [
     source: '/promotion',
     card: {
       title: '착 · 수능 시즌 광고 제휴 제안',
-      description: '수험생이 매일 여는 응원 앱 착에 브랜드 광고를 싣는 제안이에요.',
+      description: '수험생이 매일 여는 응원 앱 착에 우리 매장 광고를 싣는 제안이에요.',
       image: '/assets/og/promotion.png',
     },
   },
