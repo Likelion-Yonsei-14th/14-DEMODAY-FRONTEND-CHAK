@@ -44,9 +44,70 @@ function Screen({ screen }: { screen: PitchScreen }) {
   )
 }
 
+const count = (value: number) => value.toLocaleString('ko-KR')
+
+/** 일 접속자 막대(실제)와, 마지막 날에서 수능 당일 예상까지 올라가는 점선 추세선. */
+function TrendChart({ chart }: { chart: NonNullable<PitchSlide['chart']> }) {
+  const W = 600
+  const H = 330
+  const TOP = 44
+  const BOTTOM = 290
+  const SIDE = 8
+  const all = [...chart.values, ...chart.ahead]
+  const top = Math.max(...all, 1)
+  const slot = (W - SIDE * 2) / all.length
+  const x = (index: number) => SIDE + slot * index + slot / 2
+  const y = (value: number) => BOTTOM - (value / top) * (BOTTOM - TOP)
+  const lastIndex = chart.values.length - 1
+  const last = chart.values[lastIndex] ?? 0
+  const line = [last, ...chart.ahead].map((value, index) => `${x(lastIndex + index)},${y(value)}`).join(' ')
+  const peak = chart.ahead.at(-1)
+  return (
+    <svg
+      className="pslide__chart"
+      viewBox={`0 0 ${W} ${H}`}
+      role="img"
+      aria-label={`일 접속자 그래프. ${chart.from} ${count(chart.values[0] ?? 0)}명에서 ${chart.to} ${count(last)}명으로 늘었고, 수능 당일은 ${count(chart.expected)}명으로 예상해요.`}
+    >
+      {peak !== undefined && (
+        <>
+          <polygon className="pslide__chart-area" points={`${x(lastIndex)},${BOTTOM} ${line} ${x(all.length - 1)},${BOTTOM}`} />
+          <polyline className="pslide__chart-line" points={line} />
+        </>
+      )}
+      {chart.values.map((value, index) =>
+        value > 0 ? (
+          <rect key={index} className={index === lastIndex ? 'is-now' : undefined} x={x(index) - slot * 0.36} y={y(value)} width={slot * 0.72} height={BOTTOM - y(value)} rx={3} />
+        ) : null,
+      )}
+      <line className="pslide__chart-axis" x1={SIDE} x2={W - SIDE} y1={BOTTOM} y2={BOTTOM} />
+      <text x={x(0)} y={y(chart.values[0] ?? 0) - 8} textAnchor="middle">{count(chart.values[0] ?? 0)}</text>
+      <text className="is-now" x={x(lastIndex)} y={y(last) - 10} textAnchor="middle">{count(last)}</text>
+      <text className="is-tick" x={x(0)} y={BOTTOM + 22} textAnchor="middle">{chart.from}</text>
+      <text className="is-tick" x={x(lastIndex)} y={BOTTOM + 22} textAnchor="middle">{chart.to}</text>
+      {peak !== undefined && (
+        <>
+          <circle className="pslide__chart-dot" cx={x(all.length - 1)} cy={y(peak)} r={8} />
+          <text className="is-peak" x={x(all.length - 1) - 16} y={y(peak) + 8} textAnchor="end">예상 {count(peak)}</text>
+          <text className="is-tick is-now" x={W - SIDE} y={BOTTOM + 22} textAnchor="end">수능 당일</text>
+        </>
+      )}
+    </svg>
+  )
+}
+
 /** 장표 한 장. 16:9 틀 안에서 크기에 맞춰 글자가 같이 커진다. 어드민 미리보기와 웹 보기가 함께 쓴다. */
 export function PitchSlideView({ slide, page, total }: { slide: PitchSlide; page: number; total: number }) {
-  const top = slide.chart ? Math.max(...slide.chart.values, slide.chart.expected, 1) : 1
+  const stats = slide.stats && (
+    <dl className="pslide__stats">
+      {slide.stats.map((stat) => (
+        <div key={stat.label} className={stat.strong ? 'is-strong' : undefined}>
+          <dt>{stat.label}</dt>
+          <dd>{stat.value}</dd>
+        </div>
+      ))}
+    </dl>
+  )
   return (
     <article className={`pslide${slide.tone ? ` pslide--${slide.tone}` : ''}`} aria-label={`${page}번 장표: ${slide.title}`}>
       <p className="pslide__brand">
@@ -57,30 +118,13 @@ export function PitchSlideView({ slide, page, total }: { slide: PitchSlide; page
         <p className="pslide__kicker">{slide.kicker}</p>
         <h3 className="pslide__title">{slide.title}</h3>
         {slide.pill && <p className="pslide__pill">{slide.pill}</p>}
-        {slide.stats && (
-          <dl className="pslide__stats">
-            {slide.stats.map((stat) => (
-              <div key={stat.label} className={stat.strong ? 'is-strong' : undefined}>
-                <dt>{stat.label}</dt>
-                <dd>{stat.value}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
-        {slide.chart && (
-          <div className="pslide__chart" role="img" aria-label={`일 접속자 그래프. ${slide.chart.from}부터 ${slide.chart.to}까지 늘었고, 수능 당일은 ${slide.chart.expected.toLocaleString('ko-KR')}명으로 예상해요.`}>
-            <div className="pslide__bars">
-              {slide.chart.values.map((value, index, all) => (
-                <i key={index} className={index === all.length - 1 ? 'is-now' : undefined} style={{ height: `${(value / top) * 100}%` }} />
-              ))}
-              <i className="is-forecast" style={{ height: `${(slide.chart.expected / top) * 100}%` }} />
-            </div>
-            <p className="pslide__axis">
-              <span>{slide.chart.from}</span>
-              <span>{slide.chart.to}</span>
-              <span>수능 당일 예상</span>
-            </p>
+        {slide.chart ? (
+          <div className="pslide__split">
+            {stats}
+            <TrendChart chart={slide.chart} />
           </div>
+        ) : (
+          stats
         )}
         {slide.phones && (
           <ul className="pslide__phones">

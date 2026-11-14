@@ -129,7 +129,57 @@ export async function downloadDeck(slides: readonly PitchSlide[], fileName: stri
       coupon(slide, cx, cy, 3.9, 1.9, item.coupon.store, `${item.coupon.category} · 수험생 할인`)
     }
 
-    if (item.stats?.length) {
+    if (item.chart) {
+      // 왼쪽에 숫자를 쌓고, 오른쪽에 막대와 수능 당일까지 올라가는 점선 추세선을 그린다
+      const height = 3.3
+      const statWidth = 3.3
+      const stats = item.stats ?? []
+      const statHeight = (height - GAP * (stats.length - 1)) / Math.max(stats.length, 1)
+      stats.forEach((stat, i) => {
+        const sy = y + i * (statHeight + GAP)
+        box(slide, LEFT, sy, statWidth, statHeight, panel)
+        write(slide, stat.label, { x: LEFT + 0.25, y: sy + statHeight / 2 - 0.6, w: statWidth - 0.5, h: 0.35, fontSize: 12, color: soft })
+        write(slide, stat.value, { x: LEFT + 0.25, y: sy + statHeight / 2 - 0.25, w: statWidth - 0.5, h: 0.75, fontSize: 32, bold: true, color: stat.strong ? accent : text })
+      })
+
+      const cx = LEFT + statWidth + 0.4
+      const cw = WIDTH - statWidth - 0.4
+      const plotTop = y + 0.45
+      const plotBottom = y + height - 0.35
+      const all = [...item.chart.values, ...item.chart.ahead]
+      const top = Math.max(...all, 1)
+      const slot = cw / all.length
+      const px = (i: number) => cx + slot * i + slot / 2
+      const py = (value: number) => plotBottom - (value / top) * (plotBottom - plotTop)
+      const lastIndex = item.chart.values.length - 1
+      item.chart.values.forEach((value, i) => {
+        if (value <= 0) return
+        const color = i === lastIndex ? RED : 'C9B8A6'
+        slide.addShape('rect', { x: px(i) - slot * 0.36, y: py(value), w: slot * 0.72, h: plotBottom - py(value), fill: { color }, line: { color } })
+      })
+      const trend = [item.chart.values[lastIndex] ?? 0, ...item.chart.ahead]
+      for (let i = 1; i < trend.length; i += 1) {
+        const x1 = px(lastIndex + i - 1)
+        const y1 = py(trend[i - 1]!)
+        const y2 = py(trend[i]!)
+        slide.addShape('line', { x: x1, y: Math.min(y1, y2), w: slot, h: Math.abs(y1 - y2), flipV: y2 < y1, line: { color: RED, width: 2.5, dashType: 'dash' } })
+      }
+      slide.addShape('line', { x: cx, y: plotBottom, w: cw, h: 0, line: { color: INK, width: 1.25 } })
+      const first = item.chart.values[0] ?? 0
+      const last = item.chart.values[lastIndex] ?? 0
+      write(slide, first.toLocaleString('ko-KR'), { x: px(0) - 0.5, y: py(first) - 0.3, w: 1, h: 0.26, fontSize: 11, bold: true, color: MUTED, align: 'center' })
+      write(slide, last.toLocaleString('ko-KR'), { x: px(lastIndex) - 0.6, y: py(last) - 0.32, w: 1.2, h: 0.28, fontSize: 12, bold: true, color: RED, align: 'center' })
+      const peak = item.chart.ahead.at(-1)
+      if (peak !== undefined) {
+        const dot = 0.2
+        slide.addShape('ellipse', { x: px(all.length - 1) - dot / 2, y: py(peak) - dot / 2, w: dot, h: dot, fill: { color: RED }, line: { color: 'ECC9BD', width: 2 } })
+        write(slide, `예상 ${peak.toLocaleString('ko-KR')}`, { x: px(all.length - 1) - 2.9, y: py(peak) - 0.22, w: 2.7, h: 0.44, fontSize: 20, bold: true, color: RED, align: 'right' })
+        write(slide, '수능 당일', { x: cx + cw - 1.5, y: plotBottom + 0.06, w: 1.5, h: 0.28, fontSize: 10, bold: true, color: RED, align: 'right' })
+      }
+      write(slide, item.chart.from, { x: px(0) - 0.5, y: plotBottom + 0.06, w: 1, h: 0.28, fontSize: 10, color: MUTED, align: 'center' })
+      write(slide, item.chart.to, { x: px(lastIndex) - 0.5, y: plotBottom + 0.06, w: 1, h: 0.28, fontSize: 10, color: MUTED, align: 'center' })
+      y += height + 0.3
+    } else if (item.stats?.length) {
       const col = columns(item.stats.length)
       item.stats.forEach((stat, i) => {
         box(slide, col.x(i), y, col.width, 1.35, panel)
@@ -137,26 +187,6 @@ export async function downloadDeck(slides: readonly PitchSlide[], fileName: stri
         write(slide, stat.value, { x: col.x(i) + 0.25, y: y + 0.5, w: col.width - 0.5, h: 0.75, fontSize: 34, bold: true, color: stat.strong ? accent : text })
       })
       y += 1.6
-    }
-
-    if (item.chart) {
-      const height = 1.9
-      const values = item.chart.values
-      const top = Math.max(...values, item.chart.expected, 1)
-      const forecastWidth = 1.1
-      const slot = (WIDTH - forecastWidth - 0.3) / values.length
-      values.forEach((value, i) => {
-        const h = Math.max((value / top) * height, 0.03)
-        const color = i === values.length - 1 ? RED : 'C9B8A6'
-        slide.addShape('rect', { x: LEFT + i * slot + slot * 0.12, y: y + height - h, w: slot * 0.76, h, fill: { color }, line: { color } })
-      })
-      const fh = (item.chart.expected / top) * height
-      slide.addShape('rect', { x: LEFT + WIDTH - forecastWidth, y: y + height - fh, w: forecastWidth, h: fh, fill: { color: 'F6D5CB' }, line: { color: RED, width: 1.5, dashType: 'dash' } })
-      slide.addShape('line', { x: LEFT, y: y + height, w: WIDTH, h: 0, line: { color: INK, width: 1.25 } })
-      write(slide, item.chart.from, { x: LEFT, y: y + height + 0.05, w: 1.5, h: 0.28, fontSize: 10, color: MUTED })
-      write(slide, item.chart.to, { x: LEFT + (values.length - 1) * slot - 0.5, y: y + height + 0.05, w: slot + 1, h: 0.28, fontSize: 10, color: MUTED, align: 'center' })
-      write(slide, '수능 당일 예상', { x: LEFT + WIDTH - 2, y: y + height + 0.05, w: 2, h: 0.28, fontSize: 10, bold: true, color: RED, align: 'right' })
-      y += height + 0.55
     }
 
     if (item.phones?.length) {
@@ -192,7 +222,8 @@ export async function downloadDeck(slides: readonly PitchSlide[], fileName: stri
     if (item.bullets?.length) {
       const height = 0.55 * item.bullets.length + 0.1
       slide.addText(
-        item.bullets.map((line) => ({ text: line, options: { bullet: cover ? false : { code: '25CF' }, breakLine: true } })),
+        // 글머리표는 글자로 넣는다(뷰어마다 들여쓰기가 달라 틀 밖으로 나가는 일이 있다)
+        item.bullets.map((line) => ({ text: cover ? line : `•  ${line}`, options: { breakLine: true } })),
         { x: LEFT, y, w: width, h: height, fontFace: FONT, fontSize: cover ? 20 : 16, bold: cover, color: text, margin: 0, valign: 'top', paraSpaceAfter: 6, fit: 'shrink' },
       )
       y += height + 0.15

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { defaultInput, estimate, PITCH_CATEGORIES, withCategory } from './pitchModel'
-import { buildSlides, decodeDeck, deckFileName, deckPath, encodeDeck, josa } from './pitchSlides'
+import { buildSlides, decodeDeck, deckFileName, deckPath, encodeDeck, josa, trendTo } from './pitchSlides'
 
 const pptx = vi.hoisted(() => ({ downloadDeck: vi.fn() }))
 vi.mock('./pitchPptx', () => pptx)
@@ -70,6 +70,11 @@ describe('pitch slides', () => {
     expect(slides[3]!.title).toBe('신촌역 근처 수험생이 매일 착을 열어요')
     expect(slides[3]!.stats!.map((stat) => stat.value)).toEqual(['2,000명', '3,700명'])
     expect(slides[3]!.chart).toMatchObject({ from: '10/28', to: '11/13', expected: 3700 })
+    // 추세선은 마지막 실제 값에서 수능 당일 예상까지 매일 올라간다
+    const ahead = slides[3]!.chart!.ahead
+    expect(ahead).toHaveLength(6)
+    expect(ahead.at(-1)).toBe(3700)
+    expect(ahead.every((value, index) => value > (index === 0 ? 1855 : ahead[index - 1]!))).toBe(true)
   })
 
   it('shows what the service is with the store on the app screens, in a deck short enough for a visit', () => {
@@ -108,6 +113,12 @@ describe('pitch slides', () => {
     expect(josa('착헤어살롱', '을', '를')).toBe('착헤어살롱을')
     expect(josa('CHAK', '을', '를')).toBe('CHAK를')
     expect(josa('스마일', '으로', '로')).toBe('스마일로')
+  })
+
+  it('draws no trend when there is nothing to start from or no days left', () => {
+    expect(trendTo(0, 3700, 6)).toEqual([])
+    expect(trendTo(1855, 3700, 0)).toEqual([])
+    expect(trendTo(1000, 2000, 2)).toEqual([1414, 2000])
   })
 
   it('names the file after the store', () => {

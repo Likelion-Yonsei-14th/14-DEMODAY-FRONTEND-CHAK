@@ -1,5 +1,5 @@
-import { PROMOTION_CONTACT, VISITOR_SNAPSHOT } from '../../promotion/promotionContent'
-import { shortDate } from '../../promotion/promotionForecast'
+import { EXAM_DATE, PROMOTION_CONTACT, VISITOR_SNAPSHOT } from '../../promotion/promotionContent'
+import { daysBetween, shortDate } from '../../promotion/promotionForecast'
 import { categoryOf, defaultInput, estimate, people, percent, won, type PitchInput } from './pitchModel'
 
 export type PitchStat = { label: string; value: string; strong?: boolean }
@@ -21,8 +21,8 @@ export type PitchSlide = {
   coupon?: { store: string; category: string }
   /** 큰 숫자 칸 */
   stats?: PitchStat[]
-  /** 일 접속자 막대와 수능 당일 예상 */
-  chart?: { values: number[]; from: string; to: string; expected: number }
+  /** 일 접속자 막대(실제)와 수능 당일까지 이어지는 예상 추세선(ahead: 다음 날부터 수능 당일까지) */
+  chart?: { values: number[]; ahead: number[]; from: string; to: string; expected: number }
   phones?: PitchPhone[]
   cards?: PitchCard[]
   /** 화살표로 이어지는 단계 */
@@ -33,6 +33,12 @@ export type PitchSlide = {
   /** 장표 아래쪽의 강조 띠 */
   callout?: string
   note?: string
+}
+
+/** 지금 값에서 목표 값까지 같은 비율로 늘어나는 날짜별 값(다음 날부터 마지막 날까지). */
+export function trendTo(from: number, to: number, days: number): number[] {
+  if (days <= 0 || from <= 0) return []
+  return Array.from({ length: days }, (_, index) => Math.round(from * (to / from) ** ((index + 1) / days)))
 }
 
 /** 받침에 맞는 조사를 붙인다: josa('착커피', '으로', '로') → '착커피로'. 한글로 끝나지 않으면 받침 없는 쪽을 쓴다. */
@@ -90,6 +96,7 @@ export function buildSlides(input: PitchInput): PitchSlide[] {
       ],
       chart: {
         values: VISITOR_SNAPSHOT.map((day) => day.visitors),
+        ahead: trendTo(VISITOR_SNAPSHOT.at(-1)!.visitors, input.visitorsExpected, daysBetween(VISITOR_SNAPSHOT.at(-1)!.date, EXAM_DATE)),
         from: shortDate(VISITOR_SNAPSHOT[0].date),
         to: shortDate(VISITOR_SNAPSHOT.at(-1)!.date),
         expected: input.visitorsExpected,
