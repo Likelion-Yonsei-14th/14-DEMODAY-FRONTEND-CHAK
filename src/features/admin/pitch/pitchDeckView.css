@@ -1,0 +1,19 @@
+/* 웹으로 여는 장표: 어두운 바탕에 한 장씩 */
+.pdeck { min-height: 100dvh; background: #1c110c; }
+.pdeck__title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.pdeck__pages { margin: 0; padding: 0; list-style: none; scroll-snap-type: y proximity; }
+.pdeck__page { display: grid; place-items: center; min-height: 100dvh; padding: 16px; box-sizing: border-box; scroll-snap-align: center; }
+.pdeck__page .pslide { width: min(100%, calc((100dvh - 32px) * 16 / 9)); box-shadow: 0 12px 40px rgb(0 0 0 / 35%); }
+.pdeck__hint { margin: 0; padding: 0 16px 20px; color: #a8958a; font-size: 13px; text-align: center; }
+
+@media (max-width: 720px) and (orientation: portrait) {
+  .pdeck__page { min-height: 0; padding: 8px; }
+}
+
+@media print {
+  @page { size: 13.33in 7.5in; margin: 0; }
+  .pdeck { background: none; }
+  .pdeck__page { min-height: 0; padding: 0; break-after: page; }
+  .pdeck__page .pslide { width: 100vw; border-radius: 0; box-shadow: none; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .pdeck__hint { display: none; }
+}

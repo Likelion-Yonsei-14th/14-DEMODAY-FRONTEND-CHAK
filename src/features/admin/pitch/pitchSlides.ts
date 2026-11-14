@@ -1,14 +1,44 @@
-import { PROMOTION_CONTACT } from '../../promotion/promotionContent'
-import { categoryOf, estimate, people, percent, won, type PitchInput } from './pitchModel'
+import { EXAM_DATE, PROMOTION_CONTACT, VISITOR_SNAPSHOT } from '../../promotion/promotionContent'
+import { daysBetween, shortDate } from '../../promotion/promotionForecast'
+import { categoryOf, defaultInput, estimate, people, percent, won, type PitchInput } from './pitchModel'
 
+export type PitchStat = { label: string; value: string; strong?: boolean }
+export type PitchCard = { tag?: string; title: string; body: string; highlight?: boolean }
+export type PitchStep = { label: string; value: string; sub?: string }
+
+/** 휴대폰 화면 그림: 응원 책상, 응원을 열 때 뜨는 매장 광고, 혜택함의 매장 쿠폰 */
+export type PitchScreen = { kind: 'desk' } | { kind: 'ad'; store: string; place: string } | { kind: 'coupon'; store: string; category: string }
+export type PitchPhone = { tag: string; title: string; body: string; screen: PitchScreen }
+
+/** 한 장의 내용. 있는 칸만 위에서부터 차례로 그린다(숫자 → 그래프 → 휴대폰 → 카드 → 단계 → 비교 → 글머리 → 강조 띠). */
 export type PitchSlide = {
   kicker: string
   title: string
-  /** 큰 숫자 칸 */
-  stats?: { label: string; value: string; strong?: boolean }[]
-  bullets?: string[]
-  note?: string
   tone?: 'cover' | 'dark'
+  /** 표지의 알약 모양 문구 */
+  pill?: string
+  /** 표지 오른쪽의 매장 쿠폰 그림 */
+  coupon?: { store: string; category: string }
+  /** 큰 숫자 칸 */
+  stats?: PitchStat[]
+  /** 일 접속자 막대(실제)와 수능 당일까지 이어지는 예상 추세선(ahead: 다음 날부터 수능 당일까지) */
+  chart?: { values: number[]; ahead: number[]; from: string; to: string; expected: number }
+  phones?: PitchPhone[]
+  cards?: PitchCard[]
+  /** 화살표로 이어지는 단계 */
+  steps?: PitchStep[]
+  /** 예상 수익과 광고비를 나란히 견준다. ratio는 광고비 ÷ 예상 수익 */
+  compare?: { profit: string; price: string; ratio: number; summary: string }
+  bullets?: string[]
+  /** 장표 아래쪽의 강조 띠 */
+  callout?: string
+  note?: string
+}
+
+/** 지금 값에서 목표 값까지 같은 비율로 늘어나는 날짜별 값(다음 날부터 마지막 날까지). */
+export function trendTo(from: number, to: number, days: number): number[] {
+  if (days <= 0 || from <= 0) return []
+  return Array.from({ length: days }, (_, index) => Math.round(from * (to / from) ** ((index + 1) / days)))
 }
 
 /** 받침에 맞는 조사를 붙인다: josa('착커피', '으로', '로') → '착커피로'. 한글로 끝나지 않으면 받침 없는 쪽을 쓴다. */
@@ -33,17 +63,29 @@ export function buildSlides(input: PitchInput): PitchSlide[] {
       tone: 'cover',
       kicker: `${[place, category.label].filter(Boolean).join(' · ')} 제휴 제안`,
       title: `수능이 끝나면, ${josa(store, '으로', '로')}.`,
+      pill: '2026 수능 로컬 매장 파트너 모집',
+      coupon: { store, category: category.label },
       bullets: ['수능 전엔 매일 응원을, 수능 후엔 할인을.', '수능 끝난 고3이 가장 먼저 여는 수능 응원 앱 착'],
     },
     {
       kicker: '문제와 해결',
       title: '수험생 프로모션, 수능이 끝난 뒤에 알려도 충분할까요?',
-      bullets: [
-        '수능 전 · 수험생과 미리 관계를 만들기 어려워요.',
-        '수능 당일 · 여러 가게의 혜택이 한꺼번에 쏟아져요.',
-        '수능 후 · 혜택을 알려도 실제 방문으로 이어지기 어려워요.',
+      cards: [
+        { tag: '수능 전', title: '고객 접점 부족', body: '수험생과 미리 관계를 만들기 어려워요.' },
+        { tag: '수능 당일', title: '프로모션 경쟁', body: '여러 가게의 혜택이 한꺼번에 쏟아져요.' },
+        { tag: '수능 후', title: '방문 전환의 어려움', body: '혜택을 알려도 실제 방문으로 이어지기 어려워요.' },
       ],
-      note: `착이라면 수능 전에 알린 ${josa(store, '을', '를')}, 수능 후의 실제 방문으로 이어 드려요.`,
+      callout: `착이라면 수능 전에 알린 ${josa(store, '을', '를')}, 수능 후의 실제 방문으로.`,
+    },
+    {
+      kicker: '착은 이런 서비스예요',
+      title: '수험생이 매일 응원을 여는 책상, 그 위에 우리 매장을',
+      phones: [
+        { tag: '수능 전 · 매일', title: '응원 책상', body: '친구와 가족의 응원이 책상에 쌓이고, 정해진 시간에 하나씩 열려요.', screen: { kind: 'desk' } },
+        { tag: '1단계 · B안', title: '응원 화면 광고', body: `응원을 열 때 ${store} 광고가 먼저 보여요. 영상 · 사진, 4:5 비율.`, screen: { kind: 'ad', store, place } },
+        { tag: '2단계 · A안', title: '수험생 혜택함', body: `수능 다음 날, ${store} 쿠폰을 받아 매장으로 찾아와요.`, screen: { kind: 'coupon', store, category: category.label } },
+      ],
+      note: 'C안 · 1+2단계 패키지: 응원 화면 노출부터 매장 방문까지 한 번의 흐름으로 이어져요.',
     },
     {
       kicker: '수험생이 매일 여는 앱',
@@ -52,34 +94,30 @@ export function buildSlides(input: PitchInput): PitchSlide[] {
         { label: '지금 일 접속자', value: people(input.visitorsNow) },
         { label: '수능 당일 예상', value: people(input.visitorsExpected), strong: true },
       ],
-      bullets: [
-        '수능 전 · 정해진 시간에 열리는 응원을 확인하러 매일 들어와요.',
-        '수능 다음 날 · 혜택함이 열리고 가까운 매장의 쿠폰을 받아요.',
-        '수능 후 · 쿠폰을 보여 주고 매장에서 수험생 할인을 받아요.',
-      ],
-    },
-    {
-      kicker: '광고 상품',
-      title: '2단계 광고 패키지',
-      bullets: [
-        '1단계 B안 · 응원 화면 광고 모달: 응원을 열 때 뜨는 영상 · 사진 광고',
-        '2단계 A안 · 수험생 혜택함 입점: 혜택 목록 → 상세 → 쿠폰 발급 (수능 다음 날 ~ 11월 30일)',
-        'C안 · 1+2단계 패키지: 응원 화면 노출부터 매장 방문까지 한 번의 흐름으로',
-      ],
+      chart: {
+        values: VISITOR_SNAPSHOT.map((day) => day.visitors),
+        ahead: trendTo(VISITOR_SNAPSHOT.at(-1)!.visitors, input.visitorsExpected, daysBetween(VISITOR_SNAPSHOT.at(-1)!.date, EXAM_DATE)),
+        from: shortDate(VISITOR_SNAPSHOT[0].date),
+        to: shortDate(VISITOR_SNAPSHOT.at(-1)!.date),
+        expected: input.visitorsExpected,
+      },
+      bullets: ['수험생과 그 친구 · 가족이 쓰는 앱이라, 광고를 보는 사람이 곧 우리 매장의 손님이에요.'],
     },
     {
       kicker: `${store} 예상 수익`,
       title: '적은 광고비로, 그보다 큰 수익을 기대할 수 있어요',
-      stats: [
-        { label: `${near} 쿠폰 도달`, value: people(result.reach) },
-        { label: `예상 방문 (전환율 ${percent(input.conversion)})`, value: people(result.visits) },
-        { label: `예상 수익 (객단가 ${won(input.spend)} · 수익률 ${percent(input.margin)})`, value: won(result.profit), strong: true },
-        { label: '제안 광고비', value: won(result.adPrice), strong: true },
+      steps: [
+        { label: '수능 당일 예상 접속자', value: people(input.visitorsExpected) },
+        { label: `${near} 쿠폰 도달`, value: people(result.reach), sub: `혜택함 ${percent(input.openRate)} · 근처 ${percent(input.localRate)}` },
+        { label: '예상 방문', value: people(result.visits), sub: `전환율 ${percent(input.conversion)}` },
+        { label: '예상 매출', value: won(result.sales), sub: `객단가 ${won(input.spend)}` },
       ],
-      bullets: [
-        `수능 당일 예상 접속자 ${people(input.visitorsExpected)} 중 혜택함을 여는 ${percent(input.openRate)}, 그중 ${near} 수험생 ${percent(input.localRate)}를 기준으로 계산했어요.`,
-        `예상 매출 ${won(result.sales)}, 광고비를 빼고도 ${won(result.net)}이 남아요.`,
-      ],
+      compare: {
+        profit: won(result.profit),
+        price: won(result.adPrice),
+        ratio: result.profit > 0 ? result.adPrice / result.profit : 0,
+        summary: `수익률 ${percent(input.margin)} 기준이에요. 광고비를 빼고도 ${won(result.net)}이 남아요.`,
+      },
       note: '예상치는 업종 평균을 바탕으로 한 가정값이에요.',
     },
     {
@@ -90,14 +128,46 @@ export function buildSlides(input: PitchInput): PitchSlide[] {
         { label: `다시 찾는 고객 (재방문율 ${percent(input.revisitRate)})`, value: people(result.revisitors) },
         { label: `1년 추가 기대 수익 (연 ${input.revisitCount}회 방문)`, value: won(result.loyaltyProfit), strong: true },
       ],
-      bullets: [
-        '수험생은 이제 막 소비를 시작하는 사회 초년생이에요.',
-        '처음 간 매장을 계속 찾는 경향이 있어, 수능 직후의 첫 방문이 오래가는 단골로 이어질 수 있어요.',
-        `참여 문의 · ${PROMOTION_CONTACT.phone} · ${PROMOTION_CONTACT.email} · 담당 ${PROMOTION_CONTACT.manager}`,
+      bullets: ['수험생은 이제 막 소비를 시작하는 사회 초년생이라, 처음 간 매장을 계속 찾는 경향이 있어요.'],
+      steps: [
+        { label: '01', value: '참여 의사 전달', sub: '상품 · 담당자 연락처' },
+        { label: '02', value: '광고 정보 제출', sub: '소재 · 쿠폰 · 매장 정보' },
+        { label: '03', value: '광고 노출 시작', sub: '입금 확인 후 바로' },
       ],
+      note: `참여 문의 · ${PROMOTION_CONTACT.phone} · ${PROMOTION_CONTACT.email} · 담당 ${PROMOTION_CONTACT.manager}`,
     },
   ]
 }
 
 export const deckFileName = (input: PitchInput) =>
   `CHAK_제휴제안_${(input.storeName.trim() || '매장').replace(/[\\/:*?"<>|\s]+/g, '_')}.pptx`
+
+/** 웹으로 여는 주소에 싣는 값. 주소가 짧도록 기본값과 다른 것만 넣는다. */
+export function encodeDeck(input: PitchInput): string {
+  const base = defaultInput(input.categoryId)
+  const changed = Object.fromEntries(Object.entries(input).filter(([key, value]) => key === 'categoryId' || base[key as keyof PitchInput] !== value))
+  const bytes = new TextEncoder().encode(JSON.stringify(changed))
+  return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+/** 주소의 값을 되돌린다. 깨졌거나 모르는 값은 버리고 기본값을 쓴다. */
+export function decodeDeck(code: string | null): PitchInput {
+  let raw: Record<string, unknown> = {}
+  try {
+    const binary = atob((code ?? '').replace(/-/g, '+').replace(/_/g, '/'))
+    const parsed: unknown = JSON.parse(new TextDecoder().decode(Uint8Array.from(binary, (char) => char.charCodeAt(0))))
+    if (parsed && typeof parsed === 'object') raw = parsed as Record<string, unknown>
+  } catch {
+    raw = {}
+  }
+  const input = defaultInput(typeof raw.categoryId === 'string' ? raw.categoryId : undefined)
+  for (const key of Object.keys(input) as (keyof PitchInput)[]) {
+    const value = raw[key]
+    if (key === 'categoryId') continue
+    if (typeof input[key] === 'string' && typeof value === 'string') Object.assign(input, { [key]: value.slice(0, 30) })
+    if (typeof input[key] === 'number' && typeof value === 'number' && Number.isFinite(value) && value >= 0) Object.assign(input, { [key]: value })
+  }
+  return input
+}
+
+export const deckPath = (input: PitchInput) => `/promotion/deck?d=${encodeDeck(input)}`

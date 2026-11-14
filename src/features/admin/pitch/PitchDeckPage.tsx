@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { defaultInput, estimate, PITCH_CATEGORIES, won, withCategory, type PitchInput } from './pitchModel'
-import { buildSlides, deckFileName } from './pitchSlides'
+import { PitchSlideView } from './PitchSlideView'
+import { buildSlides, deckFileName, deckPath } from './pitchSlides'
 import './pitch.css'
 
 type NumberKey = { [K in keyof PitchInput]: PitchInput[K] extends number ? K : never }[keyof PitchInput]
@@ -27,9 +28,14 @@ export function PitchDeckPage() {
   const [input, setInput] = useState<PitchInput>(() => defaultInput())
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
   const result = useMemo(() => estimate(input), [input])
   const slides = useMemo(() => buildSlides(input), [input])
 
+  const change = (next: PitchInput) => {
+    setCopied(false)
+    setInput(next)
+  }
   const setNumber = (key: NumberKey, value: number) => setInput((current) => ({ ...current, [key]: Number.isFinite(value) ? value : 0 }))
 
   const download = async () => {
@@ -45,6 +51,16 @@ export function PitchDeckPage() {
     }
   }
 
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(new URL(deckPath(input), window.location.origin).toString())
+      setCopied(true)
+      setError(null)
+    } catch {
+      setError('링크를 복사하지 못했어요. 웹으로 연 뒤 주소를 복사해 주세요.')
+    }
+  }
+
   return (
     <div className="pitch">
       <h1>홍보 PPT 만들기</h1>
@@ -55,15 +71,15 @@ export function PitchDeckPage() {
           <legend>매장 정보</legend>
           <label>
             <span>매장 이름</span>
-            <input value={input.storeName} maxLength={30} placeholder="예) 착헤어" onChange={(event) => setInput({ ...input, storeName: event.target.value })} />
+            <input value={input.storeName} maxLength={30} placeholder="예) 착헤어" onChange={(event) => change({ ...input, storeName: event.target.value })} />
           </label>
           <label>
             <span>위치</span>
-            <input value={input.location} maxLength={30} placeholder="예) 신촌역" onChange={(event) => setInput({ ...input, location: event.target.value })} />
+            <input value={input.location} maxLength={30} placeholder="예) 신촌역" onChange={(event) => change({ ...input, location: event.target.value })} />
           </label>
           <label>
             <span>업종</span>
-            <select value={input.categoryId} onChange={(event) => setInput(withCategory(input, event.target.value))}>
+            <select value={input.categoryId} onChange={(event) => change(withCategory(input, event.target.value))}>
               {PITCH_CATEGORIES.map((category) => (
                 <option key={category.id} value={category.id}>{category.label}</option>
               ))}
@@ -106,7 +122,11 @@ export function PitchDeckPage() {
       {result.profit === 0 && <p className="pitch__warn">예상 방문이 0명이라 광고비를 제안할 수 없어요. 가정값을 확인해 주세요.</p>}
 
       <div className="pitch__actions">
-        <button type="button" className="pitch-btn" onClick={download} disabled={busy}>
+        <a className="pitch-btn" href={deckPath(input)} target="_blank" rel="noreferrer">웹으로 열기</a>
+        <button type="button" className="pitch-btn pitch-btn--ghost" onClick={copyLink}>
+          {copied ? '링크를 복사했어요' : '링크 복사'}
+        </button>
+        <button type="button" className="pitch-btn pitch-btn--ghost" onClick={download} disabled={busy}>
           {busy ? '만드는 중...' : 'PPT 내려받기'}
         </button>
         {error && <p role="alert" className="pitch__warn">{error}</p>}
@@ -115,27 +135,8 @@ export function PitchDeckPage() {
       <h2>미리보기</h2>
       <ol className="pitch-slides">
         {slides.map((slide, index) => (
-          <li key={slide.kicker} className={`pitch-slide${slide.tone ? ` pitch-slide--${slide.tone}` : ''}`} aria-label={`${index + 1}번 장표`}>
-            <p className="pitch-slide__kicker">{slide.kicker}</p>
-            <h3>{slide.title}</h3>
-            {slide.stats && (
-              <dl className="pitch-slide__stats">
-                {slide.stats.map((stat) => (
-                  <div key={stat.label} className={stat.strong ? 'is-strong' : undefined}>
-                    <dt>{stat.label}</dt>
-                    <dd>{stat.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            )}
-            {slide.bullets && (
-              <ul>
-                {slide.bullets.map((line) => (
-                  <li key={line}>{line}</li>
-                ))}
-              </ul>
-            )}
-            {slide.note && <p className="pitch-slide__note">{slide.note}</p>}
+          <li key={slide.kicker}>
+            <PitchSlideView slide={slide} page={index + 1} total={slides.length} />
           </li>
         ))}
       </ol>
