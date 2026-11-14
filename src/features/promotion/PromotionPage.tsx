@@ -24,7 +24,7 @@ import {
   VISITOR_SNAPSHOT,
   WHY_NOW_TEXT,
 } from './promotionContent'
-import { GROWTH_WINDOW_DAYS, shortDate, traction, type VisitorDay } from './promotionForecast'
+import { GROWTH_WINDOW_DAYS, shortDate, traction, worthShowing, type VisitorDay } from './promotionForecast'
 import { VisitorChart } from './VisitorChart'
 
 /** 리플렛의 빨간 줄이 붙은 작은 꼭지 제목. */
@@ -208,7 +208,7 @@ export function PromotionPage() {
             <span className="promo-nb">수능이 끝나면,</span> <span className="promo-nb">우리 매장으로.</span>
           </h2>
           <p>{tight('수험생의 첫 외출에 맞춰 쿠폰을 소개하세요.')}</p>
-          {growth && (
+          {worthShowing(growth) && (
             <div className="promo-traction">
               <p className="promo-accent">실제 일 접속자 · {shortDate(growth.first.date)} – {shortDate(growth.last.date)}</p>
               <p className="promo-traction__lead">

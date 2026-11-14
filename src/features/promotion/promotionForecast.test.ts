@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { EXAM_DATE, VISITOR_SNAPSHOT } from './promotionContent'
-import { dailyGrowth, daysBetween, forecast, MAX_DAILY_GROWTH, shortDate, traction, type VisitorDay } from './promotionForecast'
+import { dailyGrowth, daysBetween, forecast, MAX_DAILY_GROWTH, shortDate, traction, worthShowing, type VisitorDay } from './promotionForecast'
 
 const series = (start: string, values: number[]): VisitorDay[] =>
   values.map((visitors, index) => ({
@@ -45,6 +45,17 @@ describe('visitor forecast', () => {
     expect(traction(series('2026-11-17', [10, 20, 30]), EXAM_DATE)!.expected).toBeNull()
     expect(traction([], EXAM_DATE)).toBeNull()
     expect(traction(series('2026-11-01', [0, 0]), EXAM_DATE)).toBeNull()
+  })
+
+  it('is not shown as a growth story when the numbers do not grow', () => {
+    expect(worthShowing(traction(VISITOR_SNAPSHOT, EXAM_DATE))).toBe(true)
+    expect(worthShowing(null)).toBe(false)
+    // 첫날과 비슷한 수준이면 그리지 않는다
+    expect(worthShowing(traction(series('2026-11-09', [16, 22, 172, 32, 22]), EXAM_DATE))).toBe(false)
+    // 두 배 이상이어도 예상이 제자리면 그리지 않는다
+    expect(worthShowing(traction(series('2026-11-08', [10, 60, 55, 50, 45, 40]), EXAM_DATE))).toBe(false)
+    // 수능이 지나 예상이 없으면 실제 성장만으로 판단한다
+    expect(worthShowing(traction(series('2026-11-17', [10, 20, 30]), EXAM_DATE))).toBe(true)
   })
 
   it('formats dates and counts days', () => {

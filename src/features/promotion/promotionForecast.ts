@@ -69,5 +69,13 @@ export function traction(days: readonly VisitorDay[], until: string): Traction |
   }
 }
 
+/** 성장 그래프로 보여 줄 만한지: 첫날의 두 배 이상이고, 예상이 있다면 지금보다 커야 한다. */
+export const MIN_MULTIPLE_TO_SHOW = 2
+export function worthShowing(result: Traction | null): result is Traction {
+  if (!result || result.multiple < MIN_MULTIPLE_TO_SHOW) return false
+  const peak = result.forecast.at(-1)
+  return !peak || peak.visitors > result.last.visitors
+}
+
 /** '2026-11-09' → '11/09' */
 export const shortDate = (date: string) => `${date.slice(5, 7)}/${date.slice(8, 10)}`
