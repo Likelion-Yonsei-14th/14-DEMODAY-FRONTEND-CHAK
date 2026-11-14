@@ -660,3 +660,7 @@
   width: 100%;
   height: 100%;
 }
+
+.message-viewer__ad {
+  margin-top: 4px;
+}

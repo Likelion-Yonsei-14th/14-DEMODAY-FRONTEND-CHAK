@@ -4,6 +4,7 @@ import { startGoogleLogin, startKakaoLogin } from '@/api/auth'
 import { isApiEnabled, isKakaoLoginEnabled } from '@/api/config'
 import { Button } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
+import { AdBanner } from '@/features/ads/AdBanner'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -162,6 +163,8 @@ export function WelcomePage() {
             </>
           )}
         </section>
+
+        <AdBanner slot={0} className="welcome-page__ad" />
 
         <div className="welcome-page__games">
           <MiniGameSection note="로그인 없이 바로 할 수 있어요. 랭킹에는 로그인하면 올라가요." />
