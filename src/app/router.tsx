@@ -254,6 +254,12 @@ export const router = createBrowserRouter([
         }),
       },
       {
+        path: '/promotion/deck',
+        lazy: async () => ({
+          Component: (await import('@/features/admin/pitch/PitchDeckViewPage')).PitchDeckViewPage,
+        }),
+      },
+      {
         path: '/promotion/apply/benefit',
         lazy: async () => ({
           Component: (await import('@/features/promotion/PromotionBenefitPage')).PromotionBenefitPage,
