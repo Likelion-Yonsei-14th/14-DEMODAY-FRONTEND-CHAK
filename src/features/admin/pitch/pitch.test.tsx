@@ -40,6 +40,20 @@ describe('pitch estimate', () => {
     expect(estimate({ ...defaultInput('driving'), visitorsExpected: 100_000, priceCap: 90_000 }).adPrice).toBe(90_000)
   })
 
+  it('covers the kinds of stores students go to after the exam, each with a usable estimate', () => {
+    expect(PITCH_CATEGORIES.map((category) => category.id)).toEqual([
+      'hair', 'optical', 'driving', 'photo', 'fashion', 'park', 'food',
+      'nail', 'clinic', 'fitness', 'phone', 'play', 'cinema', 'travel', 'academy', 'cosmetics', 'etc',
+    ])
+    expect(new Set(PITCH_CATEGORIES.map((category) => category.label)).size).toBe(PITCH_CATEGORIES.length)
+    for (const category of PITCH_CATEGORIES) {
+      const result = estimate(defaultInput(category.id))
+      expect(result.visits, category.id).toBeGreaterThan(0)
+      expect(result.adPrice, category.id).toBeGreaterThan(0)
+      expect(result.adPrice, category.id).toBeLessThanOrEqual(150_000)
+    }
+  })
+
   it('adds the profit from customers who come back', () => {
     const result = estimate(defaultInput('hair'))
     // 4명 × 40% = 2명 × 3회 × 80,000원 × 50%
