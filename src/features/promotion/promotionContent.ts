@@ -126,19 +126,32 @@ export const AD_PACKAGE = {
 
 export const EXTRA_OPTIONS = ['혜택함 상단 우선 노출', '메인 배너', '카테고리 대표 브랜드', '인스타그램 콘텐츠'] as const
 
-/** 실제 일 접속자(10/28 ~ 11/09)와 예상치. 막대는 예상치를 100으로 본 비율이다. */
-export const TRACTION = {
-  period: '10/28 – 11/09',
-  multiple: 9,
-  days: 12,
-  bars: [
-    { label: '10/28', value: 131, kind: 'past' },
-    { label: '11/09', value: 1170, kind: 'now' },
-    { label: '예상', value: 3000, kind: 'forecast' },
-  ],
-  expectedDau: 3000,
-  note: '11/5는 서버 패치로 집계가 없어요. 3,000명은 예상치예요.',
-} as const
+/** 수능 당일. 접속자 예상 그래프가 여기까지 그려진다. */
+export const EXAM_DATE = '2026-11-19'
+
+/**
+ * 서버(GET /api/public/stats/visitors)에서 받기 전이나 받지 못했을 때 그리는 접속자 수.
+ * 2026-11-14에 어드민 통계에서 옮긴 값이고, 11/05는 서버 패치로 집계가 없다.
+ */
+export const VISITOR_SNAPSHOT = [
+  { date: '2026-10-28', visitors: 131 },
+  { date: '2026-10-29', visitors: 180 },
+  { date: '2026-10-30', visitors: 375 },
+  { date: '2026-10-31', visitors: 229 },
+  { date: '2026-11-01', visitors: 334 },
+  { date: '2026-11-02', visitors: 357 },
+  { date: '2026-11-03', visitors: 430 },
+  { date: '2026-11-04', visitors: 402 },
+  { date: '2026-11-05', visitors: 0 },
+  { date: '2026-11-06', visitors: 549 },
+  { date: '2026-11-07', visitors: 672 },
+  { date: '2026-11-08', visitors: 882 },
+  { date: '2026-11-09', visitors: 1170 },
+  { date: '2026-11-10', visitors: 1124 },
+  { date: '2026-11-11', visitors: 1197 },
+  { date: '2026-11-12', visitors: 1344 },
+  { date: '2026-11-13', visitors: 1855 },
+] as const
 
 export const PROCESS = [
   { no: '01', title: '참여 의사 전달', body: '상품 · 참여 지점 수 · 담당자 연락처를 알려 주세요.' },

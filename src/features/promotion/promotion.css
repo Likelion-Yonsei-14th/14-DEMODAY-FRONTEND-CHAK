@@ -143,15 +143,17 @@
 .promo-traction__lead strong { color: var(--promo-red); font-size: 56px; line-height: 1.1; letter-spacing: -0.03em; }
 .promo-traction__lead span { color: var(--promo-muted); font-size: 14px; }
 .promo-traction__lead b { display: block; color: var(--promo-ink); font-size: 17px; }
-.promo-bars { display: grid; gap: 8px; margin-top: 14px; }
-.promo-bars > div { display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: center; }
-.promo-bars dt { color: var(--promo-muted); font-size: 13px; }
-.promo-bars dd { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 14px; font-weight: 700; white-space: nowrap; }
-.promo-bars dd span { flex: none; height: 18px; border-radius: 4px; background: #c9b8a6; max-width: calc(100% - 64px); }
-.promo-bars .is-now dd { color: var(--promo-red); }
-.promo-bars .is-now dd span { background: var(--promo-red); }
-.promo-bars .is-forecast dd span { background: repeating-linear-gradient(135deg, #f0b4a6 0 6px, #f8d6cd 6px 12px); }
-.promo-bars .is-forecast dt, .promo-bars .is-forecast dd { color: var(--promo-red); }
+.promo-chart { display: block; width: 100%; height: auto; margin-top: 10px; }
+.promo-chart__bar { fill: #c9b8a6; }
+.promo-chart__bar.is-now { fill: var(--promo-red); }
+.promo-chart__axis { stroke: var(--promo-ink); stroke-width: 1.5; }
+.promo-chart__area { fill: var(--promo-red); opacity: 0.12; }
+.promo-chart__line { fill: none; stroke: var(--promo-red); stroke-width: 2.5; stroke-dasharray: 7 6; stroke-linecap: round; }
+.promo-chart__dot { fill: var(--promo-red); stroke: #f6c9bf; stroke-width: 4; }
+.promo-chart__value { fill: var(--promo-muted); font-size: 15px; font-weight: 700; }
+.promo-chart__value.is-now, .promo-chart__tick.is-now { fill: var(--promo-red); }
+.promo-chart__tick { fill: var(--promo-muted); font-size: 13px; }
+.promo-chart__tick.is-now { font-weight: 700; }
 .promo-dau { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 16px !important; padding: 14px 18px; border-radius: 12px; background: #f1e2c8; }
 .promo-dau span { color: var(--promo-muted); font-size: 13px; }
 .promo-dau b { display: block; color: var(--promo-ink); font-size: 15px; }

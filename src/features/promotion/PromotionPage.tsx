@@ -1,5 +1,7 @@
-import type { ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { isApiEnabled } from '@/api/config'
+import { fetchVisitorSeries } from '@/api/promotion'
 import { PromotionLayout } from './PromotionLayout'
 import {
   AD_PACKAGE,
@@ -7,6 +9,7 @@ import {
   AD_SPECS_TEXT,
   AD_STAGES,
   DAILY_REASONS_TEXT,
+  EXAM_DATE,
   EXTRA_OPTIONS,
   FIT_CATEGORIES,
   FLOW_TEXT,
@@ -18,9 +21,11 @@ import {
   promotionStatus,
   SCHEDULE,
   tight,
-  TRACTION,
+  VISITOR_SNAPSHOT,
   WHY_NOW_TEXT,
 } from './promotionContent'
+import { GROWTH_WINDOW_DAYS, shortDate, traction, type VisitorDay } from './promotionForecast'
+import { VisitorChart } from './VisitorChart'
 
 /** 리플렛의 빨간 줄이 붙은 작은 꼭지 제목. */
 function Label({ children }: { children: ReactNode }) {
@@ -29,6 +34,25 @@ function Label({ children }: { children: ReactNode }) {
 
 const count = (value: number) => value.toLocaleString('ko-KR')
 
+/** 접속자 수: 먼저 저장해 둔 값으로 그리고, 서버가 최신 값을 주면 바꾼다. 못 받으면 그대로 둔다. */
+function useVisitorDays(): readonly VisitorDay[] {
+  const [days, setDays] = useState<readonly VisitorDay[]>(VISITOR_SNAPSHOT)
+  useEffect(() => {
+    if (!isApiEnabled) return
+    let cancelled = false
+    fetchVisitorSeries()
+      .then((series) => {
+        const valid = series.days.filter((day) => /^\d{4}-\d{2}-\d{2}$/.test(day.date) && Number.isFinite(day.visitors) && day.visitors >= 0)
+        if (!cancelled && valid.length === series.days.length && valid.some((day) => day.visitors > 0)) setDays(valid)
+      })
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+    }
+  }, [])
+  return days
+}
+
 export function PromotionPage() {
   const closed = promotionStatus() === 'CLOSED'
   const apply = closed ? (
@@ -36,7 +60,8 @@ export function PromotionPage() {
   ) : (
     <Link className="promo-btn" to="/promotion/apply">상담 신청하기</Link>
   )
-  const top = Math.max(...TRACTION.bars.map((bar) => bar.value))
+  const days = useVisitorDays()
+  const growth = useMemo(() => traction(days, EXAM_DATE), [days])
 
   return (
     <PromotionLayout title="착 · 수능 시즌 광고·제휴 제안">
@@ -183,35 +208,35 @@ export function PromotionPage() {
             <span className="promo-nb">수능이 끝나면,</span> <span className="promo-nb">우리 매장으로.</span>
           </h2>
           <p>{tight('수험생의 첫 외출에 맞춰 쿠폰을 소개하세요.')}</p>
-          <div className="promo-traction">
-            <p className="promo-accent">실제 일 접속자 · {TRACTION.period}</p>
-            <p className="promo-traction__lead">
-              <strong>{TRACTION.multiple}배</strong>
-              <span>
-                <b>{TRACTION.days}일 만에 폭발적 성장</b>
-                일 접속자 {count(TRACTION.bars[0].value)}명 → {count(TRACTION.bars[1].value)}명
-              </span>
-            </p>
-            <dl className="promo-bars">
-              {TRACTION.bars.map((bar) => (
-                <div key={bar.label} className={`is-${bar.kind}`}>
-                  <dt>{bar.label}</dt>
-                  <dd>
-                    <span style={{ width: `${Math.max((bar.value / top) * 100, 2)}%` }} aria-hidden />
-                    {count(bar.value)}명
-                  </dd>
-                </div>
-              ))}
-            </dl>
-            <p className="promo-note">{tight(TRACTION.note)}</p>
-            <p className="promo-dau">
-              <span>
-                <b>예상 DAU</b>
-                서비스 일간 활성 이용자 예상치
-              </span>
-              <strong>{count(TRACTION.expectedDau)}명</strong>
-            </p>
-          </div>
+          {growth && (
+            <div className="promo-traction">
+              <p className="promo-accent">실제 일 접속자 · {shortDate(growth.first.date)} – {shortDate(growth.last.date)}</p>
+              <p className="promo-traction__lead">
+                <strong>{growth.multiple}배</strong>
+                <span>
+                  <b>{growth.span}일 만에 폭발적 성장</b>
+                  일 접속자 {count(growth.first.visitors)}명 → {count(growth.last.visitors)}명
+                </span>
+              </p>
+              <VisitorChart days={days} ahead={growth.forecast} />
+              <p className="promo-note">
+                {tight(
+                  growth.forecast.length > 0
+                    ? `막대는 실제 접속자, 점선은 최근 ${GROWTH_WINDOW_DAYS}일의 증가세가 수능 당일까지 이어질 때의 예상치예요. 집계가 없는 날은 비워 뒀어요.`
+                    : '막대는 실제 접속자예요. 집계가 없는 날은 비워 뒀어요.',
+                )}
+              </p>
+              {growth.expected !== null && (
+                <p className="promo-dau">
+                  <span>
+                    <b>수능 당일 예상 DAU</b>
+                    서비스 일간 활성 이용자 예상치
+                  </span>
+                  <strong>약 {count(growth.expected)}명</strong>
+                </p>
+              )}
+            </div>
+          )}
           <h3>매장 가까이에서 만나요</h3>
           <p>{tight('로컬 매장 인근 고등학교에 착을 홍보하고 있어요.')}</p>
           <p className="promo-accent">지역 수험생에게 우리 가게를 알릴 기회</p>

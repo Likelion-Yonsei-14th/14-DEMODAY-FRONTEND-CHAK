@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '@/api/client'
 import { INTEREST_OPTIONS, PROMOTION_DATES, promotionStatus, tight } from './promotionContent'
 
-const api = vi.hoisted(() => ({ submitPromotionInquiry: vi.fn() }))
+const api = vi.hoisted(() => ({ submitPromotionInquiry: vi.fn(), fetchVisitorSeries: vi.fn() }))
 vi.mock('@/api/promotion', () => api)
 
 import { PromotionApplyPage } from './PromotionApplyPage'
@@ -104,14 +104,19 @@ describe('promotion page', () => {
     expect(body()).not.toContain('Brand S')
   })
 
-  it('shows the real daily visitors and marks the forecast as a forecast', () => {
+  it('charts the real daily visitors and the forecast up to the exam day, above 3,000', () => {
     open()
     renderAt('/promotion')
     const local = screen.getByRole('region', { name: '수능이 끝나면, 우리 매장으로.' })
-    expect(local).toHaveTextContent('9배')
-    expect(local).toHaveTextContent('일 접속자 131명 → 1,170명')
-    expect(local).toHaveTextContent('3,000명은 예상치예요')
-    expect(local).toHaveTextContent('예상 DAU')
+    expect(local).toHaveTextContent('실제 일 접속자 · 10/28 – 11/13')
+    expect(local).toHaveTextContent('14배')
+    expect(local).toHaveTextContent('일 접속자 131명 → 1,855명')
+    const chart = within(local).getByRole('img')
+    expect(chart).toHaveAccessibleName(expect.stringContaining('11/19 수능 당일에는 약 3,70'))
+    expect(chart.querySelectorAll('.promo-chart__bar')).toHaveLength(16) // 17일 중 집계 없는 11/05 제외
+    expect(local).toHaveTextContent('수능 당일 예상 DAU')
+    expect(local).toHaveTextContent('약 3,700명')
+    expect(local).toHaveTextContent('예상치예요')
   })
 
   it('lists the three steps and the leaflet schedule', () => {
