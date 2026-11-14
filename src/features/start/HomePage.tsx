@@ -6,6 +6,7 @@ import { fetchMyDesk } from '@/api/desks'
 import { useFeedback } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { ComingSoonDialog, CLASSROOM_NOTICE } from '@/features/common/ComingSoon'
+import { AdBanner } from '@/features/ads/AdBanner'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { SuneungCorner } from '@/features/poll/SuneungCorner'
 import { isClassroomAvailable } from '@/lib/featureFlags'
@@ -186,6 +187,9 @@ export function HomePage() {
         </button>
 
         <SuneungCorner />
+
+        <AdBanner slot={0} />
+
         <MiniGameSection />
       </main>
       <ComingSoonDialog

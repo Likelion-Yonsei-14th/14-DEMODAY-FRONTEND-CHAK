@@ -1,0 +1,99 @@
+/* In-feed banner slot (3:1, same paper card as the mini game tiles) */
+.ad-banner {
+  width: 100%;
+  aspect-ratio: 3 / 1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface-base);
+  box-shadow: var(--shadow-paper);
+}
+
+.ad-banner--loading {
+  background: var(--color-surface-subtle);
+  box-shadow: none;
+}
+
+.ad-banner__link {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.ad-banner__link:active {
+  transform: translateY(1px);
+}
+
+.ad-banner__link:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: -3px;
+  border-radius: var(--radius-md);
+}
+
+.ad-banner__creative {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.ad-banner__badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 1px 6px;
+  border-radius: 2px;
+  background: rgba(30, 27, 24, .55);
+  color: var(--color-content-inverse);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+
+/* Placeholder while nobody has bought the slot */
+.ad-banner--house {
+  background: var(--color-surface-base);
+  box-shadow: none;
+  border: 1.5px dashed var(--color-border-default);
+}
+
+.ad-banner__house {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 4px;
+  padding: 0 var(--space-4);
+}
+
+.ad-banner__house-tag {
+  min-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 7px;
+  border-radius: 2px;
+  background: var(--label-lime);
+  color: var(--color-ink);
+  font-size: 11px;
+  font-weight: 800;
+  transform: rotate(-2deg);
+}
+
+.ad-banner__house strong {
+  margin-top: 2px;
+  font-size: var(--type-label-l-size);
+  line-height: var(--type-label-l-line);
+  word-break: keep-all;
+}
+
+.ad-banner__house-body {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--color-content-secondary);
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-line);
+  word-break: keep-all;
+}
