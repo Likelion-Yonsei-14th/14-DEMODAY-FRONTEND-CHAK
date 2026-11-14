@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { PROMOTION_CONTACT } from './promotionContent'
 import './promotion.css'
 
-/** 브랜드 담당자가 보는 제안 페이지의 공통 틀. 앱 화면(430px 모바일 틀)과 달리 PC에서도 넓게 보인다. */
+/** 매장 사장님과 담당자가 보는 제안 페이지의 공통 틀. 앱 화면(430px 모바일 틀)과 달리 PC에서도 넓게 보인다. */
 export function PromotionLayout({ title, children }: { title: string; children: ReactNode }) {
   useEffect(() => {
     const previous = document.title

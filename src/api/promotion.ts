@@ -57,3 +57,9 @@ export const submitBenefitSubmission = (answers: Record<string, string | number 
     method: 'POST',
     body: { answers, website },
   })
+
+export type VisitorDay = { date: string; visitors: number }
+
+/** 광고 제안 페이지의 접속자 그래프: 10/28부터 어제까지 날짜별 방문자 수(로그인 없이 읽는다). */
+export const fetchVisitorSeries = () =>
+  apiFetch<{ from: string; to: string; days: VisitorDay[] }>('/api/public/stats/visitors')
