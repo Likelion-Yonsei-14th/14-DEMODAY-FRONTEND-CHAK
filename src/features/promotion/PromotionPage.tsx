@@ -68,13 +68,13 @@ export function PromotionPage() {
       <main>
         <section className="promo-hero">
           <div className="promo-hero__copy">
-            <Label>광고 제휴 서비스 소개</Label>
+            <Label>로컬 매장 광고 제휴</Label>
             <h1>
               <span className="promo-nb">수능 전엔</span> <span className="promo-nb">매일 <em>응원</em>을,</span>{' '}
               <span className="promo-nb">수능 후엔</span> <span className="promo-nb"><em>할인</em>을.</span>
             </h1>
-            <p className="promo-pill">2026 수능 광고 파트너 모집</p>
-            <p className="promo-hero__text">{tight('수능 끝난 고3이 가장 먼저 여는 수능 응원 앱')}</p>
+            <p className="promo-pill">2026 수능 로컬 매장 파트너 모집</p>
+            <p className="promo-hero__text">{tight('수능 끝난 고3이 가장 먼저 여는 수능 응원 앱에서, 우리 동네 수험생에게 매장을 알리세요.')}</p>
             <div className="promo-actions">
               {apply}
               <a className="promo-btn promo-btn--ghost" href="#products">광고 상품 보기</a>
@@ -126,7 +126,7 @@ export function PromotionPage() {
           <div className="promo-callout">
             <p className="promo-callout__kicker">CHAK이라면</p>
             <p className="promo-callout__text">
-              <span className="promo-nb">수능 전의 브랜드 경험을,</span> <span className="promo-nb">수능 후의 실제 방문으로.</span>
+              <span className="promo-nb">수능 전에 알린 우리 매장을,</span> <span className="promo-nb">수능 후의 실제 방문으로.</span>
             </p>
           </div>
         </section>

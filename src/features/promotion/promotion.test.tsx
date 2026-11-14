@@ -78,7 +78,7 @@ describe('promotion page', () => {
     open()
     renderAt('/promotion')
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('수능 전엔 매일 응원을, 수능 후엔 할인을.')
-    expect(screen.getByText('2026 수능 광고 파트너 모집')).toBeInTheDocument()
+    expect(screen.getByText('2026 수능 로컬 매장 파트너 모집')).toBeInTheDocument()
     expect(body()).toContain('쿠폰은 예시예요')
     expect(body()).toContain('입금은 11월 18일(수)까지 받아요.')
   })
@@ -199,7 +199,7 @@ describe('promotion consult form', () => {
   afterEach(() => vi.useRealTimers())
 
   const fill = () => {
-    fireEvent.change(screen.getByRole('textbox', { name: /^브랜드 이름/ }), { target: { value: '착커피' } })
+    fireEvent.change(screen.getByRole('textbox', { name: /^매장 이름/ }), { target: { value: '착커피' } })
     fireEvent.change(screen.getByRole('textbox', { name: /^담당자 이름/ }), { target: { value: '김담당' } })
     fireEvent.change(screen.getByRole('textbox', { name: /^이메일/ }), { target: { value: 'kim@chakcoffee.com' } })
   }
@@ -247,6 +247,6 @@ describe('promotion consult form', () => {
     fireEvent.click(screen.getByRole('checkbox'))
     fireEvent.click(screen.getByRole('button', { name: '상담 신청하기' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('너무 많이')
-    expect(screen.getByRole('textbox', { name: /^브랜드 이름/ })).toHaveValue('착커피')
+    expect(screen.getByRole('textbox', { name: /^매장 이름/ })).toHaveValue('착커피')
   })
 })

@@ -55,10 +55,10 @@ export const INTEREST_OPTIONS = [
   { value: 'LOCAL_A', label: 'A안 · 수험생 혜택함 입점 (2단계)' },
   { value: 'LOCAL_B', label: 'B안 · 응원 화면 광고 모달 (1단계)' },
   { value: 'LOCAL_C', label: 'C안 · 1+2단계 패키지' },
-  { value: 'BRAND_S', label: 'Brand S · 2~5개 지점' },
-  { value: 'BRAND_M', label: 'Brand M · 6~20개 지점' },
-  { value: 'BRAND_L', label: 'Brand L · 21~50개 지점' },
-  { value: 'ENTERPRISE', label: 'Enterprise · 51개 이상 또는 전국' },
+  { value: 'BRAND_S', label: '매장 2~5곳' },
+  { value: 'BRAND_M', label: '매장 6~20곳' },
+  { value: 'BRAND_L', label: '매장 21~50곳' },
+  { value: 'ENTERPRISE', label: '매장 51곳 이상 또는 전국' },
   { value: 'JOINT', label: '혜택·경품으로 공동 프로모션' },
   { value: 'OTHER', label: '아직 모르겠어요' },
 ] as const
@@ -81,7 +81,7 @@ export const HERO_COUPONS = [
 
 export const WHY_NOW = [
   { when: '수능 전', title: '고객 접점 부족', body: '수험생과 미리 관계를 만들기 어려워요.' },
-  { when: '수능 당일', title: '프로모션 경쟁', body: '여러 브랜드 혜택이 한꺼번에 쏟아져요.' },
+  { when: '수능 당일', title: '프로모션 경쟁', body: '여러 가게의 혜택이 한꺼번에 쏟아져요.' },
   { when: '수능 후', title: '방문 전환의 어려움', body: '혜택을 알려도 실제 매장 방문으로 이어지기 어려워요.' },
 ] as const
 
@@ -89,7 +89,7 @@ export const FIT_CATEGORIES = ['미용실 · 염색', '렌즈 · 안경', '운�
 
 export const FLOW_STEPS = [
   { when: '수능 전 · 매일', title: '응원 확인', body: '친구와 가족이 보낸 응원을 정해진 시간에 하나씩 확인해요.' },
-  { when: '수능 다음 날', title: '혜택함 오픈', body: '그동안 쌓인 응원을 돌아보고 브랜드 혜택함을 열어요.' },
+  { when: '수능 다음 날', title: '혜택함 오픈', body: '그동안 쌓인 응원을 돌아보고 가까운 매장의 혜택함을 열어요.' },
   { when: '수능 후', title: '매장 방문', body: '쿠폰을 보여 주고 수험생 할인을 받아요.', highlight: true },
 ] as const
 
@@ -107,7 +107,7 @@ export const AD_STAGES = [
     stage: '1단계',
     plan: 'B안',
     name: '응원 화면 광고 모달',
-    body: '매일 응원을 열러 오는 수험생에게 브랜드를 먼저 기억시켜요.',
+    body: '매일 응원을 열러 오는 수험생에게 우리 매장을 먼저 기억시켜요.',
     points: ['응원을 열 때 뜨는 영상 · 사진 광고', '4:5 비율 · 영상 15초 이내'],
   },
   {
@@ -121,10 +121,10 @@ export const AD_STAGES = [
 
 export const AD_PACKAGE = {
   plan: 'C안 · 1+2단계 패키지',
-  body: '응원 화면 노출부터 매장 방문까지, 한 브랜드 경험으로 이어져요.',
+  body: '응원 화면 노출부터 매장 방문까지, 한 번의 흐름으로 이어져요.',
 } as const
 
-export const EXTRA_OPTIONS = ['혜택함 상단 우선 노출', '메인 배너', '카테고리 대표 브랜드', '인스타그램 콘텐츠'] as const
+export const EXTRA_OPTIONS = ['혜택함 상단 우선 노출', '메인 배너', '업종 대표 매장', '인스타그램 콘텐츠'] as const
 
 /** 수능 당일. 접속자 예상 그래프가 여기까지 그려진다. */
 export const EXAM_DATE = '2026-11-19'
@@ -168,7 +168,7 @@ export const SCHEDULE = [
 export const AD_SPECS = [
   { slot: '영상 모달', spec: '4:5 · 1080×1350px · MP4 · 최대 15초' },
   { slot: '사진 모달', spec: '4:5 · 1080×1350px · JPG/PNG 1장' },
-  { slot: '모달 문구', spec: '브랜드명 12자 · 한 줄 문구 20자 이내' },
+  { slot: '모달 문구', spec: '매장명 12자 · 한 줄 문구 20자 이내' },
   { slot: '배너(옵션)', spec: '3:1 · 1125×375px · 문구 18자 이내' },
 ] as const
 

@@ -4,9 +4,9 @@
   --promo-tint: #f8efe3;
   --promo-ink: #2a1a12;
   --promo-brown: #3a2217;
-  --promo-red: #d9391b;
+  --promo-red: #c4452c;
   --promo-blue: #3b5bdb;
-  --promo-yellow: #ffd25e;
+  --promo-yellow: #f1d58a;
   --promo-muted: #75655a;
   --promo-line: #e6d8c8;
   min-height: 100dvh;
@@ -107,7 +107,7 @@
 .promo-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .promo-chips li { padding: 4px 12px; border: 1px solid var(--promo-line); border-radius: 999px; background: #fff; font-size: 14px; font-weight: 700; }
 
-.promo-callout { margin-top: 28px; padding: 24px; border-radius: 14px; background: #b4432e; color: #fff; }
+.promo-callout { margin-top: 28px; padding: 24px; border-radius: 14px; background: #a4472f; color: #fff; }
 .promo-callout__kicker { color: var(--promo-yellow); font-size: 13px; font-weight: 700; }
 .promo-callout__text { margin-top: 6px !important; font-size: clamp(19px, 3vw, 24px); font-weight: 700; line-height: 1.45; letter-spacing: -0.02em; }
 
@@ -149,7 +149,7 @@
 .promo-chart__axis { stroke: var(--promo-ink); stroke-width: 1.5; }
 .promo-chart__area { fill: var(--promo-red); opacity: 0.12; }
 .promo-chart__line { fill: none; stroke: var(--promo-red); stroke-width: 2.5; stroke-dasharray: 7 6; stroke-linecap: round; }
-.promo-chart__dot { fill: var(--promo-red); stroke: #f6c9bf; stroke-width: 4; }
+.promo-chart__dot { fill: var(--promo-red); stroke: #ecc9bd; stroke-width: 4; }
 .promo-chart__value { fill: var(--promo-muted); font-size: 15px; font-weight: 700; }
 .promo-chart__value.is-now, .promo-chart__tick.is-now { fill: var(--promo-red); }
 .promo-chart__tick { fill: var(--promo-muted); font-size: 13px; }
