@@ -23,28 +23,14 @@
 .pitch-btn { min-height: 46px; padding: 0 22px; border: 0; border-radius: 10px; background: #c4452c; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
 .pitch-btn:disabled { opacity: 0.5; cursor: wait; }
 
-.pitch-slides { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
-.pitch-slide { display: grid; gap: 8px; align-content: start; aspect-ratio: 16 / 9; padding: 20px 22px; overflow: hidden; border: 1px solid #e6d8c8; border-radius: 10px; background: #fffaf3; color: #2a1a12; font-size: 12px; line-height: 1.5; }
-.pitch-slide--cover { background: #f1d58a; }
-.pitch-slide--dark { background: #3a2217; color: #fff; }
-.pitch-slide__kicker { margin: 0; color: #c4452c; font-size: 11px; font-weight: 700; }
-.pitch-slide--dark .pitch-slide__kicker { color: #f1d58a; }
-.pitch-slide h3 { margin: 0; font-size: 19px; line-height: 1.3; letter-spacing: -0.02em; }
-.pitch-slide--cover h3 { font-size: 26px; }
-.pitch-slide ul { margin: 0; padding-left: 16px; }
-.pitch-slide--cover ul { padding: 0; list-style: none; font-size: 14px; }
-.pitch-slide__stats { display: flex; gap: 8px; margin: 0; }
-.pitch-slide__stats div { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 8px; background: #f1e2c8; }
-.pitch-slide--dark .pitch-slide__stats div { background: #4a2e21; }
-.pitch-slide__stats dt { color: #75655a; font-size: 10px; }
-.pitch-slide--dark .pitch-slide__stats dt { color: #ecdacb; }
-.pitch-slide__stats dd { margin: 2px 0 0; font-size: 15px; font-weight: 700; }
-.pitch-slide__stats .is-strong dd { color: #c4452c; }
-.pitch-slide--dark .pitch-slide__stats .is-strong dd { color: #f1d58a; }
-.pitch-slide__note { margin: 0; color: #75655a; font-size: 11px; }
-.pitch-slide--dark .pitch-slide__note { color: #ecdacb; }
+.pitch-btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.pitch-btn--ghost { border: 1.5px solid #c4452c; background: #fff; color: #c4452c; }
+.pitch__actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pitch__actions .pitch__warn { flex-basis: 100%; }
+
+.pitch-slides { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
+.pitch-slides .pslide { border: 1px solid #e6d8c8; }
 
 @media (max-width: 480px) {
   .pitch-slides { grid-template-columns: 1fr; }
-  .pitch-slide { aspect-ratio: auto; }
 }

@@ -1,0 +1,59 @@
+/* 장표 한 장. 틀 너비(cqw)에 맞춰 모든 크기가 같이 바뀐다. */
+.pslide { container-type: inline-size; position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 1.2cqw; background: #fffaf3; color: #2a1a12; font-family: var(--font-ui, system-ui, sans-serif); word-break: keep-all; text-align: left; }
+.pslide--cover { background: #f1d58a; }
+.pslide--dark { background: #3a2217; color: #fff; }
+.pslide__body { display: flex; flex-direction: column; gap: 2cqw; height: 100%; padding: 5cqw 5.5cqw 7cqw; box-sizing: border-box; }
+.pslide p, .pslide h3, .pslide ul, .pslide ol, .pslide dl, .pslide dd { margin: 0; padding: 0; list-style: none; }
+.pslide__kicker { display: flex; align-items: center; gap: 0.9cqw; color: #c4452c; font-size: 1.5cqw; font-weight: 700; }
+.pslide__kicker::before { content: ''; width: 2.4cqw; height: 0.35cqw; border-radius: 1cqw; background: currentColor; }
+.pslide--dark .pslide__kicker { color: #f1d58a; }
+.pslide__title { margin-top: -0.8cqw !important; font-size: 3.6cqw; line-height: 1.25; letter-spacing: -0.03em; text-wrap: balance; }
+.pslide--cover .pslide__body { justify-content: center; gap: 2.4cqw; }
+.pslide--cover .pslide__title { font-size: 6.2cqw; }
+.pslide .pslide__pill { align-self: flex-start; padding: 0.7cqw 1.8cqw; border-radius: 99cqw; background: #c4452c; color: #fff; font-size: 1.6cqw; font-weight: 700; }
+
+.pslide__stats { display: flex; gap: 1.6cqw; }
+.pslide__stats div { flex: 1; min-width: 0; padding: 1.6cqw 2cqw; border-radius: 1.4cqw; background: #f1e2c8; }
+.pslide--dark .pslide__stats div { background: #4a2e21; }
+.pslide__stats dt { color: #75655a; font-size: 1.35cqw; }
+.pslide--dark .pslide__stats dt { color: #ecdacb; }
+.pslide__stats dd { font-size: 4.2cqw; font-weight: 800; line-height: 1.2; letter-spacing: -0.03em; }
+.pslide__stats .is-strong dd { color: #c4452c; }
+.pslide--dark .pslide__stats .is-strong dd { color: #f1d58a; }
+
+.pslide__cards { display: flex; gap: 1.6cqw; flex: 1; min-height: 0; }
+.pslide__cards li { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.7cqw; padding: 2cqw; border: 0.15cqw solid #e6d8c8; border-top: 0.6cqw solid #3a2217; border-radius: 1.2cqw; background: #fff; }
+.pslide__cards li.is-highlight { border-color: #a4472f; background: #a4472f; color: #fff; }
+.pslide__cards small { color: #c4452c; font-size: 1.35cqw; font-weight: 700; }
+.pslide__cards li.is-highlight small { color: #f1d58a; }
+.pslide__cards strong { font-size: 2.3cqw; line-height: 1.3; letter-spacing: -0.02em; }
+.pslide__cards span { color: #75655a; font-size: 1.5cqw; line-height: 1.55; }
+.pslide__cards li.is-highlight span { color: #f6e3dc; }
+
+.pslide__steps { display: flex; gap: 2.6cqw; }
+.pslide__steps li { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.3cqw; padding: 1.4cqw 1.6cqw; border-radius: 1.2cqw; background: #f1e2c8; }
+.pslide__steps li + li::before { content: '→'; position: absolute; left: -2.1cqw; top: 50%; transform: translateY(-50%); color: #c4452c; font-size: 1.8cqw; font-weight: 800; }
+.pslide__steps small { color: #75655a; font-size: 1.2cqw; }
+.pslide__steps strong { font-size: 2.5cqw; letter-spacing: -0.02em; white-space: nowrap; }
+.pslide__steps span { color: #75655a; font-size: 1.15cqw; }
+
+.pslide__compare { display: grid; gap: 1.4cqw; margin-top: 1cqw; }
+.pslide__bar { display: grid; grid-template-columns: 11cqw 1fr 15cqw; align-items: center; gap: 1.4cqw; font-size: 1.5cqw; }
+.pslide__bar span { font-weight: 700; }
+.pslide__bar i { display: block; height: 3.4cqw; border-radius: 0.6cqw; background: #c9b8a6; }
+.pslide__bar b { font-size: 2.8cqw; letter-spacing: -0.02em; text-align: right; white-space: nowrap; }
+.pslide__bar.is-price i { background: #c4452c; }
+.pslide__bar.is-price b, .pslide__bar.is-price span { color: #c4452c; }
+.pslide__summary { font-size: 1.9cqw; font-weight: 700; }
+
+.pslide__bullets { display: grid; gap: 1cqw; font-size: 1.9cqw; line-height: 1.5; }
+.pslide__bullets li { position: relative; padding-left: 2cqw; }
+.pslide__bullets li::before { content: ''; position: absolute; left: 0.3cqw; top: 1.1cqw; width: 0.7cqw; height: 0.7cqw; border-radius: 50%; background: #c4452c; }
+.pslide--dark .pslide__bullets li::before { background: #f1d58a; }
+.pslide--cover .pslide__bullets { font-size: 2.2cqw; font-weight: 700; }
+.pslide--cover .pslide__bullets li { padding-left: 0; }
+.pslide--cover .pslide__bullets li::before { content: none; }
+
+.pslide__foot { position: absolute; left: 5.5cqw; right: 5.5cqw; bottom: 2.6cqw; display: flex; justify-content: space-between; gap: 2cqw; color: #75655a; font-size: 1.2cqw; }
+.pslide--dark .pslide__foot { color: #ecdacb; }
+.pslide__foot span:last-child { flex: none; font-weight: 700; }

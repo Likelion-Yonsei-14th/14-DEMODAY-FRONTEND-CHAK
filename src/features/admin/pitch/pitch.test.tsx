@@ -1,12 +1,14 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { defaultInput, estimate, PITCH_CATEGORIES, withCategory } from './pitchModel'
-import { buildSlides, deckFileName, josa } from './pitchSlides'
+import { buildSlides, decodeDeck, deckFileName, deckPath, encodeDeck, josa } from './pitchSlides'
 
 const pptx = vi.hoisted(() => ({ downloadDeck: vi.fn() }))
 vi.mock('./pitchPptx', () => pptx)
 
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { PitchDeckPage } from './PitchDeckPage'
+import { PitchDeckViewPage } from './PitchDeckViewPage'
 
 describe('pitch estimate', () => {
   it('narrows the expected visitors down to visits, profit and an ad price below the profit', () => {
@@ -71,8 +73,9 @@ describe('pitch slides', () => {
   it('shows the expected profit next to a smaller ad price', () => {
     const revenue = buildSlides(input)[4]!
     expect(revenue.kicker).toBe('착헤어 예상 수익')
-    expect(revenue.stats!.map((stat) => stat.value)).toEqual(['111명', '4명', '160,000원', '48,000원'])
-    expect(revenue.bullets!.join(' ')).toContain('광고비를 빼고도 112,000원이 남아요')
+    expect(revenue.steps!.map((step) => step.value)).toEqual(['3,700명', '111명', '4명', '320,000원'])
+    expect(revenue.compare).toMatchObject({ profit: '160,000원', price: '48,000원', ratio: 0.3 })
+    expect(revenue.compare!.summary).toContain('광고비를 빼고도 112,000원이 남아요')
   })
 
   it('pitches first-store loyalty with the extra yearly profit', () => {
@@ -104,6 +107,7 @@ describe('pitch deck page', () => {
     fireEvent.change(screen.getByRole('combobox', { name: '업종' }), { target: { value: 'optical' } })
 
     expect(screen.getByRole('heading', { name: '수능이 끝나면, 착안경으로.' })).toBeInTheDocument()
+    expect(screen.getAllByRole('article')).toHaveLength(6)
     // 111명 × 3% = 3명 × 120,000원 × 40% = 144,000원 → 광고비 43,000원
     const result = within(screen.getByLabelText('계산 결과'))
     expect(result.getAllByText('144,000원').length).toBeGreaterThan(0) // 예상 수익(1년 추가 기대 수익도 같은 값)
@@ -132,5 +136,51 @@ describe('pitch deck page', () => {
     render(<PitchDeckPage />)
     fireEvent.click(screen.getByRole('button', { name: 'PPT 내려받기' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('PPT 파일을 만들지 못했어요')
+  })
+})
+
+describe('pitch deck on the web', () => {
+  const input = { ...defaultInput('optical'), storeName: '착안경', location: '잠실역', priceCap: 90_000 }
+
+  it('carries the deck in the link and reads it back the same', () => {
+    expect(decodeDeck(encodeDeck(input))).toEqual(input)
+    expect(deckPath(input)).toMatch(/^\/promotion\/deck\?d=[A-Za-z0-9_-]+$/)
+    // 기본값과 같은 값은 싣지 않아 주소가 짧다
+    expect(encodeDeck(defaultInput()).length).toBeLessThan(40)
+  })
+
+  it('falls back to the defaults for a broken link and ignores values it does not know', () => {
+    expect(decodeDeck(null)).toEqual(defaultInput())
+    expect(decodeDeck('%%%')).toEqual(defaultInput())
+    const odd = btoa(JSON.stringify({ categoryId: 'food', storeName: 'x'.repeat(80), spend: -1, margin: 'a', extra: 1 }))
+    const read = decodeDeck(odd)
+    expect(read.categoryId).toBe('food')
+    expect(read.storeName).toHaveLength(30)
+    expect(read.spend).toBe(15_000)
+    expect(read.margin).toBe(0.3)
+    expect(read).not.toHaveProperty('extra')
+  })
+
+  it('opens the same six slides from the link', () => {
+    render(
+      <MemoryRouter initialEntries={[deckPath(input)]}>
+        <Routes>
+          <Route path="/promotion/deck" element={<PitchDeckViewPage />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('착안경 × 착 제휴 제안')
+    expect(screen.getAllByRole('article')).toHaveLength(6)
+    expect(screen.getByRole('heading', { name: '수능이 끝나면, 착안경으로.' })).toBeInTheDocument()
+    expect(document.title).toBe('착안경 × 착 제휴 제안')
+    expect(document.querySelector('meta[name="robots"]')).toHaveAttribute('content', 'noindex')
+  })
+
+  it('offers the web link from the admin page, following what is typed', () => {
+    render(<PitchDeckPage />)
+    fireEvent.change(screen.getByRole('textbox', { name: '매장 이름' }), { target: { value: '착안경' } })
+    const link = screen.getByRole('link', { name: '웹으로 열기' })
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(decodeDeck(new URL(link.getAttribute('href')!, 'https://x').searchParams.get('d')).storeName).toBe('착안경')
   })
 })
