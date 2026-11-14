@@ -69,7 +69,7 @@ export function buildSlides(input: PitchInput): PitchSlide[] {
     },
     {
       kicker: `${store} 예상 수익`,
-      title: `광고비보다 큰 수익을 기대할 수 있어요`,
+      title: '적은 광고비로, 그보다 큰 수익을 기대할 수 있어요',
       stats: [
         { label: `${near} 쿠폰 도달`, value: people(result.reach) },
         { label: `예상 방문 (전환율 ${percent(input.conversion)})`, value: people(result.visits) },

@@ -47,6 +47,8 @@ export type PitchInput = {
   revisitCount: number
   /** 광고비를 예상 수익의 몇 %로 잡을지(1 미만) */
   priceRatio: number
+  /** 매장 한 곳에 제안하는 광고비의 상한(원). 박리다매라 낮게 둔다 */
+  priceCap: number
 }
 
 export const categoryOf = (id: string) => PITCH_CATEGORIES.find((item) => item.id === id) ?? PITCH_CATEGORIES.at(-1)!
@@ -60,13 +62,14 @@ export function defaultInput(categoryId = 'hair'): PitchInput {
     visitorsNow: 2000,
     visitorsExpected: 3700,
     openRate: 0.6,
-    localRate: 0.15,
+    localRate: 0.05,
     conversion: category.conversion,
     spend: category.spend,
     margin: category.margin,
     revisitRate: 0.4,
     revisitCount: 3,
-    priceRatio: 0.5,
+    priceRatio: 0.3,
+    priceCap: 150_000,
   }
 }
 
@@ -101,8 +104,9 @@ export function estimate(input: PitchInput): PitchResult {
   const margin = clamp(input.margin, 0, 1)
   const sales = visits * spend
   const profit = Math.round(sales * margin)
-  // 1,000원 단위로 내리고, 예상 수익과 같아지지 않게 한다
-  const adPrice = Math.max(Math.min(Math.floor((profit * clamp(input.priceRatio, 0, 0.95)) / 1000) * 1000, profit - 1), 0)
+  // 상한을 넘지 않게 하고 1,000원 단위로 내린다. 예상 수익과 같아지지 않게 한다
+  const capped = Math.min(profit * clamp(input.priceRatio, 0, 0.95), clamp(input.priceCap, 0, 100_000_000))
+  const adPrice = Math.max(Math.min(Math.floor(capped / 1000) * 1000, profit - 1), 0)
   const revisitors = Math.round(visits * clamp(input.revisitRate, 0, 1))
   const loyaltyProfit = Math.round(revisitors * clamp(input.revisitCount, 0, 365) * spend * margin)
   return { reach, visits, sales, profit, adPrice, net: profit - adPrice, loyaltyProfit, revisitors }

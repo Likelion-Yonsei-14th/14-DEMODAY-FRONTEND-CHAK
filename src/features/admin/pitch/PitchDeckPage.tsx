@@ -10,6 +10,7 @@ const COUNT_FIELDS: readonly { key: NumberKey; label: string; unit: string; step
   { key: 'visitorsExpected', label: '수능 당일 예상 접속자', unit: '명', step: 100 },
   { key: 'spend', label: '객단가', unit: '원', step: 1000 },
   { key: 'revisitCount', label: '재방문 횟수(1년)', unit: '회', step: 1 },
+  { key: 'priceCap', label: '광고비 상한', unit: '원', step: 10000 },
 ]
 
 const RATE_FIELDS: readonly { key: NumberKey; label: string }[] = [
