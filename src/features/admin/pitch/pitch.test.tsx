@@ -66,8 +66,25 @@ describe('pitch slides', () => {
     const slides = buildSlides(input)
     expect(slides).toHaveLength(6)
     expect(slides[0]).toMatchObject({ title: '수능이 끝나면, 착헤어로.', kicker: '신촌역 · 미용실 · 염색 제휴 제안' })
-    expect(slides[2]!.title).toBe('신촌역 근처 수험생이 매일 착을 열어요')
-    expect(slides[2]!.stats!.map((stat) => stat.value)).toEqual(['2,000명', '3,700명'])
+    expect(slides[0]!.coupon).toEqual({ store: '착헤어', category: '미용실 · 염색' })
+    expect(slides[3]!.title).toBe('신촌역 근처 수험생이 매일 착을 열어요')
+    expect(slides[3]!.stats!.map((stat) => stat.value)).toEqual(['2,000명', '3,700명'])
+    expect(slides[3]!.chart).toMatchObject({ from: '10/28', to: '11/13', expected: 3700 })
+  })
+
+  it('shows what the service is with the store on the app screens, in a deck short enough for a visit', () => {
+    const slides = buildSlides(input)
+    expect(slides.length).toBeLessThanOrEqual(6)
+    const service = slides[2]!
+    expect(service.kicker).toBe('착은 이런 서비스예요')
+    expect(service.phones!.map((phone) => phone.screen)).toEqual([
+      { kind: 'desk' },
+      { kind: 'ad', store: '착헤어', place: '신촌역' },
+      { kind: 'coupon', store: '착헤어', category: '미용실 · 염색' },
+    ])
+    expect(service.phones!.map((phone) => phone.tag)).toEqual(['수능 전 · 매일', '1단계 · B안', '2단계 · A안'])
+    expect(slides[1]!.callout).toBe('착이라면 수능 전에 알린 착헤어를, 수능 후의 실제 방문으로.')
+    expect(slides[5]!.steps!.map((step) => step.value)).toEqual(['참여 의사 전달', '광고 정보 제출', '광고 노출 시작'])
   })
 
   it('shows the expected profit next to a smaller ad price', () => {
@@ -172,6 +189,10 @@ describe('pitch deck on the web', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('착안경 × 착 제휴 제안')
     expect(screen.getAllByRole('article')).toHaveLength(6)
     expect(screen.getByRole('heading', { name: '수능이 끝나면, 착안경으로.' })).toBeInTheDocument()
+    // 로고가 모든 장에 있고, 앱 화면에 매장 이름이 들어간다
+    expect(document.querySelectorAll('.pslide__brand img')).toHaveLength(6)
+    expect(document.querySelector('.pphone__coupon')).toHaveTextContent('착안경')
+    expect(screen.getByRole('img', { name: /일 접속자 그래프/ })).toBeInTheDocument()
     expect(document.title).toBe('착안경 × 착 제휴 제안')
     expect(document.querySelector('meta[name="robots"]')).toHaveAttribute('content', 'noindex')
   })

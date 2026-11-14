@@ -1,25 +1,37 @@
-import { PROMOTION_CONTACT } from '../../promotion/promotionContent'
+import { PROMOTION_CONTACT, VISITOR_SNAPSHOT } from '../../promotion/promotionContent'
+import { shortDate } from '../../promotion/promotionForecast'
 import { categoryOf, defaultInput, estimate, people, percent, won, type PitchInput } from './pitchModel'
 
 export type PitchStat = { label: string; value: string; strong?: boolean }
 export type PitchCard = { tag?: string; title: string; body: string; highlight?: boolean }
 export type PitchStep = { label: string; value: string; sub?: string }
 
-/** 한 장의 내용. 있는 칸만 위에서부터 차례로 그린다(숫자 → 카드 → 단계 → 비교 → 글머리 → 주석). */
+/** 휴대폰 화면 그림: 응원 책상, 응원을 열 때 뜨는 매장 광고, 혜택함의 매장 쿠폰 */
+export type PitchScreen = { kind: 'desk' } | { kind: 'ad'; store: string; place: string } | { kind: 'coupon'; store: string; category: string }
+export type PitchPhone = { tag: string; title: string; body: string; screen: PitchScreen }
+
+/** 한 장의 내용. 있는 칸만 위에서부터 차례로 그린다(숫자 → 그래프 → 휴대폰 → 카드 → 단계 → 비교 → 글머리 → 강조 띠). */
 export type PitchSlide = {
   kicker: string
   title: string
   tone?: 'cover' | 'dark'
   /** 표지의 알약 모양 문구 */
   pill?: string
+  /** 표지 오른쪽의 매장 쿠폰 그림 */
+  coupon?: { store: string; category: string }
   /** 큰 숫자 칸 */
   stats?: PitchStat[]
+  /** 일 접속자 막대와 수능 당일 예상 */
+  chart?: { values: number[]; from: string; to: string; expected: number }
+  phones?: PitchPhone[]
   cards?: PitchCard[]
-  /** 화살표로 이어지는 단계(예상 접속자 → 방문) */
+  /** 화살표로 이어지는 단계 */
   steps?: PitchStep[]
   /** 예상 수익과 광고비를 나란히 견준다. ratio는 광고비 ÷ 예상 수익 */
   compare?: { profit: string; price: string; ratio: number; summary: string }
   bullets?: string[]
+  /** 장표 아래쪽의 강조 띠 */
+  callout?: string
   note?: string
 }
 
@@ -46,6 +58,7 @@ export function buildSlides(input: PitchInput): PitchSlide[] {
       kicker: `${[place, category.label].filter(Boolean).join(' · ')} 제휴 제안`,
       title: `수능이 끝나면, ${josa(store, '으로', '로')}.`,
       pill: '2026 수능 로컬 매장 파트너 모집',
+      coupon: { store, category: category.label },
       bullets: ['수능 전엔 매일 응원을, 수능 후엔 할인을.', '수능 끝난 고3이 가장 먼저 여는 수능 응원 앱 착'],
     },
     {
@@ -56,7 +69,17 @@ export function buildSlides(input: PitchInput): PitchSlide[] {
         { tag: '수능 당일', title: '프로모션 경쟁', body: '여러 가게의 혜택이 한꺼번에 쏟아져요.' },
         { tag: '수능 후', title: '방문 전환의 어려움', body: '혜택을 알려도 실제 방문으로 이어지기 어려워요.' },
       ],
-      bullets: [`착이라면 수능 전에 알린 ${josa(store, '을', '를')}, 수능 후의 실제 방문으로 이어 드려요.`],
+      callout: `착이라면 수능 전에 알린 ${josa(store, '을', '를')}, 수능 후의 실제 방문으로.`,
+    },
+    {
+      kicker: '착은 이런 서비스예요',
+      title: '수험생이 매일 응원을 여는 책상, 그 위에 우리 매장을',
+      phones: [
+        { tag: '수능 전 · 매일', title: '응원 책상', body: '친구와 가족의 응원이 책상에 쌓이고, 정해진 시간에 하나씩 열려요.', screen: { kind: 'desk' } },
+        { tag: '1단계 · B안', title: '응원 화면 광고', body: `응원을 열 때 ${store} 광고가 먼저 보여요. 영상 · 사진, 4:5 비율.`, screen: { kind: 'ad', store, place } },
+        { tag: '2단계 · A안', title: '수험생 혜택함', body: `수능 다음 날, ${store} 쿠폰을 받아 매장으로 찾아와요.`, screen: { kind: 'coupon', store, category: category.label } },
+      ],
+      note: 'C안 · 1+2단계 패키지: 응원 화면 노출부터 매장 방문까지 한 번의 흐름으로 이어져요.',
     },
     {
       kicker: '수험생이 매일 여는 앱',
@@ -65,20 +88,13 @@ export function buildSlides(input: PitchInput): PitchSlide[] {
         { label: '지금 일 접속자', value: people(input.visitorsNow) },
         { label: '수능 당일 예상', value: people(input.visitorsExpected), strong: true },
       ],
-      cards: [
-        { tag: '1 · 수능 전 매일', title: '응원 확인', body: '정해진 시간에 열리는 응원을 보러 매일 들어와요.' },
-        { tag: '2 · 수능 다음 날', title: '혜택함 오픈', body: '가까운 매장의 쿠폰을 받아요.' },
-        { tag: '3 · 수능 후', title: '매장 방문', body: '쿠폰을 보여 주고 수험생 할인을 받아요.', highlight: true },
-      ],
-    },
-    {
-      kicker: '광고 상품',
-      title: '2단계 광고 패키지',
-      cards: [
-        { tag: '1단계 · B안', title: '응원 화면 광고 모달', body: '응원을 열 때 뜨는 영상 · 사진 광고로 매장을 먼저 기억시켜요.' },
-        { tag: '2단계 · A안', title: '수험생 혜택함 입점', body: '혜택 목록 → 상세 → 쿠폰 발급. 수능 다음 날부터 11월 30일까지 노출돼요.' },
-        { tag: 'C안', title: '1+2단계 패키지', body: '응원 화면 노출부터 매장 방문까지 한 번의 흐름으로 이어져요.', highlight: true },
-      ],
+      chart: {
+        values: VISITOR_SNAPSHOT.map((day) => day.visitors),
+        from: shortDate(VISITOR_SNAPSHOT[0].date),
+        to: shortDate(VISITOR_SNAPSHOT.at(-1)!.date),
+        expected: input.visitorsExpected,
+      },
+      bullets: ['수험생과 그 친구 · 가족이 쓰는 앱이라, 광고를 보는 사람이 곧 우리 매장의 손님이에요.'],
     },
     {
       kicker: `${store} 예상 수익`,
@@ -105,9 +121,11 @@ export function buildSlides(input: PitchInput): PitchSlide[] {
         { label: `다시 찾는 고객 (재방문율 ${percent(input.revisitRate)})`, value: people(result.revisitors) },
         { label: `1년 추가 기대 수익 (연 ${input.revisitCount}회 방문)`, value: won(result.loyaltyProfit), strong: true },
       ],
-      bullets: [
-        '수험생은 이제 막 소비를 시작하는 사회 초년생이에요.',
-        '처음 간 매장을 계속 찾는 경향이 있어, 수능 직후의 첫 방문이 오래가는 단골로 이어질 수 있어요.',
+      bullets: ['수험생은 이제 막 소비를 시작하는 사회 초년생이라, 처음 간 매장을 계속 찾는 경향이 있어요.'],
+      steps: [
+        { label: '01', value: '참여 의사 전달', sub: '상품 · 담당자 연락처' },
+        { label: '02', value: '광고 정보 제출', sub: '소재 · 쿠폰 · 매장 정보' },
+        { label: '03', value: '광고 노출 시작', sub: '입금 확인 후 바로' },
       ],
       note: `참여 문의 · ${PROMOTION_CONTACT.phone} · ${PROMOTION_CONTACT.email} · 담당 ${PROMOTION_CONTACT.manager}`,
     },
