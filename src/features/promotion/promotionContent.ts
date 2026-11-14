@@ -76,7 +76,7 @@ export const interestLabel = (value: string | null) => {
 export const HERO_COUPONS = [
   { tag: '수험생 쿠폰', title: '프로필 촬영 20% 할인' },
   { tag: '수험생 쿠폰', title: '렌즈 · 안경 25% 할인' },
-  { tag: '수험생 쿠폰', title: '수험생 염색 30% 할인', shop: '제휴 헤어살롱 · 홍대점', note: '수능 다음 날 ~ 11월 30일 · 수험표 제시' },
+  { tag: '수험생 쿠폰', title: '수험생 염색 30% 할인', shop: '제휴 헤어살롱', note: '수능 다음 날 ~ 11월 30일 · 수험표 제시' },
 ] as const
 
 export const WHY_NOW = [

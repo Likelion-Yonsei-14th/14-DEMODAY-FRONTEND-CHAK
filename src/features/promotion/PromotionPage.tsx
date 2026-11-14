@@ -96,7 +96,7 @@ export function PromotionPage() {
                 </li>
               ))}
             </ul>
-            <figcaption>첫 상권 홍대 · 강남 · 잠실 | 쿠폰은 예시예요</figcaption>
+            <figcaption>쿠폰은 예시예요</figcaption>
           </figure>
         </section>
 
