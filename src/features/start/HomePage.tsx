@@ -6,6 +6,7 @@ import { fetchMyDesk } from '@/api/desks'
 import { useFeedback } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { ComingSoonDialog, CLASSROOM_NOTICE } from '@/features/common/ComingSoon'
+import { AdBanner } from '@/features/ads/AdBanner'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { isClassroomAvailable } from '@/lib/featureFlags'
 import { AppShell } from '@/layout/AppShell'
@@ -183,6 +184,8 @@ export function HomePage() {
           <Plus size={15} aria-hidden />
           {classroomOpen ? '새 책상이나 반 만들기' : '새 책상 만들기'}
         </button>
+
+        <AdBanner slot={0} />
 
         <MiniGameSection />
       </main>

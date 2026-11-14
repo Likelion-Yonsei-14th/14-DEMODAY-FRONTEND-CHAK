@@ -16,6 +16,7 @@ import {
   useFeedback,
 } from '@/design-system'
 import { getMessagePages } from '@/features/composer/messagePages'
+import { AdBanner } from '@/features/ads/AdBanner'
 import { AppShell } from '@/layout/AppShell'
 import { isApiEnabled } from '@/api/config'
 import { loadOwnerDesk } from '@/api/ownerLoader'
@@ -772,6 +773,8 @@ export function MessageViewerPage() {
                   </Button>
                 )
               )}
+
+              <AdBanner className="message-viewer__ad" />
             </section>
           )}
         </>
