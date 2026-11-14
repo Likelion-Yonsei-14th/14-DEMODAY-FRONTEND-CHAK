@@ -1,0 +1,50 @@
+/* 어드민 · 홍보 PPT 만들기 */
+.pitch { max-width: 960px; word-break: keep-all; }
+.pitch h1 { margin: 0 0 4px; }
+.pitch h2 { margin: 28px 0 12px; font-size: 18px; }
+.pitch__lead { margin: 0 0 18px; color: #7a716a; }
+.pitch__warn { margin: 8px 0 0; color: #8a1f0c; font-size: 14px; }
+.pitch__actions { margin-top: 16px; }
+
+.pitch-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.pitch-form fieldset { display: grid; gap: 10px; align-content: start; margin: 0; padding: 16px; border: 1px solid #e6d8c8; border-radius: 10px; background: #fff; }
+.pitch-form legend { padding: 0 6px; font-weight: 700; }
+.pitch-form label { display: grid; grid-template-columns: 1fr 130px; gap: 10px; align-items: center; font-size: 14px; }
+.pitch-form input, .pitch-form select { width: 100%; min-height: 40px; padding: 6px 10px; border: 1.5px solid #e6d8c8; border-radius: 8px; background: #fff; font: inherit; }
+.pitch-form__hint { margin: 0; color: #7a716a; font-size: 13px; }
+
+.pitch-result { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 18px 0 0; }
+.pitch-result div { padding: 12px 14px; border-radius: 10px; background: #f1e2c8; }
+.pitch-result dt { color: #75655a; font-size: 13px; }
+.pitch-result dd { margin: 2px 0 0; font-size: 20px; font-weight: 700; }
+.pitch-result .is-key { background: #c4452c; color: #fff; }
+.pitch-result .is-key dt { color: #fbe3dc; }
+
+.pitch-btn { min-height: 46px; padding: 0 22px; border: 0; border-radius: 10px; background: #c4452c; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.pitch-btn:disabled { opacity: 0.5; cursor: wait; }
+
+.pitch-slides { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
+.pitch-slide { display: grid; gap: 8px; align-content: start; aspect-ratio: 16 / 9; padding: 20px 22px; overflow: hidden; border: 1px solid #e6d8c8; border-radius: 10px; background: #fffaf3; color: #2a1a12; font-size: 12px; line-height: 1.5; }
+.pitch-slide--cover { background: #f1d58a; }
+.pitch-slide--dark { background: #3a2217; color: #fff; }
+.pitch-slide__kicker { margin: 0; color: #c4452c; font-size: 11px; font-weight: 700; }
+.pitch-slide--dark .pitch-slide__kicker { color: #f1d58a; }
+.pitch-slide h3 { margin: 0; font-size: 19px; line-height: 1.3; letter-spacing: -0.02em; }
+.pitch-slide--cover h3 { font-size: 26px; }
+.pitch-slide ul { margin: 0; padding-left: 16px; }
+.pitch-slide--cover ul { padding: 0; list-style: none; font-size: 14px; }
+.pitch-slide__stats { display: flex; gap: 8px; margin: 0; }
+.pitch-slide__stats div { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 8px; background: #f1e2c8; }
+.pitch-slide--dark .pitch-slide__stats div { background: #4a2e21; }
+.pitch-slide__stats dt { color: #75655a; font-size: 10px; }
+.pitch-slide--dark .pitch-slide__stats dt { color: #ecdacb; }
+.pitch-slide__stats dd { margin: 2px 0 0; font-size: 15px; font-weight: 700; }
+.pitch-slide__stats .is-strong dd { color: #c4452c; }
+.pitch-slide--dark .pitch-slide__stats .is-strong dd { color: #f1d58a; }
+.pitch-slide__note { margin: 0; color: #75655a; font-size: 11px; }
+.pitch-slide--dark .pitch-slide__note { color: #ecdacb; }
+
+@media (max-width: 480px) {
+  .pitch-slides { grid-template-columns: 1fr; }
+  .pitch-slide { aspect-ratio: auto; }
+}

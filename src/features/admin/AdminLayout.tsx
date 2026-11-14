@@ -64,6 +64,7 @@ export function AdminLayout() {
         <NavLink to="/admin/reports">신고 처리</NavLink>
         <NavLink to="/admin/inquiries">상담 문의</NavLink>
         <NavLink to="/admin/benefits">혜택 시안 신청</NavLink>
+        <NavLink to="/admin/pitch">홍보 PPT 만들기</NavLink>
         <NavLink to="/admin/admins">운영자 관리</NavLink>
         <span className="admin__me">{me?.displayName}</span>
         <Link to="/home" className="admin__back">서비스로 돌아가기</Link>
