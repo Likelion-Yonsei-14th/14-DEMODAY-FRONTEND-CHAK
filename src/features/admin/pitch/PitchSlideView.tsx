@@ -46,6 +46,11 @@ function Screen({ screen }: { screen: PitchScreen }) {
 
 const count = (value: number) => value.toLocaleString('ko-KR')
 
+// 그래프 색과 글자는 SVG 속성으로 넣는다. PDF로 찍을 때 CSS 클래스는 SVG 안까지 옮겨지지 않는다.
+const RED = '#c4452c'
+const LABEL = { fill: '#75655a', fontSize: 17, fontWeight: 700 } as const
+const TICK = { fill: '#75655a', fontSize: 14, fontWeight: 400 } as const
+
 /** 일 접속자 막대(실제)와, 마지막 날에서 수능 당일 예상까지 올라가는 점선 추세선. */
 function TrendChart({ chart }: { chart: NonNullable<PitchSlide['chart']> }) {
   const W = 600
@@ -71,25 +76,25 @@ function TrendChart({ chart }: { chart: NonNullable<PitchSlide['chart']> }) {
     >
       {peak !== undefined && (
         <>
-          <polygon className="pslide__chart-area" points={`${x(lastIndex)},${BOTTOM} ${line} ${x(all.length - 1)},${BOTTOM}`} />
-          <polyline className="pslide__chart-line" points={line} />
+          <polygon fill={RED} fillOpacity={0.13} points={`${x(lastIndex)},${BOTTOM} ${line} ${x(all.length - 1)},${BOTTOM}`} />
+          <polyline fill="none" stroke={RED} strokeWidth={4} strokeDasharray="10 8" strokeLinecap="round" points={line} />
         </>
       )}
       {chart.values.map((value, index) =>
         value > 0 ? (
-          <rect key={index} className={index === lastIndex ? 'is-now' : undefined} x={x(index) - slot * 0.36} y={y(value)} width={slot * 0.72} height={BOTTOM - y(value)} rx={3} />
+          <rect key={index} fill={index === lastIndex ? RED : '#c9b8a6'} x={x(index) - slot * 0.36} y={y(value)} width={slot * 0.72} height={BOTTOM - y(value)} rx={3} />
         ) : null,
       )}
-      <line className="pslide__chart-axis" x1={SIDE} x2={W - SIDE} y1={BOTTOM} y2={BOTTOM} />
-      <text x={x(0)} y={y(chart.values[0] ?? 0) - 8} textAnchor="middle">{count(chart.values[0] ?? 0)}</text>
-      <text className="is-now" x={x(lastIndex)} y={y(last) - 10} textAnchor="middle">{count(last)}</text>
-      <text className="is-tick" x={x(0)} y={BOTTOM + 22} textAnchor="middle">{chart.from}</text>
-      <text className="is-tick" x={x(lastIndex)} y={BOTTOM + 22} textAnchor="middle">{chart.to}</text>
+      <line stroke="#2a1a12" strokeWidth={2} x1={SIDE} x2={W - SIDE} y1={BOTTOM} y2={BOTTOM} />
+      <text {...LABEL} x={x(0)} y={y(chart.values[0] ?? 0) - 8} textAnchor="middle">{count(chart.values[0] ?? 0)}</text>
+      <text {...LABEL} fill={RED} x={x(lastIndex)} y={y(last) - 10} textAnchor="middle">{count(last)}</text>
+      <text {...TICK} x={x(0)} y={BOTTOM + 22} textAnchor="middle">{chart.from}</text>
+      <text {...TICK} x={x(lastIndex)} y={BOTTOM + 22} textAnchor="middle">{chart.to}</text>
       {peak !== undefined && (
         <>
-          <circle className="pslide__chart-dot" cx={x(all.length - 1)} cy={y(peak)} r={8} />
-          <text className="is-peak" x={x(all.length - 1) - 16} y={y(peak) + 8} textAnchor="end">예상 {count(peak)}</text>
-          <text className="is-tick is-now" x={W - SIDE} y={BOTTOM + 22} textAnchor="end">수능 당일</text>
+          <circle fill={RED} stroke="#ecc9bd" strokeWidth={5} cx={x(all.length - 1)} cy={y(peak)} r={8} />
+          <text {...LABEL} fill={RED} fontSize={26} fontWeight={800} x={x(all.length - 1) - 16} y={y(peak) + 8} textAnchor="end">예상 {count(peak)}</text>
+          <text {...TICK} fill={RED} fontWeight={700} x={W - SIDE} y={BOTTOM + 22} textAnchor="end">수능 당일</text>
         </>
       )}
     </svg>

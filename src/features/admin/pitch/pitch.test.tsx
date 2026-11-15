@@ -5,6 +5,8 @@ import { buildSlides, decodeDeck, deckFileName, deckPath, encodeDeck, josa, tren
 
 const pptx = vi.hoisted(() => ({ downloadDeck: vi.fn() }))
 vi.mock('./pitchPptx', () => pptx)
+const pdf = vi.hoisted(() => ({ downloadPdf: vi.fn() }))
+vi.mock('./pitchPdf', () => pdf)
 
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { PitchDeckPage } from './PitchDeckPage'
@@ -138,6 +140,7 @@ describe('pitch slides', () => {
   it('names the file after the store', () => {
     expect(deckFileName(input)).toBe('CHAK_제휴제안_착헤어.pptx')
     expect(deckFileName({ ...input, storeName: '착/헤어 2호점' })).toBe('CHAK_제휴제안_착_헤어_2호점.pptx')
+    expect(deckFileName(input, 'pdf')).toBe('CHAK_제휴제안_착헤어.pdf')
   })
 })
 
@@ -171,6 +174,25 @@ describe('pitch deck page', () => {
     const [slides, fileName] = pptx.downloadDeck.mock.calls[0]!
     expect(slides[0].title).toBe('수능이 끝나면, 착헤어로.')
     expect(fileName).toBe('CHAK_제휴제안_착헤어.pptx')
+  })
+
+  it('downloads the shown slides as a pdf, one slide a page', async () => {
+    pdf.downloadPdf.mockResolvedValue(undefined)
+    render(<PitchDeckPage />)
+    fireEvent.change(screen.getByRole('textbox', { name: '매장 이름' }), { target: { value: '착헤어' } })
+    fireEvent.click(screen.getByRole('button', { name: 'PDF 내려받기' }))
+    await vi.waitFor(() => expect(pdf.downloadPdf).toHaveBeenCalledTimes(1))
+    const [pages, fileName] = pdf.downloadPdf.mock.calls[0]!
+    expect(pages).toHaveLength(6)
+    expect(pages[0]).toHaveTextContent('수능이 끝나면, 착헤어로.')
+    expect(fileName).toBe('CHAK_제휴제안_착헤어.pdf')
+  })
+
+  it('says so when the pdf cannot be made', async () => {
+    pdf.downloadPdf.mockRejectedValue(new Error('boom'))
+    render(<PitchDeckPage />)
+    fireEvent.click(screen.getByRole('button', { name: 'PDF 내려받기' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('PDF 파일을 만들지 못했어요')
   })
 
   it('says so when the file cannot be made', async () => {

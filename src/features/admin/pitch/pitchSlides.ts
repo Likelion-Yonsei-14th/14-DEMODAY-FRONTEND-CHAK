@@ -139,8 +139,8 @@ export function buildSlides(input: PitchInput): PitchSlide[] {
   ]
 }
 
-export const deckFileName = (input: PitchInput) =>
-  `CHAK_제휴제안_${(input.storeName.trim() || '매장').replace(/[\\/:*?"<>|\s]+/g, '_')}.pptx`
+export const deckFileName = (input: PitchInput, extension: 'pptx' | 'pdf' = 'pptx') =>
+  `CHAK_제휴제안_${(input.storeName.trim() || '매장').replace(/[\\/:*?"<>|\s]+/g, '_')}.${extension}`
 
 /** 웹으로 여는 주소에 싣는 값. 주소가 짧도록 기본값과 다른 것만 넣는다. */
 export function encodeDeck(input: PitchInput): string {

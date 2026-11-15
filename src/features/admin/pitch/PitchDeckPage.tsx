@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { defaultInput, estimate, PITCH_CATEGORIES, won, withCategory, type PitchInput } from './pitchModel'
 import { PitchSlideView } from './PitchSlideView'
 import { buildSlides, deckFileName, deckPath } from './pitchSlides'
@@ -26,7 +26,8 @@ const RATE_FIELDS: readonly { key: NumberKey; label: string }[] = [
 /** 매장 이름·위치·업종을 넣으면 그 매장에 맞춘 제휴 제안 장표와 예상 수익, 제안 광고비를 만든다. */
 export function PitchDeckPage() {
   const [input, setInput] = useState<PitchInput>(() => defaultInput())
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState<'pptx' | 'pdf' | null>(null)
+  const previewRef = useRef<HTMLOListElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const result = useMemo(() => estimate(input), [input])
@@ -38,16 +39,23 @@ export function PitchDeckPage() {
   }
   const setNumber = (key: NumberKey, value: number) => setInput((current) => ({ ...current, [key]: Number.isFinite(value) ? value : 0 }))
 
-  const download = async () => {
-    setBusy(true)
+  const download = async (kind: 'pptx' | 'pdf') => {
+    setBusy(kind)
     setError(null)
     try {
-      const { downloadDeck } = await import('./pitchPptx')
-      await downloadDeck(slides, deckFileName(input))
+      if (kind === 'pptx') {
+        const { downloadDeck } = await import('./pitchPptx')
+        await downloadDeck(slides, deckFileName(input))
+      } else {
+        // 미리보기에 그려진 장표를 그대로 찍는다
+        const pages = [...(previewRef.current?.querySelectorAll<HTMLElement>('.pslide') ?? [])]
+        const { downloadPdf } = await import('./pitchPdf')
+        await downloadPdf(pages, deckFileName(input, 'pdf'))
+      }
     } catch {
-      setError('PPT 파일을 만들지 못했어요. 잠시 후 다시 시도해 주세요.')
+      setError(`${kind === 'pptx' ? 'PPT' : 'PDF'} 파일을 만들지 못했어요. 잠시 후 다시 시도해 주세요.`)
     } finally {
-      setBusy(false)
+      setBusy(null)
     }
   }
 
@@ -126,14 +134,17 @@ export function PitchDeckPage() {
         <button type="button" className="pitch-btn pitch-btn--ghost" onClick={copyLink}>
           {copied ? '링크를 복사했어요' : '링크 복사'}
         </button>
-        <button type="button" className="pitch-btn pitch-btn--ghost" onClick={download} disabled={busy}>
-          {busy ? '만드는 중...' : 'PPT 내려받기'}
+        <button type="button" className="pitch-btn pitch-btn--ghost" onClick={() => download('pdf')} disabled={busy !== null}>
+          {busy === 'pdf' ? '만드는 중...' : 'PDF 내려받기'}
+        </button>
+        <button type="button" className="pitch-btn pitch-btn--ghost" onClick={() => download('pptx')} disabled={busy !== null}>
+          {busy === 'pptx' ? '만드는 중...' : 'PPT 내려받기'}
         </button>
         {error && <p role="alert" className="pitch__warn">{error}</p>}
       </div>
 
       <h2>미리보기</h2>
-      <ol className="pitch-slides">
+      <ol className="pitch-slides" ref={previewRef}>
         {slides.map((slide, index) => (
           <li key={slide.kicker}>
             <PitchSlideView slide={slide} page={index + 1} total={slides.length} />
