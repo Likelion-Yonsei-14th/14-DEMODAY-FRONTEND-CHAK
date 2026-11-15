@@ -79,17 +79,7 @@
 .pslide__split .pslide__stats { flex: none; width: 24cqw; flex-direction: column; }
 .pslide__split .pslide__stats div { flex: 1; display: flex; flex-direction: column; justify-content: center; }
 .pslide__chart { flex: 1; min-width: 0; height: 100%; }
-.pslide__chart rect { fill: #c9b8a6; }
-.pslide__chart rect.is-now { fill: #c4452c; }
-.pslide__chart-axis { stroke: #2a1a12; stroke-width: 2; }
-.pslide__chart-area { fill: #c4452c; opacity: 0.13; }
-.pslide__chart-line { fill: none; stroke: #c4452c; stroke-width: 4; stroke-dasharray: 10 8; stroke-linecap: round; }
-.pslide__chart-dot { fill: #c4452c; stroke: #ecc9bd; stroke-width: 5; }
-.pslide__chart text { fill: #75655a; font-size: 17px; font-weight: 700; }
-.pslide__chart text.is-now { fill: #c4452c; }
-.pslide__chart text.is-peak { fill: #c4452c; font-size: 26px; font-weight: 800; }
-.pslide__chart text.is-tick { font-size: 14px; font-weight: 400; }
-.pslide__chart text.is-tick.is-now { font-weight: 700; }
+.pslide__chart text { font-family: inherit; }
 
 /* 휴대폰 화면 */
 .pslide__phones { display: flex; gap: 2cqw; flex: 1; min-height: 0; }

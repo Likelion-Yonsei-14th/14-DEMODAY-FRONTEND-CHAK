@@ -23,6 +23,15 @@ export const PITCH_CATEGORIES: readonly PitchCategory[] = [
   { id: 'fashion', label: '옷 · 패션', spend: 70_000, margin: 0.4, conversion: 0.03 },
   { id: 'park', label: '놀이공원 · 체험', spend: 45_000, margin: 0.3, conversion: 0.03 },
   { id: 'food', label: '음식점 · 카페', spend: 15_000, margin: 0.3, conversion: 0.08 },
+  { id: 'nail', label: '네일 · 속눈썹 · 피부관리', spend: 50_000, margin: 0.55, conversion: 0.04 },
+  { id: 'clinic', label: '성형외과 · 피부과', spend: 300_000, margin: 0.4, conversion: 0.015 },
+  { id: 'fitness', label: '헬스 · PT · 필라테스', spend: 250_000, margin: 0.5, conversion: 0.02 },
+  { id: 'phone', label: '휴대폰 · 전자기기', spend: 900_000, margin: 0.1, conversion: 0.01 },
+  { id: 'play', label: '노래방 · PC방 · 방탈출', spend: 12_000, margin: 0.5, conversion: 0.08 },
+  { id: 'cinema', label: '영화관 · 공연', spend: 14_000, margin: 0.3, conversion: 0.06 },
+  { id: 'travel', label: '여행 · 숙박', spend: 150_000, margin: 0.3, conversion: 0.015 },
+  { id: 'academy', label: '어학원 · 자격증 학원', spend: 400_000, margin: 0.4, conversion: 0.01 },
+  { id: 'cosmetics', label: '화장품 · 향수', spend: 40_000, margin: 0.4, conversion: 0.04 },
   { id: 'etc', label: '기타', spend: 30_000, margin: 0.35, conversion: 0.04 },
 ]
 
