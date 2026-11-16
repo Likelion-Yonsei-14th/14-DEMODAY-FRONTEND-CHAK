@@ -1,0 +1,415 @@
+/* 수능 여론: 질문 카드, 목록 화면, 첫 화면의 오늘의 질문 */
+.poll-card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  box-shadow: var(--highlight-inset);
+}
+
+.poll-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.poll-card__tag {
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-soft);
+  color: var(--color-brand-pressed);
+  font-size: var(--type-caption-size);
+  font-weight: 800;
+}
+
+.poll-card__state {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-content-tertiary);
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+}
+
+.poll-card__question {
+  margin: 0;
+  color: var(--color-content-primary);
+  font-size: 20px;
+  line-height: 1.35;
+  letter-spacing: -.02em;
+  word-break: keep-all;
+}
+
+.poll-card__options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.poll-card__options li:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.poll-card__options button {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-base);
+  color: var(--color-content-primary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s, transform .1s;
+}
+
+.poll-card__options button:hover:not(:disabled) {
+  border-color: var(--color-brand);
+  background: var(--color-brand-soft);
+}
+
+.poll-card__options button:active:not(:disabled) {
+  transform: scale(.98);
+}
+
+.poll-card__options button:disabled {
+  color: var(--color-content-disabled);
+  cursor: default;
+}
+
+.poll-card__options button[aria-busy='true'] {
+  border-color: var(--color-brand);
+  background: var(--color-brand-soft);
+  color: var(--color-brand-pressed);
+}
+
+.poll-card__hint,
+.poll-card__note {
+  margin: 0;
+  color: var(--color-content-tertiary);
+  font-size: var(--type-caption-size);
+}
+
+.poll-card__error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+}
+
+.poll-card__scopes {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin: 0 calc(var(--space-4) * -1);
+  padding: 0 var(--space-4) 2px;
+  scrollbar-width: none;
+}
+
+.poll-card__scopes button {
+  flex: none;
+  padding: 6px 11px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-base);
+  color: var(--color-content-secondary);
+  font: inherit;
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.poll-card__scopes button[aria-pressed='true'] {
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-content-inverse);
+}
+
+.poll-card__results {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.poll-card__results li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 12px;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-subtle);
+}
+
+.poll-card__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--color-brand-soft);
+  transition: width .6s cubic-bezier(.2, .8, .2, 1);
+}
+
+.poll-card__results li.is-top .poll-card__bar {
+  background: var(--color-brand);
+}
+
+.poll-card__label,
+.poll-card__percent {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-content-primary);
+  font-weight: 700;
+}
+
+/* 막대가 이름을 덮을 만큼 길 때만 이름을 흰색으로. 숫자는 오른쪽 끝이라 늘 진한 색. */
+.poll-card__results li.is-wide .poll-card__label {
+  color: var(--color-brand-on);
+}
+
+.poll-card__results li.is-top .poll-card__percent {
+  color: var(--color-brand-pressed);
+  font-weight: 900;
+}
+
+.poll-card__results li.is-mine .poll-card__label {
+  font-weight: 900;
+}
+
+.poll-card__percent {
+  font-variant-numeric: tabular-nums;
+}
+
+.poll-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  color: var(--color-content-tertiary);
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+}
+
+.poll-card__share {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-ink);
+  color: var(--color-content-inverse);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.poll-card--compact {
+  padding: var(--space-4);
+}
+
+.poll-card--compact .poll-card__question {
+  font-size: var(--type-title-l-size);
+}
+
+/* 목록 화면 */
+.poll-page-shell {
+  min-height: 100%;
+}
+
+.poll-page {
+  display: grid;
+  gap: var(--space-4);
+  padding-top: 18px;
+  padding-bottom: 40px;
+}
+
+.poll-page__intro h1 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  line-height: 1.35;
+  letter-spacing: -.02em;
+}
+
+.poll-page__intro p,
+.poll-page__fine {
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: var(--type-caption-size);
+  line-height: 1.55;
+}
+
+.poll-page__fine {
+  color: var(--color-content-tertiary);
+}
+
+.poll-page__status {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--color-content-secondary);
+}
+
+.poll-page__status p {
+  margin: 0;
+}
+
+.poll-page__list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.poll-page__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-butter-soft);
+  color: var(--color-content-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.poll-page__link span {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+}
+
+.poll-page__link small {
+  color: var(--color-content-secondary);
+  font-size: var(--type-caption-size);
+}
+
+/* 첫 화면·홈의 오늘의 질문 */
+.today-poll {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.today-poll__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.today-poll__head h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--type-title-l-size);
+  line-height: var(--type-title-l-line);
+  letter-spacing: -.02em;
+}
+
+.today-poll__head h2 svg {
+  color: var(--color-brand);
+}
+
+.today-poll__head button {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--color-content-secondary);
+  font: inherit;
+  font-size: var(--type-caption-size);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.today-poll__teaser {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: var(--space-4);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  color: var(--color-content-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.today-poll__teaser span {
+  color: var(--color-brand-pressed);
+  font-size: var(--type-caption-size);
+  font-weight: 800;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poll-card__bar,
+  .poll-card__options button {
+    transition: none;
+  }
+}
+
+.today-poll__next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 12px var(--space-4);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--color-ink);
+  color: var(--color-content-inverse);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* 첫 화면 묶음 */
+.suneung-corner {
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.suneung-corner__discounts {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 14px var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-butter-soft);
+  color: var(--color-content-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.suneung-corner__discounts span {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+}
+
+.suneung-corner__discounts small {
+  color: var(--color-content-secondary);
+  font-size: var(--type-caption-size);
+}

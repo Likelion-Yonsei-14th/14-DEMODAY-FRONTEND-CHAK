@@ -7,6 +7,7 @@ import { useFeedback } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { ComingSoonDialog, CLASSROOM_NOTICE } from '@/features/common/ComingSoon'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
+import { SuneungCorner } from '@/features/poll/SuneungCorner'
 import { isClassroomAvailable } from '@/lib/featureFlags'
 import { AppShell } from '@/layout/AppShell'
 import { isApiEnabled } from '@/api/config'
@@ -184,6 +185,7 @@ export function HomePage() {
           {classroomOpen ? '새 책상이나 반 만들기' : '새 책상 만들기'}
         </button>
 
+        <SuneungCorner />
         <MiniGameSection />
       </main>
       <ComingSoonDialog

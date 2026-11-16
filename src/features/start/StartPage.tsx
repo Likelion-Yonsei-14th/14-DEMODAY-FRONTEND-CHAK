@@ -14,6 +14,7 @@ import {
 } from '@/features/supporter/seededMessages'
 import { ComingSoonDialog, CLASSROOM_NOTICE } from '@/features/common/ComingSoon'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
+import { SuneungCorner } from '@/features/poll/SuneungCorner'
 import { isClassroomAvailable } from '@/lib/featureFlags'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -106,6 +107,7 @@ export function StartPage() {
           />
         </section>
 
+        <SuneungCorner />
         <MiniGameSection />
       </main>
       <ComingSoonDialog
