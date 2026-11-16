@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type Ref } from 'react'
 import { fetchAds, reportAdEvent } from '@/api/community'
 import { isApiEnabled } from '@/api/config'
 import type { ApiAdvertisement } from '@/api/types'
@@ -86,16 +86,51 @@ function SponsoredBanner({ ad, className }: { ad: ApiAdvertisement; className?: 
   }, [ad.id, sessionId])
 
   return (
+    <AdBannerView
+      ad={ad}
+      className={className}
+      linkRef={ref}
+      onClick={() => void reportAdEvent(ad.id, 'CLICK', sessionId).catch(() => undefined)}
+    />
+  )
+}
+
+type BannerLook = Pick<ApiAdvertisement, 'title' | 'creativeUrl' | 'destinationUrl'>
+
+/**
+ * 배너 한 장의 생김새. 실제 지면과 운영자 화면의 시안 미리보기가 같은 모양을 쓴다.
+ * `preview`면 눌러도 이동하지 않고 노출·클릭을 세지 않는다.
+ */
+export function AdBannerView({
+  ad,
+  className,
+  linkRef,
+  onClick,
+  preview = false,
+}: {
+  ad: BannerLook
+  className?: string
+  linkRef?: Ref<HTMLAnchorElement>
+  onClick?: () => void
+  preview?: boolean
+}) {
+  return (
     <aside className={['ad-banner', className].filter(Boolean).join(' ')} aria-label="광고">
       <a
-        ref={ref}
+        ref={linkRef}
         className="ad-banner__link"
         href={ad.destinationUrl}
         target="_blank"
         rel="sponsored noopener noreferrer"
-        onClick={() => void reportAdEvent(ad.id, 'CLICK', sessionId).catch(() => undefined)}
+        onClick={(event) => {
+          if (preview) {
+            event.preventDefault()
+            return
+          }
+          onClick?.()
+        }}
       >
-        <img className="ad-banner__creative" src={ad.creativeUrl} alt={ad.title} loading="lazy" />
+        <img className="ad-banner__creative" src={ad.creativeUrl} alt={ad.title} loading={preview ? 'eager' : 'lazy'} />
         <span className="ad-banner__badge">광고</span>
       </a>
     </aside>
