@@ -228,6 +228,12 @@ export const router = createBrowserRouter([
             }),
           },
           {
+            path: 'polls',
+            lazy: async () => ({
+              Component: (await import('@/features/admin/PollsAdminPage')).PollsAdminPage,
+            }),
+          },
+          {
             path: 'admins',
             lazy: async () => ({
               Component: (await import('@/features/admin/AdminsPage')).AdminsPage,
@@ -251,6 +257,18 @@ export const router = createBrowserRouter([
         path: '/promotion/apply/consult',
         lazy: async () => ({
           Component: (await import('@/features/promotion/PromotionConsultPage')).PromotionConsultPage,
+        }),
+      },
+      {
+        path: '/poll',
+        lazy: async () => ({
+          Component: (await import('@/features/poll/PollPage')).PollPage,
+        }),
+      },
+      {
+        path: '/discounts',
+        lazy: async () => ({
+          Component: (await import('@/features/discounts/DiscountsPage')).DiscountsPage,
         }),
       },
       {
