@@ -25,3 +25,10 @@ export function kstDate(daysAgo = 0) {
 }
 
 export const providerLabel = (provider: 'KAKAO' | 'GOOGLE') => (provider === 'KAKAO' ? '카카오' : '구글')
+
+/** datetime-local 값("2026-11-20T09:00")을 한국 시각으로 읽어 ISO로 바꾼다. */
+export function kstInputToIso(value: string): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return null
+  const date = new Date(`${value}:00+09:00`)
+  return Number.isNaN(date.getTime()) ? null : date.toISOString()
+}
