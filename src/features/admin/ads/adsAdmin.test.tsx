@@ -77,8 +77,12 @@ describe('ads admin', () => {
     expect(within(phone).getByTitle('홈 미리보기')).toHaveAttribute('src', '/home?adPreview=1')
     expect(screen.getByText(/스위치가 꺼져 있어 지금은 사용자에게 보이지 않아요/)).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('tab', { name: '첫 화면' }))
-    expect(within(screen.getByTestId('ad-preview-phone')).getByTitle('첫 화면 미리보기')).toHaveAttribute('src', '/?adPreview=1')
+    fireEvent.click(screen.getByRole('tab', { name: '수험표 할인 모음' }))
+    expect(within(screen.getByTestId('ad-preview-phone')).getByTitle('수험표 할인 모음 미리보기')).toHaveAttribute(
+      'src',
+      '/discounts?adPreview=1',
+    )
+    expect(screen.queryByRole('tab', { name: '첫 화면' })).toBeNull()
 
     // 편지 화면은 운영자 책상에서 열어 볼 수 있는 편지로 보여 준다.
     fireEvent.click(screen.getByRole('tab', { name: '편지 화면' }))
