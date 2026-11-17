@@ -199,4 +199,6 @@ export type ApiAdvertisement = {
   startsAt: string
   endsAt: string
   active: boolean
+  /** 대상 시·도 이름. 비어 있거나 없으면 전국. */
+  targetRegions?: string[]
 }

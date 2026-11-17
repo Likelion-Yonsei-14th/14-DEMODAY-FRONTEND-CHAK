@@ -1,21 +1,24 @@
-import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+import { Fragment, useCallback, useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import {
   AD_IMAGE_MAX_BYTES,
   AD_IMAGE_TYPES,
   AD_PLACEMENT_LABEL,
+  AD_REGIONS,
   createAdminAd,
-  fetchAdMetrics,
+  fetchAdSummaries,
   fetchAdminAds,
   fetchAdSwitch,
   setAdSwitch,
   updateAdminAd,
   uploadAdCreative,
   type AdInput,
+  type AdSummary,
   type AdSwitchState,
 } from '@/api/adminAds'
 import type { ApiAdvertisement } from '@/api/types'
 import { formatDateTime, formatNumber, isoToKstInput, kstInputToIso } from '../adminFormat'
 import { AdPreview } from './AdPreview'
+import { AdReportPanel } from './AdReportPanel'
 import { adStatus, STATUS_LABEL } from './adStatus'
 import './adsAdmin.css'
 
@@ -27,6 +30,8 @@ type Form = {
   startsAt: string
   endsAt: string
   active: boolean
+  /** 대상 시·도. 비면 전국. */
+  targetRegions: string[]
 }
 
 const EMPTY_FORM = (): Form => ({
@@ -37,14 +42,16 @@ const EMPTY_FORM = (): Form => ({
   startsAt: isoToKstInput(new Date().toISOString()),
   endsAt: '2026-12-31T23:59',
   active: true,
+  targetRegions: [],
 })
 
-type Counts = { impressions: number; clicks: number }
+const regionLabel = (regions?: string[]) => (regions && regions.length > 0 ? regions.join('·') : '전국')
 
 /** 광고 관리: 전체 스위치, 이미지 올리기와 시안 미리보기, 등록·수정, 노출·클릭 보기. */
 export function AdsAdminPage() {
   const [ads, setAds] = useState<ApiAdvertisement[]>([])
-  const [counts, setCounts] = useState<Record<number, Counts>>({})
+  const [summaries, setSummaries] = useState<Record<number, AdSummary>>({})
+  const [openReport, setOpenReport] = useState<number | null>(null)
   const [adSwitch, setSwitchState] = useState<AdSwitchState | null>(null)
   const [form, setForm] = useState<Form>(EMPTY_FORM)
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -65,28 +72,26 @@ export function AdsAdminPage() {
 
   useEffect(() => load(), [load])
 
-  // 광고마다 게재 시작부터 지금까지의 노출·클릭.
+  // 광고마다 지금까지의 노출·도달·클릭(한 번에).
   useEffect(() => {
     let cancelled = false
-    const to = new Date().toISOString()
-    for (const ad of ads) {
-      const start = new Date(ad.startsAt).getTime()
-      const from = new Date(Math.max(start, Date.now() - 365 * 86_400_000)).toISOString()
-      if (start >= Date.now()) continue
-      fetchAdMetrics(ad.id, from, to)
-        .then((m) => {
-          if (cancelled) return
-          setCounts((current) => ({
-            ...current,
-            [ad.id]: { impressions: m.events?.IMPRESSION ?? 0, clicks: m.events?.CLICK ?? 0 },
-          }))
-        })
-        .catch(() => undefined)
-    }
+    fetchAdSummaries()
+      .then((list) => {
+        if (!cancelled) setSummaries(Object.fromEntries(list.map((item) => [item.advertisementId, item])))
+      })
+      .catch(() => undefined)
     return () => {
       cancelled = true
     }
   }, [ads])
+
+  // 게재 중인 배너끼리 노출을 얼마나 나눠 가졌는지(같은 노출 계약이 고르게 가는지 보는 용도).
+  const liveBannerIds = ads.filter((ad) => ad.placement === 'BANNER' && adStatus(ad) === 'live').map((ad) => ad.id)
+  const liveBannerImpressions = liveBannerIds.reduce((sum, id) => sum + (summaries[id]?.impressions ?? 0), 0)
+  const shareOf = (id: number) =>
+    liveBannerIds.includes(id) && liveBannerImpressions > 0
+      ? Math.round(((summaries[id]?.impressions ?? 0) / liveBannerImpressions) * 100)
+      : null
 
   const liveBanners = ads.filter((ad) => ad.placement === 'BANNER' && adStatus(ad) === 'live').length
 
@@ -146,6 +151,7 @@ export function AdsAdminPage() {
       startsAt,
       endsAt,
       active: form.active,
+      targetRegions: form.targetRegions,
     }
   }
 
@@ -187,6 +193,7 @@ export function AdsAdminPage() {
       startsAt: isoToKstInput(ad.startsAt),
       endsAt: isoToKstInput(ad.endsAt),
       active: ad.active,
+      targetRegions: ad.targetRegions ?? [],
     })
     setNotice(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -285,6 +292,38 @@ export function AdsAdminPage() {
                 ))}
               </select>
             </label>
+            <div className="admin-field">
+              <span>보여 줄 지역 (안 고르면 전국)</span>
+              <div className="ads-regions" role="group" aria-label="보여 줄 지역">
+                <button
+                  type="button"
+                  aria-pressed={form.targetRegions.length === 0}
+                  onClick={() => setForm({ ...form, targetRegions: [] })}
+                >
+                  전국
+                </button>
+                {AD_REGIONS.map((region) => {
+                  const picked = form.targetRegions.includes(region)
+                  return (
+                    <button
+                      key={region}
+                      type="button"
+                      aria-pressed={picked}
+                      onClick={() =>
+                        setForm({
+                          ...form,
+                          targetRegions: picked
+                            ? form.targetRegions.filter((r) => r !== region)
+                            : AD_REGIONS.filter((r) => r === region || form.targetRegions.includes(r)),
+                        })
+                      }
+                    >
+                      {region}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
             <div className="ads-form__row">
               <label className="admin-field">
                 <span>시작 (한국 시각)</span>
@@ -335,21 +374,24 @@ export function AdsAdminPage() {
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>
-            <tr><th>시안</th><th>광고</th><th>기간</th><th>노출 · 클릭</th><th>상태</th></tr>
+            <tr><th>시안</th><th>광고</th><th>기간</th><th>노출 · 도달 · 클릭</th><th>상태</th></tr>
           </thead>
           <tbody>
             {ads.map((ad) => {
               const status = adStatus(ad)
-              const c = counts[ad.id]
+              const c = summaries[ad.id]
               return (
-                <tr key={ad.id}>
+                <Fragment key={ad.id}>
+                <tr>
                   <td>
                     <img className="ads-table__thumb" src={ad.creativeUrl} alt="" loading="lazy" />
                   </td>
                   <td>
                     <strong>{ad.title}</strong>
                     <br />
-                    <span className="admin__muted">{AD_PLACEMENT_LABEL[ad.placement] ?? ad.placement}</span>
+                    <span className="admin__muted">
+                      {AD_PLACEMENT_LABEL[ad.placement] ?? ad.placement} · {regionLabel(ad.targetRegions)}
+                    </span>
                     <br />
                     <a href={ad.destinationUrl} target="_blank" rel="noopener noreferrer" className="ads-table__link">
                       {ad.destinationUrl}
@@ -363,11 +405,14 @@ export function AdsAdminPage() {
                   <td>
                     {c ? (
                       <>
-                        {formatNumber(c.impressions)} · {formatNumber(c.clicks)}
+                        {formatNumber(c.impressions)}회 · {formatNumber(c.reach)}명 · {formatNumber(c.clicks)}회
                         {c.impressions > 0 && (
                           <>
                             <br />
-                            <span className="admin__muted">클릭률 {((c.clicks / c.impressions) * 100).toFixed(1)}%</span>
+                            <span className="admin__muted">
+                              클릭률 {((c.clicks / c.impressions) * 100).toFixed(1)}%
+                              {shareOf(ad.id) !== null && ` · 배너 노출 비중 ${shareOf(ad.id)}%`}
+                            </span>
                           </>
                         )}
                       </>
@@ -386,9 +431,25 @@ export function AdsAdminPage() {
                       <button type="button" className="ads-btn" disabled={busy} onClick={() => setActive(ad, !ad.active)}>
                         {ad.active ? '꺼두기' : '다시 켜기'}
                       </button>
+                      <button
+                        type="button"
+                        className="ads-btn"
+                        aria-expanded={openReport === ad.id}
+                        onClick={() => setOpenReport(openReport === ad.id ? null : ad.id)}
+                      >
+                        {openReport === ad.id ? '보고서 닫기' : '보고서'}
+                      </button>
                     </span>
                   </td>
                 </tr>
+                {openReport === ad.id && (
+                  <tr className="ads-table__report">
+                    <td colSpan={5}>
+                      <AdReportPanel ad={ad} />
+                    </td>
+                  </tr>
+                )}
+                </Fragment>
               )
             })}
             {ads.length === 0 && !error && (

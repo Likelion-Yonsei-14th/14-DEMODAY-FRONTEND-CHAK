@@ -169,7 +169,7 @@ export function WelcomePage() {
 
         <div className="welcome-page__games">
           <SuneungCorner />
-          <AdBanner slot={0} />
+          <AdBanner />
           <MiniGameSection note="로그인 없이 바로 할 수 있어요. 랭킹에는 로그인하면 올라가요." />
         </div>
       </main>

@@ -1,3 +1,4 @@
+import { getVisitorGeo } from '@/api/geo'
 import { apiFetch } from '@/api/client'
 import type {
   ApiAdvertisement,
@@ -95,13 +96,36 @@ export const unlockWithAd = (category: ApiUnlockCategory, assetId: string, adSes
 export const fetchAds = (placement: string) =>
   apiFetch<ApiAdvertisement[]>('/api/public/ads', { query: { placement } })
 
-export const reportAdEvent = (
+/**
+ * 이 사람에게 보여 줄 광고 하나(서버가 같은 노출 수·지역 맞춤으로 고른다). 없으면 null.
+ * 위치는 서버가 호스팅 헤더로 먼저 알고, 헤더가 빠질 때를 위해 시·도 코드를 같이 보낸다.
+ */
+export async function serveAd(placement: string): Promise<ApiAdvertisement | null> {
+  const geo = await getVisitorGeo().catch(() => null)
+  const ad = await apiFetch<ApiAdvertisement | undefined>('/api/public/ads/serve', {
+    query: { placement, geoCountry: geo?.country ?? undefined, geoRegion: geo?.region ?? undefined },
+    quiet: true,
+  })
+  return ad ?? null
+}
+
+export const reportAdEvent = async (
   advertisementId: number,
   eventType: 'IMPRESSION' | 'VIEW_STARTED' | 'VIEW_COMPLETED' | 'CLICK',
   sessionId: string,
   viewDurationMs?: number,
-) =>
-  apiFetch(`/api/public/ads/${advertisementId}/events`, {
+) => {
+  // 지역별 도달 보고용 시·도(헤더가 빠질 때 대비). IP는 보내지 않는다.
+  const geo = await getVisitorGeo().catch(() => null)
+  return apiFetch(`/api/public/ads/${advertisementId}/events`, {
     method: 'POST',
-    body: { eventType, sessionId, viewDurationMs },
+    quiet: true,
+    body: {
+      eventType,
+      sessionId,
+      viewDurationMs,
+      geoCountry: geo?.country ?? undefined,
+      geoRegion: geo?.region ?? undefined,
+    },
   })
+}
