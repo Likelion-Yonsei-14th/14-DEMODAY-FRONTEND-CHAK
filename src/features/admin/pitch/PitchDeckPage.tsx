@@ -9,7 +9,9 @@ type NumberKey = { [K in keyof PitchInput]: PitchInput[K] extends number ? K : n
 const COUNT_FIELDS: readonly { key: NumberKey; label: string; unit: string; step: number }[] = [
   { key: 'visitorsNow', label: '지금 일 접속자', unit: '명', step: 100 },
   { key: 'visitorsExpected', label: '수능 당일 예상 접속자', unit: '명', step: 100 },
+  { key: 'periodUsers', label: '혜택함 기간 이용자(11/19~12/31)', unit: '명', step: 500 },
   { key: 'spend', label: '객단가', unit: '원', step: 1000 },
+  { key: 'party', label: '동반 인원(수험생 포함)', unit: '명', step: 0.1 },
   { key: 'revisitCount', label: '재방문 횟수(1년)', unit: '회', step: 1 },
   { key: 'priceCap', label: '광고비 상한', unit: '원', step: 10000 },
 ]
