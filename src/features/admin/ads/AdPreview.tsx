@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { fetchOwnerMessages } from '@/api/desks'
 import { getAccessToken } from '@/api/tokenStore'
 import { AD_PREVIEW_PARAM, createAdPreviewHost } from '@/features/ads/adPreview'
+import { composeShots, downloadDataUrl } from './adPreviewImage'
 
 export type PreviewAd = { title: string; creativeUrl: string; destinationUrl: string }
 
@@ -77,8 +78,56 @@ export function AdPreview({ ad, switchOn }: { ad: PreviewAd; switchOn: boolean }
     image.src = ad.creativeUrl
   }, [ad.creativeUrl])
 
-  const path =
-    screen === 'home' ? '/home' : screen === 'discounts' ? '/discounts' : letterId ? `/my/message/${letterId}` : null
+  const pathOf = (id: ScreenId) =>
+    id === 'home' ? '/home' : id === 'discounts' ? '/discounts' : letterId ? `/my/message/${letterId}` : null
+  const path = pathOf(screen)
+
+  // 세 화면을 모두 띄워 두고(보이는 것만 앞에), 저장할 때 각 화면이 스스로 찍은 이미지를 받아 온다.
+  const frameRefs = useRef<Partial<Record<ScreenId, HTMLIFrameElement | null>>>({})
+  const [saving, setSaving] = useState<'one' | 'all' | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
+
+  const captureScreen = async (id: ScreenId) => {
+    const frame = frameRefs.current[id]?.contentWindow
+    const host = hostRef.current
+    if (!frame || !host) return null
+    return host.capture(frame)
+  }
+
+  const fileBase = `광고시안-${(ad.title || '광고').replace(/[\\/:*?"<>|]/g, '').slice(0, 30)}`
+
+  const saveOne = async () => {
+    setSaving('one')
+    setSaveError(null)
+    try {
+      const dataUrl = await captureScreen(screen)
+      if (!dataUrl) throw new Error('capture failed')
+      downloadDataUrl(dataUrl, `${fileBase}-${SCREENS.find((s) => s.id === screen)?.label}.png`)
+    } catch {
+      setSaveError('이미지를 만들지 못했어요. 화면이 다 뜬 뒤 다시 눌러 주세요.')
+    } finally {
+      setSaving(null)
+    }
+  }
+
+  const saveAll = async () => {
+    setSaving('all')
+    setSaveError(null)
+    try {
+      const shots: { label: string; dataUrl: string }[] = []
+      for (const s of SCREENS) {
+        if (!pathOf(s.id)) continue
+        const dataUrl = await captureScreen(s.id)
+        if (dataUrl) shots.push({ label: s.label, dataUrl })
+      }
+      if (shots.length === 0) throw new Error('capture failed')
+      downloadDataUrl(await composeShots(shots, ad.title || '광고'), `${fileBase}-전체.png`)
+    } catch {
+      setSaveError('이미지를 만들지 못했어요. 화면이 다 뜬 뒤 다시 눌러 주세요.')
+    } finally {
+      setSaving(null)
+    }
+  }
 
   const ratio = size ? size.w / size.h : null
   const ratioOff = ratio !== null && Math.abs(ratio - IDEAL_RATIO) > 0.08
@@ -99,14 +148,24 @@ export function AdPreview({ ad, switchOn }: { ad: PreviewAd; switchOn: boolean }
         style={{ width: DEVICE.width * SCALE, height: DEVICE.height * SCALE }}
         data-testid="ad-preview-phone"
       >
-        {path ? (
-          <iframe
-            key={path}
-            title={`${SCREENS.find((s) => s.id === screen)?.label} 미리보기`}
-            src={`${path}?${AD_PREVIEW_PARAM}=1`}
-            style={{ width: DEVICE.width, height: DEVICE.height, transform: `scale(${SCALE})` }}
-          />
-        ) : (
+        {SCREENS.map((s) => {
+          const src = pathOf(s.id)
+          return src ? (
+            <iframe
+              key={s.id}
+              ref={(el) => {
+                frameRefs.current[s.id] = el
+              }}
+              title={`${s.label} 미리보기`}
+              src={`${src}?${AD_PREVIEW_PARAM}=1`}
+              aria-hidden={s.id !== screen}
+              tabIndex={s.id === screen ? 0 : -1}
+              className={s.id === screen ? 'is-active' : undefined}
+              style={{ width: DEVICE.width, height: DEVICE.height, transform: `scale(${SCALE})` }}
+            />
+          ) : null
+        })}
+        {path ? null : (
           <p className="ad-preview__unavailable">
             {letterId === undefined
               ? '편지를 찾는 중이에요...'
@@ -114,6 +173,16 @@ export function AdPreview({ ad, switchOn }: { ad: PreviewAd; switchOn: boolean }
           </p>
         )}
       </div>
+
+      <div className="ad-preview__save">
+        <button type="button" className="ads-btn" disabled={saving !== null || !path} onClick={saveOne}>
+          {saving === 'one' ? '만드는 중...' : '이 화면 이미지로 저장'}
+        </button>
+        <button type="button" className="ads-btn" disabled={saving !== null} onClick={saveAll}>
+          {saving === 'all' ? '만드는 중...' : '세 화면 한 장으로 저장'}
+        </button>
+      </div>
+      {saveError && <p className="admin__error">{saveError}</p>}
 
       <ul className="ad-preview__notes">
         <li>실제 화면이에요. 스크롤해서 둘러볼 수 있고, 눌러도 아무 일도 일어나지 않아요.</li>
@@ -132,3 +201,4 @@ export function AdPreview({ ad, switchOn }: { ad: PreviewAd; switchOn: boolean }
     </div>
   )
 }
+

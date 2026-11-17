@@ -124,16 +124,18 @@ describe('discount card', () => {
 })
 
 describe('discount page ad slot', () => {
-  it('puts the banner after the first three offers', () => {
+  it('puts the banner at the top, before the tips and every offer', () => {
     const { container } = render(
       <MemoryRouter>
         <DiscountsPage />
       </MemoryRouter>,
     )
     const slot = screen.getByTestId('ad-slot')
-    const cards = [...container.querySelectorAll('li.discount')]
-    expect(cards.length).toBeGreaterThan(3)
-    expect(cards[2]!.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(cards[3]!.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy()
+    const intro = container.querySelector('.discounts__intro')!
+    const tips = container.querySelector('.discounts__tips')!
+    const firstCard = container.querySelector('li.discount')!
+    expect(intro.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(tips.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy()
+    expect(firstCard.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy()
   })
 })
