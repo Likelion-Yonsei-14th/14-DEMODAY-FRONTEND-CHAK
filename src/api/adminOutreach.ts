@@ -21,7 +21,10 @@ export type OutreachStatus =
   | 'REJECTED'
   | 'NO_RESPONSE'
 
+export type OutreachKind = 'STORE' | 'BRAND'
+
 export type OutreachInput = {
+  kind: OutreachKind
   storeName: string
   category: string | null
   region: string | null

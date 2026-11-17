@@ -14,6 +14,7 @@ import { contactHref } from './outreachFormat'
 
 const row = {
   id: 1,
+  kind: 'STORE' as const,
   storeName: '딥띵커',
   category: '방탈출',
   region: '홍대',
@@ -60,6 +61,22 @@ describe('store outreach page', () => {
     fireEvent.change(screen.getByLabelText('매장 이름 *'), { target: { value: '가평 펜션' } })
     fireEvent.click(screen.getByRole('button', { name: '저장' }))
     await waitFor(() => expect(api.createOutreach).toHaveBeenCalledWith(expect.objectContaining({ storeName: '가평 펜션', status: 'TODO' })))
+  })
+
+  it('switches to brands and adds a brand by default there', async () => {
+    api.fetchOutreach.mockResolvedValue([row, { ...row, id: 2, kind: 'BRAND' as const, storeName: '메가MGC커피' }])
+    render(<OutreachPage />)
+    expect(await screen.findByText('딥띵커')).toBeTruthy()
+    expect(screen.queryByText('메가MGC커피')).toBeNull()
+    fireEvent.click(screen.getByRole('tab', { name: '브랜드 1' }))
+    expect(screen.getByText('메가MGC커피')).toBeTruthy()
+    expect(screen.queryByText('딥띵커')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: '브랜드 추가' }))
+    fireEvent.change(screen.getByLabelText('브랜드 이름 *'), { target: { value: '삼성스토어' } })
+    fireEvent.click(screen.getByRole('button', { name: '저장' }))
+    await waitFor(() =>
+      expect(api.createOutreach).toHaveBeenCalledWith(expect.objectContaining({ kind: 'BRAND', storeName: '삼성스토어', channel: 'EMAIL' })),
+    )
   })
 
   it('turns contacts into links only when the format is known', () => {
