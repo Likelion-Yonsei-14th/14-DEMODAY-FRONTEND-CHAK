@@ -123,7 +123,7 @@ describe('promotion page', () => {
     open()
     renderAt('/promotion')
     const how = screen.getByRole('region', { name: '착과 함께할 준비, 3단계면 충분해요' })
-    for (const phrase of ['참여 의사 전달', '광고 정보 제출', '광고 노출 시작', '수정은 1회까지예요', '11/18최종 입금 마감', '11/19수능 당일 · 마지막 응원', '11/20~30혜택함 오픈']) {
+    for (const phrase of ['참여 의사 전달', '광고 정보 제출', '광고 노출 시작', '수정은 1회까지예요', '11/18최종 입금 마감', '11/19수능 당일 · 마지막 응원 · 혜택함 오픈', '11/19~30혜택함 쿠폰 노출']) {
       expect(how).toHaveTextContent(phrase)
     }
     expect(body()).not.toContain('11월 2일')

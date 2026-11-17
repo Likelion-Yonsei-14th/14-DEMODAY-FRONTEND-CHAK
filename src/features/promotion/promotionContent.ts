@@ -161,8 +161,8 @@ export const PROCESS = [
 
 export const SCHEDULE = [
   { date: '11/18', note: '최종 입금 마감' },
-  { date: '11/19', note: '수능 당일 · 마지막 응원' },
-  { date: '11/20~30', note: '혜택함 오픈' },
+  { date: '11/19', note: '수능 당일 · 마지막 응원 · 혜택함 오픈' },
+  { date: '11/19~30', note: '혜택함 쿠폰 노출' },
 ] as const
 
 export const AD_SPECS = [
