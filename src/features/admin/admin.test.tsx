@@ -9,6 +9,7 @@ const admin = vi.hoisted(() => ({
   withdrawAdminUser: vi.fn(),
   fetchDailyStats: vi.fn(),
   fetchRegionStats: vi.fn(),
+  fetchActiveUsers: vi.fn(),
   fetchMinigameStats: vi.fn(),
   fetchAdminReports: vi.fn(),
   actOnReport: vi.fn(),
@@ -58,6 +59,7 @@ const detail = (overrides: Record<string, unknown> = {}) => ({
 describe('admin console', () => {
   beforeEach(() => {
     Object.values(admin).forEach((fn) => fn.mockReset())
+    admin.fetchActiveUsers.mockResolvedValue({ from: '', to: '', rangeVisitors: 0, rangeMembers: 0, rangeGuests: 0, days: [] })
     auth.fetchMe.mockReset()
     usePrototypeStore.setState({
       authSession: { status: 'authenticated', email: 'a@b.com', provider: 'google', userId: 1 },
@@ -118,6 +120,29 @@ describe('admin console', () => {
     expect(screen.getByText('4,000원')).toBeTruthy()
     expect(await screen.findByText('서울')).toBeTruthy()
     expect(screen.getByText(/회원 10 · 비회원 15/)).toBeTruthy()
+  })
+
+  it('shows MAU, WAU and DAU since tracking started', async () => {
+    auth.fetchMe.mockResolvedValue({ id: 1, displayName: '운영자', admin: true })
+    admin.fetchDailyStats.mockResolvedValue({ from: '', to: '', totalUsers: 0, totalDesks: 0, totalMessages: 0, days: [] })
+    admin.fetchRegionStats.mockResolvedValue({ from: '', to: '', items: [], unknownPageViews: 0 })
+    admin.fetchActiveUsers.mockResolvedValue({
+      from: '2026-10-21',
+      to: '2026-11-17',
+      rangeVisitors: 9876,
+      rangeMembers: 700,
+      rangeGuests: 9176,
+      days: [
+        { date: '2026-11-16', dau: 300, wau: 1500, mau: 5000, mauMembers: 600, mauGuests: 4400 },
+        { date: '2026-11-17', dau: 320, wau: 1600, mau: 5432, mauMembers: 650, mauGuests: 4782 },
+      ],
+    })
+    renderConsole()
+    expect(await screen.findByText('MAU (최근 30일)', {}, { timeout: 4000 })).toBeTruthy()
+    expect(screen.getAllByText('5,432').length).toBeGreaterThan(0)
+    expect(screen.getByText('회원 650 · 비회원 4,782')).toBeTruthy()
+    expect(screen.getByText('9,876')).toBeTruthy()
+    expect(screen.getByText('활성 사용자 (10/21부터)')).toBeTruthy()
   })
 
   describe('region table', () => {
