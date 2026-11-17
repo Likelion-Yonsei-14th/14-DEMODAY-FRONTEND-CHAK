@@ -101,6 +101,28 @@ export const withdrawAdminUser = (userId: number, confirmForfeitBalance: boolean
 export const fetchDailyStats = (from: string, to: string) =>
   apiFetch<AdminDailyStats>('/api/admin/stats/daily', { query: { from, to } })
 
+/** 그날까지 1·7·30일 동안 들어온 서로 다른 방문자 수. */
+export type AdminActiveDay = {
+  date: string
+  dau: number
+  wau: number
+  mau: number
+  mauMembers: number
+  mauGuests: number
+}
+
+export type AdminActiveUsers = {
+  from: string
+  to: string
+  rangeVisitors: number
+  rangeMembers: number
+  rangeGuests: number
+  days: AdminActiveDay[]
+}
+
+/** 기간을 비우면 집계를 시작한 날부터 오늘까지. */
+export const fetchActiveUsers = () => apiFetch<AdminActiveUsers>('/api/admin/stats/active')
+
 export const fetchRegionStats = (from: string, to: string) =>
   apiFetch<AdminRegionStats>('/api/admin/stats/regions', { query: { from, to } })
 
