@@ -83,7 +83,7 @@ export function buildSlides(input: PitchInput): PitchSlide[] {
       phones: [
         { tag: '수능 전 · 매일', title: '응원 책상', body: '친구와 가족의 응원이 책상에 쌓이고, 정해진 시간에 하나씩 열려요.', screen: { kind: 'desk' } },
         { tag: '1단계 · B안', title: '응원 화면 광고', body: `응원을 열 때 ${store} 광고가 먼저 보여요. 영상 · 사진, 4:5 비율.`, screen: { kind: 'ad', store, place } },
-        { tag: '2단계 · A안', title: '수험생 혜택함', body: `수능 다음 날, ${store} 쿠폰을 받아 매장으로 찾아와요.`, screen: { kind: 'coupon', store, category: category.label } },
+        { tag: '2단계 · A안', title: '수험생 혜택함', body: `수능 당일부터 ${store} 쿠폰을 받아 매장으로 찾아와요.`, screen: { kind: 'coupon', store, category: category.label } },
       ],
       note: 'C안 · 1+2단계 패키지: 응원 화면 노출부터 매장 방문까지 한 번의 흐름으로 이어져요.',
     },
@@ -107,10 +107,10 @@ export function buildSlides(input: PitchInput): PitchSlide[] {
       kicker: `${store} 예상 수익`,
       title: '적은 광고비로, 그보다 큰 수익을 기대할 수 있어요',
       steps: [
-        { label: '수능 당일 예상 접속자', value: people(input.visitorsExpected) },
+        { label: '혜택함 기간 이용자', value: people(input.periodUsers), sub: '수능 당일 ~ 12/31' },
         { label: `${near} 쿠폰 도달`, value: people(result.reach), sub: `혜택함 ${percent(input.openRate)} · 근처 ${percent(input.localRate)}` },
         { label: '예상 방문', value: people(result.visits), sub: `전환율 ${percent(input.conversion)}` },
-        { label: '예상 매출', value: won(result.sales), sub: `객단가 ${won(input.spend)}` },
+        { label: '예상 매출', value: won(result.sales), sub: input.party > 1 ? `객단가 ${won(input.spend)} · 동반 ${Math.round(input.party * 10) / 10}명` : `객단가 ${won(input.spend)}` },
       ],
       compare: {
         profit: won(result.profit),

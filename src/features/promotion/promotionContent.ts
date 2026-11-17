@@ -76,7 +76,7 @@ export const interestLabel = (value: string | null) => {
 export const HERO_COUPONS = [
   { tag: '수험생 쿠폰', title: '프로필 촬영 20% 할인' },
   { tag: '수험생 쿠폰', title: '렌즈 · 안경 25% 할인' },
-  { tag: '수험생 쿠폰', title: '수험생 염색 30% 할인', shop: '제휴 헤어살롱', note: '수능 다음 날 ~ 11월 30일 · 수험표 제시' },
+  { tag: '수험생 쿠폰', title: '수험생 염색 30% 할인', shop: '제휴 헤어살롱', note: '수능 당일 ~ 11월 30일 · 수험표 제시' },
 ] as const
 
 export const WHY_NOW = [
@@ -89,14 +89,14 @@ export const FIT_CATEGORIES = ['미용실 · 염색', '렌즈 · 안경', '운�
 
 export const FLOW_STEPS = [
   { when: '수능 전 · 매일', title: '응원 확인', body: '친구와 가족이 보낸 응원을 정해진 시간에 하나씩 확인해요.' },
-  { when: '수능 다음 날', title: '혜택함 오픈', body: '그동안 쌓인 응원을 돌아보고 가까운 매장의 혜택함을 열어요.' },
+  { when: '수능 당일', title: '혜택함 오픈', body: '그동안 쌓인 응원을 돌아보고 가까운 매장의 혜택함을 열어요.' },
   { when: '수능 후', title: '매장 방문', body: '쿠폰을 보여 주고 수험생 할인을 받아요.', highlight: true },
 ] as const
 
 export const DAILY_REASONS = [
   { tag: '매일 방문', title: '정해진 시간에 열리는 응원', body: '응원을 확인하려고 매일 들어와요.' },
   { tag: '머무름', title: '내 취향대로 꾸미는 책상과 편지', body: '꾸미기와 공유로 참여가 이어져요.' },
-  { tag: '다시 찾음', title: '수험생 전용 혜택함', body: '수능 다음 날 열리는 혜택이 방문으로 이어져요.' },
+  { tag: '다시 찾음', title: '수험생 전용 혜택함', body: '수능 당일 열리는 혜택이 방문으로 이어져요.' },
 ] as const
 
 export const MINI_CONTENTS = ['나의 수험생 유형은?', '수능 끝 D+1 코스 짜기', '선생님 몰래 폰 하기', '오늘의 찍신은 나야!', '수험생 커리어 시뮬레이터'] as const
@@ -114,8 +114,8 @@ export const AD_STAGES = [
     stage: '2단계',
     plan: 'A안',
     name: '수험생 혜택함 입점',
-    body: '수능 다음 날, 수험생이 쿠폰을 받아 매장으로 직접 찾아와요.',
-    points: ['혜택 목록 → 상세 → 쿠폰 발급', '수능 다음 날 ~ 11월 30일 노출'],
+    body: '수능이 끝나는 날부터 수험생이 쿠폰을 받아 매장으로 직접 찾아와요.',
+    points: ['혜택 목록 → 상세 → 쿠폰 발급', '수능 당일 ~ 11월 30일 노출'],
   },
 ] as const
 
