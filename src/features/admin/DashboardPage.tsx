@@ -90,10 +90,6 @@ function ActiveSection({ active }: { active: AdminActiveUsers }) {
           sub: `WAU ${formatNumber(day.wau)} · DAU ${formatNumber(day.dau)}`,
         }))}
       />
-      <p className="admin__muted">
-        서로 다른 사람 수예요. 날짜별 접속자와 같은 기준(부하 테스트·테스트 계정 포함)이고, 비회원은 브라우저 기준이라 같은
-        사람이 폰과 PC로 들어오면 두 번 세어져요.
-      </p>
     </section>
   )
 }
