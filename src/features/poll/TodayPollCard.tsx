@@ -29,7 +29,7 @@ export function TodayPollCard() {
     <section className="today-poll" aria-labelledby="today-poll-title">
       <div className="today-poll__head">
         <h2 id="today-poll-title">
-          <Vote size={18} aria-hidden /> 수능 여론
+          <Vote size={18} aria-hidden /> 오늘의 수험생 투표
         </h2>
         <button type="button" onClick={() => navigate(POLL_PATH)}>
           {remaining.length > 0 ? `질문 ${remaining.length}개 더` : '전체 보기'} <ChevronRight size={15} aria-hidden />

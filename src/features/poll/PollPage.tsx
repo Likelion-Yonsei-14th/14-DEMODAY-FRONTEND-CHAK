@@ -8,7 +8,7 @@ import { usePolls } from './usePolls'
 import { DISCOUNTS_PATH } from '@/features/discounts/discountRoutes'
 import './poll.css'
 
-/** 수능 여론: 하루 몇 개씩 열리는 질문을 고르고, 다른 수험생들의 답을 전국·지역별로 본다. */
+/** 수험생 투표: 하루 몇 개씩 열리는 질문을 고르고, 다른 수험생들의 답을 전국·지역별로 본다. */
 export function PollPage() {
   const navigate = useNavigate()
   const { polls, state, replace, reload } = usePolls()
@@ -20,7 +20,7 @@ export function PollPage() {
       contentClassName="poll-page-shell"
       appBar={
         <AppBar
-          title="수능 여론"
+          title="수험생 투표"
           leading={
             <IconButton
               label="뒤로 가기"
@@ -34,7 +34,7 @@ export function PollPage() {
       <main className="poll-page">
         <header className="poll-page__intro">
           <h1>다른 수험생들은 어떻게 생각할까?</h1>
-          <p>하나 고르면 전국과 지역별 답이 보여요. 로그인 없이 질문마다 한 번씩 고를 수 있어요.</p>
+          <p>투표하면 전국·지역별 결과가 바로 보여요. 로그인 없이 질문마다 한 번씩 투표할 수 있어요.</p>
         </header>
 
         {state === 'loading' && <p className="poll-page__status">질문을 불러오는 중이에요</p>}
@@ -62,7 +62,7 @@ export function PollPage() {
           </span>
           <ChevronRight size={18} aria-hidden />
         </button>
-        <p className="poll-page__fine">재미로 보는 참여형 투표예요. 한 사람이 여러 기기로 고를 수 있어 실제 여론과 다를 수 있어요.</p>
+        <p className="poll-page__fine">재미로 하는 투표예요. 여러 기기로 투표할 수 있어서 실제 수험생 전체의 생각과는 다를 수 있어요.</p>
       </main>
     </AppShell>
   )

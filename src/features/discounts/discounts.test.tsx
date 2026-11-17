@@ -2,7 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { DISCOUNTS, DISCOUNT_CATEGORIES, type Discount } from './discountData'
-import { periodLabel, seoulToday, sourceHost, timingOf, visibleDiscounts } from './discounts'
+import { periodLabel, seoulToday, sourceHost, timingOf, urgencyLabel, visibleDiscounts } from './discounts'
 import { DiscountsPage } from './DiscountsPage'
 
 const make = (patch: Partial<Discount>): Discount => ({
@@ -65,18 +65,58 @@ describe('discount list', () => {
   })
 
   it('filters the page by kind and links every offer to its source', () => {
-    render(
+    const { container } = render(
       <MemoryRouter>
         <DiscountsPage />
       </MemoryRouter>,
     )
     const filters = screen.getByRole('group', { name: '종류' })
-    fireEvent.click(within(filters).getByRole('button', { name: '뷰티·미용' }))
-    const items = screen.getAllByRole('listitem')
+    fireEvent.click(within(filters).getByRole('button', { name: /^뷰티·미용 \d+$/ }))
+    const items = [...container.querySelectorAll<HTMLElement>('li.discount')]
     expect(items.length).toBeGreaterThan(0)
     for (const item of items) {
       expect(within(item).getByText('뷰티·미용')).toBeInTheDocument()
-      expect(within(item).getByRole('link')).toHaveAttribute('target', '_blank')
+      expect(within(item).getAllByRole('link').at(-1)).toHaveAttribute('target', '_blank')
+    }
+  })
+
+  it('finds offers by brand, benefit or place', () => {
+    const list = visibleDiscounts(
+      [make({ brand: '다비치안경', benefit: '안경 50%' }), make({ brand: '쿠우쿠우', place: '부산 해운대' })],
+      '2026-11-16',
+      { category: null, area: null, query: '해운대' },
+    )
+    expect(list.map((d) => d.brand)).toEqual(['쿠우쿠우'])
+  })
+
+  it('flags offers that end within a week or have not started', () => {
+    expect(urgencyLabel(make({ end: '2026-11-20' }), '2026-11-17')).toBe('3일 남음')
+    expect(urgencyLabel(make({ end: '2026-11-17' }), '2026-11-17')).toBe('오늘 마감')
+    expect(urgencyLabel(make({ end: '2026-12-31' }), '2026-11-17')).toBeNull()
+    expect(urgencyLabel(make({ start: '2026-11-19', end: '2026-12-31' }), '2026-11-17')).toBe('11/19 시작')
+  })
+})
+
+describe('discount card', () => {
+  it('shows details on demand and hides an official image that fails to load', async () => {
+    const { DISCOUNTS: data } = await import('./discountData')
+    const withDetails = data.find((d) => d.bring && d.bring.length > 0)
+    if (!withDetails) return
+    const { container } = render(
+      <MemoryRouter>
+        <DiscountsPage />
+      </MemoryRouter>,
+    )
+    const card = [...container.querySelectorAll<HTMLElement>('li.discount')].find((li) =>
+      within(li).queryByRole('heading', { name: withDetails.brand }),
+    )
+    if (!card) return
+    fireEvent.click(within(card).getByRole('button', { name: /자세히 보기/ }))
+    expect(within(card).getByText('챙길 것')).toBeInTheDocument()
+    const image = card.querySelector('img')
+    if (image) {
+      fireEvent.error(image)
+      expect(card.querySelector('img')).toBeNull()
     }
   })
 })

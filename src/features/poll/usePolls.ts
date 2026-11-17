@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { isApiEnabled } from '@/api/config'
 import { fetchPolls, type Poll } from '@/api/polls'
 
-/** 수능 여론 목록. 한 질문의 결과가 바뀌면(투표) 그 질문만 바꿔 끼운다. */
+/** 수험생 투표 목록. 한 질문의 결과가 바뀌면(투표) 그 질문만 바꿔 끼운다. */
 export function usePolls() {
   const [polls, setPolls] = useState<Poll[]>([])
   const [state, setState] = useState<'loading' | 'ready' | 'failed'>(isApiEnabled ? 'loading' : 'failed')
