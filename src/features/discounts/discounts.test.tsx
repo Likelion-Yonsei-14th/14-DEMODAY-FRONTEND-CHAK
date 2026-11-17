@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+vi.mock('@/features/ads/AdBanner', () => ({ AdBanner: () => <div data-testid="ad-slot" /> }))
+
 import { DISCOUNTS, DISCOUNT_CATEGORIES, type Discount } from './discountData'
 import { periodLabel, seoulToday, sourceHost, timingOf, urgencyLabel, visibleDiscounts } from './discounts'
 import { DiscountsPage } from './DiscountsPage'
@@ -118,5 +120,20 @@ describe('discount card', () => {
       fireEvent.error(image)
       expect(card.querySelector('img')).toBeNull()
     }
+  })
+})
+
+describe('discount page ad slot', () => {
+  it('puts the banner after the first three offers', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <DiscountsPage />
+      </MemoryRouter>,
+    )
+    const slot = screen.getByTestId('ad-slot')
+    const cards = [...container.querySelectorAll('li.discount')]
+    expect(cards.length).toBeGreaterThan(3)
+    expect(cards[2]!.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(cards[3]!.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy()
   })
 })

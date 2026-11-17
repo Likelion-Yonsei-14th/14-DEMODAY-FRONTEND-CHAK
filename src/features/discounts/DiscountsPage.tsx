@@ -2,10 +2,14 @@ import { useMemo, useState } from 'react'
 import { ArrowLeft, ChevronDown, ExternalLink, Search, Store } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AppBar, IconButton } from '@/design-system'
+import { AdBanner } from '@/features/ads/AdBanner'
 import { AppShell } from '@/layout/AppShell'
 import { DISCOUNTS, DISCOUNTS_UPDATED, DISCOUNT_CATEGORIES, type Discount } from './discountData'
 import { periodLabel, seoulToday, sourceHost, timingOf, urgencyLabel, visibleDiscounts } from './discounts'
 import './discounts.css'
+
+/** 광고 배너를 넣을 위치: 이 개수의 혜택 다음. */
+const AD_AFTER = 3
 
 const AREAS = ['서울', '경기', '인천', '강원', '대전', '충남', '부산', '경남', '전남'] as const
 
@@ -179,11 +183,20 @@ export function DiscountsPage() {
         </div>
 
         <p className="discounts__count">{list.length}개 · 마감이 가까운 순</p>
+        {/* 광고 배너는 앞쪽 혜택 몇 개를 보여 준 뒤 목록 사이에 넣는다. 등록된 광고가 없으면 아무것도 그리지 않는다. */}
         <ul className="discounts__list">
-          {list.map((d) => (
+          {list.slice(0, AD_AFTER).map((d) => (
             <DiscountCard key={`${d.brand}-${d.benefit}`} d={d} today={today} />
           ))}
         </ul>
+        {list.length > 0 && <AdBanner className="discounts__ad" />}
+        {list.length > AD_AFTER && (
+          <ul className="discounts__list">
+            {list.slice(AD_AFTER).map((d) => (
+              <DiscountCard key={`${d.brand}-${d.benefit}`} d={d} today={today} />
+            ))}
+          </ul>
+        )}
         {list.length === 0 && <p className="discounts__empty">이 조건에 맞는 혜택이 아직 없어요.</p>}
 
         <button type="button" className="discounts__partner" onClick={() => navigate('/promotion')}>

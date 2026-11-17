@@ -5,11 +5,11 @@ import { AD_PREVIEW_PARAM, createAdPreviewHost } from '@/features/ads/adPreview'
 
 export type PreviewAd = { title: string; creativeUrl: string; destinationUrl: string }
 
-type ScreenId = 'welcome' | 'home' | 'letter'
+type ScreenId = 'home' | 'discounts' | 'letter'
 
 const SCREENS: { id: ScreenId; label: string }[] = [
-  { id: 'welcome', label: '첫 화면' },
   { id: 'home', label: '홈' },
+  { id: 'discounts', label: '수험표 할인 모음' },
   { id: 'letter', label: '편지 화면' },
 ]
 
@@ -78,7 +78,7 @@ export function AdPreview({ ad, switchOn }: { ad: PreviewAd; switchOn: boolean }
   }, [ad.creativeUrl])
 
   const path =
-    screen === 'welcome' ? '/' : screen === 'home' ? '/home' : letterId ? `/my/message/${letterId}` : null
+    screen === 'home' ? '/home' : screen === 'discounts' ? '/discounts' : letterId ? `/my/message/${letterId}` : null
 
   const ratio = size ? size.w / size.h : null
   const ratioOff = ratio !== null && Math.abs(ratio - IDEAL_RATIO) > 0.08
