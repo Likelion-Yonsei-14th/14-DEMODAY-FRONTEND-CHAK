@@ -15,13 +15,21 @@ import { PitchDeckViewPage } from './PitchDeckViewPage'
 describe('pitch estimate', () => {
   it('narrows the expected visitors down to visits, profit and an ad price below the profit', () => {
     const result = estimate(defaultInput('hair'))
-    // 3,700 × 60% × 5% = 111명 → 4% = 4명 → 80,000원 × 50% = 160,000원 → 30%
-    expect(result.reach).toBe(111)
-    expect(result.visits).toBe(4)
-    expect(result.sales).toBe(320_000)
-    expect(result.profit).toBe(160_000)
-    expect(result.adPrice).toBe(48_000)
-    expect(result.net).toBe(112_000)
+    // 혜택함 기간 10,000명 × 60% × 5% = 300명 → 4% = 12명 → 80,000원 × 동반 1.3명 = 1,248,000원 × 50% → 10%
+    expect(result.reach).toBe(300)
+    expect(result.visits).toBe(12)
+    expect(result.sales).toBe(1_248_000)
+    expect(result.profit).toBe(624_000)
+    expect(result.adPrice).toBe(62_000)
+    expect(result.net).toBe(562_000)
+  })
+
+  it('counts the whole coupon period and the friends who come along, not one day of visitors', () => {
+    const oneDay = estimate({ ...defaultInput('play'), periodUsers: 3700, party: 1 })
+    const period = estimate(defaultInput('play'))
+    expect(period.reach).toBeGreaterThan(oneDay.reach)
+    // 방탈출 · 노래방은 셋이 함께 온다고 본다
+    expect(period.sales).toBe(period.visits * 12_000 * 3)
   })
 
   it('always proposes an ad price below the expected profit, for every category and ratio', () => {
@@ -36,10 +44,10 @@ describe('pitch estimate', () => {
   })
 
   it('never proposes more than the cap per store, however big the expected profit', () => {
-    const big = estimate({ ...defaultInput('driving'), visitorsExpected: 100_000, priceRatio: 0.9 })
+    const big = estimate({ ...defaultInput('driving'), periodUsers: 100_000, priceRatio: 0.9 })
     expect(big.profit).toBeGreaterThan(1_000_000)
     expect(big.adPrice).toBe(150_000)
-    expect(estimate({ ...defaultInput('driving'), visitorsExpected: 100_000, priceCap: 90_000 }).adPrice).toBe(90_000)
+    expect(estimate({ ...defaultInput('driving'), periodUsers: 100_000, priceRatio: 0.9, priceCap: 90_000 }).adPrice).toBe(90_000)
   })
 
   it('covers the kinds of stores students go to after the exam, each with a usable estimate', () => {
@@ -58,19 +66,19 @@ describe('pitch estimate', () => {
 
   it('adds the profit from customers who come back', () => {
     const result = estimate(defaultInput('hair'))
-    // 4명 × 40% = 2명 × 3회 × 80,000원 × 50%
-    expect(result.revisitors).toBe(2)
-    expect(result.loyaltyProfit).toBe(240_000)
+    // 12명 × 40% = 5명 × 3회 × 80,000원 × 동반 1.3명 × 50%
+    expect(result.revisitors).toBe(5)
+    expect(result.loyaltyProfit).toBe(780_000)
   })
 
   it('switches to the defaults of the chosen category and keeps the rest', () => {
     const base = { ...defaultInput('hair'), storeName: '착안경', visitorsExpected: 5000 }
     const next = withCategory(base, 'optical')
-    expect(next).toMatchObject({ storeName: '착안경', visitorsExpected: 5000, spend: 120_000, margin: 0.4, conversion: 0.03 })
+    expect(next).toMatchObject({ storeName: '착안경', visitorsExpected: 5000, spend: 120_000, party: 1.1, margin: 0.4, conversion: 0.03 })
   })
 
   it('survives empty or broken numbers without proposing a price', () => {
-    const result = estimate({ ...defaultInput(), visitorsExpected: Number.NaN, spend: -5 })
+    const result = estimate({ ...defaultInput(), periodUsers: Number.NaN, spend: -5 })
     expect(result).toMatchObject({ reach: 0, visits: 0, profit: 0, adPrice: 0, loyaltyProfit: 0 })
   })
 })
@@ -111,15 +119,16 @@ describe('pitch slides', () => {
   it('shows the expected profit next to a smaller ad price', () => {
     const revenue = buildSlides(input)[4]!
     expect(revenue.kicker).toBe('착헤어 예상 수익')
-    expect(revenue.steps!.map((step) => step.value)).toEqual(['3,700명', '111명', '4명', '320,000원'])
-    expect(revenue.compare).toMatchObject({ profit: '160,000원', price: '48,000원', ratio: 0.3 })
-    expect(revenue.compare!.summary).toContain('광고비를 빼고도 112,000원이 남아요')
+    expect(revenue.steps!.map((step) => step.value)).toEqual(['10,000명', '300명', '12명', '1,248,000원'])
+    expect(revenue.compare).toMatchObject({ profit: '624,000원', price: '62,000원' })
+    expect(revenue.compare!.summary).toContain('광고비를 빼고도 562,000원이 남아요')
+    expect(revenue.steps!.at(-1)!.sub).toContain('동반 1.3명')
   })
 
   it('pitches first-store loyalty with the extra yearly profit', () => {
     const loyalty = buildSlides(input)[5]!
     expect(loyalty.title).toBe('수험생의 첫 단골 매장이 되세요')
-    expect(loyalty.stats!.at(-1)!.value).toBe('240,000원')
+    expect(loyalty.stats!.at(-1)!.value).toBe('780,000원')
     expect(loyalty.bullets!.join(' ')).toContain('사회 초년생')
   })
 
@@ -153,16 +162,16 @@ describe('pitch deck page', () => {
 
     expect(screen.getByRole('heading', { name: '수능이 끝나면, 착안경으로.' })).toBeInTheDocument()
     expect(screen.getAllByRole('article')).toHaveLength(6)
-    // 111명 × 3% = 3명 × 120,000원 × 40% = 144,000원 → 광고비 43,000원
+    // 300명 × 3% = 9명 × 120,000원 × 동반 1.1명 × 40% = 475,200원 → 광고비 47,000원
     const result = within(screen.getByLabelText('계산 결과'))
-    expect(result.getAllByText('144,000원').length).toBeGreaterThan(0) // 예상 수익(1년 추가 기대 수익도 같은 값)
-    expect(result.getByText('43,000원')).toBeInTheDocument()
+    expect(result.getByText('475,200원')).toBeInTheDocument()
+    expect(result.getByText('47,000원')).toBeInTheDocument()
   })
 
   it('recalculates when an assumption is changed', () => {
     render(<PitchDeckPage />)
-    fireEvent.change(screen.getByRole('spinbutton', { name: '수능 당일 예상 접속자 (명)' }), { target: { value: '7400' } })
-    expect(within(screen.getByLabelText('계산 결과')).getByText('222명')).toBeInTheDocument()
+    fireEvent.change(screen.getByRole('spinbutton', { name: '혜택함 기간 이용자(11/19~12/31) (명)' }), { target: { value: '20000' } })
+    expect(within(screen.getByLabelText('계산 결과')).getByText('600명')).toBeInTheDocument()
   })
 
   it('downloads the deck that is shown', async () => {

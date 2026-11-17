@@ -1,6 +1,8 @@
 /**
  * 매장별 홍보 자료의 수익 계산. 접속자와 비율은 모두 운영자가 화면에서 고칠 수 있는 가정값이다.
- * 예상 접속자 → 혜택함을 여는 수험생 → 매장 근처 수험생 → 방문 → 매출 → 수익 순으로 좁혀 간다.
+ * 혜택함 기간 이용자 → 혜택함을 여는 수험생 → 매장 근처 수험생 → 방문 → 매출 → 수익 순으로 좁혀 간다.
+ * 쿠폰은 수능 당일부터 기간 내내 보이므로 하루 접속자가 아니라 그 기간에 들어오는 이용자를 기준으로 하고,
+ * 수험생은 친구 · 가족과 함께 오는 경우가 많아 업종별 동반 인원만큼 매출을 늘려 잡는다.
  */
 
 export type PitchCategory = {
@@ -12,27 +14,29 @@ export type PitchCategory = {
   margin: number
   /** 쿠폰을 본 수험생이 방문하는 비율 */
   conversion: number
+  /** 한 번 방문할 때 함께 오는 인원(수험생 포함) */
+  party: number
 }
 
 /** 업종별 기본값. 참고용 가정이고 매장과 상의해 고쳐 쓴다. */
 export const PITCH_CATEGORIES: readonly PitchCategory[] = [
-  { id: 'hair', label: '미용실 · 염색', spend: 80_000, margin: 0.5, conversion: 0.04 },
-  { id: 'optical', label: '렌즈 · 안경', spend: 120_000, margin: 0.4, conversion: 0.03 },
-  { id: 'driving', label: '운전면허학원', spend: 700_000, margin: 0.2, conversion: 0.01 },
-  { id: 'photo', label: '사진관', spend: 50_000, margin: 0.6, conversion: 0.04 },
-  { id: 'fashion', label: '옷 · 패션', spend: 70_000, margin: 0.4, conversion: 0.03 },
-  { id: 'park', label: '놀이공원 · 체험', spend: 45_000, margin: 0.3, conversion: 0.03 },
-  { id: 'food', label: '음식점 · 카페', spend: 15_000, margin: 0.3, conversion: 0.08 },
-  { id: 'nail', label: '네일 · 속눈썹 · 피부관리', spend: 50_000, margin: 0.55, conversion: 0.04 },
-  { id: 'clinic', label: '성형외과 · 피부과', spend: 300_000, margin: 0.4, conversion: 0.015 },
-  { id: 'fitness', label: '헬스 · PT · 필라테스', spend: 250_000, margin: 0.5, conversion: 0.02 },
-  { id: 'phone', label: '휴대폰 · 전자기기', spend: 900_000, margin: 0.1, conversion: 0.01 },
-  { id: 'play', label: '노래방 · PC방 · 방탈출', spend: 12_000, margin: 0.5, conversion: 0.08 },
-  { id: 'cinema', label: '영화관 · 공연', spend: 14_000, margin: 0.3, conversion: 0.06 },
-  { id: 'travel', label: '여행 · 숙박', spend: 150_000, margin: 0.3, conversion: 0.015 },
-  { id: 'academy', label: '어학원 · 자격증 학원', spend: 400_000, margin: 0.4, conversion: 0.01 },
-  { id: 'cosmetics', label: '화장품 · 향수', spend: 40_000, margin: 0.4, conversion: 0.04 },
-  { id: 'etc', label: '기타', spend: 30_000, margin: 0.35, conversion: 0.04 },
+  { id: 'hair', label: '미용실 · 염색', spend: 80_000, margin: 0.5, conversion: 0.04 , party: 1.3 },
+  { id: 'optical', label: '렌즈 · 안경', spend: 120_000, margin: 0.4, conversion: 0.03 , party: 1.1 },
+  { id: 'driving', label: '운전면허학원', spend: 700_000, margin: 0.2, conversion: 0.01 , party: 1 },
+  { id: 'photo', label: '사진관', spend: 50_000, margin: 0.6, conversion: 0.04 , party: 1.2 },
+  { id: 'fashion', label: '옷 · 패션', spend: 70_000, margin: 0.4, conversion: 0.03 , party: 1.3 },
+  { id: 'park', label: '놀이공원 · 체험', spend: 45_000, margin: 0.3, conversion: 0.03 , party: 2.5 },
+  { id: 'food', label: '음식점 · 카페', spend: 15_000, margin: 0.3, conversion: 0.08 , party: 2.5 },
+  { id: 'nail', label: '네일 · 속눈썹 · 피부관리', spend: 50_000, margin: 0.55, conversion: 0.04 , party: 1.2 },
+  { id: 'clinic', label: '성형외과 · 피부과', spend: 300_000, margin: 0.4, conversion: 0.015 , party: 1.2 },
+  { id: 'fitness', label: '헬스 · PT · 필라테스', spend: 250_000, margin: 0.5, conversion: 0.02 , party: 1 },
+  { id: 'phone', label: '휴대폰 · 전자기기', spend: 900_000, margin: 0.1, conversion: 0.01 , party: 1 },
+  { id: 'play', label: '노래방 · PC방 · 방탈출', spend: 12_000, margin: 0.5, conversion: 0.08 , party: 3 },
+  { id: 'cinema', label: '영화관 · 공연', spend: 14_000, margin: 0.3, conversion: 0.06 , party: 2 },
+  { id: 'travel', label: '여행 · 숙박', spend: 150_000, margin: 0.3, conversion: 0.015 , party: 2 },
+  { id: 'academy', label: '어학원 · 자격증 학원', spend: 400_000, margin: 0.4, conversion: 0.01 , party: 1 },
+  { id: 'cosmetics', label: '화장품 · 향수', spend: 40_000, margin: 0.4, conversion: 0.04 , party: 1.2 },
+  { id: 'etc', label: '기타', spend: 30_000, margin: 0.35, conversion: 0.04 , party: 1.5 },
 ]
 
 export type PitchInput = {
@@ -43,12 +47,16 @@ export type PitchInput = {
   visitorsNow: number
   /** 수능 당일 예상 일 접속자 */
   visitorsExpected: number
+  /** 수능 당일부터 혜택함 기간(11/19~12/31) 동안 들어오는 서로 다른 이용자 */
+  periodUsers: number
   /** 혜택함을 여는 비율 */
   openRate: number
   /** 그중 매장에 올 수 있는 거리의 수험생 비율 */
   localRate: number
   conversion: number
   spend: number
+  /** 한 번 방문할 때 함께 오는 인원(수험생 포함) */
+  party: number
   margin: number
   /** 첫 방문 고객 중 다시 오는 비율 */
   revisitRate: number
@@ -70,22 +78,24 @@ export function defaultInput(categoryId = 'hair'): PitchInput {
     categoryId: category.id,
     visitorsNow: 2000,
     visitorsExpected: 3700,
+    periodUsers: 10_000,
     openRate: 0.6,
     localRate: 0.05,
     conversion: category.conversion,
     spend: category.spend,
+    party: category.party,
     margin: category.margin,
     revisitRate: 0.4,
     revisitCount: 3,
-    priceRatio: 0.3,
+    priceRatio: 0.1,
     priceCap: 150_000,
   }
 }
 
-/** 업종을 바꾸면 그 업종의 객단가·수익률·전환율로 바꾼다. 나머지 입력은 그대로 둔다. */
+/** 업종을 바꾸면 그 업종의 객단가·동반 인원·수익률·전환율로 바꾼다. 나머지 입력은 그대로 둔다. */
 export function withCategory(input: PitchInput, categoryId: string): PitchInput {
   const category = categoryOf(categoryId)
-  return { ...input, categoryId: category.id, spend: category.spend, margin: category.margin, conversion: category.conversion }
+  return { ...input, categoryId: category.id, spend: category.spend, party: category.party, margin: category.margin, conversion: category.conversion }
 }
 
 export type PitchResult = {
@@ -107,17 +117,18 @@ export type PitchResult = {
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(Number.isFinite(value) ? value : min, min), max)
 
 export function estimate(input: PitchInput): PitchResult {
-  const reach = Math.round(clamp(input.visitorsExpected, 0, 10_000_000) * clamp(input.openRate, 0, 1) * clamp(input.localRate, 0, 1))
+  const reach = Math.round(clamp(input.periodUsers, 0, 10_000_000) * clamp(input.openRate, 0, 1) * clamp(input.localRate, 0, 1))
   const visits = Math.round(reach * clamp(input.conversion, 0, 1))
   const spend = clamp(input.spend, 0, 100_000_000)
   const margin = clamp(input.margin, 0, 1)
-  const sales = visits * spend
+  const party = clamp(input.party, 1, 20)
+  const sales = Math.round(visits * spend * party)
   const profit = Math.round(sales * margin)
   // 상한을 넘지 않게 하고 1,000원 단위로 내린다. 예상 수익과 같아지지 않게 한다
   const capped = Math.min(profit * clamp(input.priceRatio, 0, 0.95), clamp(input.priceCap, 0, 100_000_000))
   const adPrice = Math.max(Math.min(Math.floor(capped / 1000) * 1000, profit - 1), 0)
   const revisitors = Math.round(visits * clamp(input.revisitRate, 0, 1))
-  const loyaltyProfit = Math.round(revisitors * clamp(input.revisitCount, 0, 365) * spend * margin)
+  const loyaltyProfit = Math.round(revisitors * clamp(input.revisitCount, 0, 365) * spend * party * margin)
   return { reach, visits, sales, profit, adPrice, net: profit - adPrice, loyaltyProfit, revisitors }
 }
 
