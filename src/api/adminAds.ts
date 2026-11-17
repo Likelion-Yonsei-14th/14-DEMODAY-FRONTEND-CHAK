@@ -12,6 +12,28 @@ export const AD_PLACEMENT_LABEL: Record<string, string> = {
 
 export type AdInput = Omit<ApiAdvertisement, 'id'>
 
+/** 광고 지역 맞춤에 고를 수 있는 시·도(서버 AdRegions와 같은 이름). */
+export const AD_REGIONS = [
+  '서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종',
+  '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주',
+] as const
+
+/** 지금까지 노출(화면에 보인 횟수)·도달(본 사람 수)·클릭. */
+export type AdSummary = { advertisementId: number; impressions: number; reach: number; clicks: number }
+
+export type AdReport = {
+  advertisementId: number
+  from: string
+  to: string
+  totals: { impressions: number; reach: number; clicks: number }
+  days: { date: string; impressions: number; reach: number; clicks: number }[]
+  regions: { region: string; impressions: number; reach: number; clicks: number }[]
+}
+
+export const fetchAdSummaries = () => apiFetch<AdSummary[]>('/api/admin/ads/summary')
+
+export const fetchAdReport = (id: number) => apiFetch<AdReport>(`/api/admin/ads/${id}/report`)
+
 export type AdSwitchState = { enabled: boolean; updatedAt: string | null }
 
 /** 서버 AdvertisementMetricsResponse: 이벤트 종류별 개수는 `events`에 담긴다. */
