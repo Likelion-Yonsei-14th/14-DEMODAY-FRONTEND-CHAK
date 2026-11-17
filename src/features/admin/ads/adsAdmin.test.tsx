@@ -7,7 +7,8 @@ const api = vi.hoisted(() => ({
   setAdSwitch: vi.fn(),
   createAdminAd: vi.fn(),
   updateAdminAd: vi.fn(),
-  fetchAdMetrics: vi.fn(),
+  fetchAdSummaries: vi.fn(),
+  fetchAdReport: vi.fn(),
   uploadAdCreative: vi.fn(),
 }))
 
@@ -36,7 +37,7 @@ describe('ads admin', () => {
     desks.fetchOwnerMessages.mockReset().mockResolvedValue([])
     api.fetchAdminAds.mockResolvedValue([banner])
     api.fetchAdSwitch.mockResolvedValue({ enabled: false, updatedAt: null })
-    api.fetchAdMetrics.mockResolvedValue({ advertisementId: 3, from: '', to: '', events: { IMPRESSION: 200, CLICK: 9 } })
+    api.fetchAdSummaries.mockResolvedValue([{ advertisementId: 3, impressions: 200, reach: 120, clicks: 9 }])
   })
 
   it('reads status from the active flag and the period', () => {
@@ -56,7 +57,8 @@ describe('ads admin', () => {
     await waitFor(() => expect(toggle).toHaveAttribute('aria-checked', 'false'))
     expect(screen.getByText(/켜면 게재 기간인 배너 1개가 바로 보여요/)).toBeInTheDocument()
     expect(screen.getByText('스위치 켜면 노출')).toBeInTheDocument()
-    expect(await screen.findByText('200 · 9')).toBeInTheDocument()
+    expect(await screen.findByText('200회 · 120명 · 9회')).toBeInTheDocument()
+    expect(screen.getByText(/배너 노출 비중 100%/)).toBeInTheDocument()
 
     fireEvent.click(toggle)
     expect(confirm).toHaveBeenCalledWith(expect.stringContaining('지금 보일 배너: 1개'))
@@ -141,14 +143,65 @@ describe('ads admin', () => {
   })
 })
 
-describe('ads admin metrics', () => {
-  it('survives a metrics response without counts', async () => {
+describe('ads admin delivery', () => {
+  beforeEach(() => {
     Object.values(api).forEach((fn) => fn.mockReset())
     desks.fetchOwnerMessages.mockReset().mockResolvedValue([])
-    api.fetchAdminAds.mockResolvedValue([banner])
-    api.fetchAdSwitch.mockResolvedValue({ enabled: false, updatedAt: null })
-    api.fetchAdMetrics.mockResolvedValue({ advertisementId: 3, from: '', to: '' })
+    api.fetchAdminAds.mockResolvedValue([{ ...banner, targetRegions: ['부산'] }])
+    api.fetchAdSwitch.mockResolvedValue({ enabled: true, updatedAt: null })
+    api.fetchAdSummaries.mockResolvedValue([])
+  })
+
+  it('shows nothing for ads without numbers yet and the target region', async () => {
     render(<AdsAdminPage />)
-    expect(await screen.findByText('0 · 0')).toBeInTheDocument()
+    expect(await screen.findByText(/부산$/)).toBeInTheDocument()
+    expect(screen.getAllByText('-').length).toBeGreaterThan(0)
+  })
+
+  it('sends the picked regions, and nationwide when none are picked', async () => {
+    api.createAdminAd.mockImplementation(async (input) => ({ id: 9, ...input }))
+    render(<AdsAdminPage />)
+    await screen.findByRole('switch')
+    const regions = screen.getByRole('group', { name: '보여 줄 지역' })
+    fireEvent.click(within(regions).getByRole('button', { name: '경기' }))
+    fireEvent.click(within(regions).getByRole('button', { name: '서울' }))
+    expect(within(regions).getByRole('button', { name: '전국' })).toHaveAttribute('aria-pressed', 'false')
+    fireEvent.change(screen.getByLabelText('광고 이름 (이미지 대체 글로도 쓰여요)'), { target: { value: '지역 광고' } })
+    fireEvent.change(screen.getByLabelText('이미지 주소'), { target: { value: 'https://cdn.example.com/a.png' } })
+    fireEvent.change(screen.getByLabelText('누르면 갈 주소'), { target: { value: 'https://example.com' } })
+    fireEvent.click(screen.getByRole('button', { name: '광고 등록' }))
+    await waitFor(() =>
+      expect(api.createAdminAd).toHaveBeenCalledWith(expect.objectContaining({ targetRegions: ['서울', '경기'] })),
+    )
+  })
+
+  it('opens a report with totals, days and regions, and copies a summary for the advertiser', async () => {
+    api.fetchAdReport.mockResolvedValue({
+      advertisementId: 3,
+      from: '',
+      to: '',
+      totals: { impressions: 1500, reach: 820, clicks: 30 },
+      days: [
+        { date: '2026-11-19', impressions: 900, reach: 600, clicks: 20 },
+        { date: '2026-11-20', impressions: 600, reach: 400, clicks: 10 },
+      ],
+      regions: [
+        { region: '부산', impressions: 1400, reach: 790, clicks: 29 },
+        { region: '알 수 없음', impressions: 100, reach: 30, clicks: 1 },
+      ],
+    })
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.assign(navigator, { clipboard: { writeText } })
+    render(<AdsAdminPage />)
+    fireEvent.click(await screen.findByRole('button', { name: '보고서' }))
+    expect(await screen.findByText('820명')).toBeInTheDocument()
+    expect(screen.getByText('11/19')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '광고주용 요약 복사' }))
+    await waitFor(() => expect(writeText).toHaveBeenCalled())
+    const text = writeText.mock.calls[0]![0] as string
+    expect(text).toContain('11/19 ~ 11/20')
+    expect(text).toContain('도달 820명')
+    expect(text).toContain('부산 790명')
+    expect(text).not.toContain('알 수 없음')
   })
 })

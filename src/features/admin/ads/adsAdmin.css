@@ -147,3 +147,23 @@
 .ad-preview__device iframe { visibility: hidden; }
 .ad-preview__device iframe.is-active { visibility: visible; }
 .ad-preview__save { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.ads-regions { display: flex; flex-wrap: wrap; gap: 6px; }
+.ads-regions button {
+  padding: 5px 10px;
+  border: 1px solid #d9d3cb;
+  border-radius: 999px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.ads-regions button[aria-pressed='true'] { border-color: #2b2622; background: #2b2622; color: #fff; }
+.ads-table__report > td { background: #faf8f5; }
+.ads-report { display: grid; gap: 12px; }
+.ads-report__totals { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; }
+.ads-report__totals div { display: grid; gap: 2px; }
+.ads-report__totals span { color: #7a716a; font-size: 12px; }
+.ads-report__totals strong { font-size: 18px; }
+.ads-report__tables { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.ads-report caption { text-align: left; font-weight: 700; padding-bottom: 6px; }

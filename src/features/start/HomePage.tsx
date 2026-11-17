@@ -188,7 +188,7 @@ export function HomePage() {
 
         <SuneungCorner />
 
-        <AdBanner slot={0} />
+        <AdBanner />
 
         <MiniGameSection />
       </main>
