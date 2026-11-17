@@ -63,6 +63,7 @@ export function AdminLayout() {
         <NavLink to="/admin/minigames">미니게임</NavLink>
         <NavLink to="/admin/reports">신고 처리</NavLink>
         <NavLink to="/admin/inquiries">상담 문의</NavLink>
+        <NavLink to="/admin/outreach">매장 연락 현황</NavLink>
         <NavLink to="/admin/benefits">혜택 시안 신청</NavLink>
         <NavLink to="/admin/ads">광고 관리</NavLink>
         <NavLink to="/admin/polls">수험생 투표</NavLink>

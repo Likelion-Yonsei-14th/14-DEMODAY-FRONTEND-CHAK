@@ -222,6 +222,12 @@ export const router = createBrowserRouter([
             }),
           },
           {
+            path: 'outreach',
+            lazy: async () => ({
+              Component: (await import('@/features/admin/OutreachPage')).OutreachPage,
+            }),
+          },
+          {
             path: 'pitch',
             lazy: async () => ({
               Component: (await import('@/features/admin/pitch/PitchDeckPage')).PitchDeckPage,
