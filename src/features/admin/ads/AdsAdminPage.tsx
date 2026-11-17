@@ -78,7 +78,7 @@ export function AdsAdminPage() {
           if (cancelled) return
           setCounts((current) => ({
             ...current,
-            [ad.id]: { impressions: m.counts.IMPRESSION ?? 0, clicks: m.counts.CLICK ?? 0 },
+            [ad.id]: { impressions: m.events?.IMPRESSION ?? 0, clicks: m.events?.CLICK ?? 0 },
           }))
         })
         .catch(() => undefined)

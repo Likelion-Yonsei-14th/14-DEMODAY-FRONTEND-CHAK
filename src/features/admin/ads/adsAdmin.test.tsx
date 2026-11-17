@@ -32,7 +32,7 @@ describe('ads admin', () => {
     Object.values(api).forEach((fn) => fn.mockReset())
     api.fetchAdminAds.mockResolvedValue([banner])
     api.fetchAdSwitch.mockResolvedValue({ enabled: false, updatedAt: null })
-    api.fetchAdMetrics.mockResolvedValue({ advertisementId: 3, from: '', to: '', counts: { IMPRESSION: 200, CLICK: 9 } })
+    api.fetchAdMetrics.mockResolvedValue({ advertisementId: 3, from: '', to: '', events: { IMPRESSION: 200, CLICK: 9 } })
   })
 
   it('reads status from the active flag and the period', () => {
@@ -111,5 +111,16 @@ describe('ads admin', () => {
     fireEvent.change(screen.getByLabelText('이미지 파일 올리기'), { target: { files: [svg] } })
     expect(await screen.findByText('PNG·JPEG·WEBP·GIF 이미지만 올릴 수 있어요.')).toBeInTheDocument()
     expect(api.uploadAdCreative).not.toHaveBeenCalled()
+  })
+})
+
+describe('ads admin metrics', () => {
+  it('survives a metrics response without counts', async () => {
+    Object.values(api).forEach((fn) => fn.mockReset())
+    api.fetchAdminAds.mockResolvedValue([banner])
+    api.fetchAdSwitch.mockResolvedValue({ enabled: false, updatedAt: null })
+    api.fetchAdMetrics.mockResolvedValue({ advertisementId: 3, from: '', to: '' })
+    render(<AdsAdminPage />)
+    expect(await screen.findByText('0 · 0')).toBeInTheDocument()
   })
 })

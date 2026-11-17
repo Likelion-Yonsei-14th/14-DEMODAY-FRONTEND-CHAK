@@ -14,7 +14,8 @@ export type AdInput = Omit<ApiAdvertisement, 'id'>
 
 export type AdSwitchState = { enabled: boolean; updatedAt: string | null }
 
-export type AdMetrics = { advertisementId: number; from: string; to: string; counts: Record<string, number> }
+/** 서버 AdvertisementMetricsResponse: 이벤트 종류별 개수는 `events`에 담긴다. */
+export type AdMetrics = { advertisementId: number; from: string; to: string; events?: Record<string, number> }
 
 export const fetchAdminAds = () => apiFetch<ApiAdvertisement[]>('/api/admin/ads')
 
