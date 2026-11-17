@@ -451,3 +451,7 @@
 .outreach-status--replied, .outreach-status--negotiating { background: #fff4d6; }
 .outreach-status--agreed, .outreach-status--paid { background: #e2f3e4; }
 .outreach-status--rejected, .outreach-status--no_response { background: #f1ece6; color: #7a716a; }
+
+.outreach-kind { display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 12px; border-radius: 10px; background: #ebe7e1; }
+.outreach-kind button { padding: 7px 16px; border: 0; border-radius: 8px; background: transparent; font: inherit; font-weight: 700; color: #7a716a; cursor: pointer; }
+.outreach-kind button[aria-selected='true'] { background: #fff; color: #2b2623; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
