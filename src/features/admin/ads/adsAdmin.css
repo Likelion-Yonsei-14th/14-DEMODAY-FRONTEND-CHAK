@@ -143,3 +143,7 @@
 .ads-btn--primary { border-color: #e85d3f; background: #e85d3f; color: #fff; }
 .admin-table .admin-actions { align-items: center; flex-wrap: wrap; }
 .ads-badge--live { background: #e0f0e4; color: #1d5a2e; }
+
+.ad-preview__device iframe { visibility: hidden; }
+.ad-preview__device iframe.is-active { visibility: visible; }
+.ad-preview__save { display: flex; gap: 8px; flex-wrap: wrap; }

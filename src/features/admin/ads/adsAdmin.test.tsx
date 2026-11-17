@@ -92,6 +92,13 @@ describe('ads admin', () => {
     )
   })
 
+  it('offers saving the current screen or all screens as images', async () => {
+    render(<AdsAdminPage />)
+    await screen.findByRole('switch')
+    expect(screen.getByRole('button', { name: '이 화면 이미지로 저장' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '세 화면 한 장으로 저장' })).toBeEnabled()
+  })
+
   it('explains when there is no letter to preview', async () => {
     render(<AdsAdminPage />)
     await screen.findByRole('switch')
