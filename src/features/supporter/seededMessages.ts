@@ -274,11 +274,11 @@ export const AD_PREVIEW_LETTER_ID = 'ad-preview-letter'
 
 export const adPreviewLetter: Message = {
   id: AD_PREVIEW_LETTER_ID,
-  backgroundAssetId: 'bg-frame-ribbon-pink',
+  backgroundAssetId: 'bg-basic-cream',
   textElements: [
     {
       id: 'ad-preview-letter-text',
-      text: '서윤아, 1년 동안 진짜 고생 많았어! 끝나면 떡볶이부터 먹으러 가자 🍀',
+      text: '서윤아, 1년 동안 진짜 고생 많았어! 끝나면 떡볶이부터 먹으러 가자',
       styleId: 'handwriting-default',
       x: 50,
       y: 50,
@@ -296,7 +296,7 @@ export const adPreviewLetter: Message = {
   // 언제 열어 봐도 이미 열린 편지로 보이게 한 시간 전으로 둔다.
   createdAt: new Date(Date.now() - 3_600_000).toISOString(),
   unlockAt: new Date(Date.now() - 3_600_000).toISOString(),
-  previewColor: '#F6CED8',
+  previewColor: '#F8F1E7',
 }
 
 export function mergeSupportMessages(messages: Message[]) {
