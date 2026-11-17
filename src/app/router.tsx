@@ -228,6 +228,12 @@ export const router = createBrowserRouter([
             }),
           },
           {
+            path: 'ads',
+            lazy: async () => ({
+              Component: (await import('@/features/admin/ads/AdsAdminPage')).AdsAdminPage,
+            }),
+          },
+          {
             path: 'polls',
             lazy: async () => ({
               Component: (await import('@/features/admin/PollsAdminPage')).PollsAdminPage,

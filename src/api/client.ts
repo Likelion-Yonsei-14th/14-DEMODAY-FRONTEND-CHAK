@@ -21,12 +21,17 @@ export class ApiError extends Error {
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
+  /** Send a file as the raw request body (its own Content-Type) instead of JSON. */
+  file?: Blob
   query?: Record<string, string | number | boolean | undefined>
   /** Send the Bearer token when one is held. Default true. */
   auth?: boolean
   /** Background request whose failure the user never notices: do not alert the team about network errors. */
   quiet?: boolean
 }
+
+/** Absolute URL of an API path, e.g. to store as an image address. */
+export const apiUrl = (path: string) => buildUrl(path)
 
 function buildUrl(path: string, query?: RequestOptions['query']) {
   const url = new URL(`${API_URL}${path}`, window.location.origin)
@@ -40,7 +45,8 @@ function buildUrl(path: string, query?: RequestOptions['query']) {
 
 async function send(path: string, options: RequestOptions, withToken: boolean) {
   const headers: Record<string, string> = {}
-  if (options.body !== undefined) headers['Content-Type'] = 'application/json'
+  if (options.file) headers['Content-Type'] = options.file.type
+  else if (options.body !== undefined) headers['Content-Type'] = 'application/json'
   const token = getAccessToken()
   if (withToken && token) headers.Authorization = `Bearer ${token}`
 
@@ -50,7 +56,7 @@ async function send(path: string, options: RequestOptions, withToken: boolean) {
       headers,
       // Required for the HttpOnly refresh cookie and the guest cookie.
       credentials: 'include',
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body: options.file ?? (options.body === undefined ? undefined : JSON.stringify(options.body)),
     })
   } catch (error) {
     // The browser could not reach the server at all (no response).
