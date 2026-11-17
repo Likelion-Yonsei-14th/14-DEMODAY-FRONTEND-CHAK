@@ -7,6 +7,7 @@ import {
   type Outreach,
   type OutreachChannel,
   type OutreachInput,
+  type OutreachKind,
   type OutreachStatus,
 } from '@/api/adminOutreach'
 import { formatDateTime } from './adminFormat'
@@ -16,6 +17,7 @@ const STATUSES = Object.keys(STATUS_LABEL) as OutreachStatus[]
 const CHANNELS = Object.keys(CHANNEL_LABEL) as OutreachChannel[]
 
 const EMPTY: OutreachInput = {
+  kind: 'STORE',
   storeName: '',
   category: null,
   region: null,
@@ -28,6 +30,7 @@ const EMPTY: OutreachInput = {
 }
 
 const toInput = (row: Outreach): OutreachInput => ({
+  kind: row.kind,
   storeName: row.storeName,
   category: row.category,
   region: row.region,
@@ -39,11 +42,18 @@ const toInput = (row: Outreach): OutreachInput => ({
   lastContactedOn: row.lastContactedOn,
 })
 
+/** 매장(한 곳)과 브랜드(본사·여러 지점)는 같은 표를 쓰고 이름표만 다르다. */
+const KIND = {
+  STORE: { noun: '매장', category: '방탈출, 펜션…', region: '권역', regionHint: '홍대, 가평…', channel: 'INSTAGRAM' },
+  BRAND: { noun: '브랜드', category: '프랜차이즈 카페, 통신…', region: '지점 · 범위', regionHint: '전국 120개 지점…', channel: 'EMAIL' },
+} as const satisfies Record<OutreachKind, { noun: string; category: string; region: string; regionHint: string; channel: OutreachChannel }>
+
 const today = () => new Date().toLocaleDateString('sv-SE')
 
-/** 팀원이 광고 제휴를 위해 연락하는 매장을 함께 기록한다. 누가 어디에 연락했고 지금 어떤 상태인지 한 표로 본다. */
+/** 팀원이 광고 제휴를 위해 연락하는 매장과 브랜드를 함께 기록한다. 위 전환 버튼으로 매장·브랜드를 나눠 본다. 누가 어디에 연락했고 지금 어떤 상태인지 한 표로 본다. */
 export function OutreachPage() {
-  const [rows, setRows] = useState<Outreach[]>([])
+  const [all, setAll] = useState<Outreach[]>([])
+  const [kind, setKind] = useState<OutreachKind>('STORE')
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<OutreachStatus | 'ALL'>('ALL')
   const [query, setQuery] = useState('')
@@ -56,7 +66,7 @@ export function OutreachPage() {
     fetchOutreach()
       .then((result) => {
         if (cancelled) return
-        setRows(result)
+        setAll(result)
         setError(null)
       })
       .catch(() => !cancelled && setError('연락 현황을 불러오지 못했어요.'))
@@ -64,6 +74,9 @@ export function OutreachPage() {
       cancelled = true
     }
   }, [reload])
+
+  const rows = useMemo(() => all.filter((row) => (row.kind ?? 'STORE') === kind), [all, kind])
+  const label = KIND[kind]
 
   const counts = useMemo(() => {
     const result = Object.fromEntries(STATUSES.map((s) => [s, 0])) as Record<OutreachStatus, number>
@@ -131,11 +144,32 @@ export function OutreachPage() {
   return (
     <>
       <header className="admin__header">
-        <h1>매장 연락 현황</h1>
-        <button type="button" className="outreach-add" onClick={() => setEditing({ id: null, input: { ...EMPTY } })}>
-          매장 추가
+        <h1>매장 · 브랜드 연락 현황</h1>
+        <button
+          type="button"
+          className="outreach-add"
+          onClick={() => setEditing({ id: null, input: { ...EMPTY, kind, channel: label.channel } })}
+        >
+          {label.noun} 추가
         </button>
       </header>
+
+      <div className="outreach-kind" role="tablist" aria-label="연락 대상">
+        {(['STORE', 'BRAND'] as const).map((k) => (
+          <button
+            key={k}
+            type="button"
+            role="tab"
+            aria-selected={kind === k}
+            onClick={() => {
+              setKind(k)
+              setFilter('ALL')
+            }}
+          >
+            {KIND[k].noun} {all.filter((row) => (row.kind ?? 'STORE') === k).length}
+          </button>
+        ))}
+      </div>
 
       <div className="admin__tabs outreach-filters" role="tablist" aria-label="연락 상태">
         <button type="button" role="tab" aria-selected={filter === 'ALL'} onClick={() => setFilter('ALL')}>
@@ -153,28 +187,37 @@ export function OutreachPage() {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="매장 · 업종 · 권역 · 담당자 · 메모 검색"
+          placeholder={`${label.noun} · 업종 · ${label.region} · 담당자 · 메모 검색`}
           aria-label="연락 기록 검색"
         />
       </div>
 
       {error && <p className="admin__error">{error}</p>}
 
-      {editing && (
+      {editing && (() => {
+        const formLabel = KIND[editing.input.kind]
+        return (
         <form className="admin__panel outreach-form" onSubmit={save}>
-          <h2>{editing.id === null ? '매장 추가' : '연락 기록 수정'}</h2>
+          <h2>{editing.id === null ? `${formLabel.noun} 추가` : '연락 기록 수정'}</h2>
           <div className="outreach-form__grid">
             <label>
-              매장 이름 *
+              구분
+              <select value={editing.input.kind} onChange={(e) => set('kind', e.target.value as OutreachKind)}>
+                <option value="STORE">매장</option>
+                <option value="BRAND">브랜드</option>
+              </select>
+            </label>
+            <label>
+              {formLabel.noun} 이름 *
               <input required maxLength={100} value={editing.input.storeName} onChange={(e) => set('storeName', e.target.value)} />
             </label>
             <label>
               업종
-              <input maxLength={50} placeholder="방탈출, 펜션…" value={editing.input.category ?? ''} onChange={(e) => set('category', text(e.target.value))} />
+              <input maxLength={50} placeholder={formLabel.category} value={editing.input.category ?? ''} onChange={(e) => set('category', text(e.target.value))} />
             </label>
             <label>
-              권역
-              <input maxLength={50} placeholder="홍대, 가평…" value={editing.input.region ?? ''} onChange={(e) => set('region', text(e.target.value))} />
+              {formLabel.region}
+              <input maxLength={50} placeholder={formLabel.regionHint} value={editing.input.region ?? ''} onChange={(e) => set('region', text(e.target.value))} />
             </label>
             <label>
               담당 팀원
@@ -214,12 +257,13 @@ export function OutreachPage() {
             <button type="button" onClick={() => setEditing(null)}>취소</button>
           </div>
         </form>
-      )}
+        )
+      })()}
 
       <div className="admin-table-wrap">
         <table className="admin-table outreach-table">
           <thead>
-            <tr><th>매장</th><th>담당</th><th>연락처</th><th>상태</th><th>마지막 연락</th><th>메모</th><th /></tr>
+            <tr><th>{label.noun}</th><th>담당</th><th>연락처</th><th>상태</th><th>마지막 연락</th><th>메모</th><th /></tr>
           </thead>
           <tbody>
             {visible.map((row) => {
@@ -267,7 +311,7 @@ export function OutreachPage() {
               )
             })}
             {visible.length === 0 && !error && (
-              <tr><td colSpan={7} className="admin__muted">{rows.length === 0 ? '아직 기록한 매장이 없어요. 매장 추가로 시작하세요.' : '조건에 맞는 매장이 없어요.'}</td></tr>
+              <tr><td colSpan={7} className="admin__muted">{rows.length === 0 ? `아직 기록한 ${label.noun}이 없어요. ${label.noun} 추가로 시작하세요.` : `조건에 맞는 ${label.noun}이 없어요.`}</td></tr>
             )}
           </tbody>
         </table>
