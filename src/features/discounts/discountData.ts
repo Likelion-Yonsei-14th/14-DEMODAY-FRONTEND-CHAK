@@ -14,9 +14,23 @@ export type Discount = {
   place: string
   sourceUrl: string
   sourceDate: string
+  /** 카드에 크게 보여 줄 한마디("2만원", "50%"). 없으면 혜택 문장만 보여 준다. */
+  highlight?: string
+  /** 챙겨 갈 것("2027학년도 수험표 원본", "신분증"). */
+  bring?: readonly string[]
+  /** 받는 방법: 현장, 사전 예약, 앱·온라인, 전화 예약. */
+  howTo?: string
+  /** 같이 가는 사람 혜택("동반 3명까지 같은 가격"). */
+  companions?: string
+  /** 적용 지점("전국 매장(일부 제외)"). */
+  branches?: string
+  /** 브랜드·시설이 직접 올린 대표 이미지(공식 홈페이지·공지의 og:image). 뉴스 사진은 쓰지 않는다. */
+  image?: string
+  /** 이미지를 가져온 공식 페이지. */
+  imageSource?: string
 }
 
-export const DISCOUNT_CATEGORIES = ['놀이·체험', '음식·카페', '뷰티·미용', '안경·렌즈', '영화·공연', '여행·숙박', '교육'] as const
+export const DISCOUNT_CATEGORIES = ['놀이·체험', '음식·카페', '뷰티·미용', '안경·렌즈', '영화·공연', '여행·숙박', '패션·쇼핑', '운동·건강', '교육'] as const
 export type DiscountCategory = (typeof DISCOUNT_CATEGORIES)[number]
 
 /** 마지막으로 모은 날. 화면에 "11월 16일 기준"으로 보여 준다. */

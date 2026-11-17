@@ -12,7 +12,7 @@ function resultLine(poll: AdminPoll) {
   return poll.options.map((option, index) => `${option.label} ${percent[index]}%`).join(' · ')
 }
 
-/** 수능 여론 질문 관리: 결과 보기, 새 질문 만들기, 숨기기와 마감. */
+/** 수험생 투표 질문 관리: 결과 보기, 새 질문 만들기, 숨기기와 마감. */
 export function PollsAdminPage() {
   const [polls, setPolls] = useState<AdminPoll[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -77,7 +77,7 @@ export function PollsAdminPage() {
   return (
     <>
       <header className="admin__header">
-        <h1>수능 여론</h1>
+        <h1>수험생 투표</h1>
       </header>
       {error && <p className="admin__error">{error}</p>}
 

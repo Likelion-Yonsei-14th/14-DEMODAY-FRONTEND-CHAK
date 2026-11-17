@@ -56,7 +56,7 @@ describe('poll results math', () => {
     expect(leaderIndex([3, 5, 5])).toBe(1)
     expect(leaderIndex([0, 0])).toBe(-1)
     expect(headline(voted, voted.results!)).toBe('불수능 67% · 120명 참여')
-    expect(headline(voted, { total: 5, counts: [5, 0, 0], regions: [] })).toBe('불수능 100% · 아직 모으는 중')
+    expect(headline(voted, { total: 5, counts: [5, 0, 0], regions: [] })).toBe('불수능 100% · 아직 투표를 모으는 중')
   })
 
   it('shows open questions first, then the next to open, then closed ones', () => {

@@ -36,12 +36,12 @@ export function leaderIndex(counts: readonly number[]): number {
 /** 결과 한 줄 요약: "불수능 72% · 3,214명 참여". */
 export function headline(poll: Poll, results: PollResults): string {
   const lead = leaderIndex(results.counts)
-  if (lead === -1) return '아직 아무도 고르지 않았어요'
+  if (lead === -1) return '아직 아무도 투표하지 않았어요'
   const percent = percentages(results.counts)[lead]
   const label = poll.options[lead]?.label ?? ''
   return results.total >= MIN_SHOWN_VOTES
     ? `${label} ${percent}% · ${results.total.toLocaleString('ko-KR')}명 참여`
-    : `${label} ${percent}% · 아직 모으는 중`
+    : `${label} ${percent}% · 아직 투표를 모으는 중`
 }
 
 /** 질문을 보여 줄 순서: 지금 투표할 수 있는 것, 곧 열리는 것, 닫힌 것. 같은 묶음은 서버가 준 순서 그대로. */
