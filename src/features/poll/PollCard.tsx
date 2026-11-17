@@ -106,7 +106,7 @@ export function PollCard({ poll, onChange, compact = false }: { poll: Poll; onCh
             <span>
               {total >= MIN_SHOWN_VOTES
                 ? `${scope.kind === 'region' ? `${scope.region} ` : ''}${total.toLocaleString('ko-KR')}명 참여`
-                : '아직 표를 모으는 중이에요'}
+                : '아직 투표를 모으는 중이에요'}
             </span>
             {!compact && (
               <button type="button" className="poll-card__share" onClick={share}>
@@ -132,7 +132,7 @@ export function PollCard({ poll, onChange, compact = false }: { poll: Poll; onCh
           ))}
         </ul>
       )}
-      {poll.status === 'open' && !results && <p className="poll-card__hint">고르면 다른 수험생들의 답이 보여요</p>}
+      {poll.status === 'open' && !results && <p className="poll-card__hint">투표하면 다른 수험생들의 결과가 보여요</p>}
       {error && (
         <p role="alert" className="poll-card__error">
           {error}

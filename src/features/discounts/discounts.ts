@@ -31,14 +31,16 @@ export function periodLabel(discount: Discount): string {
 export function visibleDiscounts(
   discounts: readonly Discount[],
   today: string,
-  filter: { category: string | null; area: string | null },
+  filter: { category: string | null; area: string | null; query?: string },
 ): Discount[] {
+  const query = (filter.query ?? '').trim().toLowerCase()
   const rank = { ongoing: 0, soon: 1, ended: 2 } as const
   return discounts
     .filter((d) => timingOf(d, today) !== 'ended')
     .filter((d) => !filter.category || d.category === filter.category)
     // 지역을 고르면 그 지역 혜택과 전국 혜택을 같이 보여 준다
     .filter((d) => !filter.area || d.area === filter.area || d.area === '전국')
+    .filter((d) => !query || [d.brand, d.benefit, d.place, d.branches ?? ''].some((text) => text.toLowerCase().includes(query)))
     .sort(
       (a, b) =>
         rank[timingOf(a, today)] - rank[timingOf(b, today)] ||
@@ -54,4 +56,18 @@ export function sourceHost(url: string): string {
   } catch {
     return '출처'
   }
+}
+
+/** 마감까지 남은 날. 끝나는 날을 모르면 null. 마지막 날이 오늘이면 0. */
+export function daysLeft(discount: Discount, today: string): number | null {
+  if (!discount.end) return null
+  return Math.round((Date.parse(discount.end) - Date.parse(today)) / 86_400_000)
+}
+
+/** 일주일 안에 끝나면 "오늘 마감" / "3일 남음", 시작 전이면 "11/19 시작", 아니면 null. */
+export function urgencyLabel(discount: Discount, today: string): string | null {
+  if (timingOf(discount, today) === 'soon' && discount.start) return `${md(discount.start)} 시작`
+  const left = daysLeft(discount, today)
+  if (left === null || left < 0 || left > 7) return null
+  return left === 0 ? '오늘 마감' : `${left}일 남음`
 }

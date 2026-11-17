@@ -60,7 +60,7 @@ export async function renderPollImage(poll: Poll, results: PollResults, siteUrl:
   }
   context.fillStyle = INK
   context.font = `800 34px ${FONT}`
-  context.fillText('수능 여론', 168, 128)
+  context.fillText('수험생 투표', 168, 128)
   context.fillStyle = BRAND
   context.font = `700 30px ${FONT}`
   context.textAlign = 'right'
@@ -115,7 +115,7 @@ export async function renderPollImage(poll: Poll, results: PollResults, siteUrl:
   context.fillStyle = SECONDARY
   context.font = `600 32px ${FONT}`
   context.fillText(
-    results.total >= MIN_SHOWN_VOTES ? `${results.total.toLocaleString('ko-KR')}명 참여 · 재미로 보는 참여형 투표` : '재미로 보는 참여형 투표',
+    results.total >= MIN_SHOWN_VOTES ? `${results.total.toLocaleString('ko-KR')}명 참여 · 재미로 하는 투표` : '재미로 하는 투표',
     80,
     1180,
   )
