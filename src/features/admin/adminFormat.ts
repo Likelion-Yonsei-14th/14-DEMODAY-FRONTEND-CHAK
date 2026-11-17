@@ -32,3 +32,9 @@ export function kstInputToIso(value: string): string | null {
   const date = new Date(`${value}:00+09:00`)
   return Number.isNaN(date.getTime()) ? null : date.toISOString()
 }
+
+/** ISO 시각을 datetime-local 값("2026-11-20T09:00", 한국 시각)으로 바꾼다. */
+export function isoToKstInput(iso: string): string {
+  const date = new Date(new Date(iso).getTime() + 9 * 3_600_000)
+  return date.toISOString().slice(0, 16)
+}

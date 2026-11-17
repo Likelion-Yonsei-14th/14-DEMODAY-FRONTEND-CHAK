@@ -1,0 +1,158 @@
+.ads-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ads-switch h2 { margin-bottom: 4px; }
+.ads-switch p { margin: 0; line-height: 1.5; }
+.ads-switch.is-on { border-color: #9fd3ad; background: #f1faf3; }
+
+.ads-switch__toggle {
+  flex: none;
+  position: relative;
+  width: 92px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #cfc8bf;
+  cursor: pointer;
+  transition: background-color .15s ease;
+}
+
+.ads-switch__toggle::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+  transition: transform .15s ease;
+}
+
+.ads-switch__toggle span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 14px;
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+.ads-switch__toggle[aria-checked='true'] { background: #2e8b4a; }
+.ads-switch__toggle[aria-checked='true']::after { transform: translateX(52px); }
+.ads-switch__toggle[aria-checked='true'] span { justify-content: flex-start; }
+.ads-switch__toggle:disabled { opacity: .6; cursor: default; }
+
+.ads-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 24px;
+  align-items: start;
+}
+
+.ads-editor__title { margin-top: 0 !important; }
+
+.ads-form { display: grid; gap: 12px; }
+.ads-form select,
+.ads-form .admin-field input {
+  padding: 8px 10px;
+  border: 1px solid #d9d3cb;
+  border-radius: 8px;
+  font: inherit;
+  background: #fff;
+}
+.ads-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ads-form__upload { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ads-form__file {
+  display: inline-flex;
+  padding: 7px 12px;
+  border: 1px solid #d9d3cb;
+  border-radius: 8px;
+  background: #faf8f5;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ads-form__file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.ads-form__file:focus-within { outline: 3px solid #f2b6a5; }
+
+.ad-preview { display: grid; gap: 12px; justify-items: start; }
+
+.ad-preview__phone {
+  width: 100%;
+  max-width: 360px;
+  min-height: 520px;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 18px 16px 24px;
+  border: 8px solid #2b2622;
+  border-radius: 32px;
+  background: var(--color-surface-base);
+}
+
+.ad-preview__block {
+  display: grid;
+  place-items: center;
+  min-height: 52px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, .06);
+  color: #8a8178;
+  font-size: 12px;
+}
+.ad-preview__block--tall { min-height: 120px; }
+.ad-preview__block--brand { background: rgba(232, 93, 63, .12); color: #a2462f; }
+
+.ad-preview__games { display: grid; gap: 8px; color: #6d655d; font-size: 12px; font-weight: 700; }
+.ad-preview__games div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ad-preview__games i { height: 64px; border-radius: 12px; background: rgba(0, 0, 0, .06); }
+
+.ad-preview__empty {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 1;
+  border: 2px dashed #d0c7bc;
+  border-radius: 16px;
+  color: #8a8178;
+  font-size: 12px;
+}
+
+.ad-preview__notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13px; line-height: 1.5; }
+
+.ads-table__thumb {
+  width: 150px;
+  aspect-ratio: 3 / 1;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #eee;
+  display: block;
+}
+.ads-table__link { font-size: 12px; color: #7a716a; overflow-wrap: anywhere; }
+
+@media (max-width: 900px) {
+  .ads-editor { grid-template-columns: 1fr; }
+  .ads-switch { align-items: flex-start; }
+}
+
+.ads-btn {
+  padding: 7px 12px;
+  border: 1px solid #d9d3cb;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ads-btn:disabled { opacity: .55; cursor: default; }
+.ads-btn--primary { border-color: #e85d3f; background: #e85d3f; color: #fff; }
+.admin-table .admin-actions { align-items: center; flex-wrap: wrap; }
+.ads-badge--live { background: #e0f0e4; color: #1d5a2e; }
