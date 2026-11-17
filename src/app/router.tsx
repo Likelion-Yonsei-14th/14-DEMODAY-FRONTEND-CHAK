@@ -327,6 +327,8 @@ export const router = createBrowserRouter([
       },
       { path: '/start', element: <StartPage /> },
       { path: '/home', element: <HomePage /> },
+      // 운영자 광고 미리보기 전용: 가상의 편지로 편지 화면을 보여 준다(OwnerDeskGate 밖).
+      { path: '/ad-preview/message/:messageId', element: <MessageViewerPage /> },
       { path: '/minigame/exam-career', element: <ExamCareerIntroPage /> },
       { path: '/minigame/exam-career/play', element: <ExamCareerPlayPage /> },
       { path: '/minigame/exam-career/result/:code', element: <ExamCareerResultPage /> },
