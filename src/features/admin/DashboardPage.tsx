@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import {
+  fetchActiveUsers,
   fetchDailyStats,
   fetchRegionStats,
+  type AdminActiveUsers,
   type AdminDailyStats,
   type AdminRegionStats,
 } from '@/api/admin'
@@ -56,11 +58,62 @@ function RegionSection({ regions }: { regions: AdminRegionStats }) {
   )
 }
 
+/**
+ * 활성 사용자(DAU·WAU·MAU). 위 기간 탭과 상관없이 집계를 시작한 날부터 센다.
+ * 날짜별 막대는 그날까지 30일 동안 들어온 서로 다른 사람 수라, 날짜끼리 더하면 안 된다.
+ */
+function ActiveSection({ active }: { active: AdminActiveUsers }) {
+  const last = active.days[active.days.length - 1]
+  if (!last) return null
+  return (
+    <section className="admin__panel">
+      <h2>활성 사용자 ({active.from.slice(5).replace('-', '/')}부터)</h2>
+      <section className="admin-cards" aria-label="활성 사용자">
+        <div>
+          <span>MAU (최근 30일)</span>
+          <strong>{formatNumber(last.mau)}</strong>
+          <span>회원 {formatNumber(last.mauMembers)} · 비회원 {formatNumber(last.mauGuests)}</span>
+        </div>
+        <div><span>WAU (최근 7일)</span><strong>{formatNumber(last.wau)}</strong></div>
+        <div><span>DAU (오늘)</span><strong>{formatNumber(last.dau)}</strong></div>
+        <div>
+          <span>집계 시작 후 순 방문자</span>
+          <strong>{formatNumber(active.rangeVisitors)}</strong>
+          <span>회원 {formatNumber(active.rangeMembers)} · 비회원 {formatNumber(active.rangeGuests)}</span>
+        </div>
+      </section>
+      <h3>날짜별 MAU (그날까지 30일)</h3>
+      <BarList
+        rows={active.days.map((day) => ({
+          label: day.date.slice(5),
+          value: day.mau,
+          sub: `WAU ${formatNumber(day.wau)} · DAU ${formatNumber(day.dau)}`,
+        }))}
+      />
+      <p className="admin__muted">
+        서로 다른 사람 수예요. 비회원은 브라우저 기준이라 같은 사람이 폰과 PC로 들어오면 두 번 세어지고, 부하 테스트와 테스트
+        계정은 뺐어요.
+      </p>
+    </section>
+  )
+}
+
 export function DashboardPage() {
   const [days, setDays] = useState<(typeof RANGES)[number]>(14)
   const [daily, setDaily] = useState<AdminDailyStats | null>(null)
   const [regions, setRegions] = useState<AdminRegionStats | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [active, setActive] = useState<AdminActiveUsers | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetchActiveUsers()
+      .then((result) => !cancelled && setActive(result))
+      .catch(() => !cancelled && setActive(null))
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -118,6 +171,8 @@ export function DashboardPage() {
             <div><span>기간 응원</span><strong>{formatNumber(sum((d) => d.messagesCreated))}</strong></div>
             <div><span>기간 충전</span><strong>{formatNumber(sum((d) => d.chargeAmount))}원</strong></div>
           </section>
+
+          {active && <ActiveSection active={active} />}
 
           <section className="admin__panel">
             <h2>날짜별 접속자</h2>
