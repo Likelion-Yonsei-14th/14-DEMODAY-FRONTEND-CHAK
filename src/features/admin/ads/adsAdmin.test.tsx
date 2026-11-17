@@ -69,10 +69,6 @@ describe('ads admin', () => {
   })
 
   it('previews the draft banner inside the real pages, even while the switch is off', async () => {
-    desks.fetchOwnerMessages.mockResolvedValue([
-      { messageId: 11, kind: 'CARD', locked: true },
-      { messageId: 12, kind: 'CARD', locked: false },
-    ])
     render(<AdsAdminPage />)
     await screen.findByRole('switch')
     const phone = screen.getByTestId('ad-preview-phone')
@@ -86,11 +82,11 @@ describe('ads admin', () => {
     )
     expect(screen.queryByRole('tab', { name: '첫 화면' })).toBeNull()
 
-    // 편지 화면은 운영자 책상에서 열어 볼 수 있는 편지로 보여 준다.
+    // 편지 화면은 운영자의 실제 편지가 아니라 가상의 견본 편지로 보여 준다.
     fireEvent.click(screen.getByRole('tab', { name: '편지 화면' }))
-    expect(await within(screen.getByTestId('ad-preview-phone')).findByTitle('편지 화면 미리보기')).toHaveAttribute(
+    expect(within(screen.getByTestId('ad-preview-phone')).getByTitle('편지 화면 미리보기')).toHaveAttribute(
       'src',
-      '/my/message/12?adPreview=1',
+      '/ad-preview/message/ad-preview-letter?adPreview=1',
     )
   })
 
@@ -99,13 +95,6 @@ describe('ads admin', () => {
     await screen.findByRole('switch')
     expect(screen.getByRole('button', { name: '이 화면 이미지로 저장' })).toBeEnabled()
     expect(screen.getByRole('button', { name: '세 화면 한 장으로 저장' })).toBeEnabled()
-  })
-
-  it('explains when there is no letter to preview', async () => {
-    render(<AdsAdminPage />)
-    await screen.findByRole('switch')
-    fireEvent.click(screen.getByRole('tab', { name: '편지 화면' }))
-    expect(await screen.findByText(/열어 볼 수 있는 편지가 없어/)).toBeInTheDocument()
   })
 
   it('uploads an image and registers the banner', async () => {

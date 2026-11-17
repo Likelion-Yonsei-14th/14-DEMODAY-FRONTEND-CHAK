@@ -1,4 +1,5 @@
 import { isApiEnabled } from '@/api/config'
+import { isAdPreview } from '@/features/ads/adPreview'
 import type { DeskObject, Message } from '@/types'
 
 function localIso(daysAgo: number, hour: number, minute: number) {
@@ -268,9 +269,43 @@ export const seededSupportMessages: Message[] = [
   },
 ]
 
+/** 운영자 광고 미리보기의 편지 화면에 쓰는 가상의 편지. 실제 사람·실제 편지가 아니다. */
+export const AD_PREVIEW_LETTER_ID = 'ad-preview-letter'
+
+export const adPreviewLetter: Message = {
+  id: AD_PREVIEW_LETTER_ID,
+  backgroundAssetId: 'bg-frame-ribbon-pink',
+  textElements: [
+    {
+      id: 'ad-preview-letter-text',
+      text: '서윤아, 1년 동안 진짜 고생 많았어! 끝나면 떡볶이부터 먹으러 가자 🍀',
+      styleId: 'handwriting-default',
+      x: 50,
+      y: 50,
+      width: 74,
+      align: 'center',
+    },
+  ],
+  wordArtElements: [],
+  stickerElements: [],
+  photoElements: [],
+  visibility: 'private',
+  senderName: '하린',
+  recipientDeskId: 'ad-preview-desk',
+  status: 'sent',
+  // 언제 열어 봐도 이미 열린 편지로 보이게 한 시간 전으로 둔다.
+  createdAt: new Date(Date.now() - 3_600_000).toISOString(),
+  unlockAt: new Date(Date.now() - 3_600_000).toISOString(),
+  previewColor: '#F6CED8',
+}
+
 export function mergeSupportMessages(messages: Message[]) {
   // With a backend there is no fake demo data.
-  const merged = isApiEnabled ? [...messages] : [...seededSupportMessages, ...messages]
+  const merged = isAdPreview
+    ? [adPreviewLetter, ...messages]
+    : isApiEnabled
+      ? [...messages]
+      : [...seededSupportMessages, ...messages]
   const unique = new Map(merged.map((message) => [message.id, message]))
 
   return [...unique.values()].sort(
