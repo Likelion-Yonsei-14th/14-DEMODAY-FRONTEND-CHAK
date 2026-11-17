@@ -338,8 +338,7 @@
   margin: calc(var(--space-4) * -1) calc(var(--space-4) * -1) 4px;
   overflow: hidden;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  aspect-ratio: 1.91 / 1;
-  max-height: 180px;
+  aspect-ratio: 2.4 / 1;
   background: rgba(0, 0, 0, .05);
 }
 

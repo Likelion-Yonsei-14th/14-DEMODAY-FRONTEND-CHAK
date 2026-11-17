@@ -87,7 +87,7 @@ function DiscountCard({ d, today }: { d: Discount; today: string }) {
       <div className="discount__bottom">
         <span>{d.place || '전국'}</span>
         <a href={d.sourceUrl} target="_blank" rel="noreferrer noopener">
-          {sourceHost(d.sourceUrl)} · {md(d.sourceDate)} <ExternalLink size={12} aria-hidden />
+          {sourceHost(d.sourceUrl)}{d.sourceDate ? ` · ${md(d.sourceDate)}` : ''} <ExternalLink size={12} aria-hidden />
         </a>
       </div>
     </li>
