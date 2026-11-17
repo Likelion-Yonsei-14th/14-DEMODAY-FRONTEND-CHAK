@@ -5,6 +5,7 @@ import { isApiEnabled, isKakaoLoginEnabled } from '@/api/config'
 import { Button } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { AdBanner } from '@/features/ads/AdBanner'
+import { isAdPreview } from '@/features/ads/adPreview'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { SuneungCorner } from '@/features/poll/SuneungCorner'
 import { AppShell } from '@/layout/AppShell'
@@ -45,7 +46,8 @@ export function WelcomePage() {
     (state) => state.resetDeskCreationDraft,
   )
 
-  if (authSession.status === 'authenticated') {
+  // 광고 미리보기에서는 로그인한 운영자도 첫 화면을 그대로 본다.
+  if (authSession.status === 'authenticated' && !isAdPreview) {
     return <Navigate to="/home" replace />
   }
 

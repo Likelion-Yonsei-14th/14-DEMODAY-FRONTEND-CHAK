@@ -11,6 +11,9 @@ const api = vi.hoisted(() => ({
   uploadAdCreative: vi.fn(),
 }))
 
+const desks = vi.hoisted(() => ({ fetchOwnerMessages: vi.fn() }))
+vi.mock('@/api/desks', () => desks)
+
 vi.mock('@/api/adminAds', async (original) => ({ ...(await original<typeof import('@/api/adminAds')>()), ...api }))
 
 import { AdsAdminPage } from './AdsAdminPage'
@@ -30,6 +33,7 @@ const banner = {
 describe('ads admin', () => {
   beforeEach(() => {
     Object.values(api).forEach((fn) => fn.mockReset())
+    desks.fetchOwnerMessages.mockReset().mockResolvedValue([])
     api.fetchAdminAds.mockResolvedValue([banner])
     api.fetchAdSwitch.mockResolvedValue({ enabled: false, updatedAt: null })
     api.fetchAdMetrics.mockResolvedValue({ advertisementId: 3, from: '', to: '', events: { IMPRESSION: 200, CLICK: 9 } })
@@ -62,21 +66,33 @@ describe('ads admin', () => {
     confirm.mockRestore()
   })
 
-  it('previews the draft banner on each screen even while the switch is off', async () => {
+  it('previews the draft banner inside the real pages, even while the switch is off', async () => {
+    desks.fetchOwnerMessages.mockResolvedValue([
+      { messageId: 11, kind: 'CARD', locked: true },
+      { messageId: 12, kind: 'CARD', locked: false },
+    ])
     render(<AdsAdminPage />)
     await screen.findByRole('switch')
-    expect(screen.getByText('이미지를 올리면 여기에 보여요 (3:1)')).toBeInTheDocument()
-
-    fireEvent.change(screen.getByLabelText('이미지 주소'), { target: { value: 'https://cdn.example.com/new.png' } })
-    fireEvent.change(screen.getByLabelText('광고 이름 (이미지 대체 글로도 쓰여요)'), { target: { value: '새 배너' } })
     const phone = screen.getByTestId('ad-preview-phone')
-    expect(within(phone).getByRole('img', { name: '새 배너' })).toHaveAttribute('src', 'https://cdn.example.com/new.png')
-    expect(within(phone).getByText('광고')).toBeInTheDocument()
+    expect(within(phone).getByTitle('홈 미리보기')).toHaveAttribute('src', '/home?adPreview=1')
     expect(screen.getByText(/스위치가 꺼져 있어 지금은 사용자에게 보이지 않아요/)).toBeInTheDocument()
 
+    fireEvent.click(screen.getByRole('tab', { name: '첫 화면' }))
+    expect(within(screen.getByTestId('ad-preview-phone')).getByTitle('첫 화면 미리보기')).toHaveAttribute('src', '/?adPreview=1')
+
+    // 편지 화면은 운영자 책상에서 열어 볼 수 있는 편지로 보여 준다.
     fireEvent.click(screen.getByRole('tab', { name: '편지 화면' }))
-    expect(within(screen.getByTestId('ad-preview-phone')).getByText('받은 편지')).toBeInTheDocument()
-    expect(within(screen.getByTestId('ad-preview-phone')).getByRole('img', { name: '새 배너' })).toBeInTheDocument()
+    expect(await within(screen.getByTestId('ad-preview-phone')).findByTitle('편지 화면 미리보기')).toHaveAttribute(
+      'src',
+      '/my/message/12?adPreview=1',
+    )
+  })
+
+  it('explains when there is no letter to preview', async () => {
+    render(<AdsAdminPage />)
+    await screen.findByRole('switch')
+    fireEvent.click(screen.getByRole('tab', { name: '편지 화면' }))
+    expect(await screen.findByText(/열어 볼 수 있는 편지가 없어/)).toBeInTheDocument()
   })
 
   it('uploads an image and registers the banner', async () => {
@@ -117,6 +133,7 @@ describe('ads admin', () => {
 describe('ads admin metrics', () => {
   it('survives a metrics response without counts', async () => {
     Object.values(api).forEach((fn) => fn.mockReset())
+    desks.fetchOwnerMessages.mockReset().mockResolvedValue([])
     api.fetchAdminAds.mockResolvedValue([banner])
     api.fetchAdSwitch.mockResolvedValue({ enabled: false, updatedAt: null })
     api.fetchAdMetrics.mockResolvedValue({ advertisementId: 3, from: '', to: '' })
