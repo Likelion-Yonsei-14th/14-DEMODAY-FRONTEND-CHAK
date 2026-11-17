@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { fetchOwnerMessages } from '@/api/desks'
 import { getAccessToken } from '@/api/tokenStore'
 import { AD_PREVIEW_PARAM, createAdPreviewHost } from '@/features/ads/adPreview'
+import { AD_PREVIEW_LETTER_ID } from '@/features/supporter/seededMessages'
 import { composeShots, downloadDataUrl } from './adPreviewImage'
 
 export type PreviewAd = { title: string; creativeUrl: string; destinationUrl: string }
@@ -31,8 +31,6 @@ export function AdPreview({ ad, switchOn }: { ad: PreviewAd; switchOn: boolean }
   const [screen, setScreen] = useState<ScreenId>('home')
   const [size, setSize] = useState<{ w: number; h: number } | null>(null)
   const [broken, setBroken] = useState(false)
-  // 편지 화면은 운영자 책상에 열어 볼 수 있는 편지가 있어야 보인다.
-  const [letterId, setLetterId] = useState<string | null | undefined>(undefined)
 
   const adRef = useRef(ad)
   const hostRef = useRef<ReturnType<typeof createAdPreviewHost> | null>(null)
@@ -52,21 +50,6 @@ export function AdPreview({ ad, switchOn }: { ad: PreviewAd; switchOn: boolean }
     hostRef.current?.broadcast()
   }, [ad])
 
-  useEffect(() => {
-    let cancelled = false
-    fetchOwnerMessages()
-      .then((messages) => {
-        if (cancelled) return
-        const open = messages.find((message) => !message.locked && message.kind === 'CARD')
-        setLetterId(open ? String(open.messageId) : null)
-      })
-      .catch(() => {
-        if (!cancelled) setLetterId(null)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
 
   useEffect(() => {
     setSize(null)
@@ -79,8 +62,7 @@ export function AdPreview({ ad, switchOn }: { ad: PreviewAd; switchOn: boolean }
   }, [ad.creativeUrl])
 
   const pathOf = (id: ScreenId) =>
-    id === 'home' ? '/home' : id === 'discounts' ? '/discounts' : letterId ? `/my/message/${letterId}` : null
-  const path = pathOf(screen)
+    id === 'home' ? '/home' : id === 'discounts' ? '/discounts' : `/ad-preview/message/${AD_PREVIEW_LETTER_ID}`
 
   // 세 화면을 모두 띄워 두고(보이는 것만 앞에), 저장할 때 각 화면이 스스로 찍은 이미지를 받아 온다.
   const frameRefs = useRef<Partial<Record<ScreenId, HTMLIFrameElement | null>>>({})
@@ -116,7 +98,6 @@ export function AdPreview({ ad, switchOn }: { ad: PreviewAd; switchOn: boolean }
     try {
       const shots: { label: string; dataUrl: string }[] = []
       for (const s of SCREENS) {
-        if (!pathOf(s.id)) continue
         const dataUrl = await captureScreen(s.id)
         if (dataUrl) shots.push({ label: s.label, dataUrl })
       }
@@ -150,7 +131,7 @@ export function AdPreview({ ad, switchOn }: { ad: PreviewAd; switchOn: boolean }
       >
         {SCREENS.map((s) => {
           const src = pathOf(s.id)
-          return src ? (
+          return (
             <iframe
               key={s.id}
               ref={(el) => {
@@ -163,19 +144,12 @@ export function AdPreview({ ad, switchOn }: { ad: PreviewAd; switchOn: boolean }
               className={s.id === screen ? 'is-active' : undefined}
               style={{ width: DEVICE.width, height: DEVICE.height, transform: `scale(${SCALE})` }}
             />
-          ) : null
+          )
         })}
-        {path ? null : (
-          <p className="ad-preview__unavailable">
-            {letterId === undefined
-              ? '편지를 찾는 중이에요...'
-              : '운영자 계정 책상에 열어 볼 수 있는 편지가 없어 편지 화면은 미리 볼 수 없어요. 배너는 편지 마지막 장의 반응·답장 버튼 아래에 같은 크기로 들어가요.'}
-          </p>
-        )}
       </div>
 
       <div className="ad-preview__save">
-        <button type="button" className="ads-btn" disabled={saving !== null || !path} onClick={saveOne}>
+        <button type="button" className="ads-btn" disabled={saving !== null} onClick={saveOne}>
           {saving === 'one' ? '만드는 중...' : '이 화면 이미지로 저장'}
         </button>
         <button type="button" className="ads-btn" disabled={saving !== null} onClick={saveAll}>
