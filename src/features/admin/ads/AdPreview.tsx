@@ -1,47 +1,71 @@
-import { useEffect, useState } from 'react'
-import { AdBannerView } from '@/features/ads/AdBanner'
+import { useEffect, useRef, useState } from 'react'
+import { fetchOwnerMessages } from '@/api/desks'
+import { getAccessToken } from '@/api/tokenStore'
+import { AD_PREVIEW_PARAM, createAdPreviewHost } from '@/features/ads/adPreview'
 
 export type PreviewAd = { title: string; creativeUrl: string; destinationUrl: string }
 
-const SCREENS = [
+type ScreenId = 'welcome' | 'home' | 'letter'
+
+const SCREENS: { id: ScreenId; label: string }[] = [
   { id: 'welcome', label: '첫 화면' },
   { id: 'home', label: '홈' },
   { id: 'letter', label: '편지 화면' },
-] as const
-
-type ScreenId = (typeof SCREENS)[number]['id']
+]
 
 /** 배너 규격은 3:1 · 1125×375px. 다르면 위아래나 양옆이 잘린다. */
 const IDEAL_RATIO = 3
 const IDEAL_WIDTH = 1125
 
-function Block({ label, tall = false, tone = 'plain' }: { label: string; tall?: boolean; tone?: 'plain' | 'brand' }) {
-  return (
-    <div className={`ad-preview__block ad-preview__block--${tone}${tall ? ' ad-preview__block--tall' : ''}`}>{label}</div>
-  )
-}
-
-function Games() {
-  return (
-    <div className="ad-preview__games">
-      <span>미니게임</span>
-      <div>
-        {Array.from({ length: 4 }, (_, i) => (
-          <i key={i} />
-        ))}
-      </div>
-    </div>
-  )
-}
+/** 휴대폰 한 화면 크기로 실제 페이지를 띄운 뒤 줄여서 보여 준다. */
+const DEVICE = { width: 390, height: 780 }
+const SCALE = 0.86
 
 /**
  * 운영자가 광고를 등록하면서 실제 화면에 어떻게 끼워지는지 보는 시안.
- * 광고 스위치가 꺼져 있어도 여기서는 항상 보여 준다.
+ * 실제 페이지를 iframe으로 띄우고 배너 자리에 등록 중인 광고를 넣는다. 광고 스위치가 꺼져 있어도 보인다.
+ * 미리보기 안에서는 눌러도 아무 일도 일어나지 않고, 방문·노출도 세지 않는다.
  */
 export function AdPreview({ ad, switchOn }: { ad: PreviewAd; switchOn: boolean }) {
   const [screen, setScreen] = useState<ScreenId>('home')
   const [size, setSize] = useState<{ w: number; h: number } | null>(null)
   const [broken, setBroken] = useState(false)
+  // 편지 화면은 운영자 책상에 열어 볼 수 있는 편지가 있어야 보인다.
+  const [letterId, setLetterId] = useState<string | null | undefined>(undefined)
+
+  const adRef = useRef(ad)
+  const hostRef = useRef<ReturnType<typeof createAdPreviewHost> | null>(null)
+  useEffect(() => {
+    const host = createAdPreviewHost(() => ({
+      ad: adRef.current.creativeUrl ? adRef.current : null,
+      accessToken: getAccessToken(),
+    }))
+    hostRef.current = host
+    return () => {
+      host.dispose()
+      hostRef.current = null
+    }
+  }, [])
+  useEffect(() => {
+    adRef.current = ad
+    hostRef.current?.broadcast()
+  }, [ad])
+
+  useEffect(() => {
+    let cancelled = false
+    fetchOwnerMessages()
+      .then((messages) => {
+        if (cancelled) return
+        const open = messages.find((message) => !message.locked && message.kind === 'CARD')
+        setLetterId(open ? String(open.messageId) : null)
+      })
+      .catch(() => {
+        if (!cancelled) setLetterId(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     setSize(null)
@@ -53,11 +77,8 @@ export function AdPreview({ ad, switchOn }: { ad: PreviewAd; switchOn: boolean }
     image.src = ad.creativeUrl
   }, [ad.creativeUrl])
 
-  const banner = ad.creativeUrl ? (
-    <AdBannerView ad={ad} preview />
-  ) : (
-    <div className="ad-preview__empty">이미지를 올리면 여기에 보여요 (3:1)</div>
-  )
+  const path =
+    screen === 'welcome' ? '/' : screen === 'home' ? '/home' : letterId ? `/my/message/${letterId}` : null
 
   const ratio = size ? size.w / size.h : null
   const ratioOff = ratio !== null && Math.abs(ratio - IDEAL_RATIO) > 0.08
@@ -73,34 +94,29 @@ export function AdPreview({ ad, switchOn }: { ad: PreviewAd; switchOn: boolean }
         ))}
       </div>
 
-      <div className="ad-preview__phone" data-testid="ad-preview-phone">
-        {screen === 'welcome' && (
-          <>
-            <Block label="수능 D-day · 로그인" tall />
-            <Block label="오늘의 질문 · 수험표 할인 모음" tone="brand" />
-            {banner}
-            <Games />
-          </>
-        )}
-        {screen === 'home' && (
-          <>
-            <Block label="내 책상" tall />
-            <Block label="+ 새 책상 만들기" />
-            <Block label="오늘의 질문 · 수험표 할인 모음" tone="brand" />
-            {banner}
-            <Games />
-          </>
-        )}
-        {screen === 'letter' && (
-          <>
-            <Block label="받은 편지" tall />
-            <Block label="답장하기 · 다음 편지" />
-            {banner}
-          </>
+      <div
+        className="ad-preview__device"
+        style={{ width: DEVICE.width * SCALE, height: DEVICE.height * SCALE }}
+        data-testid="ad-preview-phone"
+      >
+        {path ? (
+          <iframe
+            key={path}
+            title={`${SCREENS.find((s) => s.id === screen)?.label} 미리보기`}
+            src={`${path}?${AD_PREVIEW_PARAM}=1`}
+            style={{ width: DEVICE.width, height: DEVICE.height, transform: `scale(${SCALE})` }}
+          />
+        ) : (
+          <p className="ad-preview__unavailable">
+            {letterId === undefined
+              ? '편지를 찾는 중이에요...'
+              : '운영자 계정 책상에 열어 볼 수 있는 편지가 없어 편지 화면은 미리 볼 수 없어요. 배너는 편지 마지막 장의 반응·답장 버튼 아래에 같은 크기로 들어가요.'}
+          </p>
         )}
       </div>
 
       <ul className="ad-preview__notes">
+        <li>실제 화면이에요. 스크롤해서 둘러볼 수 있고, 눌러도 아무 일도 일어나지 않아요.</li>
         {!switchOn && <li>광고 스위치가 꺼져 있어 지금은 사용자에게 보이지 않아요. 켜면 이렇게 보여요.</li>}
         {broken && <li className="admin__error">이미지를 불러오지 못했어요. 주소를 확인해 주세요.</li>}
         {size && (

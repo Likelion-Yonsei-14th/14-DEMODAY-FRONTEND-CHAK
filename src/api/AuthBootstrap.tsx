@@ -2,6 +2,8 @@ import { useEffect, useState, type PropsWithChildren } from 'react'
 import { restoreSession } from '@/api/auth'
 import { fetchUnlocks } from '@/api/community'
 import { isApiEnabled } from '@/api/config'
+import { setAccessToken } from '@/api/tokenStore'
+import { isAdPreview, waitForAdPreview } from '@/features/ads/adPreview'
 import { usePrototypeStore } from '@/store/prototypeStore'
 
 /**
@@ -18,6 +20,18 @@ export function AuthBootstrap({ children }: PropsWithChildren) {
   useEffect(() => {
     if (!isApiEnabled) return
     let cancelled = false
+
+    // 광고 미리보기: 부모(운영자 화면)가 넘겨준 토큰만 쓰고, 로그인 상태는 건드리지 않는다.
+    if (isAdPreview) {
+      void waitForAdPreview().then((message) => {
+        if (cancelled) return
+        setAccessToken(message?.accessToken ?? null)
+        setReady(true)
+      })
+      return () => {
+        cancelled = true
+      }
+    }
 
     restoreSession()
       .then((user) => {

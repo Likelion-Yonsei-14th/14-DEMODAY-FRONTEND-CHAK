@@ -1,6 +1,7 @@
 import { apiFetch } from '@/api/client'
 import { isApiEnabled } from '@/api/config'
 import { getVisitorGeo } from '@/api/geo'
+import { isAdPreview } from '@/features/ads/adPreview'
 
 const SESSION_KEY = 'chak.analytics.session'
 
@@ -30,7 +31,7 @@ const IGNORED = [/^\/admin(\/|$)/]
  */
 export function trackPageView(pathname: string) {
   try {
-    if (!isApiEnabled || IGNORED.some((pattern) => pattern.test(pathname))) return
+    if (!isApiEnabled || isAdPreview || IGNORED.some((pattern) => pattern.test(pathname))) return
     if (pathname === lastPath) return
     lastPath = pathname
 

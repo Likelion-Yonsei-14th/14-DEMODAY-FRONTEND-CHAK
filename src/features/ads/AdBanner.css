@@ -47,3 +47,14 @@
   font-weight: 700;
   letter-spacing: .02em;
 }
+
+/* 운영자 화면의 시안 미리보기에서 이미지가 아직 없을 때 */
+.ad-banner--empty {
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--color-border-strong);
+  background: none;
+  box-shadow: none;
+  color: var(--color-content-tertiary);
+  font-size: var(--type-caption-size);
+}

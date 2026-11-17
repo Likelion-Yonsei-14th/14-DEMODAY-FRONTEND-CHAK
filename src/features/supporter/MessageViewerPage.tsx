@@ -17,6 +17,7 @@ import {
 } from '@/design-system'
 import { getMessagePages } from '@/features/composer/messagePages'
 import { AdBanner } from '@/features/ads/AdBanner'
+import { isAdPreview } from '@/features/ads/adPreview'
 import { AppShell } from '@/layout/AppShell'
 import { isApiEnabled } from '@/api/config'
 import { loadOwnerDesk } from '@/api/ownerLoader'
@@ -102,7 +103,7 @@ export function MessageViewerPage() {
       object.messageId === messageId &&
       object.representationType === 'charm',
   )
-  const showCharmFront = Boolean(charmObject) && charmPhase !== 'revealed'
+  const showCharmFront = Boolean(charmObject) && charmPhase !== 'revealed' && !isAdPreview
   const state = location.state as ReaderLocationState | null
   const supporterView =
     state?.from === 'support-desk' ||
@@ -150,6 +151,10 @@ export function MessageViewerPage() {
     : null
   const pages = message ? getMessagePages(message) : []
   const lastPageIndex = Math.max(0, pages.length - 1)
+  // 광고 미리보기: 배너가 있는 마지막 장을 바로 보여 준다.
+  useEffect(() => {
+    if (isAdPreview && pages.length > 0) setActivePageIndex(lastPageIndex)
+  }, [lastPageIndex, pages.length])
   const ownerCanRespond =
     !supporterView &&
     (!classroomView || classroomOwner) &&
@@ -172,6 +177,7 @@ export function MessageViewerPage() {
       activePageIndex === lastPageIndex
 
     if (
+      !isAdPreview &&
       !supporterView &&
       (!classroomView || classroomOwner) &&
       messageId &&

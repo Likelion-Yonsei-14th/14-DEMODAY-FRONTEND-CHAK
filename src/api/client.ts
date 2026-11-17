@@ -2,6 +2,7 @@ import { API_URL } from '@/api/config'
 import { getAccessToken, setAccessToken } from '@/api/tokenStore'
 import type { ApiErrorBody, AuthTokenResponse } from '@/api/types'
 import { reportError } from '@/lib/errorReporter'
+import { isAdPreview } from '@/features/ads/adPreview'
 
 export class ApiError extends Error {
   readonly status: number
@@ -140,6 +141,8 @@ async function sendRefresh() {
  * on every use (a second parallel call would be rejected).
  */
 export function refreshSession(): Promise<AuthTokenResponse | null> {
+  // 광고 미리보기 iframe은 운영자 화면의 토큰을 빌려 쓰고, 갱신 쿠키를 돌리지 않는다.
+  if (isAdPreview) return Promise.resolve(null)
   if (!refreshInFlight) {
     refreshInFlight = (async () => {
       try {
