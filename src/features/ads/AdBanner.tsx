@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type Ref } from 'react'
 import { fetchAds, reportAdEvent } from '@/api/community'
 import { isApiEnabled } from '@/api/config'
 import type { ApiAdvertisement } from '@/api/types'
+import { isAdPreview, subscribeAdPreview, type PreviewBanner } from './adPreview'
 import './AdBanner.css'
 
 /** 광고 제안서의 "배너(옵션)" 지면. 규격은 3:1 · 1125×375px. */
@@ -46,7 +47,7 @@ export function AdBanner({
   const [ad, setAd] = useState<ApiAdvertisement | null>(null)
 
   useEffect(() => {
-    if (!isApiEnabled) return
+    if (!isApiEnabled || isAdPreview) return
     let cancelled = false
     void getBannerAds(placement).then((ads) => {
       if (!cancelled) setAd(ads[slot % ads.length] ?? null)
@@ -56,7 +57,37 @@ export function AdBanner({
     }
   }, [placement, slot])
 
+  if (isAdPreview) return <PreviewSlot className={className} />
   return ad ? <SponsoredBanner ad={ad} className={className} /> : null
+}
+
+/** 운영자 화면이 보낸 시안을 이 자리에 그리고, 처음 한 번 화면 가운데로 스크롤한다. */
+function PreviewSlot({ className }: { className?: string }) {
+  const [ad, setAd] = useState<PreviewBanner | null>(null)
+  const ref = useRef<HTMLDivElement>(null)
+  const scrolled = useRef(false)
+
+  useEffect(() => subscribeAdPreview((message) => setAd(message.ad)), [])
+
+  useEffect(() => {
+    if (!ad || scrolled.current) return
+    scrolled.current = true
+    // 페이지 데이터가 들어와 높이가 바뀐 뒤에 맞춘다.
+    const timer = window.setTimeout(() => ref.current?.scrollIntoView({ block: 'center' }), 700)
+    return () => window.clearTimeout(timer)
+  }, [ad])
+
+  return (
+    <div ref={ref} className="ad-banner-preview-slot">
+      {ad?.creativeUrl ? (
+        <AdBannerView ad={ad} className={className} preview />
+      ) : (
+        <div className={['ad-banner', 'ad-banner--empty', className].filter(Boolean).join(' ')}>
+          광고 이미지를 올리면 여기에 보여요
+        </div>
+      )}
+    </div>
+  )
 }
 
 function SponsoredBanner({ ad, className }: { ad: ApiAdvertisement; className?: string }) {
