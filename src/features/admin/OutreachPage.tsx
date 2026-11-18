@@ -11,7 +11,7 @@ import {
   type OutreachStatus,
 } from '@/api/adminOutreach'
 import { formatDateTime } from './adminFormat'
-import { CHANNEL_LABEL, STATUS_LABEL, contactHref } from './outreachFormat'
+import { CHANNEL_LABEL, STATUS_LABEL, contactHref, phoneOf, recentNotes, won } from './outreachFormat'
 
 const STATUSES = Object.keys(STATUS_LABEL) as OutreachStatus[]
 const CHANNELS = Object.keys(CHANNEL_LABEL) as OutreachChannel[]
@@ -27,6 +27,10 @@ const EMPTY: OutreachInput = {
   status: 'TODO',
   note: null,
   lastContactedOn: null,
+  offerPrice: null,
+  expectedProfit: null,
+  unitPrice: null,
+  proposalUrl: null,
 }
 
 const toInput = (row: Outreach): OutreachInput => ({
@@ -40,6 +44,10 @@ const toInput = (row: Outreach): OutreachInput => ({
   status: row.status,
   note: row.note,
   lastContactedOn: row.lastContactedOn,
+  offerPrice: row.offerPrice ?? null,
+  expectedProfit: row.expectedProfit ?? null,
+  unitPrice: row.unitPrice ?? null,
+  proposalUrl: row.proposalUrl ?? null,
 })
 
 /** 매장(한 곳)과 브랜드(본사·여러 지점)는 같은 표를 쓰고 이름표만 다르다. */
@@ -49,6 +57,32 @@ const KIND = {
 } as const satisfies Record<OutreachKind, { noun: string; category: string; region: string; regionHint: string; channel: OutreachChannel }>
 
 const today = () => new Date().toLocaleDateString('sv-SE')
+
+const NARROW = '(max-width: 760px)'
+
+/** 휴대폰처럼 좁은 화면이면 표 대신 카드로 보여 준다. 전화하면서 한 손으로 보기 쉽게. */
+function useNarrow() {
+  const query = () => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia(NARROW).matches
+  const [narrow, setNarrow] = useState(query)
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
+    const media = window.matchMedia(NARROW)
+    const onChange = () => setNarrow(media.matches)
+    media.addEventListener?.('change', onChange)
+    return () => media.removeEventListener?.('change', onChange)
+  }, [])
+  return narrow
+}
+
+/** 제시 금액 · 예상 수익 · 객단가를 한 줄로. 하나도 없으면 null. */
+function offerLine(row: Outreach) {
+  const parts = [
+    row.offerPrice != null && `광고비 ${won(row.offerPrice)}`,
+    row.expectedProfit != null && `예상 수익 ${won(row.expectedProfit)}`,
+    row.unitPrice != null && `객단가 ${won(row.unitPrice)}`,
+  ].filter(Boolean)
+  return parts.length ? parts.join(' · ') : null
+}
 
 /** 팀원이 광고 제휴를 위해 연락하는 매장과 브랜드를 함께 기록한다. 위 전환 버튼으로 매장·브랜드를 나눠 본다. 누가 어디에 연락했고 지금 어떤 상태인지 한 표로 본다. */
 export function OutreachPage() {
@@ -60,6 +94,7 @@ export function OutreachPage() {
   const [editing, setEditing] = useState<{ id: number | null; input: OutreachInput } | null>(null)
   const [busy, setBusy] = useState(false)
   const [reload, setReload] = useState(0)
+  const narrow = useNarrow()
 
   useEffect(() => {
     let cancelled = false
@@ -90,7 +125,7 @@ export function OutreachPage() {
       (row) =>
         (filter === 'ALL' || row.status === filter) &&
         (!q ||
-          [row.storeName, row.category, row.region, row.assignee, row.contact, row.note]
+          [row.storeName, row.category, row.region, row.assignee, row.contact, row.note, row.proposalUrl]
             .some((v) => v?.toLowerCase().includes(q))),
     )
   }, [rows, filter, query])
@@ -140,6 +175,10 @@ export function OutreachPage() {
   const set = <K extends keyof OutreachInput>(key: K, value: OutreachInput[K]) =>
     setEditing((current) => current && { ...current, input: { ...current.input, [key]: value } })
   const text = (value: string) => (value.trim() === '' ? null : value)
+  const amount = (value: string) => {
+    const digits = value.replace(/[^\d]/g, '')
+    return digits === '' ? null : Number(digits)
+  }
 
   return (
     <>
@@ -247,6 +286,22 @@ export function OutreachPage() {
               마지막 연락일
               <input type="date" value={editing.input.lastContactedOn ?? ''} onChange={(e) => set('lastContactedOn', text(e.target.value))} />
             </label>
+            <label>
+              제시 광고비(원)
+              <input inputMode="numeric" placeholder="79000" value={editing.input.offerPrice ?? ''} onChange={(e) => set('offerPrice', amount(e.target.value))} />
+            </label>
+            <label>
+              예상 수익(원)
+              <input inputMode="numeric" placeholder="792000" value={editing.input.expectedProfit ?? ''} onChange={(e) => set('expectedProfit', amount(e.target.value))} />
+            </label>
+            <label>
+              객단가(원)
+              <input inputMode="numeric" placeholder="100000" value={editing.input.unitPrice ?? ''} onChange={(e) => set('unitPrice', amount(e.target.value))} />
+            </label>
+            <label>
+              제안서 링크
+              <input maxLength={500} placeholder="https://www.chak.live/promotion/deck?d=…" value={editing.input.proposalUrl ?? ''} onChange={(e) => set('proposalUrl', text(e.target.value))} />
+            </label>
             <label className="outreach-form__wide">
               메모
               <textarea rows={3} maxLength={2000} placeholder="제안 내용, 답변, 다음 할 일" value={editing.input.note ?? ''} onChange={(e) => set('note', text(e.target.value))} />
@@ -260,10 +315,62 @@ export function OutreachPage() {
         )
       })()}
 
+      {narrow ? (
+        <ul className="outreach-cards">
+          {visible.map((row) => {
+            const href = row.contact ? contactHref(row.channel, row.contact) : null
+            const phone = phoneOf(row.contact, row.note)
+            const offer = offerLine(row)
+            const notes = recentNotes(row.note)
+            return (
+              <li key={row.id} className="outreach-card">
+                <div className="outreach-card__top">
+                  <strong>{row.storeName}</strong>
+                  <select
+                    className={`outreach-status outreach-status--${row.status.toLowerCase()}`}
+                    aria-label={`${row.storeName} 상태`}
+                    value={row.status}
+                    disabled={busy}
+                    onChange={(e) => changeStatus(row, e.target.value as OutreachStatus)}
+                  >
+                    {STATUSES.map((s) => (
+                      <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="admin__muted">
+                  {[row.category, row.region, row.assignee && `담당 ${row.assignee}`].filter(Boolean).join(' · ') || '-'}
+                </div>
+                {offer && <div className="outreach-card__offer">{offer}</div>}
+                <div className="outreach-card__links">
+                  {phone && <a className="outreach-card__call" href={`tel:${phone.replace(/[^\d]/g, '')}`}>📞 {phone}</a>}
+                  {row.contact && href && !href.startsWith('tel:') && (
+                    <a href={href} target="_blank" rel="noreferrer">{CHANNEL_LABEL[row.channel]} · {row.contact}</a>
+                  )}
+                  {row.proposalUrl && <a href={row.proposalUrl} target="_blank" rel="noreferrer">제안서 보기</a>}
+                </div>
+                {notes.length > 0 && (
+                  <details className="outreach-card__notes">
+                    <summary>{notes[notes.length - 1]}</summary>
+                    <p>{row.note}</p>
+                  </details>
+                )}
+                <div className="outreach-card__foot">
+                  <span className="admin__muted">마지막 연락 {row.lastContactedOn ?? '-'}</span>
+                  <button type="button" onClick={() => setEditing({ id: row.id, input: toInput(row) })}>수정</button>
+                </div>
+              </li>
+            )
+          })}
+          {visible.length === 0 && !error && (
+            <li className="admin__muted">{rows.length === 0 ? `아직 기록한 ${label.noun}이 없어요.` : `조건에 맞는 ${label.noun}이 없어요.`}</li>
+          )}
+        </ul>
+      ) : (
       <div className="admin-table-wrap">
         <table className="admin-table outreach-table">
           <thead>
-            <tr><th>{label.noun}</th><th>담당</th><th>연락처</th><th>상태</th><th>마지막 연락</th><th>메모</th><th /></tr>
+            <tr><th>{label.noun}</th><th>담당</th><th>연락처</th><th>상태</th><th>제안</th><th>마지막 연락</th><th>메모</th><th /></tr>
           </thead>
           <tbody>
             {visible.map((row) => {
@@ -294,6 +401,12 @@ export function OutreachPage() {
                       ))}
                     </select>
                   </td>
+                  <td className="outreach-offer">
+                    {row.offerPrice != null ? <strong>{won(row.offerPrice)}</strong> : '-'}
+                    {row.expectedProfit != null && <div className="admin__muted">예상 수익 {won(row.expectedProfit)}</div>}
+                    {row.unitPrice != null && <div className="admin__muted">객단가 {won(row.unitPrice)}</div>}
+                    {row.proposalUrl && <a href={row.proposalUrl} target="_blank" rel="noreferrer">제안서</a>}
+                  </td>
                   <td>{row.lastContactedOn ?? '-'}</td>
                   <td className="outreach-note">
                     {row.note ?? '-'}
@@ -311,11 +424,12 @@ export function OutreachPage() {
               )
             })}
             {visible.length === 0 && !error && (
-              <tr><td colSpan={7} className="admin__muted">{rows.length === 0 ? `아직 기록한 ${label.noun}이 없어요. ${label.noun} 추가로 시작하세요.` : `조건에 맞는 ${label.noun}이 없어요.`}</td></tr>
+              <tr><td colSpan={8} className="admin__muted">{rows.length === 0 ? `아직 기록한 ${label.noun}이 없어요. ${label.noun} 추가로 시작하세요.` : `조건에 맞는 ${label.noun}이 없어요.`}</td></tr>
             )}
           </tbody>
         </table>
       </div>
+      )}
     </>
   )
 }

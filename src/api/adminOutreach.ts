@@ -34,6 +34,14 @@ export type OutreachInput = {
   status: OutreachStatus
   note: string | null
   lastContactedOn: string | null
+  /** 매장에 제시한 광고비(원) */
+  offerPrice: number | null
+  /** 제안서에 적은 매장의 예상 수익(원) */
+  expectedProfit: number | null
+  /** 계산에 쓴 1회 방문 객단가(원) */
+  unitPrice: number | null
+  /** 매장에 보낸 제안서 링크 */
+  proposalUrl: string | null
 }
 
 export type Outreach = OutreachInput & {
