@@ -3,7 +3,6 @@ import { ArrowLeft, ChevronDown, ExternalLink, LocateFixed, Map as MapIcon, Sear
 import { useNavigate } from 'react-router-dom'
 import { type DiscountPlacement } from '@/api/discounts'
 import { AppBar, IconButton } from '@/design-system'
-import { AdBanner } from '@/features/ads/AdBanner'
 import { AppShell } from '@/layout/AppShell'
 import { DISCOUNT_CATEGORIES, type Discount } from './discountData'
 import { DISCOUNT_AREAS, periodLabel, seoulToday, sourceHost, timingOf, urgencyLabel, visibleDiscounts } from './discounts'
@@ -192,9 +191,6 @@ export function DiscountsPage() {
             <p>혜택을 불러오고 있어요...</p>
           )}
         </header>
-
-        {/* 광고 배너는 홈·편지 화면과 같은 모양으로 맨 위에. 등록된 광고가 없으면 아무것도 그리지 않는다. */}
-        <AdBanner className="discounts__ad" />
 
         <section className="discounts__tips" aria-label="챙길 것">
           <strong>가기 전에 챙기세요</strong>
