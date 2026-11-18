@@ -1,13 +1,15 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, ChevronDown, ExternalLink, LocateFixed, Map as MapIcon, Search, Store } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { type DiscountPlacement } from '@/api/discounts'
 import { AppBar, IconButton } from '@/design-system'
+import { isAdPreview, subscribeAdPreview, type PreviewBanner } from '@/features/ads/adPreview'
 import { AppShell } from '@/layout/AppShell'
 import { DISCOUNT_CATEGORIES, type Discount } from './discountData'
 import { DISCOUNT_AREAS, periodLabel, seoulToday, sourceHost, timingOf, urgencyLabel, visibleDiscounts } from './discounts'
 import { DISCOUNTS_MAP_PATH } from './discountRoutes'
 import { useDiscounts } from './useDiscounts'
+import { withPreviewPartner } from './previewPartner'
 import {
   formatKm,
   reportSponsoredClick,
@@ -30,11 +32,13 @@ export function DiscountCard({
   today,
   defaultOpen = false,
   ad,
+  className,
 }: {
   d: Discount
   today: string
   defaultOpen?: boolean
   ad?: SponsoredMeta & { placement: DiscountPlacement }
+  className?: string
 }) {
   const [open, setOpen] = useState(defaultOpen)
   const cardRef = useRef<HTMLLIElement>(null)
@@ -55,7 +59,7 @@ export function DiscountCard({
   ].filter((row): row is [string, string] => Boolean(row[1]))
 
   return (
-    <li className={ad ? 'discount is-sponsored' : 'discount'} ref={cardRef}>
+    <li className={['discount', ad && 'is-sponsored', className].filter(Boolean).join(' ')} ref={cardRef}>
       {showImage && (
         <figure className="discount__image">
           <img
@@ -147,10 +151,11 @@ export function DiscountsPage() {
   const location = useMyLocation()
   const order = useSponsoredOrder(location.point)
   // 제휴 혜택은 가까운 곳·덜 본 광고 순으로 맨 위에(서버가 사람마다 정한다). 나머지는 마감이 가까운 순.
-  const { items: list, meta } = useMemo(
-    () => withSponsoredFirst(visibleDiscounts(all ?? [], today, { category, area, query }), order),
-    [all, today, category, area, query, order],
-  )
+  const previewAd = usePreviewBanner()
+  const { items: list, meta, previewId } = useMemo(() => {
+    const sorted = withSponsoredFirst(visibleDiscounts(all ?? [], today, { category, area, query }), order)
+    return isAdPreview ? withPreviewPartner(sorted.items, sorted.meta, previewAd) : { ...sorted, previewId: null }
+  }, [all, today, category, area, query, order, previewAd])
   const hasSponsored = (all ?? []).some((d) => d.sponsored)
   const mappable = (all ?? []).some((d) => d.sponsored && d.latitude !== undefined && d.longitude !== undefined)
   const live = useMemo(() => visibleDiscounts(all ?? [], today, { category: null, area: null }), [all, today])
@@ -279,6 +284,7 @@ export function DiscountsPage() {
               d={d}
               today={today}
               ad={d.id !== undefined && meta.has(d.id) ? { ...meta.get(d.id)!, placement: 'LIST' } : undefined}
+              className={previewId !== null && d.id === previewId ? 'ad-banner-preview-slot' : undefined}
             />
           ))}
         </ul>
@@ -294,4 +300,25 @@ export function DiscountsPage() {
       </main>
     </AppShell>
   )
+}
+
+/**
+ * 운영자 광고 관리의 미리보기 iframe 안에서만: 등록 중인 광고를 받아 온다.
+ * 처음 받았을 때 그 카드가 화면 가운데 오도록 한 번 스크롤한다(실제 사용자 화면에서는 아무것도 하지 않는다).
+ */
+function usePreviewBanner(): PreviewBanner | null {
+  const [ad, setAd] = useState<PreviewBanner | null>(null)
+  const scrolled = useRef(false)
+  useEffect(() => (isAdPreview ? subscribeAdPreview((message) => setAd(message.ad)) : undefined), [])
+  useEffect(() => {
+    if (!isAdPreview || !ad?.creativeUrl || scrolled.current) return
+    scrolled.current = true
+    // 혜택 목록이 들어와 높이가 바뀐 뒤에 맞춘다.
+    const timer = window.setTimeout(
+      () => document.querySelector('.ad-banner-preview-slot')?.scrollIntoView({ block: 'center' }),
+      700,
+    )
+    return () => window.clearTimeout(timer)
+  }, [ad])
+  return ad
 }

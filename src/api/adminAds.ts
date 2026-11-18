@@ -3,7 +3,7 @@ import type { ApiAdvertisement } from '@/api/types'
 
 /** 지금 운영자 화면에서 고를 수 있는 지면. 배너는 첫 화면·홈·편지 화면 중간의 3:1 띠. */
 export const AD_PLACEMENT_LABEL: Record<string, string> = {
-  BANNER: '배너 (첫 화면·홈·할인 모음·편지 화면)',
+  BANNER: '배너 (첫 화면·홈·편지 화면, 할인 모음은 제휴 카드로)',
   UNLOCK: '편지지·소품 해제 영상',
   HOME: '홈 (예전 지면)',
   DESK: '책상 (예전 지면)',
