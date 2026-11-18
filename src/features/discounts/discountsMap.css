@@ -1,0 +1,168 @@
+.discounts-map__frame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.discounts-map__map {
+  height: min(56vh, 460px);
+  min-height: 300px;
+  /* 지도 위 버튼·바텀시트보다 아래에 깔리게 */
+  z-index: 0;
+}
+
+.discounts-map__locate {
+  position: absolute;
+  right: 10px;
+  bottom: 24px;
+  z-index: 500;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 16%);
+}
+
+.discounts-map__map .leaflet-tile-pane,
+.location-picker__map .leaflet-tile-pane {
+  filter: url(#chak-map-tint);
+}
+
+/* 착 로고 말풍선 핀 */
+.discount-pin span {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 2.5px solid #5b2e1b;
+  border-radius: 14px;
+  background: #fffdf6;
+  box-shadow: 0 3px 8px rgb(91 46 27 / 28%);
+  transition: transform 0.15s ease;
+}
+
+.discount-pin span::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-right: 2.5px solid #5b2e1b;
+  border-bottom: 2.5px solid #5b2e1b;
+  background: #fffdf6;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.discount-pin img {
+  position: relative;
+  z-index: 1;
+  width: 34px;
+  height: 33px;
+}
+
+.discount-pin.is-selected span {
+  background: #ffe7a3;
+  transform: scale(1.15);
+  transform-origin: 50% 100%;
+}
+
+.discount-pin.is-selected span::after {
+  background: #ffe7a3;
+}
+
+.discount-me span {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #2f80ed;
+  box-shadow: 0 0 0 6px rgb(47 128 237 / 22%);
+}
+
+.discounts-map__selected {
+  margin: 0;
+}
+
+.discounts-map__list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.partner-banner {
+  display: grid;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  color: var(--color-content-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.partner-banner[aria-pressed='true'] {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 2px var(--color-brand-soft);
+}
+
+.partner-banner__media {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 1;
+  background: var(--color-butter-soft);
+}
+
+.partner-banner__media > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.partner-banner__fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  font-size: var(--type-title-m-size);
+  font-weight: 800;
+}
+
+.partner-banner__fallback img {
+  width: 40px;
+  height: 39px;
+}
+
+.partner-banner__highlight {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-brand);
+  color: var(--color-brand-on);
+  font-size: var(--type-caption-size);
+  font-weight: 800;
+}
+
+.partner-banner__info {
+  display: grid;
+  gap: 2px;
+  padding: 10px var(--space-4) 12px;
+}
+
+.partner-banner__info > span {
+  color: var(--color-brand-pressed);
+  font-weight: 800;
+}
+
+.partner-banner__info small {
+  color: var(--color-content-tertiary);
+  font-size: var(--type-caption-size);
+}
