@@ -496,12 +496,14 @@ function DiscountPreview({ discount, today, name }: { discount: ReturnType<typeo
     setSaving(true)
     setSaveError(null)
     try {
-      const [{ toPng }, { buildFontEmbedCSS }] = await Promise.all([
+      const [{ toPng }, { buildFontEmbedCSS }, { compensateSnappedBorders }] = await Promise.all([
         import('html-to-image'),
         import('@/features/ads/captureFonts'),
+        import('@/features/ads/snappedBorders'),
       ])
       const [fontEmbedCSS, imageReadable] = await Promise.all([
-        buildFontEmbedCSS().catch(() => ''),
+        // 카드에 그려지는 글자만 걸치는 Pretendard 조각을 심는다.
+        buildFontEmbedCSS(node.textContent ?? '').catch(() => ''),
         // 다른 사이트 이미지는 보안 정책(CORS·connect-src) 때문에 못 가져오는 일이 많다. 빈 칸으로 남기지 않고 빼고 그린다.
         discount.image
           ? fetch(discount.image)
@@ -514,11 +516,13 @@ function DiscountPreview({ discount, today, name }: { discount: ReturnType<typeo
         setWithoutImage(true)
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
       }
+      // 화면 배율이 정수가 아닌 기기(Windows 150% 등)에서 칩 글자가 쪼개지지 않게 한다(snappedBorders.ts).
+      const restoreStyles = compensateSnappedBorders(window)
       const dataUrl = await toPng(node, {
         pixelRatio: 2,
         fontEmbedCSS,
         backgroundColor: getComputedStyle(node).backgroundColor,
-      })
+      }).finally(restoreStyles)
       const fileName = `혜택함-${(name || '혜택').replace(/[\\/:*?"<>|]/g, '').slice(0, 30)}.png`
       downloadDataUrl(dataUrl, fileName)
     } catch {
