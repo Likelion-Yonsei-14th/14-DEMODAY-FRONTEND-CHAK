@@ -1,4 +1,5 @@
 /** 미리보기 iframe 안에서만 쓰는 화면 찍기. html-to-image는 필요할 때만 불러온다. */
+import { compensateSnappedBorders } from './snappedBorders'
 
 export const CAPTURE_WIDTH = 390
 export const CAPTURE_HEIGHT = 780
@@ -12,8 +13,12 @@ const BLANK = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAI
  */
 export async function captureAroundBanner(): Promise<string> {
   const [{ toCanvas }, { buildFontEmbedCSS }] = await Promise.all([import('html-to-image'), import('./captureFonts')])
-  const fontEmbedCSS = await buildFontEmbedCSS().catch(() => '')
   const root = (document.getElementById('root') ?? document.body) as HTMLElement
+  // 입력칸의 안내 문구·값은 textContent에 없어서 따로 모은다.
+  const fieldText = Array.from(root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea'))
+    .map((field) => field.placeholder + field.value)
+    .join('')
+  const fontEmbedCSS = await buildFontEmbedCSS((root.textContent ?? '') + fieldText).catch(() => '')
   const slot = document.querySelector<HTMLElement>('.ad-banner-preview-slot')
 
   // 안쪽에서 스크롤되는 상자는 잠시 펼쳐 전체 길이로 그린다(미리보기 전용 화면이라 바로 되돌린다).
@@ -35,6 +40,8 @@ export async function captureAroundBanner(): Promise<string> {
     const top = Math.max(0, Math.min(center - CAPTURE_HEIGHT / 2, fullHeight - CAPTURE_HEIGHT))
     const background = getComputedStyle(document.body).backgroundColor || '#fbf9f5'
     // 긴 페이지를 통째로 그리면 캔버스 최대 크기를 넘어 줄어들므로, 배너 둘레 한 화면만 옮겨 그린다.
+    // 배율이 정수가 아닌 화면에서 1px 미만으로 계산된 테두리 때문에 칩 글자가 쪼개지지 않게 한다(snappedBorders.ts).
+    const restoreStyles = compensateSnappedBorders(window)
     const out = await toCanvas(root, {
       width: CAPTURE_WIDTH,
       height: CAPTURE_HEIGHT,
@@ -44,7 +51,7 @@ export async function captureAroundBanner(): Promise<string> {
       // 글꼴을 빼면 기기 글꼴로 그려져 줄바꿈이 밀리고 글자가 겹친다. 실제로 쓰인 글꼴만 골라 심는다.
       fontEmbedCSS,
       imagePlaceholder: BLANK,
-    })
+    }).finally(restoreStyles)
     return out.toDataURL('image/png')
   } finally {
     restored.forEach(([el, css]) => (el.style.cssText = css))
