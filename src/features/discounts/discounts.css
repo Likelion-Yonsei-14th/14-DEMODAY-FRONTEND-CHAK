@@ -363,3 +363,57 @@
 .discount:has(.discount__image) {
   overflow: hidden;
 }
+
+/* 제휴 혜택(광고 계약 매장): 다른 카드와 같은 모양에 테두리와 '제휴' 표시만 더한다. */
+.discount.is-sponsored {
+  border-color: var(--color-brand);
+}
+
+.discount__sponsor {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--color-brand);
+  color: var(--color-brand-on);
+  font-size: 11px;
+  font-weight: 800;
+  vertical-align: 1px;
+}
+
+.discount__distance {
+  color: var(--color-brand-pressed);
+  font-weight: 800;
+}
+
+.discounts__nearby {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.discounts__locate {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 999px;
+  background: var(--color-surface-raised);
+  color: var(--color-content-secondary);
+  font: inherit;
+  font-size: var(--type-caption-size);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.discounts__locate[aria-pressed='true'] {
+  border-color: var(--color-brand);
+  color: var(--color-brand-pressed);
+}
+
+.discounts__locate-note {
+  margin: 0;
+  color: var(--color-content-tertiary);
+  font-size: var(--type-caption-size);
+}

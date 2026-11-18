@@ -38,6 +38,12 @@ export type Discount = {
   image?: string
   /** 이미지를 가져온 공식 페이지. */
   imageSource?: string
+  /** 광고 계약한 제휴 매장 혜택. 목록 위에 사람마다 다른 순서로 보이고 노출·클릭을 센다. */
+  sponsored?: boolean
+  /** 지도에 찍을 매장 주소와 좌표. 좌표가 있어야 지도에 나온다. */
+  address?: string
+  latitude?: number
+  longitude?: number
 }
 
 export const DISCOUNT_CATEGORIES = ['놀이·체험', '음식·카페', '뷰티·미용', '안경·렌즈', '영화·공연', '여행·숙박', '패션·쇼핑', '운동·건강', '교육'] as const
