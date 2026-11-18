@@ -7,6 +7,7 @@ import {
   type AdminDailyStats,
   type AdminRegionStats,
 } from '@/api/admin'
+import { fetchOutreach, type Outreach } from '@/api/adminOutreach'
 import { BarList, type BarRow } from './AdminBarList'
 import { formatNumber, kstDate } from './adminFormat'
 
@@ -94,12 +95,35 @@ function ActiveSection({ active }: { active: AdminActiveUsers }) {
   )
 }
 
+/** 광고 수익. 연락 현황에서 입금 완료된 곳의 광고비를 더하고, 합의했지만 아직 입금 전인 금액은 따로 보여 준다. */
+function adRevenue(rows: Outreach[]) {
+  const total = (status: Outreach['status']) =>
+    rows.filter((row) => row.status === status).reduce((sum, row) => sum + (row.offerPrice ?? 0), 0)
+  return {
+    paid: total('PAID'),
+    paidCount: rows.filter((row) => row.status === 'PAID').length,
+    pending: total('AGREED'),
+    pendingCount: rows.filter((row) => row.status === 'AGREED').length,
+  }
+}
+
 export function DashboardPage() {
   const [days, setDays] = useState<(typeof RANGES)[number]>(14)
   const [daily, setDaily] = useState<AdminDailyStats | null>(null)
   const [regions, setRegions] = useState<AdminRegionStats | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [active, setActive] = useState<AdminActiveUsers | null>(null)
+  const [outreach, setOutreach] = useState<Outreach[] | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetchOutreach()
+      .then((rows) => !cancelled && setOutreach(rows))
+      .catch(() => !cancelled && setOutreach(null))
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -165,7 +189,16 @@ export function DashboardPage() {
             <div><span>오늘 접속자</span><strong>{formatNumber(today?.visitors ?? 0)}</strong></div>
             <div><span>기간 신규 가입</span><strong>{formatNumber(sum((d) => d.signups))}</strong></div>
             <div><span>기간 응원</span><strong>{formatNumber(sum((d) => d.messagesCreated))}</strong></div>
-            <div><span>기간 충전</span><strong>{formatNumber(sum((d) => d.chargeAmount))}원</strong></div>
+            {outreach && (() => {
+              const revenue = adRevenue(outreach)
+              return (
+                <div>
+                  <span>광고 수익 (입금 완료 {revenue.paidCount}곳)</span>
+                  <strong>{formatNumber(revenue.paid)}원</strong>
+                  <span>입금 대기 {formatNumber(revenue.pending)}원 · {revenue.pendingCount}곳</span>
+                </div>
+              )
+            })()}
           </section>
 
           {active && <ActiveSection active={active} />}
@@ -187,7 +220,7 @@ export function DashboardPage() {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>날짜</th><th>접속자</th><th>조회수</th><th>가입</th><th>책상</th><th>응원</th><th>충전(원)</th>
+                    <th>날짜</th><th>접속자</th><th>조회수</th><th>가입</th><th>책상</th><th>응원</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -199,7 +232,6 @@ export function DashboardPage() {
                       <td>{formatNumber(day.signups)}</td>
                       <td>{formatNumber(day.desksCreated)}</td>
                       <td>{formatNumber(day.messagesCreated)}</td>
-                      <td>{formatNumber(day.chargeAmount)}</td>
                     </tr>
                   ))}
                 </tbody>
