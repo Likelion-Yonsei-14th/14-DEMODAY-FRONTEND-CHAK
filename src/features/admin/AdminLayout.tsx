@@ -66,6 +66,7 @@ export function AdminLayout() {
         <NavLink to="/admin/outreach">매장 · 브랜드 연락</NavLink>
         <NavLink to="/admin/benefits">혜택 시안 신청</NavLink>
         <NavLink to="/admin/ads">광고 관리</NavLink>
+        <NavLink to="/admin/discounts">혜택함 관리</NavLink>
         <NavLink to="/admin/pitch">홍보 PPT 만들기</NavLink>
         <NavLink to="/admin/admins">운영자 관리</NavLink>
         <span className="admin__me">{me?.displayName}</span>
