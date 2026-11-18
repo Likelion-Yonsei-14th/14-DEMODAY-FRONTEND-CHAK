@@ -24,6 +24,10 @@ const row = {
   status: 'TODO' as const,
   note: null,
   lastContactedOn: null,
+  offerPrice: null,
+  expectedProfit: null,
+  unitPrice: null,
+  proposalUrl: null,
   updatedByName: '다은',
   createdAt: '2026-11-17T00:00:00Z',
   updatedAt: '2026-11-17T00:00:00Z',
@@ -77,6 +81,34 @@ describe('store outreach page', () => {
     await waitFor(() =>
       expect(api.createOutreach).toHaveBeenCalledWith(expect.objectContaining({ kind: 'BRAND', storeName: '삼성스토어', channel: 'EMAIL' })),
     )
+  })
+
+  it('saves the offered price and expected profit from the form', async () => {
+    render(<OutreachPage />)
+    await screen.findByText('딥띵커')
+    fireEvent.click(screen.getByRole('button', { name: '수정' }))
+    fireEvent.change(screen.getByLabelText('제시 광고비(원)'), { target: { value: '79,000' } })
+    fireEvent.change(screen.getByLabelText('예상 수익(원)'), { target: { value: '792000' } })
+    fireEvent.click(screen.getByRole('button', { name: '저장' }))
+    await waitFor(() =>
+      expect(api.updateOutreach).toHaveBeenCalledWith(1, expect.objectContaining({ offerPrice: 79000, expectedProfit: 792000 })),
+    )
+  })
+
+  it('shows cards with the offer and a call button on phones', async () => {
+    const original = window.matchMedia
+    window.matchMedia = ((query: string) => ({ matches: true, media: query, addEventListener: () => {}, removeEventListener: () => {} })) as unknown as typeof window.matchMedia
+    api.fetchOutreach.mockResolvedValue([
+      { ...row, offerPrice: 79000, expectedProfit: 792000, unitPrice: 100000, note: '첫 DM / 답장: 통화 원함 010-1234-5678' },
+    ])
+    try {
+      render(<OutreachPage />)
+      expect(await screen.findByText('광고비 79,000원 · 예상 수익 792,000원 · 객단가 100,000원')).toBeTruthy()
+      expect(screen.getByRole('link', { name: '📞 010-1234-5678' }).getAttribute('href')).toBe('tel:01012345678')
+      expect(screen.queryByRole('table')).toBeNull()
+    } finally {
+      window.matchMedia = original
+    }
   })
 
   it('turns contacts into links only when the format is known', () => {
