@@ -240,12 +240,6 @@ export const router = createBrowserRouter([
             }),
           },
           {
-            path: 'polls',
-            lazy: async () => ({
-              Component: (await import('@/features/admin/PollsAdminPage')).PollsAdminPage,
-            }),
-          },
-          {
             path: 'admins',
             lazy: async () => ({
               Component: (await import('@/features/admin/AdminsPage')).AdminsPage,
@@ -271,12 +265,8 @@ export const router = createBrowserRouter([
           Component: (await import('@/features/promotion/PromotionConsultPage')).PromotionConsultPage,
         }),
       },
-      {
-        path: '/poll',
-        lazy: async () => ({
-          Component: (await import('@/features/poll/PollPage')).PollPage,
-        }),
-      },
+      // 수험생 투표는 내렸다. 이미 퍼진 공유 링크는 홈으로 보낸다.
+      { path: '/poll', element: <Navigate to="/" replace /> },
       {
         path: '/discounts',
         lazy: async () => ({
