@@ -167,3 +167,10 @@
 .ads-report__totals strong { font-size: 18px; }
 .ads-report__tables { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
 .ads-report caption { text-align: left; font-weight: 700; padding-bottom: 6px; }
+
+.discount-ad-stats__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}

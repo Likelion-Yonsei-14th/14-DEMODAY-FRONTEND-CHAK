@@ -1,13 +1,22 @@
-import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, ChevronDown, ExternalLink, Search, Store } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowLeft, ChevronDown, ExternalLink, LocateFixed, Search, Store } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { isApiEnabled } from '@/api/config'
-import { fetchDiscounts } from '@/api/discounts'
+import { fetchDiscounts, type DiscountPlacement } from '@/api/discounts'
 import { AppBar, IconButton } from '@/design-system'
 import { AdBanner } from '@/features/ads/AdBanner'
 import { AppShell } from '@/layout/AppShell'
 import { DISCOUNTS, DISCOUNTS_UPDATED, DISCOUNT_CATEGORIES, type Discount } from './discountData'
 import { DISCOUNT_AREAS, periodLabel, seoulToday, sourceHost, timingOf, urgencyLabel, visibleDiscounts } from './discounts'
+import {
+  formatKm,
+  reportSponsoredClick,
+  useMyLocation,
+  useSponsoredImpression,
+  useSponsoredOrder,
+  withSponsoredFirst,
+  type SponsoredMeta,
+} from './sponsored'
 import './discounts.css'
 
 const md = (date: string) => `${Number(date.slice(5, 7))}월 ${Number(date.slice(8, 10))}일`
@@ -39,9 +48,24 @@ function useDiscounts(): Loaded | null {
   return loaded
 }
 
-/** 혜택 카드 한 장. 어드민의 미리보기도 같은 카드를 쓴다. */
-export function DiscountCard({ d, today, defaultOpen = false }: { d: Discount; today: string; defaultOpen?: boolean }) {
+/**
+ * 혜택 카드 한 장. 어드민의 미리보기도 같은 카드를 쓴다.
+ * ad가 있으면 제휴 혜택: '제휴' 표시와 거리를 보여 주고, 화면에 보이면 노출·링크를 누르면 클릭을 센다.
+ */
+export function DiscountCard({
+  d,
+  today,
+  defaultOpen = false,
+  ad,
+}: {
+  d: Discount
+  today: string
+  defaultOpen?: boolean
+  ad?: SponsoredMeta & { placement: DiscountPlacement }
+}) {
   const [open, setOpen] = useState(defaultOpen)
+  const cardRef = useRef<HTMLLIElement>(null)
+  useSponsoredImpression(cardRef, d.id, ad ? ad.placement : null)
   const [imageFailed, setImageFailed] = useState(false)
   const showImage = Boolean(d.image) && !imageFailed
   const soon = timingOf(d, today) === 'soon'
@@ -58,7 +82,7 @@ export function DiscountCard({ d, today, defaultOpen = false }: { d: Discount; t
   ].filter((row): row is [string, string] => Boolean(row[1]))
 
   return (
-    <li className="discount">
+    <li className={ad ? 'discount is-sponsored' : 'discount'} ref={cardRef}>
       {showImage && (
         <figure className="discount__image">
           <img
@@ -72,7 +96,10 @@ export function DiscountCard({ d, today, defaultOpen = false }: { d: Discount; t
         </figure>
       )}
       <div className="discount__top">
-        <span className="discount__category">{d.category}</span>
+        <span className="discount__category">
+          {ad && <span className="discount__sponsor">제휴</span>}
+          {d.category}
+        </span>
         <span className="discount__when">
           {urgent && <span className={soon ? 'discount__badge is-soon' : 'discount__badge'}>{urgent}</span>}
           <span className={soon ? 'discount__period is-soon' : 'discount__period'}>{periodLabel(d)}</span>
@@ -118,8 +145,16 @@ export function DiscountCard({ d, today, defaultOpen = false }: { d: Discount; t
       )}
 
       <div className="discount__bottom">
-        <span>{d.place || '전국'}</span>
-        <a href={d.sourceUrl} target="_blank" rel="noreferrer noopener">
+        <span>
+          {ad?.distanceKm != null && <b className="discount__distance">{formatKm(ad.distanceKm)} · </b>}
+          {d.address || d.place || '전국'}
+        </span>
+        <a
+          href={d.sourceUrl}
+          target="_blank"
+          rel="noreferrer noopener"
+          onClick={ad ? () => reportSponsoredClick(d.id, ad.placement) : undefined}
+        >
           {sourceHost(d.sourceUrl)}{d.sourceDate ? ` · ${md(d.sourceDate)}` : ''} <ExternalLink size={12} aria-hidden />
         </a>
       </div>
@@ -136,7 +171,14 @@ export function DiscountsPage() {
   const today = seoulToday()
   const loaded = useDiscounts()
   const all = loaded?.items
-  const list = useMemo(() => visibleDiscounts(all ?? [], today, { category, area, query }), [all, today, category, area, query])
+  const location = useMyLocation()
+  const order = useSponsoredOrder(location.point)
+  // 제휴 혜택은 가까운 곳·덜 본 광고 순으로 맨 위에(서버가 사람마다 정한다). 나머지는 마감이 가까운 순.
+  const { items: list, meta } = useMemo(
+    () => withSponsoredFirst(visibleDiscounts(all ?? [], today, { category, area, query }), order),
+    [all, today, category, area, query, order],
+  )
+  const hasSponsored = (all ?? []).some((d) => d.sponsored)
   const live = useMemo(() => visibleDiscounts(all ?? [], today, { category: null, area: null }), [all, today])
   const usedCategories = DISCOUNT_CATEGORIES.filter((c) => live.some((d) => d.category === c))
   // 혜택이 있는 지역만 버튼으로 보여 준다(어드민에서 새 지역을 넣으면 저절로 생긴다).
@@ -188,6 +230,29 @@ export function DiscountsPage() {
           </ul>
         </section>
 
+        {hasSponsored && (
+          <div className="discounts__nearby">
+            <button
+              type="button"
+              className="discounts__locate"
+              aria-pressed={location.state === 'ok'}
+              disabled={location.state === 'asking'}
+              onClick={location.request}
+            >
+              <LocateFixed size={16} aria-hidden />
+              {location.state === 'ok'
+                ? '내 주변 제휴 매장부터 보는 중'
+                : location.state === 'asking'
+                  ? '위치 확인 중...'
+                  : '내 주변 제휴 매장부터 보기'}
+            </button>
+            {location.state === 'denied' && (
+              <p className="discounts__locate-note">위치 권한이 꺼져 있어요. 브라우저 설정에서 켜면 가까운 곳부터 보여요.</p>
+            )}
+            {location.state === 'unavailable' && <p className="discounts__locate-note">지금은 위치를 알 수 없어요.</p>}
+          </div>
+        )}
+
         <label className="discounts__search">
           <Search size={17} aria-hidden />
           <input
@@ -222,10 +287,19 @@ export function DiscountsPage() {
           </div>
         </div>
 
-        {loaded && <p className="discounts__count">{list.length}개 · 마감이 가까운 순</p>}
+        {loaded && (
+          <p className="discounts__count">
+            {list.length}개 · {meta.size > 0 ? '제휴 매장 먼저, 그다음 마감이 가까운 순' : '마감이 가까운 순'}
+          </p>
+        )}
         <ul className="discounts__list">
           {list.map((d) => (
-            <DiscountCard key={d.id ?? `${d.brand}-${d.benefit}`} d={d} today={today} />
+            <DiscountCard
+              key={d.id ?? `${d.brand}-${d.benefit}`}
+              d={d}
+              today={today}
+              ad={d.id !== undefined && meta.has(d.id) ? { ...meta.get(d.id)!, placement: 'LIST' } : undefined}
+            />
           ))}
         </ul>
         {loaded && list.length === 0 && <p className="discounts__empty">이 조건에 맞는 혜택이 아직 없어요.</p>}
