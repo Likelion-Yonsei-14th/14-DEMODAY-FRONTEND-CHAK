@@ -417,3 +417,8 @@
   color: var(--color-content-tertiary);
   font-size: var(--type-caption-size);
 }
+
+/* 제휴 매장은 배너 광고와 같은 시안(3:1, 1125×375)을 쓴다. 글씨가 잘리지 않게 배너 비율 그대로 보여 준다. */
+.discount.is-sponsored .discount__image {
+  aspect-ratio: 3 / 1;
+}
