@@ -10,7 +10,7 @@ const api = vi.hoisted(() => ({
 vi.mock('@/api/adminOutreach', () => api)
 
 import { OutreachPage } from './OutreachPage'
-import { contactHref } from './outreachFormat'
+import { contactHref, phoneOf } from './outreachFormat'
 
 const row = {
   id: 1,
@@ -109,6 +109,12 @@ describe('store outreach page', () => {
     } finally {
       window.matchMedia = original
     }
+  })
+
+  it('reads 0507 numbers whole and prefers the latest one in the note', () => {
+    expect(phoneOf(null, '네이버 0507-1423-0567 / 답장: 7시 통화 010-9165-0567')).toBe('010-9165-0567')
+    expect(phoneOf('0507-1346-1610', '메모 010-1111-2222')).toBe('0507-1346-1610')
+    expect(phoneOf('@insta', null)).toBeNull()
   })
 
   it('turns contacts into links only when the format is known', () => {

@@ -36,13 +36,13 @@ export function contactHref(channel: OutreachChannel, contact: string): string |
 /** 금액을 "79,000원"처럼 쓴다. 비어 있으면 null. */
 export const won = (value: number | null | undefined) => (value == null ? null : `${value.toLocaleString('ko-KR')}원`)
 
-/** 연락처나 메모에 적힌 첫 전화번호. 전화할 때 바로 누를 수 있게 꺼낸다. */
-export function phoneOf(...texts: (string | null | undefined)[]): string | null {
-  for (const text of texts) {
-    const found = text?.match(/0\d{1,2}-?\d{3,4}-?\d{4}/)
-    if (found) return found[0]
-  }
-  return null
+/** 연락처, 없으면 메모에서 가장 최근에 적힌 전화번호. 전화할 때 바로 누를 수 있게 꺼낸다. 0507 같은 네 자리 국번도 그대로 읽는다. */
+export function phoneOf(contact?: string | null, note?: string | null): string | null {
+  const pattern = /(?<!\d)0\d{1,3}-?\d{3,4}-?\d{4}(?!\d)/g
+  const inContact = contact?.match(pattern)
+  if (inContact) return inContact[0]
+  const inNote = note?.match(pattern)
+  return inNote?.at(-1) ?? null
 }
 
 /** 메모는 " / "로 이어 붙여 쌓인다. 가장 최근 n개만 보여 준다. */
