@@ -25,7 +25,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' https://js.tosspayments.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://hangeul.pstatic.net https://cdn.jsdelivr.net; font-src 'self' data: https://unpkg.com https://hangeul.pstatic.net https://cdn.jsdelivr.net; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://api.tosspayments.com https://*.amazonaws.com https://cdn.jsdelivr.net https://unpkg.com https://hangeul.pstatic.net; frame-src 'self' https://*.tosspayments.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'"
+          "value": "default-src 'self'; script-src 'self' https://js.tosspayments.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://hangeul.pstatic.net https://cdn.jsdelivr.net; font-src 'self' data: https://unpkg.com https://hangeul.pstatic.net https://cdn.jsdelivr.net; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://api.tosspayments.com https://nominatim.openstreetmap.org https://*.amazonaws.com https://cdn.jsdelivr.net https://unpkg.com https://hangeul.pstatic.net; frame-src 'self' https://*.tosspayments.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'"
         }
       ]
     }

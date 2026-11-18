@@ -19,6 +19,7 @@ import type { ApiAdvertisement } from '@/api/types'
 import { formatDateTime, formatNumber, isoToKstInput, kstInputToIso } from '../adminFormat'
 import { AdPreview } from './AdPreview'
 import { AdReportPanel } from './AdReportPanel'
+import { DiscountAdStats } from './DiscountAdStats'
 import { adStatus, STATUS_LABEL } from './adStatus'
 import './adsAdmin.css'
 
@@ -458,6 +459,8 @@ export function AdsAdminPage() {
           </tbody>
         </table>
       </div>
+
+      <DiscountAdStats />
     </>
   )
 }

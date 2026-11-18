@@ -84,3 +84,28 @@
 @media (max-width: 1180px) {
   .discounts-editor { grid-template-columns: 1fr; }
 }
+
+.discounts-form__sponsor {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #e3d8cc;
+  border-radius: 10px;
+}
+
+.discounts-form__sponsor legend {
+  padding: 0 6px;
+  font-weight: 700;
+}
+
+.location-picker {
+  display: grid;
+  gap: 8px;
+}
+
+.location-picker__map {
+  height: 240px;
+  border-radius: 8px;
+  z-index: 0;
+}

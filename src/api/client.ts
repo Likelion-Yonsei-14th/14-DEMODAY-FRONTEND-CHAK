@@ -29,6 +29,8 @@ type RequestOptions = {
   auth?: boolean
   /** Background request whose failure the user never notices: do not alert the team about network errors. */
   quiet?: boolean
+  /** Let the request finish even when the page is leaving (e.g. a click that opens another site). */
+  keepalive?: boolean
 }
 
 /** Absolute URL of an API path, e.g. to store as an image address. */
@@ -57,6 +59,7 @@ async function send(path: string, options: RequestOptions, withToken: boolean) {
       headers,
       // Required for the HttpOnly refresh cookie and the guest cookie.
       credentials: 'include',
+      keepalive: options.keepalive,
       body: options.file ?? (options.body === undefined ? undefined : JSON.stringify(options.body)),
     })
   } catch (error) {
