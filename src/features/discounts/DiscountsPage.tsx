@@ -46,9 +46,12 @@ export function DiscountCard({ d, today, defaultOpen = false }: { d: Discount; t
   const showImage = Boolean(d.image) && !imageFailed
   const soon = timingOf(d, today) === 'soon'
   const urgent = urgencyLabel(d, today)
+  const hasBring = Boolean(d.bring && d.bring.length > 0)
   const details: [string, string][] = [
-    ['챙길 것', d.bring && d.bring.length > 0 ? d.bring.join(', ') : ''],
+    ['챙길 것', hasBring ? d.bring!.join(', ') : ''],
     ['받는 방법', d.howTo ?? ''],
+    // 광고주가 정한 항목(참여 조건, 증정, 이용 시간…)은 받는 방법 다음에 적힌 순서대로.
+    ...(d.extras ?? []).map((extra): [string, string] => [extra.label, extra.value]),
     ['같이 가면', d.companions ?? ''],
     ['적용 지점', d.branches || d.place || ''],
     ['조건', d.conditions],
@@ -83,9 +86,9 @@ export function DiscountCard({ d, today, defaultOpen = false }: { d: Discount; t
         {d.highlight && <strong className="discount__highlight">{d.highlight}</strong>}
       </div>
 
-      {d.bring && d.bring.length > 0 && (
-        <ul className="discount__chips" aria-label="챙길 것">
-          {d.bring.map((item) => (
+      {(hasBring || d.howTo) && (
+        <ul className="discount__chips" aria-label={hasBring ? '챙길 것' : '받는 방법'}>
+          {(d.bring ?? []).map((item) => (
             <li key={item}>{item}</li>
           ))}
           {d.howTo && <li className="is-how">{d.howTo}</li>}
@@ -104,8 +107,9 @@ export function DiscountCard({ d, today, defaultOpen = false }: { d: Discount; t
       )}
       {open && (
         <dl className="discount__details">
-          {details.map(([label, value]) => (
-            <div key={label}>
+          {/* 추가 항목은 이름이 겹칠 수 있어(증정 두 줄 등) 순서도 key에 넣는다. */}
+          {details.map(([label, value], index) => (
+            <div key={`${index}-${label}`}>
               <dt>{label}</dt>
               <dd>{value}</dd>
             </div>
