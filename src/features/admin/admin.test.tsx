@@ -27,6 +27,8 @@ const auth = vi.hoisted(() => ({ fetchMe: vi.fn() }))
 
 vi.mock('@/api/admin', () => admin)
 vi.mock('@/api/auth', () => auth)
+const outreach = vi.hoisted(() => ({ fetchOutreach: vi.fn() }))
+vi.mock('@/api/adminOutreach', () => outreach)
 
 import { AdminLayout } from './AdminLayout'
 import { DashboardPage } from './DashboardPage'
@@ -61,6 +63,8 @@ describe('admin console', () => {
     Object.values(admin).forEach((fn) => fn.mockReset())
     admin.fetchActiveUsers.mockResolvedValue({ from: '', to: '', rangeVisitors: 0, rangeMembers: 0, rangeGuests: 0, days: [] })
     auth.fetchMe.mockReset()
+    outreach.fetchOutreach.mockReset()
+    outreach.fetchOutreach.mockResolvedValue([])
     usePrototypeStore.setState({
       authSession: { status: 'authenticated', email: 'a@b.com', provider: 'google', userId: 1 },
     })
@@ -95,6 +99,12 @@ describe('admin console', () => {
 
   it('shows the dashboard numbers for an admin', async () => {
     auth.fetchMe.mockResolvedValue({ id: 1, displayName: '운영자', admin: true })
+    outreach.fetchOutreach.mockResolvedValue([
+      { id: 1, status: 'PAID', offerPrice: 45000 },
+      { id: 2, status: 'AGREED', offerPrice: 118500 },
+      { id: 3, status: 'AGREED', offerPrice: 44000 },
+      { id: 4, status: 'NEGOTIATING', offerPrice: 79000 },
+    ])
     admin.fetchDailyStats.mockResolvedValue({
       from: '2026-10-20',
       to: '2026-10-21',
@@ -117,7 +127,9 @@ describe('admin console', () => {
     // CI가 느릴 때를 위해 여유를 둔다.
     expect(await screen.findByText('총 회원', {}, { timeout: 4000 })).toBeTruthy()
     expect(screen.getByText('120')).toBeTruthy()
-    expect(screen.getByText('4,000원')).toBeTruthy()
+    expect(screen.getByText('45,000원')).toBeTruthy()
+    expect(screen.getByText('입금 대기 162,500원 · 2곳')).toBeTruthy()
+    expect(screen.queryByText('기간 충전')).toBeNull()
     expect(await screen.findByText('서울')).toBeTruthy()
     expect(screen.getByText(/회원 10 · 비회원 15/)).toBeTruthy()
   })
