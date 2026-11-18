@@ -8,7 +8,7 @@ import {
   type ApiDiscount,
   type DiscountInput,
 } from '@/api/discounts'
-import { DISCOUNT_CATEGORIES } from '@/features/discounts/discountData'
+import { DISCOUNT_CATEGORIES, type DiscountExtra } from '@/features/discounts/discountData'
 import { DISCOUNT_AREAS, periodLabel, seoulToday, timingOf } from '@/features/discounts/discounts'
 import { DiscountCard } from '@/features/discounts/DiscountsPage'
 import { downloadDataUrl } from '../ads/adPreviewImage'
@@ -17,7 +17,12 @@ import '@/features/discounts/discounts.css'
 import '../ads/adsAdmin.css'
 import './discountsAdmin.css'
 
-const HOW_TO = ['현장', '사전 예약', '앱·온라인', '전화 예약'] as const
+/** 받는 방법 추천값. 목록에 없는 방법도 자유롭게 적는다(50자까지). */
+const HOW_TO = ['현장', '사전 예약', '앱·온라인', '전화 예약', '네이버 예약'] as const
+
+/** 추가 항목 이름 추천값. 광고주마다 다른 이벤트 내용·조건·증정품을 적는다. */
+const EXTRA_LABELS = ['참여 조건', '증정', '예약 방법', '이용 시간', '사용 기한', '문의'] as const
+const MAX_EXTRAS = 8
 
 type Form = {
   brand: string
@@ -30,6 +35,8 @@ type Form = {
   place: string
   branches: string
   howTo: string
+  /** 광고주가 정한 추가 항목. 화면에 이 순서대로 보인다. */
+  extras: DiscountExtra[]
   /** 한 줄에 하나씩 */
   bring: string
   companions: string
@@ -52,6 +59,7 @@ const EMPTY_FORM = (): Form => ({
   place: '',
   branches: '',
   howTo: '',
+  extras: [],
   bring: '2027학년도 수험표 원본\n신분증',
   companions: '',
   conditions: '',
@@ -73,6 +81,7 @@ const fromApi = (d: ApiDiscount): Form => ({
   place: d.place ?? '',
   branches: d.branches ?? '',
   howTo: d.howTo ?? '',
+  extras: (d.extras ?? []).map((extra) => ({ ...extra })),
   bring: d.bring.join('\n'),
   companions: d.companions ?? '',
   conditions: d.conditions ?? '',
@@ -97,6 +106,10 @@ function toInput(form: Form): DiscountInput {
     place: orNull(form.place),
     branches: orNull(form.branches),
     howTo: orNull(form.howTo),
+    // 둘 다 빈 행은 빼고, 한쪽만 빈 행은 남겨 problemOf에서 막는다.
+    extras: form.extras
+      .map((extra) => ({ label: extra.label.trim(), value: extra.value.trim() }))
+      .filter((extra) => extra.label || extra.value),
     bring: form.bring.split('\n').map((line) => line.trim()).filter(Boolean),
     companions: orNull(form.companions),
     conditions: orNull(form.conditions),
@@ -114,7 +127,87 @@ function problemOf(input: DiscountInput): string | null {
   if (!/^https?:\/\//.test(input.sourceUrl)) return '출처 주소(https://...)를 넣어 주세요. 출처가 확인된 혜택만 올려요.'
   if (input.start && input.end && input.start > input.end) return '시작일이 마지막 날보다 늦어요.'
   if (input.image && !/^https?:\/\//.test(input.image)) return '이미지 주소는 https://로 시작해야 해요.'
+  if (input.extras.some((extra) => !extra.label || !extra.value)) return '추가 항목은 이름과 내용을 모두 적어 주세요.'
   return null
+}
+
+/** 탭·줄바꿈은 서버에 저장할 때 구분자로 쓰므로 공백으로 바꾼다. */
+const oneLine = (value: string) => value.replace(/[\t\r\n]+/g, ' ')
+
+/** 광고주마다 다른 이벤트 내용·조건·증정품. 줄마다 이름과 내용, 순서 바꾸기·빼기. */
+function ExtrasEditor({ extras, onChange }: { extras: DiscountExtra[]; onChange: (next: DiscountExtra[]) => void }) {
+  const update = (index: number, patch: Partial<DiscountExtra>) =>
+    onChange(extras.map((extra, i) => (i === index ? { ...extra, ...patch } : extra)))
+  const move = (index: number, by: -1 | 1) => {
+    const next = [...extras]
+    const [item] = next.splice(index, 1)
+    next.splice(index + by, 0, item!)
+    onChange(next)
+  }
+
+  return (
+    <fieldset className="discount-extras">
+      <legend>추가 항목 (선택, 광고주마다 다른 이벤트 내용 · 조건 · 증정품)</legend>
+      <datalist id="discount-extra-labels">
+        {EXTRA_LABELS.map((label) => (
+          <option key={label} value={label} />
+        ))}
+      </datalist>
+      {extras.map((extra, index) => {
+        const n = index + 1
+        return (
+          <div key={index} className="discount-extras__row">
+            <input
+              aria-label={`추가 항목 ${n} 이름`}
+              placeholder="이름 (예: 증정)"
+              list="discount-extra-labels"
+              maxLength={20}
+              value={extra.label}
+              onChange={(e) => update(index, { label: oneLine(e.target.value) })}
+            />
+            <input
+              aria-label={`추가 항목 ${n} 내용`}
+              placeholder="내용 (예: 음료 1잔)"
+              maxLength={200}
+              value={extra.value}
+              onChange={(e) => update(index, { value: oneLine(e.target.value) })}
+            />
+            <span className="discount-extras__actions">
+              <button type="button" className="ads-btn" aria-label={`추가 항목 ${n} 위로`} disabled={index === 0} onClick={() => move(index, -1)}>
+                ↑
+              </button>
+              <button
+                type="button"
+                className="ads-btn"
+                aria-label={`추가 항목 ${n} 아래로`}
+                disabled={index === extras.length - 1}
+                onClick={() => move(index, 1)}
+              >
+                ↓
+              </button>
+              <button
+                type="button"
+                className="ads-btn"
+                aria-label={`추가 항목 ${n} 빼기`}
+                onClick={() => onChange(extras.filter((_, i) => i !== index))}
+              >
+                빼기
+              </button>
+            </span>
+          </div>
+        )
+      })}
+      <button
+        type="button"
+        className="ads-btn discount-extras__add"
+        disabled={extras.length >= MAX_EXTRAS}
+        onClick={() => onChange([...extras, { label: '', value: '' }])}
+      >
+        + 항목 추가
+      </button>
+      {extras.length >= MAX_EXTRAS && <span className="admin__muted"> {MAX_EXTRAS}개까지 넣을 수 있어요.</span>}
+    </fieldset>
+  )
 }
 
 type StatusFilter = 'all' | 'shown' | 'hidden' | 'ended'
@@ -323,21 +416,26 @@ export function DiscountsAdminPage() {
                 />
               </label>
               <label className="admin-field">
-                <span>받는 방법</span>
-                <select value={form.howTo} onChange={(e) => set('howTo', e.target.value)}>
-                  <option value="">(없음)</option>
+                <span>받는 방법 (골라도, 직접 적어도 돼요)</span>
+                <input
+                  list="discount-how-to"
+                  maxLength={50}
+                  placeholder="현장"
+                  value={form.howTo}
+                  onChange={(e) => set('howTo', e.target.value)}
+                />
+                <datalist id="discount-how-to">
                   {HOW_TO.map((h) => (
-                    <option key={h} value={h}>
-                      {h}
-                    </option>
+                    <option key={h} value={h} />
                   ))}
-                </select>
+                </datalist>
               </label>
             </div>
             <label className="admin-field">
               <span>챙길 것 (한 줄에 하나씩)</span>
               <textarea rows={3} value={form.bring} onChange={(e) => set('bring', e.target.value)} />
             </label>
+            <ExtrasEditor extras={form.extras} onChange={(extras) => set('extras', extras)} />
             <label className="admin-field">
               <span>같이 가면 (선택)</span>
               <input

@@ -103,6 +103,65 @@ describe('discounts admin', () => {
     expect(api.createAdminDiscount).not.toHaveBeenCalled()
   })
 
+  it("lets each advertiser's own terms be added, reordered and saved", async () => {
+    api.createAdminDiscount.mockImplementation(async (input) => ({ ...everland, ...input, id: 2 }))
+    renderPage()
+    await screen.findByRole('cell', { name: /에버랜드/ })
+    fireEvent.change(field(/브랜드 · 시설/), { target: { value: '수능 카페' } })
+    fireEvent.change(field(/혜택 \(한 문장\)/), { target: { value: '음료 30% 할인' } })
+    fireEvent.change(field(/출처 주소/), { target: { value: 'https://x.example.com/cafe' } })
+    fireEvent.change(field(/받는 방법/), { target: { value: '네이버 예약 후 방문' } })
+
+    const add = screen.getByRole('button', { name: '+ 항목 추가' })
+    fireEvent.click(add)
+    fireEvent.click(add)
+    fireEvent.click(add)
+    fireEvent.change(field(/^추가 항목 1 이름$/), { target: { value: '이용 시간' } })
+    fireEvent.change(field(/^추가 항목 1 내용$/), { target: { value: '평일\t11시~17시' } })
+    fireEvent.change(field(/^추가 항목 2 이름$/), { target: { value: '증정' } })
+    fireEvent.change(field(/^추가 항목 2 내용$/), { target: { value: ' 쿠키 1개 ' } })
+    // 탭(저장 구분자)은 공백으로 바뀐다. 줄바꿈은 한 줄 입력칸이 이미 지운다.
+    expect(field(/^추가 항목 1 내용$/).value).toBe('평일 11시~17시')
+    expect(screen.getByRole('button', { name: '추가 항목 1 위로' })).toBeDisabled()
+
+    // 증정을 맨 위로
+    fireEvent.click(screen.getByRole('button', { name: '추가 항목 2 위로' }))
+    expect(field(/^추가 항목 1 이름$/).value).toBe('증정')
+
+    // 미리보기 카드에도 받는 방법 칩과 추가 항목이 보인다.
+    const preview = document.querySelector('.discount-preview') as HTMLElement
+    expect(within(preview).getByRole('list', { name: '챙길 것' })).toHaveTextContent('네이버 예약 후 방문')
+    expect(within(preview).getByText('쿠키 1개')).toBeInTheDocument()
+
+    // 한쪽만 적은 줄은 막는다. 3번째 줄은 둘 다 비어 있어 저장할 때 빠진다.
+    fireEvent.change(field(/^추가 항목 3 이름$/), { target: { value: '문의' } })
+    fireEvent.click(screen.getByRole('button', { name: '혜택 올리기' }))
+    expect(await screen.findByText('추가 항목은 이름과 내용을 모두 적어 주세요.')).toBeInTheDocument()
+    expect(api.createAdminDiscount).not.toHaveBeenCalled()
+
+    fireEvent.change(field(/^추가 항목 3 이름$/), { target: { value: '' } })
+    fireEvent.click(screen.getByRole('button', { name: '혜택 올리기' }))
+    await waitFor(() => expect(api.createAdminDiscount).toHaveBeenCalledTimes(1))
+    expect(api.createAdminDiscount.mock.calls[0]![0]).toMatchObject({
+      howTo: '네이버 예약 후 방문',
+      extras: [
+        { label: '증정', value: '쿠키 1개' },
+        { label: '이용 시간', value: '평일 11시~17시' },
+      ],
+    })
+  })
+
+  it('stops at eight extra rows and removes a row', async () => {
+    renderPage()
+    await screen.findByRole('cell', { name: /에버랜드/ })
+    const add = screen.getByRole('button', { name: '+ 항목 추가' })
+    for (let i = 0; i < 8; i++) fireEvent.click(add)
+    expect(add).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: '추가 항목 8 빼기' }))
+    expect(add).toBeEnabled()
+    expect(screen.queryByLabelText('추가 항목 8 이름')).toBeNull()
+  })
+
   it('edits, hides and deletes', async () => {
     api.updateAdminDiscount.mockImplementation(async (id, input) => ({ ...everland, ...input, id }))
     api.deleteAdminDiscount.mockResolvedValue(undefined)
