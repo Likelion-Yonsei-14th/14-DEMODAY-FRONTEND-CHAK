@@ -99,3 +99,13 @@
   font-weight: 700;
 }
 
+.location-picker {
+  display: grid;
+  gap: 8px;
+}
+
+.location-picker__map {
+  height: 240px;
+  border-radius: 8px;
+  z-index: 0;
+}

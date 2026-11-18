@@ -17,6 +17,7 @@ import { downloadDataUrl } from '../ads/adPreviewImage'
 import { formatDateTime } from '../adminFormat'
 import '@/features/discounts/discounts.css'
 import '../ads/adsAdmin.css'
+import { LocationPicker } from './LocationPicker'
 import './discountsAdmin.css'
 
 const pad2 = (n: number) => String(n).padStart(2, '0')
@@ -565,9 +566,13 @@ export function DiscountsAdminPage() {
                   <input inputMode="decimal" placeholder="127.0557" value={form.longitude} onChange={(e) => set('longitude', e.target.value)} />
                 </label>
               </div>
-              <p className="admin__muted">
-                좌표가 있으면 접속한 사람과 가까운 순으로 먼저 보여 줘요. 네이버·카카오 지도에서 매장을 찍고 좌표를 복사해 넣어 주세요.
-              </p>
+              <LocationPicker
+                address={form.address}
+                latitude={form.latitude}
+                longitude={form.longitude}
+                onChange={(next) => setForm((current) => ({ ...current, ...next }))}
+              />
+              <p className="admin__muted">좌표가 있는 제휴 매장만 '지도에서 제휴 매장 찾기'에 나와요.</p>
             </fieldset>
             <label className="admin-check">
               <input type="checkbox" checked={form.visible} onChange={(e) => set('visible', e.target.checked)} />

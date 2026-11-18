@@ -391,6 +391,31 @@
   gap: var(--space-2);
 }
 
+.discounts__map-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 14px var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-butter-soft);
+  color: var(--color-content-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.discounts__map-link span {
+  display: grid;
+  gap: 2px;
+}
+
+.discounts__map-link small {
+  color: var(--color-content-secondary);
+  font-size: var(--type-caption-size);
+}
+
 .discounts__locate {
   display: inline-flex;
   align-items: center;

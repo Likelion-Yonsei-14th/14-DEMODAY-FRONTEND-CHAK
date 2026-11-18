@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeft, ChevronDown, ExternalLink, LocateFixed, Search, Store } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
+import { ArrowLeft, ChevronDown, ExternalLink, LocateFixed, Map as MapIcon, Search, Store } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { isApiEnabled } from '@/api/config'
-import { fetchDiscounts, type DiscountPlacement } from '@/api/discounts'
+import { type DiscountPlacement } from '@/api/discounts'
 import { AppBar, IconButton } from '@/design-system'
 import { AdBanner } from '@/features/ads/AdBanner'
 import { AppShell } from '@/layout/AppShell'
-import { DISCOUNTS, DISCOUNTS_UPDATED, DISCOUNT_CATEGORIES, type Discount } from './discountData'
+import { DISCOUNT_CATEGORIES, type Discount } from './discountData'
 import { DISCOUNT_AREAS, periodLabel, seoulToday, sourceHost, timingOf, urgencyLabel, visibleDiscounts } from './discounts'
+import { DISCOUNTS_MAP_PATH } from './discountRoutes'
+import { useDiscounts } from './useDiscounts'
 import {
   formatKm,
   reportSponsoredClick,
@@ -20,33 +21,6 @@ import {
 import './discounts.css'
 
 const md = (date: string) => `${Number(date.slice(5, 7))}월 ${Number(date.slice(8, 10))}일`
-
-type Loaded = { updated: string; items: readonly Discount[] }
-
-const BUNDLED: Loaded = { updated: DISCOUNTS_UPDATED, items: DISCOUNTS }
-
-/**
- * 혜택 목록. 운영자가 어드민에서 고친 서버 목록을 받는다.
- * 서버 없이 띄운 개발 화면이나, 목록을 받지 못했을 때는 앱에 묶인 목록을 쓴다.
- */
-function useDiscounts(): Loaded | null {
-  const [loaded, setLoaded] = useState<Loaded | null>(isApiEnabled ? null : BUNDLED)
-  useEffect(() => {
-    if (!isApiEnabled) return
-    let cancelled = false
-    fetchDiscounts()
-      .then(({ updated, items }) => {
-        if (!cancelled) setLoaded({ updated: updated ?? DISCOUNTS_UPDATED, items })
-      })
-      .catch(() => {
-        if (!cancelled) setLoaded(BUNDLED)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
-  return loaded
-}
 
 /**
  * 혜택 카드 한 장. 어드민의 미리보기도 같은 카드를 쓴다.
@@ -179,6 +153,7 @@ export function DiscountsPage() {
     [all, today, category, area, query, order],
   )
   const hasSponsored = (all ?? []).some((d) => d.sponsored)
+  const mappable = (all ?? []).some((d) => d.sponsored && d.latitude !== undefined && d.longitude !== undefined)
   const live = useMemo(() => visibleDiscounts(all ?? [], today, { category: null, area: null }), [all, today])
   const usedCategories = DISCOUNT_CATEGORIES.filter((c) => live.some((d) => d.category === c))
   // 혜택이 있는 지역만 버튼으로 보여 준다(어드민에서 새 지역을 넣으면 저절로 생긴다).
@@ -232,6 +207,15 @@ export function DiscountsPage() {
 
         {hasSponsored && (
           <div className="discounts__nearby">
+            {mappable && (
+              <button type="button" className="discounts__map-link" onClick={() => navigate(DISCOUNTS_MAP_PATH)}>
+                <MapIcon size={18} aria-hidden />
+                <span>
+                  <strong>지도에서 제휴 매장 찾기</strong>
+                  <small>내 주변 수험생 할인 매장을 지도로 봐요</small>
+                </span>
+              </button>
+            )}
             <button
               type="button"
               className="discounts__locate"
