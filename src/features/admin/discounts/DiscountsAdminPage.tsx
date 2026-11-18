@@ -52,6 +52,11 @@ type Form = {
   image: string
   imageSource: string
   visible: boolean
+  /** 광고 계약한 제휴 매장. 목록 위에 따로 돌려 보여 주고 노출·클릭을 센다. */
+  sponsored: boolean
+  address: string
+  latitude: string
+  longitude: string
 }
 
 const EMPTY_FORM = (): Form => ({
@@ -75,6 +80,10 @@ const EMPTY_FORM = (): Form => ({
   image: '',
   imageSource: '',
   visible: true,
+  sponsored: false,
+  address: '',
+  latitude: '',
+  longitude: '',
 })
 
 const fromApi = (d: ApiDiscount): Form => ({
@@ -97,6 +106,10 @@ const fromApi = (d: ApiDiscount): Form => ({
   image: d.image ?? '',
   imageSource: d.imageSource ?? '',
   visible: d.visible,
+  sponsored: d.sponsored ?? false,
+  address: d.address ?? '',
+  latitude: d.latitude != null ? String(d.latitude) : '',
+  longitude: d.longitude != null ? String(d.longitude) : '',
 })
 
 const orNull = (value: string) => (value.trim() ? value.trim() : null)
@@ -125,6 +138,10 @@ function toInput(form: Form): DiscountInput {
     image: orNull(form.image),
     imageSource: orNull(form.imageSource),
     visible: form.visible,
+    sponsored: form.sponsored,
+    address: orNull(form.address),
+    latitude: form.latitude.trim() ? Number(form.latitude) : null,
+    longitude: form.longitude.trim() ? Number(form.longitude) : null,
   }
 }
 
@@ -135,6 +152,11 @@ function problemOf(input: DiscountInput): string | null {
   if (input.start && input.end && input.start > input.end) return '시작일이 마지막 날보다 늦어요.'
   if (input.image && !/^https?:\/\//.test(input.image)) return '이미지 주소는 https://로 시작해야 해요.'
   if (input.extras.some((extra) => !extra.label || !extra.value)) return '추가 항목은 이름과 내용을 모두 적어 주세요.'
+  const { latitude: lat, longitude: lng } = input
+  if ((lat == null) !== (lng == null)) return '위도와 경도를 둘 다 넣거나 둘 다 비워 주세요.'
+  if (lat != null && lng != null && !(lat >= 33 && lat <= 39 && lng >= 124 && lng <= 132)) {
+    return '좌표가 국내 범위가 아니에요. 위도(33~39)·경도(124~132) 순서를 확인해 주세요.'
+  }
   return null
 }
 
@@ -518,6 +540,35 @@ export function DiscountsAdminPage() {
               <span>이미지를 가져온 페이지 (다른 사이트 이미지를 주소로 넣었을 때만)</span>
               <input placeholder="https://" maxLength={500} value={form.imageSource} onChange={(e) => set('imageSource', e.target.value)} />
             </label>
+            <fieldset className="discounts-form__sponsor">
+              <legend>제휴 광고</legend>
+              <label className="admin-check">
+                <input type="checkbox" checked={form.sponsored} onChange={(e) => set('sponsored', e.target.checked)} />
+                <span>광고 계약한 제휴 매장이에요 (목록 맨 위에 사람마다 돌려 보여 주고 노출·클릭을 세요)</span>
+              </label>
+              <label className="admin-field">
+                <span>매장 주소 (지도와 카드에 보여요)</span>
+                <input
+                  placeholder="서울 성동구 연무장길 00 2층"
+                  maxLength={200}
+                  value={form.address}
+                  onChange={(e) => set('address', e.target.value)}
+                />
+              </label>
+              <div className="ads-form__row">
+                <label className="admin-field">
+                  <span>위도</span>
+                  <input inputMode="decimal" placeholder="37.5446" value={form.latitude} onChange={(e) => set('latitude', e.target.value)} />
+                </label>
+                <label className="admin-field">
+                  <span>경도</span>
+                  <input inputMode="decimal" placeholder="127.0557" value={form.longitude} onChange={(e) => set('longitude', e.target.value)} />
+                </label>
+              </div>
+              <p className="admin__muted">
+                좌표가 있으면 접속한 사람과 가까운 순으로 먼저 보여 줘요. 네이버·카카오 지도에서 매장을 찍고 좌표를 복사해 넣어 주세요.
+              </p>
+            </fieldset>
             <label className="admin-check">
               <input type="checkbox" checked={form.visible} onChange={(e) => set('visible', e.target.checked)} />
               <span>사용자에게 보이기 (끄면 지우지 않고 목록에서만 내려요)</span>
@@ -585,6 +636,7 @@ export function DiscountsAdminPage() {
                 return (
                   <tr key={d.id} className={d.visible ? undefined : 'discounts-admin__hidden'}>
                     <td>
+                      {d.sponsored && <span className="admin-badge ads-badge--live">제휴</span>}{' '}
                       <strong>{d.brand}</strong>
                       <span className="admin__muted"> · {d.category}</span>
                       <br />
