@@ -280,6 +280,12 @@ export const router = createBrowserRouter([
         }),
       },
       {
+        path: '/discounts/map',
+        lazy: async () => ({
+          Component: (await import('@/features/discounts/DiscountsMapPage')).DiscountsMapPage,
+        }),
+      },
+      {
         path: '/promotion/deck',
         lazy: async () => ({
           Component: (await import('@/features/admin/pitch/PitchDeckViewPage')).PitchDeckViewPage,
