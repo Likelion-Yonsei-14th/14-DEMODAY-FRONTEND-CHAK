@@ -11,8 +11,8 @@ const BLANK = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAI
  * 배너가 없으면 맨 위 한 화면을 찍는다.
  */
 export async function captureAroundBanner(): Promise<string> {
-  const { toCanvas } = await import('html-to-image')
-  await document.fonts.ready
+  const [{ toCanvas }, { buildFontEmbedCSS }] = await Promise.all([import('html-to-image'), import('./captureFonts')])
+  const fontEmbedCSS = await buildFontEmbedCSS().catch(() => '')
   const root = (document.getElementById('root') ?? document.body) as HTMLElement
   const slot = document.querySelector<HTMLElement>('.ad-banner-preview-slot')
 
@@ -41,8 +41,8 @@ export async function captureAroundBanner(): Promise<string> {
       pixelRatio: PIXEL_RATIO,
       backgroundColor: background,
       style: { transform: `translateY(${-top}px)`, transformOrigin: '0 0', width: `${CAPTURE_WIDTH}px` },
-      // 글꼴 파일을 통째로 심으면 수 MB·수십 초가 걸린다. 심지 않아도 본문 글꼴(Pretendard)은 기기 글꼴로 거의 같게 나온다.
-      skipFonts: true,
+      // 글꼴을 빼면 기기 글꼴로 그려져 줄바꿈이 밀리고 글자가 겹친다. 실제로 쓰인 글꼴만 골라 심는다.
+      fontEmbedCSS,
       imagePlaceholder: BLANK,
     })
     return out.toDataURL('image/png')
