@@ -8,7 +8,7 @@ import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { ComingSoonDialog, CLASSROOM_NOTICE } from '@/features/common/ComingSoon'
 import { AdBanner } from '@/features/ads/AdBanner'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
-import { SuneungCorner } from '@/features/poll/SuneungCorner'
+import { DiscountsShortcut } from '@/features/discounts/DiscountsShortcut'
 import { isClassroomAvailable } from '@/lib/featureFlags'
 import { AppShell } from '@/layout/AppShell'
 import { isApiEnabled } from '@/api/config'
@@ -186,7 +186,7 @@ export function HomePage() {
           {classroomOpen ? '새 책상이나 반 만들기' : '새 책상 만들기'}
         </button>
 
-        <SuneungCorner />
+        <DiscountsShortcut />
 
         <AdBanner />
 
