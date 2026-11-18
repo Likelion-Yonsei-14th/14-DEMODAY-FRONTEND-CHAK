@@ -1,5 +1,11 @@
 import type { Discount } from './discountData'
 
+/** 걸러 보기에 쓰는 시·도 순서. 혜택은 이 중 하나나 "전국"으로 적는다. */
+export const DISCOUNT_AREAS = [
+  '서울', '경기', '인천', '강원', '대전', '세종', '충북', '충남', '광주', '전북', '전남',
+  '대구', '부산', '울산', '경북', '경남', '제주',
+] as const
+
 /** 오늘(한국 날짜) "YYYY-MM-DD". */
 export function seoulToday(now = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now)

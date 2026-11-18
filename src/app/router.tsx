@@ -240,6 +240,12 @@ export const router = createBrowserRouter([
             }),
           },
           {
+            path: 'discounts',
+            lazy: async () => ({
+              Component: (await import('@/features/admin/discounts/DiscountsAdminPage')).DiscountsAdminPage,
+            }),
+          },
+          {
             path: 'admins',
             lazy: async () => ({
               Component: (await import('@/features/admin/AdminsPage')).AdminsPage,

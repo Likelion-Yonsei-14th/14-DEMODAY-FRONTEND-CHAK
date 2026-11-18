@@ -1,0 +1,51 @@
+.discounts-editor { grid-template-columns: minmax(0, 1fr) 390px; }
+
+/* 두 칸짜리 줄의 입력칸이 칸 폭보다 넓어져 미리보기를 덮지 않게 */
+.discounts-form .admin-field { min-width: 0; }
+.discounts-form .admin-field input,
+.discounts-form .admin-field select,
+.discounts-form textarea { width: 100%; min-width: 0; box-sizing: border-box; }
+
+.discounts-form textarea {
+  padding: 8px 10px;
+  border: 1px solid #d9d3cb;
+  border-radius: 8px;
+  font: inherit;
+  resize: vertical;
+}
+
+.discount-preview { display: grid; gap: 12px; justify-items: start; }
+
+/* 사용자 화면과 같은 폭·바탕에서 카드 한 장을 그린다. */
+.discount-preview__frame {
+  width: 390px;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--color-surface-base);
+}
+.discount-preview__frame .discounts__list { margin: 0; }
+
+.discounts-admin__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.discounts-admin__search {
+  min-width: 220px;
+  padding: 8px 10px;
+  border: 1px solid #d9d3cb;
+  border-radius: 8px;
+  font: inherit;
+}
+.discounts-admin__hidden td { opacity: .55; }
+.discounts-admin__delete { color: #c4472d; }
+
+/* 왼쪽 메뉴를 빼고 남는 폭이 폼과 휴대폰 폭 미리보기를 나란히 두기에 모자라면 위아래로 */
+@media (max-width: 1180px) {
+  .discounts-editor { grid-template-columns: 1fr; }
+}

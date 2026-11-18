@@ -1,5 +1,9 @@
 /** 수험표 할인 한 건. 출처가 있는 올해(2027학년도 수능) 혜택만 넣는다. 날짜는 한국 날짜(YYYY-MM-DD). */
 export type Discount = {
+  /** 서버에서 받은 혜택의 번호. 아래 묶음 데이터에는 없다. */
+  id?: number
+  /** 어드민에서 숨김 여부. 사용자 목록에는 켜 둔 것만 온다. */
+  visible?: boolean
   brand: string
   category: DiscountCategory
   benefit: string
@@ -34,6 +38,10 @@ export type Discount = {
 export const DISCOUNT_CATEGORIES = ['놀이·체험', '음식·카페', '뷰티·미용', '안경·렌즈', '영화·공연', '여행·숙박', '패션·쇼핑', '운동·건강', '교육'] as const
 export type DiscountCategory = (typeof DISCOUNT_CATEGORIES)[number]
 
+/**
+ * 아래 목록은 서버(어드민 > 혜택함 관리)로 옮겼다. 서버에 연결하지 않는 개발 화면과,
+ * 서버 목록을 받지 못했을 때만 쓴다. 고칠 때는 어드민에서 고친다.
+ */
 /** 마지막으로 모은 날. 화면에 "11월 16일 기준"으로 보여 준다. */
 export const DISCOUNTS_UPDATED = '2026-11-17'
 
