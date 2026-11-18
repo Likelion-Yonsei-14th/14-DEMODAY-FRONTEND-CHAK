@@ -7,6 +7,8 @@
  * 가져오지 못한 글꼴은 건너뛴다(그 글꼴만 기기 글꼴로 나온다).
  */
 
+import { buildPretendardEmbedCSS, PRETENDARD_FAMILY } from './pretendardSubset'
+
 type Face = { family: string; weight: string; style: string; unicodeRange: string; src: string; base: string }
 
 const FORMAT_RANK = ['woff2', 'woff', 'truetype', 'opentype']
@@ -99,15 +101,24 @@ function toDataUrl(url: string) {
   return cached
 }
 
-export async function buildFontEmbedCSS(): Promise<string> {
+/** `text`는 화면에 그려지는 글자. Pretendard는 이 글자가 걸치는 조각만 심는다(pretendardSubset.ts). */
+export async function buildFontEmbedCSS(text: string): Promise<string> {
   await document.fonts.ready
   const loaded = new Set<string>()
+  let usesPretendard = false
   document.fonts.forEach((font) => {
-    if (font.status === 'loaded') loaded.add(faceKey(font.family, font.weight, font.style))
+    if (font.status !== 'loaded') return
+    loaded.add(faceKey(font.family, font.weight, font.style))
+    if (unquote(font.family).toLowerCase() === PRETENDARD_FAMILY.toLowerCase()) usesPretendard = true
   })
   if (loaded.size === 0) return ''
 
-  const faces = (await collectFaces()).filter((face) => loaded.has(faceKey(face.family, face.weight, face.style)))
+  const pretendard = usesPretendard ? buildPretendardEmbedCSS(text, toDataUrl) : Promise.resolve('')
+  const faces = (await collectFaces()).filter(
+    (face) =>
+      unquote(face.family).toLowerCase() !== PRETENDARD_FAMILY.toLowerCase() &&
+      loaded.has(faceKey(face.family, face.weight, face.style)),
+  )
   const blocks = await Promise.all(
     faces.map(async (face) => {
       const source = pickSource(face)
@@ -124,5 +135,5 @@ export async function buildFontEmbedCSS(): Promise<string> {
       ].join('')
     }),
   )
-  return blocks.filter(Boolean).join('\n')
+  return [await pretendard, ...blocks].filter(Boolean).join('\n')
 }
