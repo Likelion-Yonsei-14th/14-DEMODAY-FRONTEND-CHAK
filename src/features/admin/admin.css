@@ -425,17 +425,6 @@
   .benefit-detail__rows > div { grid-template-columns: 1fr; gap: 4px; }
 }
 
-.admin-poll-form {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px 14px;
-  align-items: end;
-}
-
-.admin-poll-form textarea {
-  font: inherit;
-}
-
 /* 매장 연락 현황 */
 .outreach-add { padding: 8px 14px; border: 0; border-radius: 8px; background: #2b2623; color: #fff; cursor: pointer; }
 .outreach-filters { flex-wrap: wrap; margin-bottom: 10px; }
