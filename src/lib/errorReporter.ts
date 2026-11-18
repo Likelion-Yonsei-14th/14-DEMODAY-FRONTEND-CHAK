@@ -64,6 +64,64 @@ export function getLastReportId() {
 }
 
 /**
+ * 네트워크 오류("Failed to fetch", iOS의 "Load failed")는 대부분 사용자가 앱을 전환하거나
+ * 화면을 잠그거나 페이지를 떠나면서 브라우저가 진행 중인 요청을 끊은 것이다. 그때는 화면의
+ * 요청 여러 개가 같은 순간에 한꺼번에 실패한다. 그래서 네트워크 오류는 바로 보내지 않고 잠시 모아 둔다.
+ * - 실패한 순간 화면이 숨겨져 있었거나 떠나는 중이면 버린다.
+ * - 모아 두는 동안이나 직전에 화면이 숨겨졌으면 버린다.
+ * - 같은 화면에서 함께 실패한 요청은 한 건으로 묶어 보낸다.
+ */
+const NETWORK_HOLD_MS = 2_000
+/** 실패 직전에 화면이 숨겨졌다면(앱 전환 뒤 돌아오며 끊긴 요청) 이만큼 거슬러 본다. */
+const HIDDEN_LOOKBACK_MS = 3_000
+
+let lastHiddenAt = Number.NEGATIVE_INFINITY
+let leaving = false
+
+if (typeof document !== 'undefined' && typeof window !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') lastHiddenAt = Date.now()
+  })
+  window.addEventListener('pagehide', () => {
+    leaving = true
+    lastHiddenAt = Date.now()
+  })
+  // bfcache로 돌아온 페이지는 다시 살아 있다.
+  window.addEventListener('pageshow', () => {
+    leaving = false
+  })
+}
+
+const pageGone = () => leaving || (typeof document !== 'undefined' && document.visibilityState === 'hidden')
+
+type HeldNetwork = { report: ErrorReport; route: string; failedAt: number; others: string[] }
+const heldNetwork = new Map<string, HeldNetwork>()
+
+function holdNetworkError(report: ErrorReport, route: string) {
+  const now = Date.now()
+  const held = heldNetwork.get(route)
+  if (held) {
+    if (report.apiPath && report.apiPath !== held.report.apiPath && !held.others.includes(report.apiPath)) {
+      held.others.push(report.apiPath)
+    }
+    return
+  }
+  heldNetwork.set(route, { report, route, failedAt: now, others: [] })
+  setTimeout(() => {
+    const entry = heldNetwork.get(route)
+    heldNetwork.delete(route)
+    if (!entry || pageGone() || lastHiddenAt >= entry.failedAt - HIDDEN_LOOKBACK_MS) return
+    const others = entry.others.map((path) => path.split('?')[0])
+    send(
+      others.length > 0
+        ? { ...entry.report, message: `${entry.report.message} (같이 실패한 요청 ${others.length}건: ${others.join(', ')})` }
+        : entry.report,
+      entry.route,
+    )
+  }, NETWORK_HOLD_MS)
+}
+
+/**
  * Tells the team about an error that happened in a user's browser. It never
  * throws, never blocks the UI, and skips noise, repeats and floods. Only the
  * page path (no query string), the message and a short stack are sent.
@@ -71,10 +129,22 @@ export function getLastReportId() {
 export function reportError(report: ErrorReport) {
   try {
     if (suppressed || !enabled() || isNoise(report)) return
-    // An offline browser fails every request; that is not our bug.
-    if (report.kind === 'network_error' && navigator.onLine === false) return
-
     const route = window.location.pathname
+    if (report.kind === 'network_error') {
+      // An offline browser fails every request; that is not our bug.
+      if (navigator.onLine === false || pageGone()) return
+      holdNetworkError(report, route)
+      return
+    }
+    send(report, route)
+  } catch {
+    // Reporting must never cause another error.
+  }
+}
+
+function send(report: ErrorReport, route: string) {
+  try {
+    if (suppressed) return
     const key = [report.kind, route, report.apiPath, report.status, report.code, report.message.slice(0, 80)].join('|')
     const now = Date.now()
     const previous = recent.get(key)
