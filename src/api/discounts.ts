@@ -1,5 +1,5 @@
 import { apiFetch } from '@/api/client'
-import type { Discount, DiscountCategory } from '@/features/discounts/discountData'
+import type { Discount, DiscountCategory, DiscountExtra } from '@/features/discounts/discountData'
 
 /** 서버가 주는 할인 한 건. 날짜는 한국 날짜("YYYY-MM-DD"), 없는 값은 null. */
 export type ApiDiscount = {
@@ -17,6 +17,8 @@ export type ApiDiscount = {
   highlight: string | null
   bring: string[]
   howTo: string | null
+  /** 광고주가 정한 추가 항목. 이 칸이 생기기 전 서버는 보내지 않는다. */
+  extras?: DiscountExtra[]
   companions: string | null
   branches: string | null
   image: string | null
@@ -26,7 +28,9 @@ export type ApiDiscount = {
   updatedAt: string
 }
 
-export type DiscountInput = Omit<ApiDiscount, 'id' | 'updatedByName' | 'updatedAt'>
+export type DiscountInput = Omit<ApiDiscount, 'id' | 'updatedByName' | 'updatedAt' | 'extras'> & {
+  extras: DiscountExtra[]
+}
 
 /** 서버 모양을 화면이 쓰는 모양으로. 빈 값은 화면 규칙대로 빈 글자나 없음으로 바꾼다. */
 export function toDiscount(d: ApiDiscount): Discount {
@@ -46,6 +50,7 @@ export function toDiscount(d: ApiDiscount): Discount {
     highlight: d.highlight ?? undefined,
     bring: d.bring.length > 0 ? d.bring : undefined,
     howTo: d.howTo ?? undefined,
+    extras: d.extras && d.extras.length > 0 ? d.extras : undefined,
     companions: d.companions ?? undefined,
     branches: d.branches ?? undefined,
     image: d.image ?? undefined,
