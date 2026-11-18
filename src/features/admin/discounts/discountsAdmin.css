@@ -14,6 +14,41 @@
   resize: vertical;
 }
 
+/* 추가 항목: 이름 · 내용 · 순서 버튼을 한 줄에 */
+.discount-extras {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #e4ded6;
+  border-radius: 10px;
+}
+.discount-extras legend { padding: 0 4px; font-size: 14px; }
+.discount-extras__row {
+  display: grid;
+  grid-template-columns: minmax(80px, 1fr) minmax(0, 2fr) auto;
+  gap: 6px;
+  align-items: center;
+}
+.discount-extras__row input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid #d9d3cb;
+  border-radius: 8px;
+  font: inherit;
+  background: #fff;
+}
+.discount-extras__actions { display: flex; gap: 4px; }
+.discount-extras__actions .ads-btn { padding: 6px 9px; }
+.discount-extras__add { justify-self: start; }
+
+@media (max-width: 560px) {
+  .discount-extras__row { grid-template-columns: 1fr; }
+}
+
 .discount-preview { display: grid; gap: 12px; justify-items: start; }
 
 /* 사용자 화면과 같은 폭·바탕에서 카드 한 장을 그린다. */

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -73,5 +73,30 @@ describe('discounts from the server', () => {
   it('maps empty server values to what the card expects', () => {
     const d = toDiscount({ ...server, bring: ['수험표'], conditions: null, place: null })
     expect(d).toMatchObject({ id: 7, conditions: '', place: '', bring: ['수험표'], highlight: '30%', image: undefined })
+  })
+
+  it('keeps extras in order and treats missing or empty ones as none', () => {
+    const extras = [
+      { label: '증정', value: '음료 1잔' },
+      { label: '이용 시간', value: '평일 11시~17시' },
+    ]
+    expect(toDiscount({ ...server, extras }).extras).toEqual(extras)
+    expect(toDiscount({ ...server, extras: [] }).extras).toBeUndefined()
+    // 이 칸이 생기기 전 서버는 extras를 보내지 않는다.
+    expect(toDiscount(server).extras).toBeUndefined()
+  })
+
+  it('shows extras after how to get it, and the how-to chip even without things to bring', async () => {
+    api.fetchDiscounts.mockResolvedValue({
+      updated: '2026-11-18',
+      items: [toDiscount({ ...server, howTo: '네이버 예약', extras: [{ label: '증정', value: '음료 1잔' }, { label: '증정', value: '쿠키' }] })],
+    })
+    renderPage()
+    const heading = await screen.findByRole('heading', { name: '광주 방탈출' })
+    const card = heading.closest('li') as HTMLElement
+    expect(within(card).getByRole('list', { name: '받는 방법' })).toHaveTextContent('네이버 예약')
+    fireEvent.click(within(card).getByRole('button', { name: /자세히 보기/ }))
+    const labels = within(card).getAllByRole('term').map((dt) => dt.textContent)
+    expect(labels).toEqual(['받는 방법', '증정', '증정', '적용 지점'])
   })
 })

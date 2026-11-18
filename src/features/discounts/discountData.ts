@@ -1,3 +1,6 @@
+/** 광고주마다 다른 이벤트 내용·조건·증정품 한 줄. 예: { label: '증정', value: '음료 1잔' } */
+export type DiscountExtra = { label: string; value: string }
+
 /** 수험표 할인 한 건. 출처가 있는 올해(2027학년도 수능) 혜택만 넣는다. 날짜는 한국 날짜(YYYY-MM-DD). */
 export type Discount = {
   /** 서버에서 받은 혜택의 번호. 아래 묶음 데이터에는 없다. */
@@ -23,8 +26,10 @@ export type Discount = {
   highlight?: string
   /** 챙겨 갈 것("2027학년도 수험표 원본", "신분증"). */
   bring?: readonly string[]
-  /** 받는 방법: 현장, 사전 예약, 앱·온라인, 전화 예약. */
+  /** 받는 방법: 현장, 사전 예약, 앱·온라인, 전화 예약 등(자유 입력, 50자까지). */
   howTo?: string
+  /** 광고주가 정한 추가 항목(참여 조건, 증정, 이용 시간…). 자세히 보기에 순서대로 보여 준다. */
+  extras?: readonly DiscountExtra[]
   /** 같이 가는 사람 혜택("동반 3명까지 같은 가격"). */
   companions?: string
   /** 적용 지점("전국 매장(일부 제외)"). */
