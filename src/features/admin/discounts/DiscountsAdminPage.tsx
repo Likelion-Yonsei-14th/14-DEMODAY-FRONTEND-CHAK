@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import {
   createAdminDiscount,
   deleteAdminDiscount,
@@ -8,6 +8,8 @@ import {
   type ApiDiscount,
   type DiscountInput,
 } from '@/api/discounts'
+import { AD_IMAGE_MAX_BYTES, AD_IMAGE_TYPES, uploadAdCreative } from '@/api/adminAds'
+import { CSAT_SCHEDULE } from '@/features/csat/csatSchedule'
 import { DISCOUNT_CATEGORIES, type DiscountExtra } from '@/features/discounts/discountData'
 import { DISCOUNT_AREAS, periodLabel, seoulToday, timingOf } from '@/features/discounts/discounts'
 import { DiscountCard } from '@/features/discounts/DiscountsPage'
@@ -16,6 +18,10 @@ import { formatDateTime } from '../adminFormat'
 import '@/features/discounts/discounts.css'
 import '../ads/adsAdmin.css'
 import './discountsAdmin.css'
+
+const pad2 = (n: number) => String(n).padStart(2, '0')
+/** 수능날 "YYYY-MM-DD". 새 혜택의 시작일 기본값. */
+const EXAM_DAY = `${CSAT_SCHEDULE.examDate.year}-${pad2(CSAT_SCHEDULE.examDate.month)}-${pad2(CSAT_SCHEDULE.examDate.day)}`
 
 /** 받는 방법 추천값. 목록에 없는 방법도 자유롭게 적는다(50자까지). */
 const HOW_TO = ['현장', '사전 예약', '앱·온라인', '전화 예약', '네이버 예약'] as const
@@ -53,14 +59,15 @@ const EMPTY_FORM = (): Form => ({
   category: DISCOUNT_CATEGORIES[0],
   benefit: '',
   highlight: '',
-  start: '',
-  end: '',
+  // 대부분 수능날부터 연말까지 열리므로 기본값으로 채워 둔다.
+  start: EXAM_DAY,
+  end: `${CSAT_SCHEDULE.examDate.year}-12-31`,
   area: '전국',
   place: '',
   branches: '',
   howTo: '',
   extras: [],
-  bring: '2027학년도 수험표 원본\n신분증',
+  bring: `${CSAT_SCHEDULE.academicYear}학년도 수험표 원본`,
   companions: '',
   conditions: '',
   sourceUrl: '',
@@ -223,6 +230,36 @@ export function DiscountsAdminPage() {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+
+  /**
+   * 대표 이미지 파일을 올린다. 광고 시안과 같은 저장소(서버 DB)에 올라가고 우리 서버 주소를 돌려받는다.
+   * 직접 올린 이미지는 출처 페이지가 필요 없으므로 비운다.
+   */
+  const onImageFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    if (!AD_IMAGE_TYPES.includes(file.type)) {
+      setUploadError('PNG·JPEG·WEBP·GIF 이미지만 올릴 수 있어요.')
+      return
+    }
+    if (file.size > AD_IMAGE_MAX_BYTES) {
+      setUploadError('이미지는 1MB까지 올릴 수 있어요. 크기를 줄여 주세요.')
+      return
+    }
+    setUploading(true)
+    setUploadError(null)
+    try {
+      const url = await uploadAdCreative(file)
+      setForm((current) => ({ ...current, image: url, imageSource: '' }))
+    } catch {
+      setUploadError('이미지를 올리지 못했어요. 다시 시도해 주세요.')
+    } finally {
+      setUploading(false)
+    }
+  }
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const today = seoulToday()
@@ -459,22 +496,34 @@ export function DiscountsAdminPage() {
                 <input type="date" value={form.sourceDate} onChange={(e) => set('sourceDate', e.target.value)} />
               </label>
             </div>
-            <div className="ads-form__row">
-              <label className="admin-field">
-                <span>대표 이미지 주소 (공식 페이지의 이미지만)</span>
-                <input placeholder="https://" maxLength={500} value={form.image} onChange={(e) => set('image', e.target.value)} />
-              </label>
-              <label className="admin-field">
-                <span>이미지를 가져온 페이지</span>
-                <input placeholder="https://" maxLength={500} value={form.imageSource} onChange={(e) => set('imageSource', e.target.value)} />
-              </label>
+            <div className="admin-field">
+              <span>대표 이미지 (선택)</span>
+              <div className="ads-form__upload">
+                <label className="ads-form__file">
+                  {uploading ? '올리는 중...' : '이미지 파일 올리기'}
+                  <input type="file" accept={AD_IMAGE_TYPES.join(',')} onChange={onImageFile} disabled={uploading} />
+                </label>
+                <span className="admin__muted">또는 주소 붙여넣기 · PNG·JPEG·WEBP·GIF, 1MB까지</span>
+              </div>
+              <input
+                aria-label="대표 이미지 주소"
+                placeholder="https://"
+                maxLength={500}
+                value={form.image}
+                onChange={(e) => set('image', e.target.value)}
+              />
+              {uploadError && <p className="admin__error">{uploadError}</p>}
             </div>
+            <label className="admin-field">
+              <span>이미지를 가져온 페이지 (다른 사이트 이미지를 주소로 넣었을 때만)</span>
+              <input placeholder="https://" maxLength={500} value={form.imageSource} onChange={(e) => set('imageSource', e.target.value)} />
+            </label>
             <label className="admin-check">
               <input type="checkbox" checked={form.visible} onChange={(e) => set('visible', e.target.checked)} />
               <span>사용자에게 보이기 (끄면 지우지 않고 목록에서만 내려요)</span>
             </label>
             <div className="admin-actions">
-              <button type="submit" className="ads-btn ads-btn--primary" disabled={busy}>
+              <button type="submit" className="ads-btn ads-btn--primary" disabled={busy || uploading}>
                 {editingId === null ? '혜택 올리기' : '고친 내용 저장'}
               </button>
               {editingId !== null && (
