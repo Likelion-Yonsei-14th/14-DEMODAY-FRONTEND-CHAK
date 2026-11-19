@@ -31,7 +31,7 @@ for (const event of mainEvents) {
   const kind = choice < 0.12 ? 'benefits' : choice < 0.22 ? 'banner' : null
   if (!kind) continue
   const creative = kind === 'banner' && random() < 0.2
-  const cost = (kind === 'benefits' ? 3 : 1) + Number(creative)
+  const cost = (kind === 'benefits' ? 5 : 3) + Number(creative)
   let fits = true
   for (let start = Math.max(0, event.at - 59); start <= event.at; start++) {
     if (rolling[start] + cost + 2 > maxRpm) { fits = false; break }
@@ -42,7 +42,7 @@ for (const event of mainEvents) {
 }
 if (!journeys.length) throw new Error('남은 시간에 배치할 읽기 방문이 없습니다')
 
-const k6 = `// Read-only CHAK benefits and ad-placement journeys. No ad analytics or outbound clicks.
+const k6 = `// CHAK benefits and ad-placement journeys. Internal ad events only; no outbound links.
 import http from 'k6/http';
 import { sleep } from 'k6';
 import { Counter, Rate } from 'k6/metrics';
@@ -65,6 +65,15 @@ function read(url, opts, statuses = [200]) {
   journeyFailures.add(statuses.includes(response.status) ? 0 : 1);
   return response;
 }
+function record(url, body, opts) {
+  const response = http.post(url, JSON.stringify(body), {
+    ...opts,
+    headers: { ...opts.headers, 'Content-Type': 'application/json' },
+  });
+  const ok = response.status === 201 || response.status === 202;
+  journeyFailures.add(ok ? 0 : 1);
+  return ok;
+}
 export default function () {
   const headers = { 'X-CHAK-Load-Test': runId, 'User-Agent': 'chak-sim-load-test/1.0' };
   for (let i = __VU - 1; i < events.length; i += VUS) {
@@ -77,19 +86,34 @@ export default function () {
       read(front + '/discounts', opts);
       read(api + '/api/public/discounts', opts);
       const sponsored = read(api + '/api/public/discounts/sponsored?geoCountry=KR&geoRegion=' + event.region, opts);
-      if (sponsored.status === 200 && event.clickIntent) {
-        try { if (sponsored.json()?.items?.length) clickIntents.add(1, { surface: 'benefits' }); }
-        catch (_) { journeyFailures.add(1); }
+      if (sponsored.status === 200) {
+        try {
+          const discountId = sponsored.json()?.items?.[0]?.id;
+          if (Number.isInteger(discountId)) {
+            const url = api + '/api/public/discounts/' + discountId + '/events';
+            const details = { placement: 'LIST', geoCountry: 'KR', geoRegion: event.region };
+            const shown = record(url, { ...details, type: 'IMPRESSION' }, opts);
+            if (shown && event.clickIntent && record(url, { ...details, type: 'CLICK' }, opts)) {
+              clickIntents.add(1, { surface: 'benefits' });
+            }
+          }
+        } catch (_) { journeyFailures.add(1); }
       }
     } else {
       const ad = read(api + '/api/public/ads/serve?placement=BANNER&geoCountry=KR&geoRegion=' + event.region, opts, [200, 204]);
       if (ad.status !== 200) continue;
       let body = null;
       try { body = ad.json(); } catch (_) { journeyFailures.add(1); }
+      if (!Number.isInteger(body?.id)) continue;
       if (event.creative && /^https:\\/\\/www\\.chak\\.live\\/api\\/public\\/ads\\/creatives\\/\\d+$/.test(body?.creativeUrl || '')) {
         read(body.creativeUrl, opts);
       }
-      if (event.clickIntent) clickIntents.add(1, { surface: 'banner' });
+      const url = api + '/api/public/ads/' + body.id + '/events';
+      const details = { sessionId: runId + '-' + i, geoCountry: 'KR', geoRegion: event.region };
+      const shown = record(url, { ...details, eventType: 'IMPRESSION' }, opts);
+      if (shown && event.clickIntent && record(url, { ...details, eventType: 'CLICK' }, opts)) {
+        clickIntents.add(1, { surface: 'banner' });
+      }
     }
   }
 }
@@ -107,7 +131,7 @@ const summary = {
   simulatedClickIntents: journeys.filter((event) => event.clickIntent).length,
   clickIntentRates, rollingRequestBudget: peak,
   firstAt: journeys[0].at, lastAt: journeys.at(-1).at,
-  note: '광고 클릭 의향은 k6 시험 지표에만 기록한다. 외부 링크와 광고 CLICK 이벤트는 호출하지 않는다.',
+  note: '혜택·배너의 노출과 클릭은 CHAK 내부 집계 API에 기록한다. 외부 광고주 링크는 호출하지 않는다.',
 }
 writeFileSync(join(out, 'plan.json'), JSON.stringify(summary, null, 2) + '\n')
 console.log(JSON.stringify(summary))
