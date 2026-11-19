@@ -81,6 +81,8 @@
   font-weight: 700;
   cursor: pointer;
 }
+/* 숨긴 파일 입력은 버튼 안에 가둔다. 폼의 input 폭(100%) 규칙이 이겨도 페이지가 가로로 넘치지 않게. */
+.ads-form__file { position: relative; overflow: hidden; }
 .ads-form__file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .ads-form__file:focus-within { outline: 3px solid #f2b6a5; }
 
