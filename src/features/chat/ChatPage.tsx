@@ -9,7 +9,7 @@ import { DISCOUNTS_PATH } from '@/features/discounts/discountRoutes'
 import './chat.css'
 
 const MAX_QUESTION = 500
-const SUGGESTIONS = ['수능 성적은 언제 나와?', '정시 원서 접수 일정 알려줘', '수험표로 받을 수 있는 혜택 뭐 있어?', '수능 끝나고 뭐 하면 좋을까?']
+const SUGGESTIONS = ['수능 성적은 언제 나와?', '정시 원서 접수는 언제 시작해?', '수험표로 받을 수 있는 혜택 알려줘', '수능 이후 입시 일정은 어떻게 돼?']
 const GREETING = '수능 보느라 정말 고생 많았어요! 수능 일정, 성적, 정시, 수험표 혜택처럼 궁금한 걸 편하게 물어봐 주세요.'
 
 type Message = ChatTurn & { discounts?: ChatDiscount[]; sources?: ChatSource[]; error?: boolean }
