@@ -114,15 +114,53 @@
 
 .ad-preview__notes { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13px; line-height: 1.5; }
 
-.ads-table__thumb {
-  width: 150px;
-  aspect-ratio: 3 / 1;
-  object-fit: cover;
+.ads-list { margin: 16px 0 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+
+.ads-item {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid #eee8e1;
+  border-radius: 12px;
+  background: #fff;
+}
+.ads-item.is-editing { border-color: #e85d3f; box-shadow: 0 0 0 2px #f9d8cf; }
+
+.ads-item__thumb {
+  padding: 0;
+  border: 0;
   border-radius: 8px;
   background: #eee;
-  display: block;
+  cursor: pointer;
+  align-self: start;
+  overflow: hidden;
 }
-.ads-table__link { font-size: 12px; color: #7a716a; overflow-wrap: anywhere; }
+.ads-item__thumb img { width: 100%; aspect-ratio: 3 / 1; object-fit: cover; display: block; }
+.ads-item__thumb:focus-visible { outline: 3px solid #f2b6a5; }
+
+.ads-item__body { display: grid; gap: 4px; min-width: 0; }
+.ads-item__head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ads-item__meta { margin: 0; color: #7a716a; font-size: 13px; line-height: 1.5; }
+.ads-item__link {
+  font-size: 12px;
+  color: #7a716a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ads-item__actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.ads-item__report {
+  grid-column: 1 / -1;
+  padding: 12px;
+  border-radius: 8px;
+  background: #faf8f5;
+  overflow-x: auto;
+}
+
+@media (max-width: 640px) {
+  .ads-item { grid-template-columns: 1fr; }
+}
 
 @media (max-width: 900px) {
   .ads-editor { grid-template-columns: 1fr; }
@@ -141,7 +179,6 @@
 }
 .ads-btn:disabled { opacity: .55; cursor: default; }
 .ads-btn--primary { border-color: #e85d3f; background: #e85d3f; color: #fff; }
-.admin-table .admin-actions { align-items: center; flex-wrap: wrap; }
 .ads-badge--live { background: #e0f0e4; color: #1d5a2e; }
 
 .ad-preview__device iframe { visibility: hidden; }
@@ -159,7 +196,6 @@
   cursor: pointer;
 }
 .ads-regions button[aria-pressed='true'] { border-color: #2b2622; background: #2b2622; color: #fff; }
-.ads-table__report > td { background: #faf8f5; }
 .ads-report { display: grid; gap: 12px; }
 .ads-report__totals { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; }
 .ads-report__totals div { display: grid; gap: 2px; }
