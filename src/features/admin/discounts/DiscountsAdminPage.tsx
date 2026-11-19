@@ -241,6 +241,8 @@ function ExtrasEditor({ extras, onChange }: { extras: DiscountExtra[]; onChange:
 }
 
 type StatusFilter = 'all' | 'shown' | 'hidden' | 'ended'
+/** 제휴(광고 계약 매장)와 일반 혜택을 나눠 본다. 상태 거르기와 함께 쓴다. */
+type KindFilter = 'all' | 'sponsored' | 'regular'
 
 const TIMING_LABEL = { ongoing: '진행 중', soon: '시작 전', ended: '끝남' } as const
 
@@ -285,6 +287,7 @@ export function DiscountsAdminPage() {
   }
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [kindFilter, setKindFilter] = useState<KindFilter>('all')
   const today = seoulToday()
 
   const load = useCallback(() => {
@@ -304,7 +307,14 @@ export function DiscountsAdminPage() {
   const lastUpdated = items.reduce<string | null>((max, d) => (!max || d.updatedAt > max ? d.updatedAt : max), null)
   const counts = useMemo(() => {
     const shown = items.filter((d) => d.visible && timingOf(toDiscount(d), today) !== 'ended').length
-    return { shown, hidden: items.filter((d) => !d.visible).length, ended: items.filter((d) => timingOf(toDiscount(d), today) === 'ended').length }
+    const sponsored = items.filter((d) => d.sponsored).length
+    return {
+      shown,
+      hidden: items.filter((d) => !d.visible).length,
+      ended: items.filter((d) => timingOf(toDiscount(d), today) === 'ended').length,
+      sponsored,
+      regular: items.length - sponsored,
+    }
   }, [items, today])
 
   const rows = useMemo(() => {
@@ -317,8 +327,9 @@ export function DiscountsAdminPage() {
         if (statusFilter === 'ended') return timing === 'ended'
         return true
       })
+      .filter((d) => kindFilter === 'all' || (kindFilter === 'sponsored') === Boolean(d.sponsored))
       .filter((d) => !q || [d.brand, d.benefit, d.place ?? '', d.area, d.category].some((t) => t.toLowerCase().includes(q)))
-  }, [items, query, statusFilter, today])
+  }, [items, query, statusFilter, kindFilter, today])
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
@@ -606,19 +617,34 @@ export function DiscountsAdminPage() {
 
       <section className="admin__panel discounts-admin__list">
         <div className="discounts-admin__toolbar">
-          <div className="ads-regions" role="group" aria-label="상태">
-            {(
-              [
-                ['all', `전체 ${items.length}`],
-                ['shown', `보이는 중 ${counts.shown}`],
-                ['hidden', `숨김 ${counts.hidden}`],
-                ['ended', `끝남 ${counts.ended}`],
-              ] as const
-            ).map(([value, label]) => (
-              <button key={value} type="button" aria-pressed={statusFilter === value} onClick={() => setStatusFilter(value)}>
-                {label}
-              </button>
-            ))}
+          <div className="discounts-admin__filters">
+            <div className="ads-regions" role="group" aria-label="상태">
+              {(
+                [
+                  ['all', `전체 ${items.length}`],
+                  ['shown', `보이는 중 ${counts.shown}`],
+                  ['hidden', `숨김 ${counts.hidden}`],
+                  ['ended', `끝남 ${counts.ended}`],
+                ] as const
+              ).map(([value, label]) => (
+                <button key={value} type="button" aria-pressed={statusFilter === value} onClick={() => setStatusFilter(value)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="ads-regions" role="group" aria-label="제휴 여부">
+              {(
+                [
+                  ['all', '제휴·일반 모두'],
+                  ['sponsored', `제휴 ${counts.sponsored}`],
+                  ['regular', `일반 ${counts.regular}`],
+                ] as const
+              ).map(([value, label]) => (
+                <button key={value} type="button" aria-pressed={kindFilter === value} onClick={() => setKindFilter(value)}>
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
           <input
             type="search"
