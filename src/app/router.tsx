@@ -280,6 +280,12 @@ export const router = createBrowserRouter([
         }),
       },
       {
+        path: '/recap',
+        lazy: async () => ({
+          Component: (await import('@/features/recap/RecapPage')).RecapPage,
+        }),
+      },
+      {
         path: '/discounts/map',
         lazy: async () => ({
           Component: (await import('@/features/discounts/DiscountsMapPage')).DiscountsMapPage,
