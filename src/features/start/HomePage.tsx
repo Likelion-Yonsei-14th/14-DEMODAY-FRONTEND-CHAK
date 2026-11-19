@@ -7,6 +7,7 @@ import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
 import { AdBanner } from '@/features/ads/AdBanner'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { DiscountsShortcut } from '@/features/discounts/DiscountsShortcut'
+import { ChatShortcut } from '@/features/chat/ChatShortcut'
 import { isRecapOpen, RECAP_OPENS_LABEL } from '@/features/recap/recapSchedule'
 import { isClassroomAvailable } from '@/lib/featureFlags'
 import { AppShell } from '@/layout/AppShell'
@@ -170,6 +171,8 @@ export function HomePage() {
         </button>
 
         <DiscountsShortcut />
+
+        <ChatShortcut />
 
         <AdBanner />
 

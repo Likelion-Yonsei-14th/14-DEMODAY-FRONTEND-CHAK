@@ -91,6 +91,10 @@ export const createAdminDiscount = (input: DiscountInput) =>
 export const updateAdminDiscount = (id: number, input: DiscountInput) =>
   apiFetch<ApiDiscount>(`${ADMIN_PATH}/${id}`, { method: 'PUT', body: input })
 
+/** 웹에서 새 수험생 혜택 후보를 찾아 숨김으로 넣는다. enabled=false면 라이너 키가 없다. */
+export type CollectResult = { enabled: boolean; searched: number; added: string[] }
+export const collectAdminDiscounts = () => apiFetch<CollectResult>(`${ADMIN_PATH}/collect`, { method: 'POST' })
+
 export const deleteAdminDiscount = (id: number) => apiFetch<void>(`${ADMIN_PATH}/${id}`, { method: 'DELETE' })
 
 /** 제휴 혜택 한 자리. distanceKm는 내 위치를 알려 줬고 매장 좌표가 있을 때만. */
