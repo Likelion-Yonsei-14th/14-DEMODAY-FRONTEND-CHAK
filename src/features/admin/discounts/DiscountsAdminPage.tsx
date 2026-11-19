@@ -656,56 +656,64 @@ export function DiscountsAdminPage() {
           />
         </div>
 
-        <div className="admin-table-wrap">
-          <table className="admin-table">
-            <thead>
-              <tr><th>혜택</th><th>기간</th><th>지역</th><th>상태</th><th>마지막 수정</th><th /></tr>
-            </thead>
-            <tbody>
-              {rows.map((d) => {
-                const timing = timingOf(toDiscount(d), today)
-                return (
-                  <tr key={d.id} className={d.visible ? undefined : 'discounts-admin__hidden'}>
-                    <td>
-                      {d.sponsored && <span className="admin-badge ads-badge--live">제휴</span>}{' '}
-                      <strong>{d.brand}</strong>
-                      <span className="admin__muted"> · {d.category}</span>
-                      <br />
-                      {d.benefit}
-                    </td>
-                    <td>{periodLabel(toDiscount(d))}</td>
-                    <td>{d.place || d.area}</td>
-                    <td>
-                      <span className={`admin-badge${d.visible && timing !== 'ended' ? ' ads-badge--live' : ' admin-badge--muted'}`}>
-                        {!d.visible ? '숨김' : TIMING_LABEL[timing]}
-                      </span>
-                    </td>
-                    <td className="admin__muted">
-                      {formatDateTime(d.updatedAt)}
-                      {d.updatedByName && <><br />{d.updatedByName}</>}
-                    </td>
-                    <td>
-                      <span className="admin-actions">
-                        <button type="button" className="ads-btn" disabled={busy} onClick={() => edit(d)}>
-                          고치기
-                        </button>
-                        <button type="button" className="ads-btn" disabled={busy} onClick={() => setVisible(d, !d.visible)}>
-                          {d.visible ? '숨기기' : '보이기'}
-                        </button>
-                        <button type="button" className="ads-btn discounts-admin__delete" disabled={busy} onClick={() => remove(d)}>
-                          지우기
-                        </button>
-                      </span>
-                    </td>
-                  </tr>
-                )
-              })}
-              {loaded && rows.length === 0 && (
-                <tr><td colSpan={6} className="admin__muted">해당하는 혜택이 없어요.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        {/* 광고 관리 목록처럼 카드로. 대표 이미지(시안)를 누르면 위 폼에서 바로 고치고 미리 본다. */}
+        <ul className="ads-list" aria-label="혜택 목록">
+          {rows.map((d) => {
+            const timing = timingOf(toDiscount(d), today)
+            const editing = editingId === d.id
+            const classes = ['ads-item', editing && 'is-editing', !d.visible && 'discounts-admin__hidden'].filter(Boolean).join(' ')
+            return (
+              <li key={d.id} className={classes} aria-label={d.brand}>
+                <button
+                  type="button"
+                  className={d.sponsored ? 'ads-item__thumb' : 'ads-item__thumb is-card'}
+                  onClick={() => edit(d)}
+                  aria-label={`${d.brand} 고치기·미리보기로 열기`}
+                >
+                  {d.image ? (
+                    <img src={d.image} alt="" loading="lazy" referrerPolicy="no-referrer" />
+                  ) : (
+                    <span className="discounts-admin__no-image">이미지 없음</span>
+                  )}
+                </button>
+                <div className="ads-item__body">
+                  <div className="ads-item__head">
+                    {d.sponsored && <span className="admin-badge ads-badge--live">제휴</span>}
+                    <strong>{d.brand}</strong>
+                    <span className={`admin-badge${d.visible && timing !== 'ended' ? ' ads-badge--live' : ' admin-badge--muted'}`}>
+                      {!d.visible ? '숨김' : TIMING_LABEL[timing]}
+                    </span>
+                  </div>
+                  <p className="discounts-admin__benefit">{d.benefit}</p>
+                  <p className="ads-item__meta">
+                    {d.category} · {d.place || d.area} · {periodLabel(toDiscount(d))}
+                  </p>
+                  <p className="ads-item__meta">
+                    마지막 수정 {formatDateTime(d.updatedAt)}
+                    {d.updatedByName && ` · ${d.updatedByName}`}
+                  </p>
+                  {d.sourceUrl && (
+                    <a href={d.sourceUrl} target="_blank" rel="noopener noreferrer" className="ads-item__link" title={d.sourceUrl}>
+                      {d.sourceUrl}
+                    </a>
+                  )}
+                  <div className="ads-item__actions">
+                    <button type="button" className="ads-btn" disabled={busy} onClick={() => edit(d)}>
+                      {editing ? '고치는 중' : '고치기 · 미리보기'}
+                    </button>
+                    <button type="button" className="ads-btn" disabled={busy} onClick={() => setVisible(d, !d.visible)}>
+                      {d.visible ? '숨기기' : '보이기'}
+                    </button>
+                    <button type="button" className="ads-btn discounts-admin__delete" disabled={busy} onClick={() => remove(d)}>
+                      지우기
+                    </button>
+                  </div>
+                </div>
+              </li>
+            )
+          })}
+          {loaded && rows.length === 0 && <li className="admin__muted">해당하는 혜택이 없어요.</li>}
+        </ul>
       </section>
     </>
   )
