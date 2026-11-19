@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import {
   createAdminDiscount,
+  collectAdminDiscounts,
   deleteAdminDiscount,
   fetchAdminDiscounts,
   toDiscount,
@@ -402,6 +403,26 @@ export function DiscountsAdminPage() {
   }
 
   const previewInput = toInput(form)
+  const [collecting, setCollecting] = useState(false)
+  const collect = async () => {
+    setCollecting(true)
+    setError(null)
+    try {
+      const result = await collectAdminDiscounts()
+      if (!result.enabled) setNotice('라이너 키가 없어 자동 찾기가 꺼져 있어요.')
+      else if (result.added.length === 0) setNotice(`글 ${result.searched}개를 살펴봤지만 새 혜택은 없었어요.`)
+      else {
+        setNotice(`새 혜택 후보 ${result.added.length}개를 숨김으로 넣었어요: ${result.added.join(', ')}. 확인하고 '보이기'로 바꿔 주세요.`)
+        setStatusFilter('hidden')
+      }
+      load()
+    } catch {
+      setError('자동 찾기에 실패했어요. 잠시 후 다시 해 주세요.')
+    } finally {
+      setCollecting(false)
+    }
+  }
+
   const preview = toDiscount({ ...previewInput, id: editingId ?? 0, updatedByName: null, updatedAt: '' })
 
   return (
@@ -411,6 +432,12 @@ export function DiscountsAdminPage() {
         <p className="admin__muted">
           수험표 할인 모음에 보이는 혜택이에요. 고치면 바로 사용자 화면에 반영돼요(최대 1분).
           {lastUpdated && ` 사용자 화면에는 마지막으로 고친 날(${formatDateTime(lastUpdated)})이 '기준'으로 보여요.`}
+        </p>
+        <p className="admin__muted">
+          매일 오전 10시·오후 4시에 웹에서 새 수험생 혜택을 찾아 '자동 수집' 이름으로 숨김 상태로 넣어요. 출처를 확인하고 보이게 바꿔 주세요.{' '}
+          <button type="button" className="ads-btn" disabled={collecting} onClick={() => void collect()}>
+            {collecting ? '찾는 중… (1분쯤 걸려요)' : '지금 새 혜택 찾기'}
+          </button>
         </p>
       </header>
       {error && <p className="admin__error">{error}</p>}

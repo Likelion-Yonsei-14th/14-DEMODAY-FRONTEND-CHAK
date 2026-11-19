@@ -8,6 +8,7 @@ import { AdBanner } from '@/features/ads/AdBanner'
 import { isAdPreview } from '@/features/ads/adPreview'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { DiscountsShortcut } from '@/features/discounts/DiscountsShortcut'
+import { ChatShortcut } from '@/features/chat/ChatShortcut'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import type { AuthProvider } from '@/types'
@@ -169,6 +170,7 @@ export function WelcomePage() {
 
         <div className="welcome-page__games">
           <DiscountsShortcut />
+          <ChatShortcut />
           <AdBanner />
           <MiniGameSection note="로그인 없이 바로 할 수 있어요. 랭킹에는 로그인하면 올라가요." />
         </div>
