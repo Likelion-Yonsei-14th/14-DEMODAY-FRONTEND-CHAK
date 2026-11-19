@@ -76,7 +76,7 @@ export function buildSlides(recap: Recap | null, today: string): Slide[] {
     slides.push({ kind: 'cheer', tone: 'ink', text: '쉬는 시간도\n꽤 열심이었네요 :)', sub: '숨 돌릴 틈도 소중했으니까요' })
     slides.push({
       kind: 'games',
-      tone: 'sky',
+      tone: 'butter',
       top: {
         title: GAME_TITLES[top.game],
         plays: top.plays,
@@ -89,7 +89,7 @@ export function buildSlides(recap: Recap | null, today: string): Slide[] {
 
   if (studyCode) {
     const result = STUDY_TYPE_RESULTS[studyCode]
-    slides.push({ kind: 'studyType', tone: 'lilac', code: studyCode, name: result.typeName, tagline: result.tagline })
+    slides.push({ kind: 'studyType', tone: 'sage', code: studyCode, name: result.typeName, tagline: result.tagline })
   }
 
   slides.push({
@@ -98,7 +98,7 @@ export function buildSlides(recap: Recap | null, today: string): Slide[] {
     text: '결과가 어떻든,\n오늘까지 버텨 온 시간은\n그대로 남아요',
     sub: '그 시간이 당신을 더 단단하게 만들었을 거예요',
   })
-  slides.push({ kind: 'letter', tone: 'pink' })
+  slides.push({ kind: 'letter', tone: 'butter' })
 
   const lines: { label: string; value: string }[] = []
   if (days) lines.push({ label: '착과 함께한 날', value: `${days}일` })

@@ -30,24 +30,30 @@
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1.4px);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1.4px);
   background-size: 14px 14px;
   pointer-events: none;
 }
 
-.recap-slide--brand { --recap-bg: var(--color-brand); }
-.recap-slide--ink { --recap-bg: var(--color-ink); }
-.recap-slide--sage { --recap-bg: var(--color-sage); }
-.recap-slide--sky { --recap-bg: var(--color-sky); }
-.recap-slide--lilac { --recap-bg: var(--color-lilac); }
-.recap-slide--pink { --recap-bg: var(--color-pink); }
-.recap-slide--butter {
-  --recap-bg: var(--color-butter);
+/*
+ * 색은 네 가지만 번갈아 쓴다(홈의 책상·반 문 카드와 같은 톤): 테라코타, 진한 잉크, 따뜻한 크림, 차분한 세이지.
+ * 슬라이드 종류(brand·ink·butter·sage·sky·lilac·pink)는 이 네 가지로 모인다.
+ */
+.recap-slide--brand { --recap-bg: #c9573f; }
+.recap-slide--ink { --recap-bg: #2a2622; }
+.recap-slide--sage,
+.recap-slide--lilac { --recap-bg: #6b8566; }
+.recap-slide--butter,
+.recap-slide--sky,
+.recap-slide--pink {
+  --recap-bg: #f3ead9;
   --recap-fg: var(--color-ink);
-  --recap-soft: rgba(30, 27, 24, 0.74);
+  --recap-soft: rgba(30, 27, 24, 0.68);
 }
-.recap-slide--butter::before {
-  background-image: radial-gradient(rgba(30, 27, 24, 0.08) 1px, transparent 1.4px);
+.recap-slide--butter::before,
+.recap-slide--sky::before,
+.recap-slide--pink::before {
+  background-image: radial-gradient(rgba(30, 27, 24, 0.07) 1px, transparent 1.4px);
 }
 
 .recap-slide__body {
@@ -243,7 +249,7 @@
   width: 100%;
   aspect-ratio: 1;
   object-fit: contain;
-  background: var(--color-lilac-soft);
+  background: #efe6d6;
   margin-bottom: 10px;
 }
 .recap-slide--studyType .recap-sub {
