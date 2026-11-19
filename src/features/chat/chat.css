@@ -81,8 +81,8 @@
 .chat__discounts { display: grid; gap: 6px; }
 .chat__discount {
   display: grid;
-  gap: 2px;
-  padding: 10px 12px;
+  gap: 1px;
+  padding: 8px 12px;
   border: 1px solid var(--color-border-subtle);
   border-radius: 12px;
   background: var(--color-surface-base, #faf7f2);
@@ -91,13 +91,26 @@
   text-align: left;
   cursor: pointer;
 }
-.chat__discount em {
-  justify-self: start;
+.chat__banner {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-border-subtle);
+  cursor: pointer;
+}
+.chat__banner img { display: block; width: 100%; aspect-ratio: 3 / 1; object-fit: cover; }
+.chat__banner em {
+  position: absolute;
+  top: 6px;
+  right: 6px;
   padding: 1px 6px;
   border-radius: 6px;
-  background: var(--color-brand, #d93a1f);
+  background: rgba(30, 27, 24, .72);
   color: #fff;
-  font-size: 11px;
+  font-size: 10px;
   font-style: normal;
   font-weight: 700;
 }

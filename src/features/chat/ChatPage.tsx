@@ -50,6 +50,15 @@ export function ChatPage() {
     }
   }
 
+  // 제휴 배너는 답 하나에 한 장만, 이 대화에서 이미 보인 배너는 다시 띄우지 않는다(나머지는 글 한 줄로).
+  const bannerIds: (number | null)[] = []
+  const shownBanners = new Set<number>()
+  for (const m of messages) {
+    const banner = m.discounts?.find((d) => d.sponsored && d.imageUrl && !shownBanners.has(d.id)) ?? null
+    if (banner) shownBanners.add(banner.id)
+    bannerIds.push(banner?.id ?? null)
+  }
+
   const onSubmit = (event: FormEvent) => {
     event.preventDefault()
     void send(draft)
@@ -95,21 +104,34 @@ export function ChatPage() {
               {m.discounts && m.discounts.length > 0 && (
                 <div className="chat__discounts">
                   <span className="chat__label">착 혜택함</span>
-                  {m.discounts.map((d) => (
-                    <button
-                      key={d.id}
-                      type="button"
-                      className="chat__discount"
-                      onClick={() => navigate(`${DISCOUNTS_PATH}?q=${encodeURIComponent(d.brand)}`)}
-                    >
-                      {d.sponsored && <em>제휴</em>}
-                      <strong>{d.brand}</strong>
-                      <span>{d.benefit}</span>
-                      <small>
-                        {[d.area, d.endDate ? `~${d.endDate.slice(5).replace('-', '.')}` : null].filter(Boolean).join(' · ')}
-                      </small>
-                    </button>
-                  ))}
+                  {m.discounts.map((d) =>
+                    bannerIds[i] === d.id ? (
+                      <button
+                        key={d.id}
+                        type="button"
+                        className="chat__banner"
+                        onClick={() => navigate(`${DISCOUNTS_PATH}?q=${encodeURIComponent(d.brand)}`)}
+                      >
+                        <img src={d.imageUrl ?? ''} alt={`${d.brand} ${d.benefit ?? ''}`} loading="lazy" />
+                        <em>제휴</em>
+                      </button>
+                    ) : (
+                      <button
+                        key={d.id}
+                        type="button"
+                        className="chat__discount"
+                        onClick={() => navigate(`${DISCOUNTS_PATH}?q=${encodeURIComponent(d.brand)}`)}
+                      >
+                        <strong>{d.brand}</strong>
+                        <span>{d.benefit}</span>
+                        <small>
+                          {[d.sponsored ? '제휴' : null, d.area, d.endDate ? `~${d.endDate.slice(5).replace('-', '.')}` : null]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </small>
+                      </button>
+                    ),
+                  )}
                 </div>
               )}
               {m.sources && m.sources.length > 0 && (
