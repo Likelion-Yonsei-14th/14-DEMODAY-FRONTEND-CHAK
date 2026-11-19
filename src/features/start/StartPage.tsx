@@ -15,6 +15,7 @@ import {
 import { ComingSoonDialog, CLASSROOM_NOTICE } from '@/features/common/ComingSoon'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { DiscountsShortcut } from '@/features/discounts/DiscountsShortcut'
+import { ChatShortcut } from '@/features/chat/ChatShortcut'
 import { isClassroomAvailable } from '@/lib/featureFlags'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -108,6 +109,8 @@ export function StartPage() {
         </section>
 
         <DiscountsShortcut />
+
+        <ChatShortcut />
         <MiniGameSection />
       </main>
       <ComingSoonDialog

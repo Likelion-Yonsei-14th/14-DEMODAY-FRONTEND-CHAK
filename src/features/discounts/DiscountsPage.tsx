@@ -155,7 +155,8 @@ export function DiscountsPage() {
   const navigate = useNavigate()
   const [category, setCategory] = useState<string | null>(null)
   const [area, setArea] = useState<string | null>(null)
-  const [query, setQuery] = useState('')
+  // 수능 도우미에서 혜택을 눌러 오면 ?q=매장명으로 바로 찾아 둔다.
+  const [query, setQuery] = useState(() => new URLSearchParams(window.location.search).get('q') ?? '')
   const today = seoulToday()
   const loaded = useDiscounts()
   const all = loaded?.items

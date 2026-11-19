@@ -280,6 +280,12 @@ export const router = createBrowserRouter([
         }),
       },
       {
+        path: '/chat',
+        lazy: async () => ({
+          Component: (await import('@/features/chat/ChatPage')).ChatPage,
+        }),
+      },
+      {
         path: '/recap',
         lazy: async () => ({
           Component: (await import('@/features/recap/RecapPage')).RecapPage,
