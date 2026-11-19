@@ -1,30 +1,56 @@
 /*
- * 나의 수능 리캡. 사이트와 같은 원칙: 바탕은 차분한 크림색, 글자는 잉크색,
- * 코랄은 핵심 순간에만. 색은 카드 머리의 연한 색과 손글씨 같은 "콘텐츠"에만 쓴다.
+ * 나의 수능 리캡. 스토리형 리캡의 큼직한 색과 숫자에, 착 책상의 재료(스티커·마스킹테이프·클립·부적·손글씨·종이 쪽지)를 얹는다.
+ * 색은 디자인 시스템의 진한 팔레트(brand·butter·sage·sky·lilac·pink)만 쓴다.
  */
 .recap {
   min-height: 100dvh;
-  background: var(--color-bg-canvas);
+  background: var(--color-ink);
   display: flex;
   justify-content: center;
 }
 
 .recap-slide {
+  --recap-bg: var(--color-brand);
+  --recap-fg: var(--color-content-inverse);
+  --recap-soft: rgba(255, 253, 248, 0.82);
   position: relative;
   width: 100%;
   max-width: 480px;
   min-height: 100dvh;
-  padding: 76px var(--page-gutter) 32px;
+  padding: 76px 24px 32px;
   display: flex;
   flex-direction: column;
-  background: var(--color-bg-canvas);
-  color: var(--color-content-primary);
+  overflow: hidden;
+  background: var(--recap-bg);
+  color: var(--recap-fg);
   font-family: var(--font-ui);
+}
+/* 종이 결: 아주 옅은 점무늬로 단색이 밋밋하지 않게. */
+.recap-slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1.4px);
+  background-size: 14px 14px;
+  pointer-events: none;
+}
+
+.recap-slide--brand { --recap-bg: var(--color-brand); }
+.recap-slide--ink { --recap-bg: var(--color-ink); }
+.recap-slide--sage { --recap-bg: var(--color-sage); }
+.recap-slide--sky { --recap-bg: var(--color-sky); }
+.recap-slide--lilac { --recap-bg: var(--color-lilac); }
+.recap-slide--pink { --recap-bg: var(--color-pink); }
+.recap-slide--butter {
+  --recap-bg: var(--color-butter);
+  --recap-fg: var(--color-ink);
+  --recap-soft: rgba(30, 27, 24, 0.74);
+}
+.recap-slide--butter::before {
+  background-image: radial-gradient(rgba(30, 27, 24, 0.08) 1px, transparent 1.4px);
 }
 
 .recap-slide__body {
-  position: relative;
-  z-index: 1;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -32,230 +58,281 @@
   gap: var(--space-4);
   pointer-events: none;
 }
-.recap-slide__body > * {
-  animation: recap-rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+.recap-slide__body > *:not(.recap-deco) {
+  position: relative;
+  z-index: 1;
+  animation: recap-rise 480ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-.recap-slide__body > *:nth-child(2) { animation-delay: 70ms; }
-.recap-slide__body > *:nth-child(3) { animation-delay: 140ms; }
-.recap-slide__body > *:nth-child(4) { animation-delay: 210ms; }
+.recap-slide__body > *:nth-child(n + 2) { animation-delay: 80ms; }
+.recap-slide__body > *:nth-child(n + 3) { animation-delay: 160ms; }
+.recap-slide__body > *:nth-child(n + 4) { animation-delay: 240ms; }
+.recap-slide__body > *:nth-child(n + 5) { animation-delay: 320ms; }
 
 @keyframes recap-rise {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: none; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .recap-slide__body > * { animation: none; }
+
+/* 스티커는 톡 하고 붙는다. */
+.recap-deco {
+  position: absolute;
+  z-index: 0;
+  height: auto;
+  transform: rotate(var(--r));
+  filter: drop-shadow(0 4px 8px rgba(30, 20, 10, 0.18));
+  animation: recap-pop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  pointer-events: none;
+}
+@keyframes recap-pop {
+  from { opacity: 0; transform: rotate(var(--r)) scale(0.3); }
+  to { opacity: 1; transform: rotate(var(--r)) scale(1); }
 }
 
-/* 홈의 "오늘이 수능이에요"와 같은 형광펜 표시. */
+@media (prefers-reduced-motion: reduce) {
+  .recap-slide__body > *,
+  .recap-deco { animation: none !important; }
+}
+
+/* 홈 "오늘이 수능이에요"와 같은 라임 라벨. */
 .recap-marker {
   align-self: flex-start;
   margin: 0;
-  min-height: 24px;
+  min-height: 26px;
   display: inline-flex;
   align-items: center;
-  padding: 0 9px;
+  padding: 0 10px;
   border-radius: 2px;
   background: var(--label-lime);
   color: var(--color-ink);
   font-size: var(--type-label-l-size);
   font-weight: 800;
   letter-spacing: 0.02em;
+  transform: rotate(-1.5deg);
 }
 
 .recap-title {
   margin: 0;
-  font-size: var(--type-h2-size);
-  line-height: var(--type-h2-line);
-  font-weight: 700;
-  letter-spacing: -0.015em;
+  font-size: 30px;
+  line-height: 1.3;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   word-break: keep-all;
 }
 .recap-title--xl {
-  font-size: var(--type-display-l-size);
-  line-height: var(--type-display-l-line);
-  letter-spacing: -0.02em;
+  font-size: 48px;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
 }
 
 .recap-sub {
   margin: 0;
   font-size: var(--type-body-m-size);
   line-height: var(--type-body-m-line);
-  color: var(--color-content-secondary);
+  color: var(--recap-soft);
   word-break: keep-all;
 }
 
-/* 손글씨: 서비스에서 "사람의 마음"이 담긴 자리에만. */
 .recap-hand {
   margin: 0;
   font-family: var(--font-hand);
-  font-size: 26px;
+  font-size: 28px;
   line-height: 1.4;
-  color: var(--color-content-primary);
   word-break: keep-all;
 }
 .recap-hand--xl {
-  font-size: 38px;
-  line-height: 1.35;
+  font-size: 42px;
+  line-height: 1.3;
   white-space: pre-line;
 }
-.recap-hand--accent {
-  color: var(--color-brand);
-}
 
-/* 숫자 카드: 흰 종이 위, 머리에 연한 색 띠. */
-.recap-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-6) var(--space-5);
-  border-radius: var(--radius-xl);
-  background: var(--color-surface-raised);
-  box-shadow: var(--shadow-card);
-  --recap-tint: var(--color-surface-subtle);
-}
-.recap-card--butter { --recap-tint: var(--color-butter-soft); }
-.recap-card--sage { --recap-tint: var(--color-sage-soft); }
-.recap-card--sky { --recap-tint: var(--color-sky-soft); }
-.recap-card--lilac { --recap-tint: var(--color-lilac-soft); }
-.recap-card--brand { --recap-tint: var(--color-brand-soft); }
-.recap-card--center {
-  align-items: center;
-  text-align: center;
-}
-
-.recap-card__head {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-.recap-card__icon {
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-full);
-  background: var(--recap-tint);
-}
-.recap-card__kicker {
-  font-size: var(--type-label-l-size);
-  line-height: var(--type-label-l-line);
-  font-weight: 600;
-  color: var(--color-content-secondary);
-}
-
-.recap-number {
-  margin: var(--space-1) 0 0;
-  font-size: 22px;
-  font-weight: 700;
-}
-/* 숫자 아래에 카드 색으로 형광펜을 긋는다. */
-.recap-number mark {
-  margin-right: 4px;
-  padding: 0 4px;
-  background: linear-gradient(transparent 55%, var(--recap-tint) 55%);
-  color: inherit;
-  font-size: 64px;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
+.recap-big {
+  margin: 0;
+  font-size: 120px;
+  line-height: 0.95;
+  font-weight: 800;
+  letter-spacing: -0.05em;
   font-variant-numeric: tabular-nums;
 }
+.recap-big small {
+  margin-left: 6px;
+  font-size: 36px;
+  letter-spacing: -0.02em;
+}
 
+/* 종이 쪽지: 테이프나 클립으로 붙인 메모. */
 .recap-note {
-  margin: var(--space-1) 0 0;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  background: var(--recap-tint);
-  font-size: var(--type-body-s-size);
-  line-height: var(--type-body-s-line);
-  font-weight: 600;
+  position: relative;
+  align-self: stretch;
+  margin-top: var(--space-2);
+  padding: var(--space-8) var(--space-5) var(--space-5);
+  border-radius: 4px;
+  background: var(--color-surface-base);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-paper);
+  transform: rotate(var(--tilt));
+}
+.recap-note__tape {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  width: 110px;
+  transform: translateX(-50%) rotate(-4deg);
+}
+.recap-note__clip {
+  position: absolute;
+  top: -24px;
+  right: 28px;
+  width: 34px;
+  transform: rotate(8deg);
+}
+.recap-note__title {
+  margin: 0;
+  font-size: var(--type-title-xl-size);
+  line-height: var(--type-title-xl-line);
+  font-weight: 800;
+  word-break: keep-all;
+}
+.recap-note__body {
+  margin: var(--space-2) 0 0;
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-line);
+  color: var(--color-content-secondary);
+  word-break: keep-all;
+}
+.recap-note mark,
+.recap-facts mark {
+  padding: 0 3px;
+  background: linear-gradient(transparent 50%, var(--label-lime) 50%);
+  color: inherit;
+  font-weight: 800;
 }
 
 .recap-facts {
-  margin: var(--space-1) 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
   display: grid;
-  border-top: 1px solid var(--color-border-subtle);
 }
 .recap-facts li {
   display: flex;
   justify-content: space-between;
   gap: var(--space-3);
   padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--color-border-subtle);
-  font-size: var(--type-body-s-size);
+  border-bottom: 1px dashed var(--color-border-default);
+  font-size: var(--type-body-m-size);
 }
+.recap-facts li:last-child { border-bottom: 0; }
 .recap-facts span { color: var(--color-content-secondary); }
-.recap-facts strong { font-weight: 700; }
+.recap-facts strong { font-weight: 800; }
 
-.recap-character {
-  width: 148px;
-  height: 148px;
-  margin: var(--space-2) 0;
-  border-radius: var(--radius-2xl);
-  background: var(--recap-tint);
-  padding: var(--space-3);
+/* 공부 유형: 폴라로이드. */
+.recap-polaroid {
+  position: relative;
+  align-self: center;
+  width: 240px;
+  padding: 14px 14px 18px;
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-floating);
+  transform: rotate(-3deg);
+  text-align: center;
+}
+.recap-polaroid .recap-note__tape { width: 96px; }
+.recap-polaroid__img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
   object-fit: contain;
+  background: var(--color-lilac-soft);
+  margin-bottom: 10px;
+}
+.recap-slide--studyType .recap-sub {
+  text-align: center;
+  font-size: var(--type-body-l-size);
 }
 
-/* 착 팀 편지: 응원 편지와 같은 종이. */
+/* 착 팀 편지. */
 .recap-letter {
+  position: relative;
   display: grid;
   gap: var(--space-4);
-  padding: var(--space-7) var(--space-6);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-raised);
-  box-shadow: var(--shadow-paper);
-  transform: rotate(-1deg);
+  padding: var(--space-8) var(--space-6) var(--space-6);
+  border-radius: 6px;
+  background: var(--color-surface-base);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-floating);
+  transform: rotate(-1.5deg);
+}
+.recap-letter__clip {
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  width: 72px;
+  transform: translateX(-50%);
 }
 .recap-letter__to {
   margin: 0;
   font-size: var(--type-label-m-size);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-content-tertiary);
 }
 .recap-letter__text {
   margin: 0;
   font-family: var(--font-hand);
-  font-size: 27px;
-  line-height: 40px;
+  font-size: 28px;
+  line-height: 1.45;
   word-break: keep-all;
 }
 .recap-letter__sign {
   margin: 0;
   justify-self: end;
   font-family: var(--font-hand);
-  font-size: 24px;
+  font-size: 26px;
   color: var(--color-brand);
 }
+.recap-letter__sticker {
+  position: absolute;
+  right: -14px;
+  top: -20px;
+  width: 72px;
+  transform: rotate(12deg);
+}
 
-/* 요약: 수험표 모양. 저장하면 이 카드가 이미지가 된다. */
+/* 요약: 수험표. 저장하면 이 카드만 이미지가 된다. */
 .recap-ticket {
   position: relative;
   display: grid;
-  gap: var(--space-4);
-  padding: var(--space-6) var(--space-5);
-  border: 1.5px solid var(--color-content-primary);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-raised);
-  box-shadow: var(--shadow-card);
+  gap: var(--space-3);
+  padding: var(--space-7) var(--space-5) var(--space-5);
+  border: 2px solid var(--color-ink);
+  border-radius: 6px;
+  background: var(--color-surface-base);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-floating);
+  transform: rotate(-1deg);
+}
+.recap-ticket__tape {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  width: 120px;
+  transform: translateX(-50%) rotate(3deg);
 }
 .recap-ticket__head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+  display: grid;
+  gap: 2px;
   padding-bottom: var(--space-3);
-  border-bottom: 1.5px solid var(--color-content-primary);
+  border-bottom: 2px solid var(--color-ink);
 }
 .recap-ticket__head span {
   font-size: var(--type-label-m-size);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-content-secondary);
 }
 .recap-ticket__head strong {
-  font-size: var(--type-title-xl-size);
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 .recap-ticket__lines {
   margin: 0;
@@ -266,7 +343,7 @@
   justify-content: space-between;
   align-items: baseline;
   gap: var(--space-3);
-  padding: var(--space-3) 0;
+  padding: 10px 0;
   border-bottom: 1px dashed var(--color-border-default);
 }
 .recap-ticket__lines dt {
@@ -275,43 +352,47 @@
 }
 .recap-ticket__lines dd {
   margin: 0;
-  font-size: var(--type-title-l-size);
-  font-weight: 700;
-  text-align: right;
-}
-.recap-ticket__stamp {
-  position: absolute;
-  right: var(--space-4);
-  bottom: var(--space-4);
-  margin: 0;
-  width: 64px;
-  height: 64px;
-  display: grid;
-  place-items: center;
-  border: 2px solid var(--color-brand);
-  border-radius: 50%;
-  color: var(--color-brand);
-  font-size: 15px;
+  font-size: 22px;
   font-weight: 800;
-  transform: rotate(-14deg);
-  opacity: 0.9;
+  text-align: right;
 }
 .recap-ticket__brand {
   margin: 0;
-  min-height: 40px;
-  display: flex;
-  align-items: flex-end;
   font-size: var(--type-caption-size);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-content-tertiary);
 }
+.recap-ticket__stamp {
+  position: absolute;
+  right: 16px;
+  top: 30px;
+  margin: 0;
+  width: 70px;
+  height: 70px;
+  display: grid;
+  place-items: center;
+  border: 3px solid var(--color-brand);
+  border-radius: 50%;
+  color: var(--color-brand);
+  font-size: 18px;
+  font-weight: 900;
+  transform: rotate(-16deg);
+  opacity: 0.88;
+}
+.recap-ticket__sticker {
+  position: absolute;
+  right: -16px;
+  bottom: -26px;
+  width: 76px;
+  transform: rotate(-14deg);
+}
 
-/* 위쪽 진행 막대와 닫기. */
+/* 진행 막대와 닫기. */
 .recap-progress {
   position: absolute;
   top: 16px;
-  left: var(--page-gutter);
-  right: var(--page-gutter);
+  left: 16px;
+  right: 16px;
   z-index: 3;
   display: flex;
   gap: 4px;
@@ -320,11 +401,11 @@
   flex: 1;
   height: 3px;
   border-radius: 2px;
-  background: var(--color-border-default);
+  background: color-mix(in srgb, var(--recap-fg) 30%, transparent);
 }
 .recap-progress .is-done,
 .recap-progress .is-now {
-  background: var(--color-content-primary);
+  background: var(--recap-fg);
 }
 
 .recap-close {
@@ -339,11 +420,10 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--color-content-primary);
+  color: var(--recap-fg);
   cursor: pointer;
 }
 
-/* 화면 왼쪽 1/3은 이전, 나머지는 다음. */
 .recap-tap {
   position: absolute;
   top: 0;
@@ -358,7 +438,7 @@
 .recap-tap--prev { left: 0; width: 33%; }
 .recap-tap--next { right: 0; width: 67%; }
 .recap-tap:focus-visible {
-  outline: 2px solid var(--color-focus);
+  outline: 2px solid var(--recap-fg);
   outline-offset: -6px;
 }
 
@@ -368,8 +448,12 @@
   margin: 0;
   text-align: center;
   font-size: var(--type-label-m-size);
-  color: var(--color-content-tertiary);
+  color: var(--recap-soft);
+  animation: recap-blink 1.8s ease-in-out infinite;
   pointer-events: none;
+}
+@keyframes recap-blink {
+  50% { opacity: 0.45; }
 }
 
 .recap-actions {

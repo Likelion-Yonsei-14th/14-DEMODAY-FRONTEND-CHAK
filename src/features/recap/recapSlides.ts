@@ -8,7 +8,7 @@ export const GAME_TITLES: Record<RecapGame, string> = {
 }
 
 /** 슬라이드마다 배경 색. recap.css의 .recap-slide--{tone}. */
-export type Tone = 'brand' | 'ink' | 'butter' | 'sage' | 'sky' | 'lilac' | 'paper'
+export type Tone = 'brand' | 'ink' | 'butter' | 'sage' | 'sky' | 'lilac' | 'pink' | 'paper'
 
 export type Slide =
   | { kind: 'intro'; tone: Tone; days: number | null }
@@ -50,7 +50,7 @@ export function buildSlides(recap: Recap | null, today: string): Slide[] {
   const games = [...(recap?.games ?? [])].filter((g) => g.plays > 0).sort((a, b) => b.plays - a.plays)
   const studyCode = recap?.studyType && isStudyTypeCode(recap.studyType) ? recap.studyType : null
 
-  const slides: Slide[] = [{ kind: 'intro', tone: 'paper', days }]
+  const slides: Slide[] = [{ kind: 'intro', tone: 'brand', days }]
 
   if (hasReceived || sent.letters > 0) {
     slides.push({ kind: 'cheer', tone: 'ink', text: '그동안 이런 마음들이\n당신 곁에 있었어요' })
@@ -98,7 +98,7 @@ export function buildSlides(recap: Recap | null, today: string): Slide[] {
     text: '결과가 어떻든,\n오늘까지 버텨 온 시간은\n그대로 남아요',
     sub: '그 시간이 당신을 더 단단하게 만들었을 거예요',
   })
-  slides.push({ kind: 'letter', tone: 'paper' })
+  slides.push({ kind: 'letter', tone: 'pink' })
 
   const lines: { label: string; value: string }[] = []
   if (days) lines.push({ label: '착과 함께한 날', value: `${days}일` })
@@ -107,8 +107,8 @@ export function buildSlides(recap: Recap | null, today: string): Slide[] {
   const plays = games.reduce((sum, g) => sum + g.plays, 0)
   if (plays > 0) lines.push({ label: '미니게임', value: `${plays}판` })
   if (studyCode) lines.push({ label: '공부 유형', value: STUDY_TYPE_RESULTS[studyCode].typeName })
-  slides.push({ kind: 'summary', tone: 'paper', lines })
+  slides.push({ kind: 'summary', tone: 'brand', lines })
 
-  slides.push({ kind: 'outro', tone: 'paper' })
+  slides.push({ kind: 'outro', tone: 'butter' })
   return slides
 }
