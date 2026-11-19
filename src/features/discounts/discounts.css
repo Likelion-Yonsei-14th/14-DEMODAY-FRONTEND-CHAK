@@ -260,6 +260,10 @@
   word-break: keep-all;
 }
 
+.discount__benefit > span {
+  display: block;
+}
+
 .discount__head .discount__benefit {
   font-size: var(--type-body-size, 15px);
 }
