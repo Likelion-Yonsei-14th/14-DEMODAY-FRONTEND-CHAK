@@ -23,7 +23,8 @@ describe('수능 도우미', () => {
       answer: '성적은 12월 5일에 나와요 [1]',
       offTopic: false,
       discounts: [
-        { id: 7, brand: '하우스틸츠', category: '운동·건강', benefit: '필라테스 1회 체험', area: '서울', endDate: '2026-12-31', sponsored: true, imageUrl: null },
+        { id: 7, brand: '하우스틸츠', category: '운동·건강', benefit: '필라테스 1회 체험', area: '서울', endDate: '2026-12-31', sponsored: true, imageUrl: '/api/public/ads/creatives/4' },
+        { id: 8, brand: 'CGV', category: '영화·공연', benefit: '관람 7,000원', area: '전국', endDate: null, sponsored: false, imageUrl: null },
       ],
       sources: [{ title: '평가원 보도자료', url: 'https://www.kice.re.kr/a', hostname: 'www.kice.re.kr' }],
     })
@@ -32,8 +33,8 @@ describe('수능 도우미', () => {
 
     expect(await screen.findByText('성적은 12월 5일에 나와요 [1]')).toBeInTheDocument()
     expect(askChat).toHaveBeenCalledWith([{ role: 'user', content: '수능 성적은 언제 나와?' }])
-    expect(screen.getByText('하우스틸츠')).toBeInTheDocument()
-    expect(screen.getByText('제휴')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /하우스틸츠/ })).toHaveAttribute('src', '/api/public/ads/creatives/4')
+    expect(screen.getByText('CGV')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /평가원 보도자료/ })).toHaveAttribute('href', 'https://www.kice.re.kr/a')
   })
 
