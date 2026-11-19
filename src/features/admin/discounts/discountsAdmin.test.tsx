@@ -230,4 +230,22 @@ describe('discounts admin', () => {
     expect(await screen.findByText('해당하는 혜택이 없어요.')).toBeInTheDocument()
     confirm.mockRestore()
   })
+
+  it('filters the list by sponsored and regular', async () => {
+    api.fetchAdminDiscounts.mockResolvedValue([everland, { ...everland, id: 2, brand: '제휴 카페', sponsored: true }])
+    renderPage()
+    await screen.findByRole('cell', { name: /에버랜드/ })
+    const kind = screen.getByRole('group', { name: '제휴 여부' })
+
+    fireEvent.click(within(kind).getByRole('button', { name: '제휴 1' }))
+    expect(screen.getByRole('cell', { name: /제휴 카페/ })).toBeInTheDocument()
+    expect(screen.queryByRole('cell', { name: /에버랜드/ })).not.toBeInTheDocument()
+
+    fireEvent.click(within(kind).getByRole('button', { name: '일반 1' }))
+    expect(screen.getByRole('cell', { name: /에버랜드/ })).toBeInTheDocument()
+    expect(screen.queryByRole('cell', { name: /제휴 카페/ })).not.toBeInTheDocument()
+
+    fireEvent.click(within(kind).getByRole('button', { name: '제휴·일반 모두' }))
+    expect(screen.getAllByRole('cell', { name: /에버랜드|제휴 카페/ })).toHaveLength(2)
+  })
 })
