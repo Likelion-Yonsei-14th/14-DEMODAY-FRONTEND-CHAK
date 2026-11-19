@@ -121,11 +121,11 @@ describe('discount card', () => {
       expect(card.querySelector('img')).toBeNull()
     }
   })
-  it("breaks the benefit sentence into lines at '·'", () => {
-    const d: Discount = { ...DISCOUNTS[0]!, benefit: '음료 1+1 · 디저트 10% 할인 ·' }
+  it("breaks the benefit sentence into lines only at ' · '", () => {
+    const d: Discount = { ...DISCOUNTS[0]!, benefit: '음료 1+1 · 디저트·케이크 10% 할인' }
     const { container } = render(<DiscountCard d={d} today="2026-11-19" />)
     const lines = [...container.querySelectorAll('.discount__benefit > span')].map((line) => line.textContent)
-    expect(lines).toEqual(['음료 1+1', '디저트 10% 할인'])
+    expect(lines).toEqual(['음료 1+1', '디저트·케이크 10% 할인'])
   })
 })
 

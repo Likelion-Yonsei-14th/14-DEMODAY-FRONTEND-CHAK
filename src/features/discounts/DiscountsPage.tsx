@@ -21,8 +21,11 @@ import {
 } from './sponsored'
 import './discounts.css'
 
-/** 혜택 한 문장을 '·'로 끊어 한 줄씩 보여 준다(예: "음료 1+1 · 디저트 10% 할인"). */
-const benefitLines = (benefit: string) => benefit.split('·').map((part) => part.trim()).filter(Boolean)
+/**
+ * 혜택 한 문장을 앞뒤 공백이 있는 ' · '에서만 끊어 한 줄씩 보여 준다(예: "음료 1+1 · 디저트 10% 할인").
+ * "놀이·체험"처럼 붙여 쓴 '·'는 끊지 않는다.
+ */
+const benefitLines = (benefit: string) => benefit.split(' · ').map((part) => part.trim()).filter(Boolean)
 
 const md = (date: string) => `${Number(date.slice(5, 7))}월 ${Number(date.slice(8, 10))}일`
 
