@@ -61,7 +61,8 @@ export function DiscountCard({
   return (
     <li className={['discount', ad && 'is-sponsored', className].filter(Boolean).join(' ')} ref={cardRef}>
       {showImage && (
-        <figure className="discount__image">
+        // 제휴 매장은 배너 광고와 같은 시안을 대표 이미지로 쓴다. 어드민 미리보기(ad 없음)에서도 같은 비율로 보이게 d.sponsored로 정한다.
+        <figure className={d.sponsored ? 'discount__image is-banner' : 'discount__image'}>
           <img
             src={d.image}
             alt=""
