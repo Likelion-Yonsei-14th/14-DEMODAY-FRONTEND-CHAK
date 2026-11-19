@@ -57,7 +57,7 @@ describe('ads admin', () => {
     await waitFor(() => expect(toggle).toHaveAttribute('aria-checked', 'false'))
     expect(screen.getByText(/켜면 게재 기간인 배너 1개가 바로 보여요/)).toBeInTheDocument()
     expect(screen.getByText('스위치 켜면 노출')).toBeInTheDocument()
-    expect(await screen.findByText('200회 · 120명 · 9회')).toBeInTheDocument()
+    expect(await screen.findByText(/노출 200회 · 도달 120명 · 클릭 9회/)).toBeInTheDocument()
     expect(screen.getByText(/배너 노출 비중 100%/)).toBeInTheDocument()
 
     fireEvent.click(toggle)
@@ -144,7 +144,7 @@ describe('ads admin delivery', () => {
   it('shows nothing for ads without numbers yet and the target region', async () => {
     render(<AdsAdminPage />)
     expect(await screen.findByText(/부산$/)).toBeInTheDocument()
-    expect(screen.getAllByText('-').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('집계 없음').length).toBeGreaterThan(0)
   })
 
   it('sends the picked regions, and nationwide when none are picked', async () => {
