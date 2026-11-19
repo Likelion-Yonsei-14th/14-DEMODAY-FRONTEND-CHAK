@@ -96,20 +96,19 @@ describe('payments in a production build without server payments', () => {
 })
 
 describe('classroom entries in a production build', () => {
-  it('home: the class door and the start flow say it is in development', () => {
+  it('home: no class door, the recap door takes its place', () => {
     wrap('/home', (
       <>
         <Route path="/home" element={<HomePage />} />
-        <Route path="/classroom/:id/map" element={<p>교실</p>} />
-        <Route path="/classroom/create" element={<p>교실 만들기</p>} />
+        <Route path="/recap" element={<p>리캡</p>} />
       </>
     ))
 
     expect(screen.getByRole('button', { name: /새 책상 만들기/ })).toBeInTheDocument()
     expect(screen.queryByText(/새 책상이나 반 만들기/)).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /우리 반 가기/ }))
-    expect(screen.getByRole('dialog', { name: '우리 반은 아직 개발 중이에요' })).toBeInTheDocument()
-    expect(screen.queryByText('교실')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /우리 반 가기/ })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /나의 수능 리캡/ }))
+    expect(screen.getByText('리캡')).toBeInTheDocument()
   })
 
   it('start: "우리끼리 서로 응원할래요" opens the notice instead of the classroom creator', () => {

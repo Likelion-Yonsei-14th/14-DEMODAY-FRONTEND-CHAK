@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react'
-import { ChevronRight, Gift, LogIn, Mail, Plus, Star, UserRound, UsersRound } from 'lucide-react'
+import { ChevronRight, Gift, LogIn, Mail, Plus, Sparkles, Star, UserRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { ApiError } from '@/api/client'
 import { fetchMyDesk } from '@/api/desks'
-import { useFeedback } from '@/design-system'
 import { getCsatDdayLabel } from '@/features/csat/csatSchedule'
-import { ComingSoonDialog, CLASSROOM_NOTICE } from '@/features/common/ComingSoon'
 import { AdBanner } from '@/features/ads/AdBanner'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { DiscountsShortcut } from '@/features/discounts/DiscountsShortcut'
+import { isRecapOpen, RECAP_OPENS_LABEL } from '@/features/recap/recapSchedule'
 import { isClassroomAvailable } from '@/lib/featureFlags'
 import { AppShell } from '@/layout/AppShell'
 import { isApiEnabled } from '@/api/config'
@@ -60,11 +59,8 @@ function useServerDeskCheck(enabled: boolean) {
  */
 export function HomePage() {
   const navigate = useNavigate()
-  const { showToast } = useFeedback()
   const currentUser = usePrototypeStore((state) => state.currentUser)
   const desk = usePrototypeStore((state) => state.currentDesk)
-  const classroom = usePrototypeStore((state) => state.classroom)
-  const member = usePrototypeStore((state) => state.classroomMember)
   const authSession = usePrototypeStore((state) => state.authSession)
   const resetDeskCreationDraft = usePrototypeStore((state) => state.resetDeskCreationDraft)
   const serverCheck = isApiEnabled && authSession.status === 'authenticated'
@@ -73,10 +69,9 @@ export function HomePage() {
   const hasDesk = serverCheck ? deskCheck === 'has' : desk.claimStatus === 'claimed'
   // The server hasn't said yet (or couldn't): don't show a desk or offer to make one.
   const deskUnsure = serverCheck && (deskCheck === 'unknown' || deskCheck === 'failed')
-  const hasClass = Boolean(member)
 
   const classroomOpen = isClassroomAvailable()
-  const [classroomNotice, setClassroomNotice] = useState(false)
+  const recapOpen = isRecapOpen()
 
   const startDesk = () => {
     resetDeskCreationDraft()
@@ -136,26 +131,14 @@ export function HomePage() {
 
           <button
             type="button"
-            className={[
-              'home-page__door',
-              'home-page__door--class',
-              hasClass ? '' : 'home-page__door--empty',
-            ].filter(Boolean).join(' ')}
-            onClick={() => {
-              if (!classroomOpen) {
-                setClassroomNotice(true)
-              } else if (hasClass) {
-                navigate(`/classroom/${classroom.id}/map`)
-              } else {
-                showToast('아직 반이 생성되지 않았어요.')
-              }
-            }}
+            className="home-page__door home-page__door--recap"
+            onClick={() => navigate('/recap')}
           >
             <span className="home-page__door-label">
-              <UsersRound size={14} aria-hidden />
+              <Sparkles size={14} aria-hidden />
             </span>
-            <strong>우리 반 가기</strong>
-            <span>{!classroomOpen ? '곧 열려요' : hasClass ? classroom.name : '아직 참여한 반이 없어요'}</span>
+            <strong>나의 수능 리캡</strong>
+            <span>{recapOpen ? '한 해 동안 애쓴 나를 돌아봐요' : `${RECAP_OPENS_LABEL}, 시험이 끝나면 열려요`}</span>
             <ChevronRight size={20} aria-hidden />
           </button>
         </div>
@@ -192,12 +175,6 @@ export function HomePage() {
 
         <MiniGameSection />
       </main>
-      <ComingSoonDialog
-        open={classroomNotice}
-        onClose={() => setClassroomNotice(false)}
-        title={CLASSROOM_NOTICE.title}
-        description={CLASSROOM_NOTICE.description}
-      />
     </AppShell>
   )
 }
