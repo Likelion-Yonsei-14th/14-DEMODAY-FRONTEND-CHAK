@@ -58,7 +58,7 @@ describe('discounts admin', () => {
   it('adds a discount with every field the card shows', async () => {
     api.createAdminDiscount.mockImplementation(async (input) => ({ ...everland, ...input, id: 2 }))
     renderPage()
-    await screen.findByRole('cell', { name: /에버랜드/ })
+    await screen.findByRole('listitem', { name: '에버랜드' })
 
     // 새 혜택은 수능날부터 연말까지, 챙길 것은 수험표만 채워져 있다.
     expect(field(/시작일/).value).toBe('2026-11-19')
@@ -96,7 +96,7 @@ describe('discounts admin', () => {
 
   it('stops a discount without a source or with a backwards period before saving', async () => {
     renderPage()
-    await screen.findByRole('cell', { name: /에버랜드/ })
+    await screen.findByRole('listitem', { name: '에버랜드' })
     fireEvent.change(field(/브랜드 · 시설/), { target: { value: 'A' } })
     fireEvent.change(field(/혜택 \(한 문장\)/), { target: { value: 'B' } })
     fireEvent.click(screen.getByRole('button', { name: '혜택 올리기' }))
@@ -113,7 +113,7 @@ describe('discounts admin', () => {
   it("lets each advertiser's own terms be added, reordered and saved", async () => {
     api.createAdminDiscount.mockImplementation(async (input) => ({ ...everland, ...input, id: 2 }))
     renderPage()
-    await screen.findByRole('cell', { name: /에버랜드/ })
+    await screen.findByRole('listitem', { name: '에버랜드' })
     fireEvent.change(field(/브랜드 · 시설/), { target: { value: '수능 카페' } })
     fireEvent.change(field(/혜택 \(한 문장\)/), { target: { value: '음료 30% 할인' } })
     fireEvent.change(field(/출처 주소/), { target: { value: 'https://x.example.com/cafe' } })
@@ -162,7 +162,7 @@ describe('discounts admin', () => {
     ads.uploadAdCreative.mockReset().mockResolvedValue('https://www.chak.live/api/public/ads/creatives/42')
     api.createAdminDiscount.mockImplementation(async (input) => ({ ...everland, ...input, id: 2 }))
     renderPage()
-    await screen.findByRole('cell', { name: /에버랜드/ })
+    await screen.findByRole('listitem', { name: '에버랜드' })
     fireEvent.change(field(/이미지를 가져온 페이지/), { target: { value: 'https://old.example.com' } })
     const picker = document.querySelector('input[type="file"]') as HTMLInputElement
 
@@ -194,7 +194,7 @@ describe('discounts admin', () => {
 
   it('stops at eight extra rows and removes a row', async () => {
     renderPage()
-    await screen.findByRole('cell', { name: /에버랜드/ })
+    await screen.findByRole('listitem', { name: '에버랜드' })
     const add = screen.getByRole('button', { name: '+ 항목 추가' })
     for (let i = 0; i < 8; i++) fireEvent.click(add)
     expect(add).toBeDisabled()
@@ -208,9 +208,10 @@ describe('discounts admin', () => {
     api.deleteAdminDiscount.mockResolvedValue(undefined)
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
     renderPage()
-    const row = (await screen.findByRole('cell', { name: /에버랜드/ })).closest('tr')!
+    const row = await screen.findByRole('listitem', { name: '에버랜드' })
 
-    fireEvent.click(within(row).getByRole('button', { name: '고치기' }))
+    fireEvent.click(within(row).getByRole('button', { name: '고치기 · 미리보기' }))
+    expect(within(row).getByRole('button', { name: '고치는 중' })).toBeInTheDocument()
     expect(field(/브랜드 · 시설/).value).toBe('에버랜드')
     expect(field(/챙길 것 \(한 줄/).value).toBe('2027학년도 수험표 원본\n신분증')
     fireEvent.change(field(/혜택 \(한 문장\)/), { target: { value: '수험생 이용권 1만 9천원' } })
@@ -219,33 +220,44 @@ describe('discounts admin', () => {
       expect(api.updateAdminDiscount).toHaveBeenCalledWith(1, expect.objectContaining({ benefit: '수험생 이용권 1만 9천원', howTo: '사전 예약' })),
     )
 
-    const updatedRow = (await screen.findByRole('cell', { name: /1만 9천원/ })).closest('tr')!
+    const updatedRow = await screen.findByRole('listitem', { name: '에버랜드' })
+    expect(within(updatedRow).getByText('수험생 이용권 1만 9천원')).toBeInTheDocument()
     fireEvent.click(within(updatedRow).getByRole('button', { name: '숨기기' }))
     await waitFor(() => expect(api.updateAdminDiscount).toHaveBeenLastCalledWith(1, expect.objectContaining({ visible: false })))
     expect(await screen.findByText('숨김', { selector: '.admin-badge' })).toBeInTheDocument()
 
-    fireEvent.click(within(screen.getByRole('cell', { name: /에버랜드/ }).closest('tr')!).getByRole('button', { name: '지우기' }))
+    fireEvent.click(within(screen.getByRole('listitem', { name: '에버랜드' })).getByRole('button', { name: '지우기' }))
     expect(confirm).toHaveBeenCalledWith(expect.stringContaining('되돌릴 수 없어요'))
     await waitFor(() => expect(api.deleteAdminDiscount).toHaveBeenCalledWith(1))
     expect(await screen.findByText('해당하는 혜택이 없어요.')).toBeInTheDocument()
     confirm.mockRestore()
   })
 
+  it('opens a discount in the editor from its image', async () => {
+    renderPage()
+    const card = await screen.findByRole('listitem', { name: '에버랜드' })
+    fireEvent.click(within(card).getByRole('button', { name: '에버랜드 고치기·미리보기로 열기' }))
+    expect(field(/브랜드 · 시설/).value).toBe('에버랜드')
+    expect(screen.getByRole('heading', { name: '혜택 고치기 #1' })).toBeInTheDocument()
+    const link = within(card).getByRole('link', { name: 'https://www.example.com/a' })
+    expect(link).toHaveAttribute('title', 'https://www.example.com/a')
+  })
+
   it('filters the list by sponsored and regular', async () => {
     api.fetchAdminDiscounts.mockResolvedValue([everland, { ...everland, id: 2, brand: '제휴 카페', sponsored: true }])
     renderPage()
-    await screen.findByRole('cell', { name: /에버랜드/ })
+    await screen.findByRole('listitem', { name: '에버랜드' })
     const kind = screen.getByRole('group', { name: '제휴 여부' })
 
     fireEvent.click(within(kind).getByRole('button', { name: '제휴 1' }))
-    expect(screen.getByRole('cell', { name: /제휴 카페/ })).toBeInTheDocument()
-    expect(screen.queryByRole('cell', { name: /에버랜드/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('listitem', { name: '제휴 카페' })).toBeInTheDocument()
+    expect(screen.queryByRole('listitem', { name: '에버랜드' })).not.toBeInTheDocument()
 
     fireEvent.click(within(kind).getByRole('button', { name: '일반 1' }))
-    expect(screen.getByRole('cell', { name: /에버랜드/ })).toBeInTheDocument()
-    expect(screen.queryByRole('cell', { name: /제휴 카페/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('listitem', { name: '에버랜드' })).toBeInTheDocument()
+    expect(screen.queryByRole('listitem', { name: '제휴 카페' })).not.toBeInTheDocument()
 
     fireEvent.click(within(kind).getByRole('button', { name: '제휴·일반 모두' }))
-    expect(screen.getAllByRole('cell', { name: /에버랜드|제휴 카페/ })).toHaveLength(2)
+    expect(screen.getAllByRole('listitem', { name: /^(에버랜드|제휴 카페)$/ })).toHaveLength(2)
   })
 })

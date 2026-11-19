@@ -82,7 +82,18 @@
   border-radius: 8px;
   font: inherit;
 }
-.discounts-admin__hidden td { opacity: .55; }
+.discounts-admin__hidden .ads-item__thumb,
+.discounts-admin__hidden .ads-item__body { opacity: .55; }
+/* 일반 혜택은 카드 비율(2.4:1), 제휴는 배너 비율(3:1, .ads-item__thumb 기본값) */
+.ads-item__thumb.is-card img { aspect-ratio: 2.4 / 1; }
+.discounts-admin__no-image {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 1;
+  color: #7a716a;
+  font-size: 13px;
+}
+.discounts-admin__benefit { margin: 0; line-height: 1.5; overflow-wrap: anywhere; }
 .discounts-admin__delete { color: #c4472d; }
 
 /* 왼쪽 메뉴를 빼고 남는 폭이 폼과 휴대폰 폭 미리보기를 나란히 두기에 모자라면 위아래로 */
