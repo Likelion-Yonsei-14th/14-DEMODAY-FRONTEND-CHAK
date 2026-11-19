@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { ChevronRight, Download, X } from 'lucide-react'
+import { ChevronRight, Download, Gamepad2, Mail, Send, X } from 'lucide-react'
+import { Button } from '@/design-system'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { isApiEnabled } from '@/api/config'
 import { fetchRecap, type Recap } from '@/api/recap'
@@ -68,10 +69,10 @@ export function RecapPage() {
   if (!open) {
     return (
       <div className="recap">
-        <section className="recap-slide recap-slide--ink recap-slide--still">
+        <section className="recap-slide recap-slide--still">
           <CloseButton onClick={close} />
           <div className="recap-slide__body">
-            <p className="recap-kicker">나의 수능 리캡</p>
+            <p className="recap-marker">나의 수능 리캡</p>
             <h1 className="recap-title">
               시험이 끝나면
               <br />
@@ -87,7 +88,7 @@ export function RecapPage() {
   if (loaded.status === 'loading') {
     return (
       <div className="recap">
-        <section className="recap-slide recap-slide--brand recap-slide--still" aria-busy="true">
+        <section className="recap-slide recap-slide--still" aria-busy="true">
           <div className="recap-slide__body">
             <p className="recap-title">한 해를 모으는 중...</p>
           </div>
@@ -122,20 +123,20 @@ export function RecapPage() {
         {index === 0 && <p className="recap-hint">화면을 눌러 넘겨 보세요</p>}
         {slide.kind === 'sent' && (
           <Actions>
-            <button type="button" className="recap-action" onClick={() => navigate('/letters')}>
-              쓴 편지 다시 보기 <ChevronRight size={16} aria-hidden />
-            </button>
+            <Button variant="secondary" fullWidth trailingIcon={<ChevronRight size={18} aria-hidden />} onClick={() => navigate('/letters')}>
+              쓴 편지 다시 보기
+            </Button>
           </Actions>
         )}
         {slide.kind === 'summary' && <SaveSummary />}
         {slide.kind === 'outro' && (
           <Actions>
-            <button type="button" className="recap-action recap-action--solid" onClick={() => navigate('/discounts')}>
-              수험표로 받을 수 있는 혜택 보러 가기 <ChevronRight size={16} aria-hidden />
-            </button>
-            <button type="button" className="recap-action" onClick={() => setIndex(0)}>
+            <Button variant="brand" fullWidth trailingIcon={<ChevronRight size={18} aria-hidden />} onClick={() => navigate('/discounts')}>
+              수험표로 받는 혜택 보러 가기
+            </Button>
+            <Button variant="tertiary" fullWidth onClick={() => setIndex(0)}>
               처음부터 다시 보기
-            </button>
+            </Button>
           </Actions>
         )}
       </section>
@@ -155,40 +156,49 @@ function Actions({ children }: { children: ReactNode }) {
   return <div className="recap-actions">{children}</div>
 }
 
+function StatCard({ tone, icon, kicker, children }: { tone: string; icon: ReactNode; kicker: string; children: ReactNode }) {
+  return (
+    <div className={`recap-card recap-card--${tone}`}>
+      <div className="recap-card__head">
+        <span className="recap-card__icon">{icon}</span>
+        <span className="recap-card__kicker">{kicker}</span>
+      </div>
+      {children}
+    </div>
+  )
+}
+
 function SlideBody({ slide }: { slide: Slide }) {
   switch (slide.kind) {
     case 'intro':
       return (
         <>
-          <p className="recap-kicker">2027 수능 · 나의 리캡</p>
+          <p className="recap-marker">2027 수능 · 나의 리캡</p>
           <h1 className="recap-title recap-title--xl">
             오늘 하루,
             <br />
-            정말 고생
-            <br />
-            많았어요
+            정말 고생 많았어요
           </h1>
           <p className="recap-sub">
             {slide.days
-              ? `착과 함께한 ${slide.days}일, 끝까지 와 준 당신이 대단해요.`
+              ? `착과 함께한 ${slide.days}일, 끝까지 와 준 당신이 정말 대단해요.`
               : '여기까지 와 준 당신이 정말 대단해요.'}
           </p>
+          <p className="recap-hand recap-hand--accent">한 해 동안의 나, 같이 돌아볼까요?</p>
         </>
       )
     case 'cheer':
       return (
         <>
-          <p className="recap-cheer">{slide.text}</p>
+          <p className="recap-hand recap-hand--xl">{slide.text}</p>
           {slide.sub && <p className="recap-sub">{slide.sub}</p>}
         </>
       )
     case 'received':
       return (
-        <>
-          <p className="recap-kicker">받은 응원</p>
-          <p className="recap-big">
-            {slide.letters}
-            <small>통</small>
+        <StatCard tone={slide.tone} icon={<Mail size={18} aria-hidden />} kicker="받은 응원">
+          <p className="recap-number">
+            <mark>{slide.letters}</mark>통
           </p>
           <h2 className="recap-title">
             {slide.senders}명이 {slide.letters}통의
@@ -197,19 +207,17 @@ function SlideBody({ slide }: { slide: Slide }) {
           </h2>
           {slide.stickers > 0 && <p className="recap-sub">스티커도 {slide.stickers}개나 붙여 줬어요.</p>}
           {slide.peak && (
-            <p className="recap-chip">
+            <p className="recap-note">
               {monthDay(slide.peak.day)}에는 하루에만 {slide.peak.count}개가 왔어요
             </p>
           )}
-        </>
+        </StatCard>
       )
     case 'sent':
       return (
-        <>
-          <p className="recap-kicker">보낸 응원</p>
-          <p className="recap-big">
-            {slide.letters}
-            <small>통</small>
+        <StatCard tone={slide.tone} icon={<Send size={18} aria-hidden />} kicker="보낸 응원">
+          <p className="recap-number">
+            <mark>{slide.letters}</mark>통
           </p>
           <h2 className="recap-title">
             당신도 {slide.desks}명에게
@@ -217,41 +225,50 @@ function SlideBody({ slide }: { slide: Slide }) {
             힘이 되어 줬어요
           </h2>
           <p className="recap-sub">내 시험도 바빴을 텐데, 마음을 나눠 줘서 고마워요.</p>
-        </>
+        </StatCard>
       )
     case 'games':
       return (
-        <>
-          <p className="recap-kicker">가장 많이 한 게임</p>
+        <StatCard tone={slide.tone} icon={<Gamepad2 size={18} aria-hidden />} kicker="가장 많이 한 게임">
           <h2 className="recap-title">{slide.top.title}</h2>
-          <p className="recap-big">
-            {slide.top.plays}
-            <small>판</small>
+          <p className="recap-number">
+            <mark>{slide.top.plays}</mark>판
           </p>
           <ul className="recap-facts">
-            {slide.top.best !== null && <li>최고 기록 {slide.top.best.toLocaleString('ko-KR')}점</li>}
-            {slide.top.topPercent !== null && <li>전체에서 상위 {slide.top.topPercent}%</li>}
+            {slide.top.best !== null && (
+              <li>
+                <span>최고 기록</span>
+                <strong>{slide.top.best.toLocaleString('ko-KR')}점</strong>
+              </li>
+            )}
+            {slide.top.topPercent !== null && (
+              <li>
+                <span>전체에서</span>
+                <strong>상위 {slide.top.topPercent}%</strong>
+              </li>
+            )}
             {slide.others.map((other) => (
               <li key={other.title}>
-                {other.title} {other.plays}판
+                <span>{other.title}</span>
+                <strong>{other.plays}판</strong>
               </li>
             ))}
           </ul>
-        </>
+        </StatCard>
       )
     case 'studyType':
       return (
-        <>
-          <p className="recap-kicker">나라는 수험생</p>
+        <div className={`recap-card recap-card--${slide.tone} recap-card--center`}>
+          <span className="recap-card__kicker">나라는 수험생</span>
           <img className="recap-character" src={getCharacterSrc(slide.code)} alt="" />
           <h2 className="recap-title">{slide.name}</h2>
-          <p className="recap-sub">“{slide.tagline}”</p>
-        </>
+          <p className="recap-hand">“{slide.tagline}”</p>
+        </div>
       )
     case 'letter':
       return (
         <article className="recap-letter">
-          <p className="recap-kicker">착 팀이 보내는 편지</p>
+          <p className="recap-letter__to">착 팀이 보내는 편지</p>
           <p className="recap-letter__text">
             수고했다는 말로는 부족하지만,
             <br />
@@ -274,11 +291,13 @@ function SlideBody({ slide }: { slide: Slide }) {
       )
     case 'summary':
       return (
-        <div className="recap-summary" data-recap-summary>
-          <p className="recap-summary__stamp">2027 수능 완주</p>
-          <h2 className="recap-title">나의 수능 리캡</h2>
+        <div className="recap-ticket">
+          <div className="recap-ticket__head">
+            <span>2027학년도 수능</span>
+            <strong>나의 리캡</strong>
+          </div>
           {slide.lines.length > 0 && (
-            <dl className="recap-summary__lines">
+            <dl className="recap-ticket__lines">
               {slide.lines.map((line) => (
                 <div key={line.label}>
                   <dt>{line.label}</dt>
@@ -287,8 +306,9 @@ function SlideBody({ slide }: { slide: Slide }) {
               ))}
             </dl>
           )}
-          <p className="recap-summary__foot">끝까지 와 준 나,<br />정말 수고했어</p>
-          <p className="recap-summary__brand">수능 착 · chak.live</p>
+          <p className="recap-ticket__stamp">완주</p>
+          <p className="recap-hand">끝까지 와 준 나, 정말 수고했어</p>
+          <p className="recap-ticket__brand">수능 착 · chak.live</p>
         </div>
       )
     case 'outro':
@@ -299,7 +319,8 @@ function SlideBody({ slide }: { slide: Slide }) {
             <br />
             쉬어도 돼요
           </h2>
-          <p className="recap-sub">맛있는 거 먹고, 푹 자고, 보고 싶던 사람들 만나요. 수험표로 받을 수 있는 혜택도 모아 뒀어요.</p>
+          <p className="recap-sub">맛있는 거 먹고, 푹 자고, 보고 싶던 사람들 만나요.</p>
+          <p className="recap-hand recap-hand--accent">수험표로 받을 수 있는 혜택도 모아 뒀어요</p>
         </>
       )
   }
@@ -314,7 +335,7 @@ function SaveSummary() {
     busy.current = true
     setState('saving')
     try {
-      const node = document.querySelector<HTMLElement>('.recap-slide--summary')
+      const node = document.querySelector<HTMLElement>('.recap-ticket')
       if (!node) throw new Error('no summary')
       const [{ toPng }, { buildFontEmbedCSS }] = await Promise.all([
         import('html-to-image'),
@@ -341,9 +362,9 @@ function SaveSummary() {
   }
   return (
     <div className="recap-actions">
-      <button type="button" className="recap-action recap-action--solid" onClick={save} disabled={state === 'saving'}>
-        <Download size={16} aria-hidden /> {state === 'saving' ? '만드는 중...' : '이미지로 저장하기'}
-      </button>
+      <Button variant="primary" fullWidth loading={state === 'saving'} leadingIcon={<Download size={18} aria-hidden />} onClick={save}>
+        이미지로 저장하기
+      </Button>
       {state === 'failed' && <p className="recap-sub">이미지를 만들지 못했어요. 화면을 캡처해 주세요.</p>}
     </div>
   )

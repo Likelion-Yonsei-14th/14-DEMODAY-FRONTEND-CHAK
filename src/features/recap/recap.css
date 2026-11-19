@@ -1,72 +1,25 @@
-/* 나의 수능 리캡: 휴대폰 한 화면을 꽉 채우는 스토리 카드. */
+/*
+ * 나의 수능 리캡. 사이트와 같은 원칙: 바탕은 차분한 크림색, 글자는 잉크색,
+ * 코랄은 핵심 순간에만. 색은 카드 머리의 연한 색과 손글씨 같은 "콘텐츠"에만 쓴다.
+ */
 .recap {
   min-height: 100dvh;
-  background: var(--color-ink);
+  background: var(--color-bg-canvas);
   display: flex;
   justify-content: center;
 }
 
 .recap-slide {
-  --recap-bg: var(--color-brand);
-  --recap-fg: var(--color-content-inverse);
-  --recap-soft: rgba(255, 253, 248, 0.78);
-  --recap-chip: rgba(255, 253, 248, 0.18);
   position: relative;
   width: 100%;
   max-width: 480px;
   min-height: 100dvh;
-  padding: 72px 28px 40px;
+  padding: 76px var(--page-gutter) 32px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  background: var(--recap-bg);
-  color: var(--recap-fg);
+  background: var(--color-bg-canvas);
+  color: var(--color-content-primary);
   font-family: var(--font-ui);
-  isolation: isolate;
-}
-
-/* 색마다 배경에 큰 동그라미 두 개를 깔아 단조롭지 않게. */
-.recap-slide::before,
-.recap-slide::after {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  border-radius: 50%;
-  background: var(--recap-blob, rgba(255, 255, 255, 0.12));
-  pointer-events: none;
-}
-.recap-slide::before {
-  width: 360px;
-  height: 360px;
-  right: -140px;
-  top: -90px;
-}
-.recap-slide::after {
-  width: 260px;
-  height: 260px;
-  left: -110px;
-  bottom: -70px;
-  opacity: 0.7;
-}
-
-.recap-slide--brand { --recap-bg: var(--color-brand); --recap-blob: rgba(255, 194, 26, 0.35); }
-.recap-slide--ink { --recap-bg: var(--color-ink); --recap-blob: rgba(217, 58, 31, 0.35); }
-.recap-slide--butter {
-  --recap-bg: var(--color-butter);
-  --recap-fg: var(--color-ink);
-  --recap-soft: rgba(30, 27, 24, 0.72);
-  --recap-chip: rgba(30, 27, 24, 0.1);
-  --recap-blob: rgba(255, 255, 255, 0.45);
-}
-.recap-slide--sage { --recap-bg: var(--color-sage); --recap-blob: rgba(255, 237, 179, 0.4); }
-.recap-slide--sky { --recap-bg: var(--color-sky); --recap-blob: rgba(255, 95, 162, 0.38); }
-.recap-slide--lilac { --recap-bg: var(--color-lilac); --recap-blob: rgba(255, 211, 230, 0.4); }
-.recap-slide--paper {
-  --recap-bg: var(--color-surface-base);
-  --recap-fg: var(--color-ink);
-  --recap-soft: var(--color-content-secondary);
-  --recap-chip: var(--color-surface-subtle);
-  --recap-blob: var(--color-brand-soft);
 }
 
 .recap-slide__body {
@@ -76,130 +29,197 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 16px;
+  gap: var(--space-4);
   pointer-events: none;
 }
 .recap-slide__body > * {
-  animation: recap-rise 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: recap-rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-.recap-slide__body > *:nth-child(2) { animation-delay: 90ms; }
-.recap-slide__body > *:nth-child(3) { animation-delay: 180ms; }
-.recap-slide__body > *:nth-child(4) { animation-delay: 270ms; }
-.recap-slide__body > *:nth-child(5) { animation-delay: 360ms; }
+.recap-slide__body > *:nth-child(2) { animation-delay: 70ms; }
+.recap-slide__body > *:nth-child(3) { animation-delay: 140ms; }
+.recap-slide__body > *:nth-child(4) { animation-delay: 210ms; }
 
 @keyframes recap-rise {
-  from { opacity: 0; transform: translateY(18px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: none; }
 }
-
 @media (prefers-reduced-motion: reduce) {
   .recap-slide__body > * { animation: none; }
 }
 
-.recap-kicker {
+/* 홈의 "오늘이 수능이에요"와 같은 형광펜 표시. */
+.recap-marker {
+  align-self: flex-start;
   margin: 0;
-  font-size: 14px;
-  font-weight: 700;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 9px;
+  border-radius: 2px;
+  background: var(--label-lime);
+  color: var(--color-ink);
+  font-size: var(--type-label-l-size);
+  font-weight: 800;
   letter-spacing: 0.02em;
-  color: var(--recap-soft);
 }
 
 .recap-title {
   margin: 0;
-  font-size: 30px;
-  line-height: 1.3;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: var(--type-h2-size);
+  line-height: var(--type-h2-line);
+  font-weight: 700;
+  letter-spacing: -0.015em;
   word-break: keep-all;
 }
 .recap-title--xl {
-  font-size: 46px;
-  line-height: 1.18;
+  font-size: var(--type-display-l-size);
+  line-height: var(--type-display-l-line);
+  letter-spacing: -0.02em;
 }
 
 .recap-sub {
   margin: 0;
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--recap-soft);
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-line);
+  color: var(--color-content-secondary);
   word-break: keep-all;
 }
 
-.recap-cheer {
+/* 손글씨: 서비스에서 "사람의 마음"이 담긴 자리에만. */
+.recap-hand {
   margin: 0;
-  font-size: 32px;
+  font-family: var(--font-hand);
+  font-size: 26px;
   line-height: 1.4;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  white-space: pre-line;
+  color: var(--color-content-primary);
   word-break: keep-all;
 }
+.recap-hand--xl {
+  font-size: 38px;
+  line-height: 1.35;
+  white-space: pre-line;
+}
+.recap-hand--accent {
+  color: var(--color-brand);
+}
 
-.recap-big {
-  margin: 0;
-  font-size: 112px;
-  line-height: 1;
-  font-weight: 900;
-  letter-spacing: -0.05em;
+/* 숫자 카드: 흰 종이 위, 머리에 연한 색 띠. */
+.recap-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-5);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+  --recap-tint: var(--color-surface-subtle);
+}
+.recap-card--butter { --recap-tint: var(--color-butter-soft); }
+.recap-card--sage { --recap-tint: var(--color-sage-soft); }
+.recap-card--sky { --recap-tint: var(--color-sky-soft); }
+.recap-card--lilac { --recap-tint: var(--color-lilac-soft); }
+.recap-card--brand { --recap-tint: var(--color-brand-soft); }
+.recap-card--center {
+  align-items: center;
+  text-align: center;
+}
+
+.recap-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.recap-card__icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: var(--recap-tint);
+}
+.recap-card__kicker {
+  font-size: var(--type-label-l-size);
+  line-height: var(--type-label-l-line);
+  font-weight: 600;
+  color: var(--color-content-secondary);
+}
+
+.recap-number {
+  margin: var(--space-1) 0 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+/* 숫자 아래에 카드 색으로 형광펜을 긋는다. */
+.recap-number mark {
+  margin-right: 4px;
+  padding: 0 4px;
+  background: linear-gradient(transparent 55%, var(--recap-tint) 55%);
+  color: inherit;
+  font-size: 64px;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
-.recap-big small {
-  margin-left: 6px;
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: 0;
-}
 
-.recap-chip {
-  align-self: flex-start;
-  margin: 4px 0 0;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: var(--recap-chip);
-  font-size: 14px;
-  font-weight: 700;
+.recap-note {
+  margin: var(--space-1) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--recap-tint);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-line);
+  font-weight: 600;
 }
 
 .recap-facts {
-  margin: 0;
+  margin: var(--space-1) 0 0;
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 8px;
+  border-top: 1px solid var(--color-border-subtle);
 }
 .recap-facts li {
-  padding: 12px 16px;
-  border-radius: 14px;
-  background: var(--recap-chip);
-  font-size: 15px;
-  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-size: var(--type-body-s-size);
 }
+.recap-facts span { color: var(--color-content-secondary); }
+.recap-facts strong { font-weight: 700; }
 
 .recap-character {
-  width: 168px;
-  height: 168px;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.92);
-  padding: 12px;
+  width: 148px;
+  height: 148px;
+  margin: var(--space-2) 0;
+  border-radius: var(--radius-2xl);
+  background: var(--recap-tint);
+  padding: var(--space-3);
   object-fit: contain;
 }
 
-/* 착 팀 편지: 종이 위 손글씨. */
+/* 착 팀 편지: 응원 편지와 같은 종이. */
 .recap-letter {
   display: grid;
-  gap: 18px;
-  padding: 28px 24px;
-  border-radius: 20px;
+  gap: var(--space-4);
+  padding: var(--space-7) var(--space-6);
+  border-radius: var(--radius-sm);
   background: var(--color-surface-raised);
-  box-shadow: 0 18px 40px rgba(41, 39, 34, 0.12);
-  transform: rotate(-1.2deg);
+  box-shadow: var(--shadow-paper);
+  transform: rotate(-1deg);
+}
+.recap-letter__to {
+  margin: 0;
+  font-size: var(--type-label-m-size);
+  font-weight: 600;
+  color: var(--color-content-tertiary);
 }
 .recap-letter__text {
   margin: 0;
   font-family: var(--font-hand);
-  font-size: 28px;
-  line-height: 1.45;
-  color: var(--color-ink);
+  font-size: 27px;
+  line-height: 40px;
   word-break: keep-all;
 }
 .recap-letter__sign {
@@ -210,67 +230,88 @@
   color: var(--color-brand);
 }
 
-/* 요약: 저장하면 이 카드 그대로 이미지가 된다. */
-.recap-summary {
+/* 요약: 수험표 모양. 저장하면 이 카드가 이미지가 된다. */
+.recap-ticket {
+  position: relative;
   display: grid;
-  gap: 18px;
-  padding: 28px 24px;
-  border-radius: 24px;
-  background: rgba(255, 253, 248, 0.12);
-  border: 1px solid rgba(255, 253, 248, 0.3);
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-5);
+  border: 1.5px solid var(--color-content-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
 }
-.recap-summary__stamp {
-  justify-self: start;
-  margin: 0;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: var(--color-butter);
-  color: var(--color-ink);
-  font-size: 13px;
-  font-weight: 800;
-}
-.recap-summary__lines {
-  margin: 0;
-  display: grid;
-  gap: 12px;
-}
-.recap-summary__lines div {
+.recap-ticket__head {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px dashed rgba(255, 253, 248, 0.35);
+  padding-bottom: var(--space-3);
+  border-bottom: 1.5px solid var(--color-content-primary);
 }
-.recap-summary__lines dt {
-  font-size: 15px;
-  color: var(--recap-soft);
+.recap-ticket__head span {
+  font-size: var(--type-label-m-size);
+  font-weight: 600;
+  color: var(--color-content-secondary);
 }
-.recap-summary__lines dd {
+.recap-ticket__head strong {
+  font-size: var(--type-title-xl-size);
+  font-weight: 700;
+}
+.recap-ticket__lines {
   margin: 0;
-  font-size: 22px;
-  font-weight: 800;
+  display: grid;
+}
+.recap-ticket__lines div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px dashed var(--color-border-default);
+}
+.recap-ticket__lines dt {
+  font-size: var(--type-body-s-size);
+  color: var(--color-content-secondary);
+}
+.recap-ticket__lines dd {
+  margin: 0;
+  font-size: var(--type-title-l-size);
+  font-weight: 700;
   text-align: right;
 }
-.recap-summary__foot {
+.recap-ticket__stamp {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
   margin: 0;
-  font-family: var(--font-hand);
-  font-size: 28px;
-  word-break: keep-all;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--color-brand);
+  border-radius: 50%;
+  color: var(--color-brand);
+  font-size: 15px;
+  font-weight: 800;
+  transform: rotate(-14deg);
+  opacity: 0.9;
 }
-.recap-summary__brand {
+.recap-ticket__brand {
   margin: 0;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--recap-soft);
+  min-height: 40px;
+  display: flex;
+  align-items: flex-end;
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  color: var(--color-content-tertiary);
 }
 
 /* 위쪽 진행 막대와 닫기. */
 .recap-progress {
   position: absolute;
-  top: 14px;
-  left: 16px;
-  right: 16px;
+  top: 16px;
+  left: var(--page-gutter);
+  right: var(--page-gutter);
   z-index: 3;
   display: flex;
   gap: 4px;
@@ -279,17 +320,17 @@
   flex: 1;
   height: 3px;
   border-radius: 2px;
-  background: color-mix(in srgb, var(--recap-fg) 28%, transparent);
+  background: var(--color-border-default);
 }
 .recap-progress .is-done,
 .recap-progress .is-now {
-  background: var(--recap-fg);
+  background: var(--color-content-primary);
 }
 
 .recap-close {
   position: absolute;
   top: 26px;
-  right: 12px;
+  right: 8px;
   z-index: 4;
   width: 44px;
   height: 44px;
@@ -298,7 +339,7 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--recap-fg);
+  color: var(--color-content-primary);
   cursor: pointer;
 }
 
@@ -317,7 +358,7 @@
 .recap-tap--prev { left: 0; width: 33%; }
 .recap-tap--next { right: 0; width: 67%; }
 .recap-tap:focus-visible {
-  outline: 2px solid var(--recap-fg);
+  outline: 2px solid var(--color-focus);
   outline-offset: -6px;
 }
 
@@ -326,41 +367,15 @@
   z-index: 1;
   margin: 0;
   text-align: center;
-  font-size: 13px;
-  color: var(--recap-soft);
-  animation: recap-blink 1.8s ease-in-out infinite;
+  font-size: var(--type-label-m-size);
+  color: var(--color-content-tertiary);
   pointer-events: none;
-}
-@keyframes recap-blink {
-  50% { opacity: 0.4; }
 }
 
 .recap-actions {
   position: relative;
   z-index: 3;
   display: grid;
-  gap: 10px;
-  margin-top: 20px;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
 }
-.recap-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 52px;
-  padding: 0 18px;
-  border: 1px solid color-mix(in srgb, var(--recap-fg) 40%, transparent);
-  border-radius: 16px;
-  background: transparent;
-  color: var(--recap-fg);
-  font: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.recap-action--solid {
-  border-color: transparent;
-  background: var(--recap-fg);
-  color: var(--recap-bg);
-}
-.recap-action:disabled { opacity: 0.6; }

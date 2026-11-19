@@ -50,7 +50,7 @@ export function buildSlides(recap: Recap | null, today: string): Slide[] {
   const games = [...(recap?.games ?? [])].filter((g) => g.plays > 0).sort((a, b) => b.plays - a.plays)
   const studyCode = recap?.studyType && isStudyTypeCode(recap.studyType) ? recap.studyType : null
 
-  const slides: Slide[] = [{ kind: 'intro', tone: 'brand', days }]
+  const slides: Slide[] = [{ kind: 'intro', tone: 'paper', days }]
 
   if (hasReceived || sent.letters > 0) {
     slides.push({ kind: 'cheer', tone: 'ink', text: '그동안 이런 마음들이\n당신 곁에 있었어요' })
@@ -107,8 +107,8 @@ export function buildSlides(recap: Recap | null, today: string): Slide[] {
   const plays = games.reduce((sum, g) => sum + g.plays, 0)
   if (plays > 0) lines.push({ label: '미니게임', value: `${plays}판` })
   if (studyCode) lines.push({ label: '공부 유형', value: STUDY_TYPE_RESULTS[studyCode].typeName })
-  slides.push({ kind: 'summary', tone: 'brand', lines })
+  slides.push({ kind: 'summary', tone: 'paper', lines })
 
-  slides.push({ kind: 'outro', tone: 'butter' })
+  slides.push({ kind: 'outro', tone: 'paper' })
   return slides
 }
