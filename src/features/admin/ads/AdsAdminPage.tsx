@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import {
   AD_IMAGE_MAX_BYTES,
   AD_IMAGE_TYPES,
@@ -372,93 +372,81 @@ export function AdsAdminPage() {
         </div>
       </section>
 
-      <div className="admin-table-wrap">
-        <table className="admin-table">
-          <thead>
-            <tr><th>시안</th><th>광고</th><th>기간</th><th>노출 · 도달 · 클릭</th><th>상태</th></tr>
-          </thead>
-          <tbody>
-            {ads.map((ad) => {
-              const status = adStatus(ad)
-              const c = summaries[ad.id]
-              return (
-                <Fragment key={ad.id}>
-                <tr>
-                  <td>
-                    <img className="ads-table__thumb" src={ad.creativeUrl} alt="" loading="lazy" />
-                  </td>
-                  <td>
-                    <strong>{ad.title}</strong>
-                    <br />
-                    <span className="admin__muted">
-                      {AD_PLACEMENT_LABEL[ad.placement] ?? ad.placement} · {regionLabel(ad.targetRegions)}
-                    </span>
-                    <br />
-                    <a href={ad.destinationUrl} target="_blank" rel="noopener noreferrer" className="ads-table__link">
-                      {ad.destinationUrl}
-                    </a>
-                  </td>
-                  <td>
-                    {formatDateTime(ad.startsAt)}
-                    <br />
-                    <span className="admin__muted">~ {formatDateTime(ad.endsAt)}</span>
-                  </td>
-                  <td>
-                    {c ? (
-                      <>
-                        {formatNumber(c.impressions)}회 · {formatNumber(c.reach)}명 · {formatNumber(c.clicks)}회
-                        {c.impressions > 0 && (
-                          <>
-                            <br />
-                            <span className="admin__muted">
-                              클릭률 {((c.clicks / c.impressions) * 100).toFixed(1)}%
-                              {shareOf(ad.id) !== null && ` · 배너 노출 비중 ${shareOf(ad.id)}%`}
-                            </span>
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <span className="admin__muted">-</span>
-                    )}
-                  </td>
-                  <td>
-                    <span className="admin-actions">
-                      <span className={`admin-badge${status === 'live' && on ? ' ads-badge--live' : ' admin-badge--muted'}`}>
-                        {status === 'live' && !on ? '스위치 켜면 노출' : status === 'live' ? '노출 중' : STATUS_LABEL[status]}
-                      </span>
-                      <button type="button" className="ads-btn" disabled={busy} onClick={() => edit(ad)}>
-                        고치기
-                      </button>
-                      <button type="button" className="ads-btn" disabled={busy} onClick={() => setActive(ad, !ad.active)}>
-                        {ad.active ? '꺼두기' : '다시 켜기'}
-                      </button>
-                      <button
-                        type="button"
-                        className="ads-btn"
-                        aria-expanded={openReport === ad.id}
-                        onClick={() => setOpenReport(openReport === ad.id ? null : ad.id)}
-                      >
-                        {openReport === ad.id ? '보고서 닫기' : '보고서'}
-                      </button>
-                    </span>
-                  </td>
-                </tr>
-                {openReport === ad.id && (
-                  <tr className="ads-table__report">
-                    <td colSpan={5}>
-                      <AdReportPanel ad={ad} />
-                    </td>
-                  </tr>
-                )}
-                </Fragment>
-              )
-            })}
-            {ads.length === 0 && !error && (
-              <tr><td colSpan={5} className="admin__muted">등록된 광고가 없어요.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <ul className="ads-list">
+        {ads.map((ad) => {
+          const status = adStatus(ad)
+          const c = summaries[ad.id]
+          const editing = editingId === ad.id
+          return (
+            <li key={ad.id} className={`ads-item${editing ? ' is-editing' : ''}`}>
+              <button
+                type="button"
+                className="ads-item__thumb"
+                onClick={() => edit(ad)}
+                aria-label={`${ad.title} 시안 미리보기로 열기`}
+              >
+                <img src={ad.creativeUrl} alt="" loading="lazy" />
+              </button>
+              <div className="ads-item__body">
+                <div className="ads-item__head">
+                  <strong>{ad.title}</strong>
+                  <span className={`admin-badge${status === 'live' && on ? ' ads-badge--live' : ' admin-badge--muted'}`}>
+                    {status === 'live' && !on ? '스위치 켜면 노출' : status === 'live' ? '노출 중' : STATUS_LABEL[status]}
+                  </span>
+                </div>
+                <p className="ads-item__meta">
+                  {AD_PLACEMENT_LABEL[ad.placement] ?? ad.placement} · {regionLabel(ad.targetRegions)}
+                </p>
+                <p className="ads-item__meta">
+                  {formatDateTime(ad.startsAt)} ~ {formatDateTime(ad.endsAt)}
+                </p>
+                <p className="ads-item__meta">
+                  {c ? (
+                    <>
+                      노출 {formatNumber(c.impressions)}회 · 도달 {formatNumber(c.reach)}명 · 클릭 {formatNumber(c.clicks)}회
+                      {c.impressions > 0 && ` · 클릭률 ${((c.clicks / c.impressions) * 100).toFixed(1)}%`}
+                      {c.impressions > 0 && shareOf(ad.id) !== null && ` · 배너 노출 비중 ${shareOf(ad.id)}%`}
+                    </>
+                  ) : (
+                    '집계 없음'
+                  )}
+                </p>
+                <a
+                  href={ad.destinationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ads-item__link"
+                  title={ad.destinationUrl}
+                >
+                  {ad.destinationUrl}
+                </a>
+                <div className="ads-item__actions">
+                  <button type="button" className="ads-btn" disabled={busy} onClick={() => edit(ad)}>
+                    {editing ? '고치는 중' : '고치기 · 미리보기'}
+                  </button>
+                  <button type="button" className="ads-btn" disabled={busy} onClick={() => setActive(ad, !ad.active)}>
+                    {ad.active ? '꺼두기' : '다시 켜기'}
+                  </button>
+                  <button
+                    type="button"
+                    className="ads-btn"
+                    aria-expanded={openReport === ad.id}
+                    onClick={() => setOpenReport(openReport === ad.id ? null : ad.id)}
+                  >
+                    {openReport === ad.id ? '보고서 닫기' : '보고서'}
+                  </button>
+                </div>
+              </div>
+              {openReport === ad.id && (
+                <div className="ads-item__report">
+                  <AdReportPanel ad={ad} />
+                </div>
+              )}
+            </li>
+          )
+        })}
+        {ads.length === 0 && !error && <li className="admin__muted">등록된 광고가 없어요.</li>}
+      </ul>
 
       <DiscountAdStats />
     </>
