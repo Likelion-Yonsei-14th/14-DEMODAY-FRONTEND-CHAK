@@ -5,7 +5,7 @@ vi.mock('@/features/ads/AdBanner', () => ({ AdBanner: () => <div data-testid="ad
 
 import { DISCOUNTS, DISCOUNT_CATEGORIES, type Discount } from './discountData'
 import { periodLabel, seoulToday, sourceHost, timingOf, urgencyLabel, visibleDiscounts } from './discounts'
-import { DiscountsPage } from './DiscountsPage'
+import { DiscountCard, DiscountsPage } from './DiscountsPage'
 
 const make = (patch: Partial<Discount>): Discount => ({
   brand: 'A',
@@ -120,6 +120,12 @@ describe('discount card', () => {
       fireEvent.error(image)
       expect(card.querySelector('img')).toBeNull()
     }
+  })
+  it("breaks the benefit sentence into lines only at ' · '", () => {
+    const d: Discount = { ...DISCOUNTS[0]!, benefit: '음료 1+1 · 디저트·케이크 10% 할인' }
+    const { container } = render(<DiscountCard d={d} today="2026-11-19" />)
+    const lines = [...container.querySelectorAll('.discount__benefit > span')].map((line) => line.textContent)
+    expect(lines).toEqual(['음료 1+1', '디저트·케이크 10% 할인'])
   })
 })
 
