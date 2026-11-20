@@ -212,12 +212,12 @@
   background: #c9573f;
 }
 
-.home-page__door--class {
+.home-page__door--rolling {
   background: #5d7a5d;
 }
 
-.home-page__door--recap {
-  background: linear-gradient(135deg, #7b5cff 0%, #d93a1f 100%);
+.home-page__door--class {
+  background: #5d7a5d;
 }
 
 .home-page__door--empty {
@@ -295,4 +295,9 @@
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.start-page__paper {
+  margin-top: 10px;
+  padding: 0 6px;
 }

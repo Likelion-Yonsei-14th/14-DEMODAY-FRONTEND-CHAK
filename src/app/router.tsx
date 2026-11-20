@@ -106,7 +106,19 @@ import { LockerCharmPickPage } from '@/features/classroom/LockerCharmPickPage'
 import { CharmPickPage } from '@/features/supporter/CharmPickPage'
 import { PeperoPickPage } from '@/features/supporter/PeperoPickPage'
 import { LockerDecoratePage } from '@/features/classroom/LockerDecoratePage'
+import {
+  RollingPaperCreatePage,
+  RollingPaperEntryRedirect,
+  RollingPaperJoinPage,
+  RollingPaperSharePage,
+} from '@/features/rollingPaper/RollingPaperCreationPages'
+import {
+  RollingPaperClassPage,
+  RollingPaperPage,
+} from '@/features/rollingPaper/RollingPaperPages'
+import { RollingPaperSettingsPage } from '@/features/rollingPaper/RollingPaperSettingsPage'
 import { PrototypeIndexPage } from '@/prototype/screens/PrototypeIndexPage'
+import { isRollingPaperAvailable } from '@/lib/featureFlags'
 import {
   ComposerPage,
   ReaderPage,
@@ -139,6 +151,10 @@ import {
  */
 const NOT_READY_PATHS: Array<{ pattern: RegExp; title: string }> = [
   { pattern: /^\/classroom(\/|$)/, title: '우리 반' },
+  // Opens once the server is deployed and VITE_ROLLING_PAPER=on.
+  ...(isRollingPaperAvailable()
+    ? []
+    : [{ pattern: /^\/rolling-paper(\/|$)/, title: '졸업 롤링페이퍼' }]),
   { pattern: /^\/wrapped(\/|$)/, title: '응원 결산' },
   { pattern: /^\/offers(\/|$)/, title: '혜택' },
 ]
@@ -513,6 +529,34 @@ export const router = createBrowserRouter([
       {
         path: '/claim/complete',
         element: <ClaimCompletePage />,
+      },
+      {
+        path: '/rolling-paper',
+        element: <RollingPaperEntryRedirect />,
+      },
+      {
+        path: '/rolling-paper/create',
+        element: <RollingPaperCreatePage />,
+      },
+      {
+        path: '/rolling-paper/:classId',
+        element: <RollingPaperClassPage />,
+      },
+      {
+        path: '/rolling-paper/:classId/settings',
+        element: <RollingPaperSettingsPage />,
+      },
+      {
+        path: '/rolling-paper/:classId/share',
+        element: <RollingPaperSharePage />,
+      },
+      {
+        path: '/rolling-paper/:classId/join',
+        element: <RollingPaperJoinPage />,
+      },
+      {
+        path: '/rolling-paper/:classId/paper/:lockerId',
+        element: <RollingPaperPage />,
       },
       {
         path: '/classroom',

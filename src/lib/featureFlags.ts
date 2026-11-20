@@ -10,3 +10,10 @@ export const isClassroomAvailable = () => !import.meta.env.PROD
 
 /** 찰떡 충전·구매: 운영에서는 서버 결제가 연결된 때(VITE_CHALTTEOK_API=server)에만 연다. */
 export const arePaymentsAvailable = () => chaltteokMode === 'server' || !import.meta.env.PROD
+
+/**
+ * 졸업 롤링페이퍼: 서버(/api/public/rolling-papers)가 배포된 뒤 운영에서 VITE_ROLLING_PAPER=on으로 연다.
+ * 개발·테스트에서는 늘 열려 있다(백엔드가 없으면 브라우저 안에서만 동작).
+ */
+export const isRollingPaperAvailable = () =>
+  !import.meta.env.PROD || import.meta.env.VITE_ROLLING_PAPER === 'on'
