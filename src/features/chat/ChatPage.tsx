@@ -158,7 +158,7 @@ export function ChatPage() {
                     <DiscountItem
                       key={d.id}
                       discount={d}
-                      withImage={imageIds[i].has(d.id)}
+                      withImage={imageIds[i]?.has(d.id) ?? false}
                       onOpen={() => navigate(`${DISCOUNTS_PATH}?q=${encodeURIComponent(d.brand)}`)}
                     />
                   ))}
