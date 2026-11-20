@@ -20,6 +20,53 @@ function errorText(error: unknown): string {
   return '답을 가져오지 못했어요. 잠시 후 다시 시도해 주세요.'
 }
 
+/**
+ * 답 아래 혜택 한 줄. 혜택함처럼 이미지가 있으면 함께 보여 준다.
+ * 제휴 매장 이미지는 글씨까지 담긴 배너 시안(3:1)이라 이미지만, 일반 혜택은 사진 아래에 혜택 글을 단다.
+ * 이미지를 못 불러오면 글만 남긴다.
+ */
+function DiscountItem({
+  discount: d,
+  withImage,
+  onOpen,
+}: {
+  discount: ChatDiscount
+  withImage: boolean
+  onOpen: () => void
+}) {
+  const [imageFailed, setImageFailed] = useState(false)
+  const image = withImage && d.imageUrl && !imageFailed ? d.imageUrl : null
+  const meta = [d.sponsored ? '제휴' : null, d.area, d.endDate ? `~${d.endDate.slice(5).replace('-', '.')}` : null]
+    .filter(Boolean)
+    .join(' · ')
+
+  if (image && d.sponsored) {
+    return (
+      <button type="button" className="chat__banner" onClick={onOpen}>
+        <img
+          src={image}
+          alt={`${d.brand} ${d.benefit ?? ''}`}
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={() => setImageFailed(true)}
+        />
+        <em>제휴</em>
+      </button>
+    )
+  }
+
+  return (
+    <button type="button" className={image ? 'chat__discount has-image' : 'chat__discount'} onClick={onOpen}>
+      {image && (
+        <img src={image} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setImageFailed(true)} />
+      )}
+      <strong>{d.brand}</strong>
+      <span>{d.benefit}</span>
+      <small>{meta}</small>
+    </button>
+  )
+}
+
 /** 수능 도우미 챗봇. 수능·입시·수험생 혜택 이야기만 하고, 착 혜택과 공식 사이트를 함께 보여 준다. */
 export function ChatPage() {
   const navigate = useNavigate()
@@ -50,13 +97,16 @@ export function ChatPage() {
     }
   }
 
-  // 제휴 배너는 답 하나에 한 장만, 이 대화에서 이미 보인 배너는 다시 띄우지 않는다(나머지는 글 한 줄로).
-  const bannerIds: (number | null)[] = []
-  const shownBanners = new Set<number>()
+  // 같은 배너(이미지)는 이 대화에서 한 번만. 앞 답에서 이미 보인 혜택은 다음 답에서 글로만 보인다.
+  const imageIds: Set<number>[] = []
+  const shownImages = new Set<number>()
   for (const m of messages) {
-    const banner = m.discounts?.find((d) => d.sponsored && d.imageUrl && !shownBanners.has(d.id)) ?? null
-    if (banner) shownBanners.add(banner.id)
-    bannerIds.push(banner?.id ?? null)
+    const ids = new Set<number>()
+    for (const d of m.discounts ?? []) {
+      if (d.imageUrl && !shownImages.has(d.id)) ids.add(d.id)
+    }
+    ids.forEach((id) => shownImages.add(id))
+    imageIds.push(ids)
   }
 
   const onSubmit = (event: FormEvent) => {
@@ -87,9 +137,9 @@ export function ChatPage() {
             <p>{GREETING}</p>
             {messages.length === 0 && (
               <div className="chat__suggestions">
-                {SUGGESTIONS.map((s) => (
-                  <button key={s} type="button" onClick={() => void send(s)}>
-                    {s}
+                {SUGGESTIONS.map((question) => (
+                  <button key={question} type="button" className="chat__suggestion" onClick={() => void send(question)}>
+                    {question}
                   </button>
                 ))}
               </div>
@@ -104,34 +154,14 @@ export function ChatPage() {
               {m.discounts && m.discounts.length > 0 && (
                 <div className="chat__discounts">
                   <span className="chat__label">착 혜택함</span>
-                  {m.discounts.map((d) =>
-                    bannerIds[i] === d.id ? (
-                      <button
-                        key={d.id}
-                        type="button"
-                        className="chat__banner"
-                        onClick={() => navigate(`${DISCOUNTS_PATH}?q=${encodeURIComponent(d.brand)}`)}
-                      >
-                        <img src={d.imageUrl ?? ''} alt={`${d.brand} ${d.benefit ?? ''}`} loading="lazy" />
-                        <em>제휴</em>
-                      </button>
-                    ) : (
-                      <button
-                        key={d.id}
-                        type="button"
-                        className="chat__discount"
-                        onClick={() => navigate(`${DISCOUNTS_PATH}?q=${encodeURIComponent(d.brand)}`)}
-                      >
-                        <strong>{d.brand}</strong>
-                        <span>{d.benefit}</span>
-                        <small>
-                          {[d.sponsored ? '제휴' : null, d.area, d.endDate ? `~${d.endDate.slice(5).replace('-', '.')}` : null]
-                            .filter(Boolean)
-                            .join(' · ')}
-                        </small>
-                      </button>
-                    ),
-                  )}
+                  {m.discounts.map((d) => (
+                    <DiscountItem
+                      key={d.id}
+                      discount={d}
+                      withImage={imageIds[i].has(d.id)}
+                      onOpen={() => navigate(`${DISCOUNTS_PATH}?q=${encodeURIComponent(d.brand)}`)}
+                    />
+                  ))}
                 </div>
               )}
               {m.sources && m.sources.length > 0 && (
