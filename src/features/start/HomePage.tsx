@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ChevronRight, Gift, LogIn, Mail, Plus, Sparkles, Star, UserRound } from 'lucide-react'
+import { ChevronRight, Gift, LogIn, Mail, Plus, ScrollText, Star, UserRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { ApiError } from '@/api/client'
 import { fetchMyDesk } from '@/api/desks'
@@ -8,8 +8,9 @@ import { AdBanner } from '@/features/ads/AdBanner'
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { DiscountsShortcut } from '@/features/discounts/DiscountsShortcut'
 import { ChatShortcut } from '@/features/chat/ChatShortcut'
-import { isRecapOpen, RECAP_OPENS_LABEL } from '@/features/recap/recapSchedule'
-import { isClassroomAvailable } from '@/lib/featureFlags'
+import { RecapShortcut } from '@/features/recap/RecapShortcut'
+import { isClassroomAvailable, isRollingPaperAvailable } from '@/lib/featureFlags'
+import { isRollingPaperSeason } from '@/features/rollingPaper/rollingPaper'
 import { AppShell } from '@/layout/AppShell'
 import { isApiEnabled } from '@/api/config'
 import { usePrototypeStore } from '@/store/prototypeStore'
@@ -72,7 +73,10 @@ export function HomePage() {
   const deskUnsure = serverCheck && (deskCheck === 'unknown' || deskCheck === 'failed')
 
   const classroomOpen = isClassroomAvailable()
-  const recapOpen = isRecapOpen()
+  // After the exam the rolling paper takes the desk's place as the main door.
+  const rollingPaperFirst = isRollingPaperAvailable() && isRollingPaperSeason()
+  const rollingPaperClass = usePrototypeStore((state) => state.rollingPaperClass)
+  const rollingPaperMember = usePrototypeStore((state) => state.rollingPaperMember)
 
   const startDesk = () => {
     resetDeskCreationDraft()
@@ -106,6 +110,27 @@ export function HomePage() {
         </header>
 
         <div className="home-page__doors">
+          {rollingPaperFirst && (
+            <button
+              type="button"
+              className="home-page__door home-page__door--rolling"
+              onClick={() => navigate('/rolling-paper')}
+            >
+              <span className="home-page__door-label">
+                {rollingPaperMember ? <ScrollText size={14} aria-hidden /> : <Plus size={14} aria-hidden />}
+              </span>
+              <strong>
+                졸업 롤링페이퍼
+              </strong>
+              <span>
+                {rollingPaperMember
+                  ? `${rollingPaperClass.name} 롤링페이퍼`
+                  : '반 친구들과 서로의 롤링페이퍼를 채워요'}
+              </span>
+              <ChevronRight size={20} aria-hidden />
+            </button>
+          )}
+
           <button
             type="button"
             className="home-page__door home-page__door--desk"
@@ -127,19 +152,6 @@ export function HomePage() {
                     ? '친구들이 남긴 응원을 확인해요'
                     : '링크 하나로 친구들의 응원을 모아요'}
             </span>
-            <ChevronRight size={20} aria-hidden />
-          </button>
-
-          <button
-            type="button"
-            className="home-page__door home-page__door--recap"
-            onClick={() => navigate('/recap')}
-          >
-            <span className="home-page__door-label">
-              <Sparkles size={14} aria-hidden />
-            </span>
-            <strong>나의 수능 리캡</strong>
-            <span>{recapOpen ? '한 해 동안 애쓴 나를 돌아봐요' : `${RECAP_OPENS_LABEL}, 시험이 끝나면 열려요`}</span>
             <ChevronRight size={20} aria-hidden />
           </button>
         </div>
@@ -175,6 +187,8 @@ export function HomePage() {
         <ChatShortcut />
 
         <AdBanner />
+
+        <RecapShortcut />
 
         <MiniGameSection />
       </main>

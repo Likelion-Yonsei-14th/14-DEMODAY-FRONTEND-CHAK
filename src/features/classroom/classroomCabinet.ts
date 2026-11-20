@@ -75,3 +75,6 @@ export const cabinetCells: CabinetCell[] = Array.from(
     }
   },
 )
+
+/** The three camera stops of the classroom scene, left to right. */
+export const classroomZoneLabels = ['창가', '칠판', '사물함'] as const

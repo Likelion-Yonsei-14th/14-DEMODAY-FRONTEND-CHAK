@@ -1,0 +1,30 @@
+/* Same size as .discounts-shortcut and .chat-shortcut. */
+.recap-shortcut {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 14px var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-lilac-soft);
+  color: var(--color-content-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.recap-shortcut > svg:first-child {
+  color: var(--color-lilac);
+}
+
+.recap-shortcut span {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+}
+
+.recap-shortcut small {
+  color: var(--color-content-secondary);
+  font-size: var(--type-caption-size);
+}

@@ -225,6 +225,23 @@ Internal modes:
 - The locker owner can buy a hanging light (200원 once, shape swaps free afterwards) and paint the inside or outside in white, black, pastel pink or pastel blue (200원 per coat). The decorated locker is visible to classmates, and outside paint also shows on the classroom map.
 - Private locker message content is excluded from Class Wrapped analysis and sharing.
 
+## Graduation rolling paper
+
+- After the exam, the graduation rolling paper replaces the desk as the main content: it takes the first door on Home ("졸업 롤링페이퍼", green) and the hero and first choice on Start. The desk stays reachable as the next door (in the desk's own colour). 나의 수능 리캡 is no longer a door: it is a shortcut the same size as 수험표 할인 모음 and 수능 도우미, between the banner and the mini games.
+- It is its own content (`/rolling-paper/...`, its own state), not a part of 우리 반. It only borrows the class template: the classroom scene with one cubby locker per member. In this content the group is still called 반.
+- The creator enters the class name, their own name, their paper design and the reveal mode in one form (no graduation date); that creates the class and hangs the creator's own paper in their locker, then offers the invite link.
+- A friend who opens the link enters their name and hangs their own paper in a new locker.
+- Each member writes at most one note on every other member's paper (max 60 characters, pen colour, optional doodle). Touching the paper picks the spot; touching my own note edits it, touching another empty spot moves it there. Another friend's note cannot be written over.
+- Nobody writes on their own paper. When owners read their own paper is chosen by the creator when making the class and can be changed in settings: "바로바로 보기" (right away, as friends write) or "종료하면 보기" (default; only after the creator ends the rolling paper). Until then the owner sees only how many friends wrote. An open paper can be saved as an image.
+- Ending (creator, in settings, with a confirm dialog, not undoable) stops all writing on papers and opens every paper to its owner.
+- Classmates can read the notes on a friend's paper, which helps them choose a free spot.
+- Each owner picks their paper's design from the same letter papers as the letter composer: 편지지 and 기본. Every 편지지 is open here (no rewarded ad). Graphic backgrounds are not offered, as in the locker composer. Notes stay inside the design's writable area, never over a stationery border.
+- The "롤링페이퍼 전체 보기" list shows who I have written to, never how many notes a paper has.
+- The board: anyone in the class can chalk a short line (max 30 characters) and wipe only their own lines. The classroom board shows the latest three.
+- Settings: the creator (first locker) edits the class name and reveal mode, shares the invite, ends the rolling paper and can delete the class (confirm dialog; papers, notes and board lines go with it). Every member edits their name tag and their paper's design.
+- Backend: `/api/public/rolling-papers` (backend docs/API.md §13). Members are signed-in users or guests (guest cookie), so a guest who changes browser loses their place. The invite link carries an unguessable class code. The server enforces the rules above (own paper sealed and not writable, writing stops after the end, creator-only settings). Without a backend the same pages run in the browser only.
+- Production shows it only with `VITE_ROLLING_PAPER=on`, to be set after the backend is deployed.
+
 ## Post-exam Wrapped / benefits
 
 - After the exam, the owner can move through:
