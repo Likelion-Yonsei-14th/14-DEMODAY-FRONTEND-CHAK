@@ -772,6 +772,8 @@ const RollingPaperSheet = forwardRef<HTMLDivElement, SheetProps>(
           const stamp = getStampGlyph(note.stamp)
           // While moving my note, show it at the new spot instead.
           if (isMine && pending) return null
+          // Notes written before "To. 이름" moved to the top are drawn below it.
+          const spot = clampNotePosition(note.x, note.y, locker.paperDesign)
           if (note.hidden) {
             // Someone else's note on a personal paper: only its spot is known, drawn blurred.
             return (
@@ -780,8 +782,8 @@ const RollingPaperSheet = forwardRef<HTMLDivElement, SheetProps>(
                 className="rolling-note rolling-note--hidden"
                 aria-label="다른 사람이 남긴 한마디(주인만 볼 수 있어요)"
                 style={{
-                  left: `${note.x}%`,
-                  top: `${note.y}%`,
+                  left: `${spot.x}%`,
+                  top: `${spot.y}%`,
                   color: getPenColor(note.pen),
                   transform: `translate(-50%, -50%) rotate(${noteTilt(note.id)}deg)`,
                 }}
@@ -806,8 +808,8 @@ const RollingPaperSheet = forwardRef<HTMLDivElement, SheetProps>(
                 isMine ? 'rolling-note--mine' : '',
               ].filter(Boolean).join(' ')}
               style={{
-                left: `${note.x}%`,
-                top: `${note.y}%`,
+                left: `${spot.x}%`,
+                top: `${spot.y}%`,
                 color: getPenColor(note.pen),
                 transform: `translate(-50%, -50%) rotate(${noteTilt(note.id)}deg)`,
               }}
