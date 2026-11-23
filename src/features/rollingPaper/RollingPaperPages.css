@@ -750,3 +750,105 @@
   user-select: none;
   pointer-events: auto;
 }
+
+/* ---------- Class: one scrolling screen (board → my paper → friends' papers) ---------- */
+
+.rolling-class {
+  display: grid;
+  gap: 18px;
+  padding: 12px 0 34px;
+}
+
+.rolling-board {
+  position: relative;
+  min-height: 150px;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 22px 22px 26px;
+  border: 8px solid #b98a5a;
+  border-radius: 14px;
+  background:
+    radial-gradient(120% 90% at 20% 10%, rgb(255 255 255 / 7%), transparent 60%),
+    #3f5f4c;
+  box-shadow: inset 0 0 0 2px rgb(0 0 0 / 12%), 0 4px 12px rgb(41 39 34 / 16%);
+  color: rgb(240 240 228 / 90%);
+  font-family: var(--font-hand);
+  text-align: left;
+  cursor: pointer;
+}
+
+.rolling-board__date {
+  justify-self: end;
+  margin: -10px -8px 0 0;
+  color: rgb(245 226 138 / 90%);
+  font-size: 15px;
+}
+
+.rolling-board__title {
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.rolling-board__line {
+  overflow: hidden;
+  font-size: 19px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: .85;
+}
+
+.rolling-board__line--hint {
+  opacity: .6;
+}
+
+/* chalk and eraser on the tray */
+.rolling-board__chalk {
+  position: absolute;
+  right: 18px;
+  bottom: 8px;
+  width: 34px;
+  height: 6px;
+  border-radius: 3px;
+  background: #f4f1e6;
+  box-shadow: -46px 0 0 #f2c94c;
+}
+
+.rolling-class__friends {
+  display: grid;
+  gap: 12px;
+}
+
+.rolling-class__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rolling-class__head h2 {
+  margin: 0;
+  font-size: 17px;
+  letter-spacing: -.02em;
+}
+
+.rolling-class__head span {
+  color: var(--color-content-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.rolling-paper-card--invite {
+  border: 1.5px dashed var(--color-border-default);
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-content-secondary);
+  font-size: 13px;
+  font-weight: 800;
+  transform: none;
+}
+
+.rolling-paper-card--invite::before {
+  display: none;
+}
