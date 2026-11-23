@@ -742,3 +742,11 @@
 @media (prefers-reduced-motion: reduce) {
   .rolling-paper-load__spinner { animation: none; }
 }
+
+/* Personal paper, not the owner: another writer's note. The text under the blur is filler. */
+.rolling-note--hidden {
+  filter: blur(5px);
+  opacity: .75;
+  user-select: none;
+  pointer-events: auto;
+}

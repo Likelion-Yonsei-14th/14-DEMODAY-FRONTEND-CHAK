@@ -94,4 +94,31 @@ describe('rolling paper server mapping', () => {
     // Another class does not inherit them.
     expect(toRollingPaperClass({ ...classView, code: 'other' }, withPaper).paperClass.notes).toEqual([])
   })
+
+  it('reads a personal paper and keeps hidden notes as spots without text', () => {
+    const { paperClass } = toRollingPaperClass({
+      ...classView,
+      kind: 'PERSONAL',
+      name: '민지에게 한마디',
+      members: [classView.members[0]],
+      board: [],
+    })
+    expect(paperClass.kind).toBe('personal')
+    expect(paperClass.lockers).toHaveLength(1)
+
+    const merged = mergePaperView(paperClass, {
+      ...paperView,
+      noteCount: 2,
+      notes: [
+        { ...paperView.notes[0], id: 8, authorMemberId: null, authorName: '', text: null, mine: false, hidden: true },
+        paperView.notes[0],
+      ],
+    })
+    expect(merged.notes[0]).toMatchObject({ id: '8', text: '', authorLockerId: '', hidden: true, x: 30.5 })
+    expect(merged.notes[1]).toMatchObject({ id: '7', text: '졸업 축하해!', hidden: undefined })
+  })
+
+  it('treats a class view without kind as a class', () => {
+    expect(toRollingPaperClass(classView).paperClass.kind).toBe('class')
+  })
 })

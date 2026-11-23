@@ -80,12 +80,12 @@ export function StartPage() {
           <>
             <section className="start-page__hero">
               <h1>
-                졸업 전에 같이 채우는
+                한 해를 마무리하는
                 <br />
-                우리 반 롤링페이퍼
+                연말 롤링페이퍼
               </h1>
               <p>
-                반을 만들어 링크를 보내면, 친구들이 서로의 롤링페이퍼에 한마디씩 남겨요.
+                반을 만들어 서로 채우거나, 내 롤링페이퍼 링크를 보내 한마디씩 받아요.
               </p>
             </section>
 

@@ -41,7 +41,9 @@ import {
   getPenColor,
   getStampGlyph,
   isOwnPaperOpen,
+  isPersonalPaper,
   isRollingPaperEnded,
+  PAPER_GREETING,
   getRevealMode,
   getPaperDesign,
   noteAuthorName,
@@ -100,6 +102,11 @@ export function RollingPaperClassPage() {
   }
 
   const id = classId ?? paperClass.id
+  if (isPersonalPaper(paperClass)) {
+    // A personal paper has no classroom: open its one paper.
+    const ownerLocker = paperClass.lockers[0]
+    return ownerLocker ? <Navigate to={paperPath(id, ownerLocker.id)} replace /> : <Navigate to={homePath} replace />
+  }
   const myLocker = paperClass.lockers.find(
     (locker) => locker.id === member.lockerId,
   )
@@ -124,7 +131,7 @@ export function RollingPaperClassPage() {
       </span>
       <span className="classroom-map__chalk">
         <span className="classroom-map__chalk-title">
-          졸업 축하해, {paperClass.name}!
+          {paperClass.name}, 올 한 해 수고했어!
         </span>
         {boardEntries.slice(-BOARD_VISIBLE_LINES).map((entry) => (
           <span key={entry.id} className="classroom-map__chalk-note">
@@ -487,6 +494,7 @@ const findFreeSpot = (
 
 export function RollingPaperPage() {
   const navigate = useNavigate()
+  const homePath = useHomePath()
   const { classId, lockerId } = useParams()
   const paperClass = usePrototypeStore((state) => state.rollingPaperClass)
   const member = usePrototypeStore((state) => state.rollingPaperMember)
@@ -523,7 +531,10 @@ export function RollingPaperPage() {
   const ended = isRollingPaperEnded(paperClass)
   // Friends write until the creator ends the rolling paper.
   const writable = !mine && !ended
-  const backToClass = () => navigate(rollingPaperClassPath(id))
+  const personal = isPersonalPaper(paperClass)
+  // A personal paper has no classroom to go back to.
+  const backToClass = () => navigate(personal ? homePath : rollingPaperClassPath(id))
+  const shareMine = () => shareRollingPaperInvite(id, paperClass.name, showToast, true)
 
   const saveImage = async () => {
     if (!paperNode) return
@@ -557,7 +568,16 @@ export function RollingPaperPage() {
     }
   }
 
-  const fixedAction = sealed ? (
+  const fixedAction = sealed && personal ? (
+    <Button
+      variant="brand"
+      fullWidth
+      leadingIcon={<Share2 size={18} aria-hidden />}
+      onClick={shareMine}
+    >
+      내 롤링페이퍼 링크 보내기
+    </Button>
+  ) : sealed ? (
     <Button
       variant="brand"
       fullWidth
@@ -565,6 +585,15 @@ export function RollingPaperPage() {
       onClick={backToClass}
     >
       친구들 롤링페이퍼 쓰러 가기
+    </Button>
+  ) : mine && personal && notes.length === 0 ? (
+    <Button
+      variant="brand"
+      fullWidth
+      leadingIcon={<Share2 size={18} aria-hidden />}
+      onClick={shareMine}
+    >
+      내 롤링페이퍼 링크 보내기
     </Button>
   ) : mine ? (
     <Button
@@ -579,7 +608,7 @@ export function RollingPaperPage() {
     </Button>
   ) : ended ? (
     <Button variant="secondary" fullWidth onClick={backToClass}>
-      교실로 돌아가기
+      {personal ? '홈으로 가기' : '교실로 돌아가기'}
     </Button>
   ) : (
     <Button
@@ -604,10 +633,26 @@ export function RollingPaperPage() {
           subtitle={paperClass.name}
           leading={
             <IconButton
-              label="교실로 돌아가기"
+              label={personal ? '홈으로' : '교실로 돌아가기'}
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={backToClass}
             />
+          }
+          trailing={
+            personal && mine ? (
+              <>
+                <IconButton
+                  label="링크 보내기"
+                  icon={<Share2 size={20} aria-hidden />}
+                  onClick={shareMine}
+                />
+                <IconButton
+                  label="설정"
+                  icon={<Settings size={20} aria-hidden />}
+                  onClick={() => navigate(`${rollingPaperClassPath(id)}/settings`)}
+                />
+              </>
+            ) : undefined
           }
         />
       }
@@ -615,7 +660,10 @@ export function RollingPaperPage() {
     >
       <main className="rolling-paper-page">
         {sealed ? (
-          <SealedPaper noteCount={countNotesOnMyPaper(paperClass, member.lockerId)} />
+          <SealedPaper
+            noteCount={countNotesOnMyPaper(paperClass, member.lockerId)}
+            personal={personal}
+          />
         ) : (
           <>
             {writable && (
@@ -637,6 +685,11 @@ export function RollingPaperPage() {
                 showToast('다른 친구 글 위에는 쓸 수 없어요. 빈 곳을 눌러 주세요.')
               }
             />
+            {!mine && personal && (
+              <p className="rolling-paper-page__hint">
+                흐리게 보이는 글은 다른 사람이 남긴 한마디예요. {locker.studentName}만 읽을 수 있어요.
+              </p>
+            )}
             {!mine && (
               <p className="rolling-paper-page__hint">
                 {ended
@@ -666,7 +719,7 @@ export function RollingPaperPage() {
   )
 }
 
-function SealedPaper({ noteCount }: { noteCount: number }) {
+function SealedPaper({ noteCount, personal }: { noteCount: number; personal: boolean }) {
   return (
     <section className="rolling-paper-sealed">
       <div className="rolling-paper-sealed__roll" aria-hidden>
@@ -679,7 +732,9 @@ function SealedPaper({ noteCount }: { noteCount: number }) {
           : '친구들이 곧 채워 줄 거예요'}
       </h1>
       <p>
-        반을 만든 사람이 롤링페이퍼를 종료하면 리본이 풀려요.
+        {personal
+          ? '설정에서 롤링페이퍼를 종료하면 리본이 풀려요.'
+          : '반을 만든 사람이 롤링페이퍼를 종료하면 리본이 풀려요.'}
         <br />
         누가 뭐라고 썼는지는 그때까지 비밀이에요.
       </p>
@@ -751,7 +806,7 @@ const RollingPaperSheet = forwardRef<HTMLDivElement, SheetProps>(
         <div className="rolling-paper__name" aria-hidden={Boolean(onTouch)}>
           <small>To.</small>
           <strong>{locker.studentName}</strong>
-          <span>졸업 축하해!</span>
+          <span>{PAPER_GREETING}</span>
         </div>
 
         {notes.map((note) => {
@@ -759,6 +814,32 @@ const RollingPaperSheet = forwardRef<HTMLDivElement, SheetProps>(
           const stamp = getStampGlyph(note.stamp)
           // While moving my note, show it at the new spot instead.
           if (isMine && pending) return null
+          if (note.hidden) {
+            // Someone else's note on a personal paper: only its spot is known, drawn blurred.
+            return (
+              <article
+                key={note.id}
+                className="rolling-note rolling-note--hidden"
+                aria-label="다른 사람이 남긴 한마디(주인만 볼 수 있어요)"
+                style={{
+                  left: `${note.x}%`,
+                  top: `${note.y}%`,
+                  color: getPenColor(note.pen),
+                  transform: `translate(-50%, -50%) rotate(${noteTilt(note.id)}deg)`,
+                }}
+                onClick={(event) => {
+                  if (!onTouch) return
+                  event.stopPropagation()
+                  onTouchOthersNote?.()
+                }}
+              >
+                <p aria-hidden>{hiddenNoteFiller(note.id)}</p>
+                <span className="rolling-note__sign" aria-hidden>
+                  — ○○○
+                </span>
+              </article>
+            )
+          }
           return (
             <article
               key={note.id}
@@ -806,6 +887,12 @@ const RollingPaperSheet = forwardRef<HTMLDivElement, SheetProps>(
     )
   },
 )
+
+/** Placeholder scribble under the blur, so hidden notes look like real lines of different lengths. */
+function hiddenNoteFiller(id: string) {
+  const lines = ['올해 정말 고마웠어 내년에도', '수능 끝난 거 축하해 우리', '항상 응원해 진짜로', '너랑 같은 반이라 좋았어 올해']
+  return lines[Math.abs(noteTilt(id) * 10 | 0) % lines.length]
+}
 
 function NoteWriterSheet({
   open,

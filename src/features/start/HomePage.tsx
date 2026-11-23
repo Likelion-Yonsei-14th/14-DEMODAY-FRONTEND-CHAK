@@ -120,12 +120,14 @@ export function HomePage() {
                 {rollingPaperMember ? <ScrollText size={14} aria-hidden /> : <Plus size={14} aria-hidden />}
               </span>
               <strong>
-                졸업 롤링페이퍼
+                연말 롤링페이퍼
               </strong>
               <span>
                 {rollingPaperMember
-                  ? `${rollingPaperClass.name} 롤링페이퍼`
-                  : '반 친구들과 서로의 롤링페이퍼를 채워요'}
+                  ? rollingPaperClass.kind === 'personal'
+                    ? rollingPaperClass.name
+                    : `${rollingPaperClass.name} 롤링페이퍼`
+                  : '반 친구들과, 또는 나 혼자 링크로 받아요'}
               </span>
               <ChevronRight size={20} aria-hidden />
             </button>

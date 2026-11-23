@@ -154,7 +154,7 @@ const NOT_READY_PATHS: Array<{ pattern: RegExp; title: string }> = [
   // Opens once the server is deployed and VITE_ROLLING_PAPER=on.
   ...(isRollingPaperAvailable()
     ? []
-    : [{ pattern: /^\/rolling-paper(\/|$)/, title: '졸업 롤링페이퍼' }]),
+    : [{ pattern: /^\/rolling-paper(\/|$)/, title: '연말 롤링페이퍼' }]),
   { pattern: /^\/wrapped(\/|$)/, title: '응원 결산' },
   { pattern: /^\/offers(\/|$)/, title: '혜택' },
 ]

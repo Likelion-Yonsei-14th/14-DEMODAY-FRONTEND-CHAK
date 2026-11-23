@@ -51,6 +51,7 @@ import type {
   Message,
   RollingPaperClass,
   RollingPaperMember,
+  RollingPaperKind,
   RollingPaperRevealMode,
   RollingPaperNote,
   MessageDraft,
@@ -195,9 +196,10 @@ type PrototypeState = {
     displayName: string
     paperDesign: string
     revealMode: RollingPaperRevealMode
+    kind?: RollingPaperKind
   }) => string
-  /** A friend from the link makes their own paper. */
-  joinRollingPaperClass: (displayName: string, paperDesign: string) => string
+  /** A friend from the link makes their own paper (a personal paper's writer hangs none). */
+  joinRollingPaperClass: (displayName: string, paperDesign?: string) => string
   /** Creator only: class name and when owners see their own paper. */
   updateRollingPaperClass: (
     patch: Partial<
@@ -895,6 +897,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         displayName,
         paperDesign,
         revealMode,
+        kind,
       }) => {
         const classId = `rolling-class-${crypto.randomUUID()}`
         const lockerId = `rolling-locker-${crypto.randomUUID()}`
@@ -903,6 +906,7 @@ export const usePrototypeStore = create<PrototypeState>()(
         set({
           rollingPaperClass: {
             id: classId,
+            kind: kind ?? 'class',
             name: name.trim() || '우리 반',
             revealMode,
             lockers: [{ id: lockerId, studentName, paperDesign }],
@@ -920,10 +924,14 @@ export const usePrototypeStore = create<PrototypeState>()(
         set((state) => ({
           rollingPaperClass: {
             ...state.rollingPaperClass,
-            lockers: [
-              ...state.rollingPaperClass.lockers,
-              { id: lockerId, studentName, paperDesign },
-            ],
+            // A personal paper's writers hang no paper of their own.
+            lockers:
+              state.rollingPaperClass.kind === 'personal'
+                ? state.rollingPaperClass.lockers
+                : [
+                    ...state.rollingPaperClass.lockers,
+                    { id: lockerId, studentName, paperDesign },
+                  ],
           },
           rollingPaperMember: { lockerId, displayName: studentName },
         }))

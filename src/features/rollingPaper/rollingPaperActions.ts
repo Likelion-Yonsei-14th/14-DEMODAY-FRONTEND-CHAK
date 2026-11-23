@@ -20,7 +20,7 @@ import {
 } from '@/api/rollingPaper'
 import { mockRollingPaperClass } from '@/prototype/mock/initialState'
 import { usePrototypeStore } from '@/store/prototypeStore'
-import type { RollingPaperNote, RollingPaperRevealMode } from '@/types'
+import type { RollingPaperKind, RollingPaperNote, RollingPaperRevealMode } from '@/types'
 
 /**
  * What the rolling paper pages call. With a backend every change goes to the
@@ -69,6 +69,7 @@ export async function createRollingPaperClass(input: {
   displayName: string
   paperDesign: string
   revealMode: RollingPaperRevealMode
+  kind?: RollingPaperKind
 }) {
   if (!isApiEnabled) return store().createRollingPaperClass(input)
   const view = await createRollingPaperClassApi(input)
@@ -76,10 +77,11 @@ export async function createRollingPaperClass(input: {
   return view.code
 }
 
+/** paperDesign is omitted for a personal paper's writer (they hang no paper). */
 export async function joinRollingPaperClass(
   code: string,
   displayName: string,
-  paperDesign: string,
+  paperDesign?: string,
 ) {
   if (!isApiEnabled) {
     store().joinRollingPaperClass(displayName, paperDesign)

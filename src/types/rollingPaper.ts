@@ -1,5 +1,5 @@
 /**
- * Graduation rolling paper. It borrows the class template (classroom scene,
+ * Year-end rolling paper, by class or personal. It borrows the class template (classroom scene,
  * one locker per member) but is its own content, separate from `Classroom`.
  */
 
@@ -27,6 +27,11 @@ export type RollingPaperNote = {
   x: number
   y: number
   createdAt: string
+  /**
+   * Personal paper, seen by someone other than its owner: another writer's
+   * note. Only its spot comes from the server (no text, no name); it is drawn blurred.
+   */
+  hidden?: boolean
 }
 
 /** One line a member chalked on the classroom board. */
@@ -44,8 +49,16 @@ export type RollingPaperBoardEntry = {
  */
 export type RollingPaperRevealMode = 'instant' | 'onEnd'
 
+/**
+ * 'class': everyone hangs their own paper in the classroom and writes on each other's.
+ * 'personal': one paper (the creator's); people from the link only write on it.
+ */
+export type RollingPaperKind = 'class' | 'personal'
+
 export type RollingPaperClass = {
   id: string
+  /** Older data has none → 'class'. */
+  kind?: RollingPaperKind
   name: string
   /** Older data has none → 'onEnd'. */
   revealMode?: RollingPaperRevealMode

@@ -20,6 +20,7 @@ import {
   getRevealMode,
   isRollingPaperCreator,
   isRollingPaperEnded,
+  isPersonalPaper,
 } from './rollingPaper'
 import {
   rollingPaperClassPath,
@@ -109,12 +110,14 @@ function RollingPaperSettingsForm() {
     )
   }
 
+  const personal = isPersonalPaper(paperClass)
+
   const end = () =>
     run(
       () => endRollingPaperClass(id),
       () => {
         setConfirm(null)
-        showToast('롤링페이퍼를 종료했어요. 이제 모두 자기 롤링페이퍼를 볼 수 있어요.')
+        showToast(personal ? '롤링페이퍼를 종료했어요. 이제 내 롤링페이퍼를 볼 수 있어요.' : '롤링페이퍼를 종료했어요. 이제 모두 자기 롤링페이퍼를 볼 수 있어요.')
         navigate(rollingPaperClassPath(id))
       },
     )
@@ -124,7 +127,7 @@ function RollingPaperSettingsForm() {
       () => deleteRollingPaperClass(id),
       () => {
         setConfirm(null)
-        showToast('반을 삭제했어요.')
+        showToast(personal ? '롤링페이퍼를 삭제했어요.' : '반을 삭제했어요.')
         navigate(homePath, { replace: true })
       },
     )
@@ -139,7 +142,7 @@ function RollingPaperSettingsForm() {
           subtitle={paperClass.name}
           leading={
             <IconButton
-              label="교실로 돌아가기"
+              label={personal ? '롤링페이퍼로 돌아가기' : '교실로 돌아가기'}
               icon={<ArrowLeft size={21} aria-hidden />}
               onClick={() => navigate(rollingPaperClassPath(id))}
             />
@@ -156,13 +159,13 @@ function RollingPaperSettingsForm() {
         {creator && (
           <section className="classroom-settings__section">
             <header>
-              <h2>반 관리</h2>
+              <h2>{personal ? '롤링페이퍼 관리' : '반 관리'}</h2>
               <span className="classroom-settings__admin-badge">만든 사람</span>
             </header>
 
             <TextField
               id="rolling-settings-class-name"
-              label="반 이름"
+              label={personal ? '롤링페이퍼 제목' : '반 이름'}
               maxLength={20}
               value={className}
               onChange={(event) => setClassName(event.target.value)}
@@ -178,10 +181,10 @@ function RollingPaperSettingsForm() {
               fullWidth
               leadingIcon={<Share2 size={17} aria-hidden />}
               onClick={() =>
-                shareRollingPaperInvite(id, paperClass.name, showToast)
+                shareRollingPaperInvite(id, paperClass.name, showToast, personal)
               }
             >
-              초대 링크 공유하기
+              {personal ? '내 롤링페이퍼 링크 보내기' : '초대 링크 공유하기'}
             </Button>
           </section>
         )}
@@ -193,7 +196,7 @@ function RollingPaperSettingsForm() {
 
           <TextField
             id="rolling-settings-my-name"
-            label="사물함 이름표"
+            label={personal ? '내 이름' : '사물함 이름표'}
             maxLength={12}
             value={displayName}
             onChange={(event) => setDisplayName(event.target.value)}
@@ -215,7 +218,11 @@ function RollingPaperSettingsForm() {
               <p>롤링페이퍼가 종료됐어요. 모두 자기 롤링페이퍼를 볼 수 있고, 더 이상 글을 쓸 수 없어요.</p>
             ) : (
               <>
-                <p>종료하면 더 이상 글을 쓸 수 없고, 모두 자기 롤링페이퍼를 볼 수 있어요.</p>
+                <p>
+                  {personal
+                    ? '종료하면 더 이상 글을 받지 않고, 내 롤링페이퍼가 열려요.'
+                    : '종료하면 더 이상 글을 쓸 수 없고, 모두 자기 롤링페이퍼를 볼 수 있어요.'}
+                </p>
                 <Button
                   variant="secondary"
                   fullWidth
@@ -234,7 +241,7 @@ function RollingPaperSettingsForm() {
               leadingIcon={<Trash2 size={17} aria-hidden />}
               onClick={() => setConfirm('delete')}
             >
-              반 삭제하기
+              {personal ? '롤링페이퍼 삭제하기' : '반 삭제하기'}
             </Button>
           </section>
         )}
@@ -244,7 +251,11 @@ function RollingPaperSettingsForm() {
         open={confirm === 'end'}
         onClose={() => setConfirm(null)}
         title="롤링페이퍼를 종료할까요?"
-        description="종료하면 친구들이 더 이상 글을 쓸 수 없고, 모두 자기 롤링페이퍼를 열어볼 수 있어요. 종료는 되돌릴 수 없어요."
+        description={
+          personal
+            ? '종료하면 더 이상 글을 받지 않고, 내 롤링페이퍼가 열려요. 종료는 되돌릴 수 없어요.'
+            : '종료하면 친구들이 더 이상 글을 쓸 수 없고, 모두 자기 롤링페이퍼를 열어볼 수 있어요. 종료는 되돌릴 수 없어요.'
+        }
         secondaryAction={{ label: '취소', onClick: () => setConfirm(null) }}
         primaryAction={{ label: '종료하기', onClick: end, variant: 'brand' }}
       />
@@ -252,8 +263,12 @@ function RollingPaperSettingsForm() {
       <Dialog
         open={confirm === 'delete'}
         onClose={() => setConfirm(null)}
-        title="이 반을 삭제할까요?"
-        description="모든 친구의 롤링페이퍼와 남긴 글, 칠판 글이 함께 지워져요. 삭제하면 되돌릴 수 없어요."
+        title={personal ? '이 롤링페이퍼를 삭제할까요?' : '이 반을 삭제할까요?'}
+        description={
+          personal
+            ? '받은 글이 모두 함께 지워져요. 삭제하면 되돌릴 수 없어요.'
+            : '모든 친구의 롤링페이퍼와 남긴 글, 칠판 글이 함께 지워져요. 삭제하면 되돌릴 수 없어요.'
+        }
         secondaryAction={{ label: '취소', onClick: () => setConfirm(null) }}
         primaryAction={{ label: '삭제하기', onClick: remove, variant: 'primary' }}
       />
