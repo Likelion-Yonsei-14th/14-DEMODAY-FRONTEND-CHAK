@@ -100,7 +100,7 @@ describe('rolling paper server mapping', () => {
       ...classView,
       kind: 'PERSONAL',
       name: '민지에게 한마디',
-      members: [classView.members[0]],
+      members: [classView.members[0]!],
       board: [],
     })
     expect(paperClass.kind).toBe('personal')
@@ -110,8 +110,8 @@ describe('rolling paper server mapping', () => {
       ...paperView,
       noteCount: 2,
       notes: [
-        { ...paperView.notes[0], id: 8, authorMemberId: null, authorName: '', text: null, mine: false, hidden: true },
-        paperView.notes[0],
+        { ...paperView.notes[0]!, id: 8, authorMemberId: null, authorName: '', text: null, mine: false, hidden: true },
+        paperView.notes[0]!,
       ],
     })
     expect(merged.notes[0]).toMatchObject({ id: '8', text: '', authorLockerId: '', hidden: true, x: 30.5 })
