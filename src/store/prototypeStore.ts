@@ -18,6 +18,7 @@ import {
   emptyComposerDraft,
   emptyDeskCreationDraft,
   mockClassroom,
+  mockRollingPaperClass,
   mockCurrentUser,
   mockDesk,
 } from '@/prototype/mock/initialState'
@@ -48,6 +49,11 @@ import type {
   DeskObjectType,
   DeskPlacement,
   Message,
+  RollingPaperClass,
+  RollingPaperMember,
+  RollingPaperKind,
+  RollingPaperRevealMode,
+  RollingPaperNote,
   MessageDraft,
   MessageReaction,
   MessageReply,
@@ -82,6 +88,9 @@ type PrototypeState = {
   claimBacklogDeferred: boolean
   classroom: Classroom
   classroomMember: ClassroomMember | null
+  /** Graduation rolling paper: its own class, separate from `classroom`. */
+  rollingPaperClass: RollingPaperClass
+  rollingPaperMember: RollingPaperMember | null
   ownerSettings: OwnerSettings
   messageReplies: MessageReply[]
   /** Everyone who left a letter on the owner's desk, with their hidden state (backend mode). */
@@ -181,6 +190,41 @@ type PrototypeState = {
     patch: Partial<Pick<ClassroomMember, 'displayName' | 'pushEnabled'>>,
   ) => void
   leaveClassroom: () => void
+  /** The creator names the class, picks when owners see their paper and makes their own paper. */
+  createRollingPaperClass: (input: {
+    name: string
+    displayName: string
+    paperDesign: string
+    revealMode: RollingPaperRevealMode
+    kind?: RollingPaperKind
+  }) => string
+  /** A friend from the link makes their own paper (a personal paper's writer hangs none). */
+  joinRollingPaperClass: (displayName: string, paperDesign?: string) => string
+  /** Creator only: class name and when owners see their own paper. */
+  updateRollingPaperClass: (
+    patch: Partial<
+      Pick<RollingPaperClass, 'name' | 'revealMode'>
+    >,
+  ) => void
+  /** Creator only: stops writing and opens every paper to its owner. */
+  endRollingPaperClass: () => void
+  /** Creator only: deletes the class with every paper, note and board line. */
+  deleteRollingPaperClass: () => void
+  /** Anyone in the class chalks a line on the board. */
+  addRollingPaperBoardEntry: (text: string) => void
+  /** Only my own lines can be wiped. */
+  removeRollingPaperBoardEntry: (entryId: string) => void
+  /** Any member: my name tag and my own paper's design. */
+  updateRollingPaperMember: (patch: {
+    displayName?: string
+    paperDesign?: string
+  }) => void
+  /** Writes (or rewrites / moves) my one note on a classmate's paper. */
+  saveRollingPaperNote: (
+    paperLockerId: string,
+    note: Pick<RollingPaperNote, 'text' | 'pen' | 'stamp' | 'x' | 'y'>,
+  ) => void
+  removeRollingPaperNote: (paperLockerId: string) => void
   placeComposerMessageInLocker: (
     lockerId: string,
     placement?: DeskPlacement,
@@ -229,6 +273,8 @@ export const usePrototypeStore = create<PrototypeState>()(
       claimBacklogDeferred: false,
       classroom: mockClassroom,
       classroomMember: null,
+      rollingPaperClass: mockRollingPaperClass,
+      rollingPaperMember: null,
       ownerSettings: {
         publicFeedEnabled: true,
         pushEnabled: true,
@@ -846,6 +892,227 @@ export const usePrototypeStore = create<PrototypeState>()(
         set({
           classroomMember: null,
         }),
+      createRollingPaperClass: ({
+        name,
+        displayName,
+        paperDesign,
+        revealMode,
+        kind,
+      }) => {
+        const classId = `rolling-class-${crypto.randomUUID()}`
+        const lockerId = `rolling-locker-${crypto.randomUUID()}`
+        const studentName = displayName.trim() || '나'
+
+        set({
+          rollingPaperClass: {
+            id: classId,
+            kind: kind ?? 'class',
+            name: name.trim() || '우리 반',
+            revealMode,
+            lockers: [{ id: lockerId, studentName, paperDesign }],
+            notes: [],
+          },
+          rollingPaperMember: { lockerId, displayName: studentName },
+        })
+
+        return classId
+      },
+      joinRollingPaperClass: (displayName, paperDesign) => {
+        const lockerId = `rolling-locker-${crypto.randomUUID()}`
+        const studentName = displayName.trim() || '친구'
+
+        set((state) => ({
+          rollingPaperClass: {
+            ...state.rollingPaperClass,
+            // A personal paper's writers hang no paper of their own.
+            lockers:
+              state.rollingPaperClass.kind === 'personal'
+                ? state.rollingPaperClass.lockers
+                : [
+                    ...state.rollingPaperClass.lockers,
+                    { id: lockerId, studentName, paperDesign },
+                  ],
+          },
+          rollingPaperMember: { lockerId, displayName: studentName },
+        }))
+
+        return lockerId
+      },
+      updateRollingPaperClass: (patch) =>
+        set((state) => {
+          const member = state.rollingPaperMember
+          const paperClass = state.rollingPaperClass
+          // Only the creator (first locker) manages the class.
+          if (!member || paperClass.lockers[0]?.id !== member.lockerId) {
+            return state
+          }
+
+          return {
+            rollingPaperClass: {
+              ...paperClass,
+              ...(patch.name !== undefined && patch.name.trim()
+                ? { name: patch.name.trim() }
+                : {}),
+              ...(patch.revealMode ? { revealMode: patch.revealMode } : {}),
+            },
+          }
+        }),
+      endRollingPaperClass: () =>
+        set((state) => {
+          const member = state.rollingPaperMember
+          const paperClass = state.rollingPaperClass
+          if (
+            !member ||
+            paperClass.lockers[0]?.id !== member.lockerId ||
+            paperClass.endedAt
+          ) {
+            return state
+          }
+
+          return {
+            rollingPaperClass: {
+              ...paperClass,
+              endedAt: new Date().toISOString(),
+            },
+          }
+        }),
+      deleteRollingPaperClass: () =>
+        set((state) => {
+          const member = state.rollingPaperMember
+          if (
+            !member ||
+            state.rollingPaperClass.lockers[0]?.id !== member.lockerId
+          ) {
+            return state
+          }
+
+          // The prototype keeps one class; the sample class stands in for "none".
+          return {
+            rollingPaperClass: mockRollingPaperClass,
+            rollingPaperMember: null,
+          }
+        }),
+      addRollingPaperBoardEntry: (text) =>
+        set((state) => {
+          const member = state.rollingPaperMember
+          const line = text.trim()
+          if (!member || !line) return state
+
+          return {
+            rollingPaperClass: {
+              ...state.rollingPaperClass,
+              boardEntries: [
+                ...(state.rollingPaperClass.boardEntries ?? []),
+                {
+                  id: `rolling-board-${crypto.randomUUID()}`,
+                  authorLockerId: member.lockerId,
+                  authorName: member.displayName,
+                  text: line,
+                  createdAt: new Date().toISOString(),
+                },
+              ],
+            },
+          }
+        }),
+      removeRollingPaperBoardEntry: (entryId) =>
+        set((state) => {
+          const member = state.rollingPaperMember
+          if (!member) return state
+
+          return {
+            rollingPaperClass: {
+              ...state.rollingPaperClass,
+              boardEntries: (state.rollingPaperClass.boardEntries ?? []).filter(
+                (entry) =>
+                  !(entry.id === entryId && entry.authorLockerId === member.lockerId),
+              ),
+            },
+          }
+        }),
+      updateRollingPaperMember: (patch) =>
+        set((state) => {
+          const member = state.rollingPaperMember
+          if (!member) return state
+          const displayName = patch.displayName?.trim() || member.displayName
+
+          return {
+            rollingPaperMember: { ...member, displayName },
+            rollingPaperClass: {
+              ...state.rollingPaperClass,
+              lockers: state.rollingPaperClass.lockers.map((locker) =>
+                locker.id === member.lockerId
+                  ? {
+                      ...locker,
+                      studentName: displayName,
+                      ...(patch.paperDesign
+                        ? { paperDesign: patch.paperDesign }
+                        : {}),
+                    }
+                  : locker,
+              ),
+            },
+          }
+        }),
+      saveRollingPaperNote: (paperLockerId, note) =>
+        set((state) => {
+          const member = state.rollingPaperMember
+          const text = note.text.trim()
+          // Nobody writes on their own paper, and nobody writes once it has ended.
+          if (
+            !member ||
+            !text ||
+            member.lockerId === paperLockerId ||
+            state.rollingPaperClass.endedAt
+          ) {
+            return state
+          }
+
+          const notes = state.rollingPaperClass.notes
+          const existing = notes.find(
+            (item) =>
+              item.paperLockerId === paperLockerId &&
+              item.authorLockerId === member.lockerId,
+          )
+          const saved: RollingPaperNote = {
+            id: existing?.id ?? `rolling-note-${crypto.randomUUID()}`,
+            paperLockerId,
+            authorLockerId: member.lockerId,
+            authorName: member.displayName,
+            text,
+            pen: note.pen,
+            stamp: note.stamp,
+            x: note.x,
+            y: note.y,
+            createdAt: existing?.createdAt ?? new Date().toISOString(),
+          }
+
+          return {
+            rollingPaperClass: {
+              ...state.rollingPaperClass,
+              notes: existing
+                ? notes.map((item) => (item.id === existing.id ? saved : item))
+                : [...notes, saved],
+            },
+          }
+        }),
+      removeRollingPaperNote: (paperLockerId) =>
+        set((state) => {
+          const member = state.rollingPaperMember
+          if (!member) return state
+
+          return {
+            rollingPaperClass: {
+              ...state.rollingPaperClass,
+              notes: state.rollingPaperClass.notes.filter(
+                (item) =>
+                  !(
+                    item.paperLockerId === paperLockerId &&
+                    item.authorLockerId === member.lockerId
+                  ),
+              ),
+            },
+          }
+        }),
       addBlackboardEntry: (entry) =>
         set((state) => {
           const stamp = Date.now().toString(36)
@@ -1088,6 +1355,13 @@ export const usePrototypeStore = create<PrototypeState>()(
         claimBacklogDeferred: state.claimBacklogDeferred,
         classroom: state.classroom,
         classroomMember: state.classroomMember,
+        // With a backend the class is server data and is reloaded on entry.
+        ...(isApiEnabled
+          ? {}
+          : {
+              rollingPaperClass: state.rollingPaperClass,
+              rollingPaperMember: state.rollingPaperMember,
+            }),
         ownerSettings: state.ownerSettings,
         messageReplies: state.messageReplies,
         messageReactions: state.messageReactions,

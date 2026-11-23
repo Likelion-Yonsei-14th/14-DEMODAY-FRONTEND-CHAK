@@ -67,6 +67,12 @@ Vercel first; every other `/api` path goes to the backend.
   Empty = a "mock 충전" button instead of the widget. The secret key belongs to the
   backend only and is never set here.
 
+졸업 롤링페이퍼:
+
+- `VITE_ROLLING_PAPER`: `on` opens `/rolling-paper` (and its door on Home/Start after the exam) in production.
+  Leave it unset until the backend with `/api/public/rolling-papers` (Flyway V30) is deployed;
+  dev and test builds always show it.
+
 When auth, APIs, analytics, or external services are added, define variables in Vercel
 per environment rather than committing secrets to the repository.
 

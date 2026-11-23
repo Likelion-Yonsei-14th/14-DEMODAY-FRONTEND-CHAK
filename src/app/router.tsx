@@ -106,7 +106,20 @@ import { LockerCharmPickPage } from '@/features/classroom/LockerCharmPickPage'
 import { CharmPickPage } from '@/features/supporter/CharmPickPage'
 import { PeperoPickPage } from '@/features/supporter/PeperoPickPage'
 import { LockerDecoratePage } from '@/features/classroom/LockerDecoratePage'
+import {
+  RollingPaperCreatePage,
+  RollingPaperEntryRedirect,
+  RollingPaperJoinPage,
+  RollingPaperSharePage,
+} from '@/features/rollingPaper/RollingPaperCreationPages'
+import {
+  RollingPaperClassPage,
+  RollingPaperPage,
+} from '@/features/rollingPaper/RollingPaperPages'
+import { RollingPaperSettingsPage } from '@/features/rollingPaper/RollingPaperSettingsPage'
 import { PrototypeIndexPage } from '@/prototype/screens/PrototypeIndexPage'
+import { PrototypeLabPage } from '@/prototype/screens/PrototypeLabPage'
+import { RollingPaperGate } from '@/features/rollingPaper/RollingPaperGate'
 import {
   ComposerPage,
   ReaderPage,
@@ -147,13 +160,21 @@ export function LegacyPrototypeRedirect() {
   return <Navigate to={`${pathname.replace(/^\/prototype/, '') || '/'}${search}${hash}`} replace />
 }
 
-const INTERNAL_PATHS = [/^\/prototype$/, /^\/(composer|reader|manage)$/, /^\/system$/]
+const INTERNAL_PATHS = [/^\/(composer|reader|manage)$/, /^\/system$/]
+
+/** Opens once VITE_ROLLING_PAPER=on, or in a browser that turned on test mode (/prototype). */
+const ROLLING_PAPER_PATH = /^\/rolling-paper(\/|$)/
+
 
 export function gateRoutes(routes: RouteObject[], production: boolean): RouteObject[] {
   if (!production) return routes
   return routes.map((route) => {
     const path = route.path
     if (!path) return route
+    if (ROLLING_PAPER_PATH.test(path)) {
+      // Checked on every visit: test mode can be turned on without a new build.
+      return { ...route, element: <RollingPaperGate>{route.element}</RollingPaperGate> }
+    }
     const notReady = NOT_READY_PATHS.find(({ pattern }) => pattern.test(path))
     if (notReady) {
       return { ...route, element: <ComingSoonPage title={notReady.title} description="곧 열릴 예정이에요. 지금은 응원 책상을 이용해 주세요." /> }
@@ -370,7 +391,9 @@ export const router = createBrowserRouter([
       { path: '/account', element: <AccountPage /> },
       { path: '/account/profile', element: <ProfileEditPage /> },
       { path: '/account/delete', element: <DeleteAccountPage /> },
-      { path: '/prototype', element: <PrototypeIndexPage /> },
+      // Production: test mode for features before they open. Development: the screen index.
+      { path: '/prototype', element: import.meta.env.PROD ? <PrototypeLabPage /> : <PrototypeIndexPage /> },
+      { path: '/prototype/lab', element: <PrototypeLabPage /> },
       { path: '/minigame/desk-blast', element: <DeskBlastPage /> },
       // Development only: the link-card thumbnails are photographed from here (scripts/make-og-images.mjs).
       ...(import.meta.env.DEV
@@ -513,6 +536,34 @@ export const router = createBrowserRouter([
       {
         path: '/claim/complete',
         element: <ClaimCompletePage />,
+      },
+      {
+        path: '/rolling-paper',
+        element: <RollingPaperEntryRedirect />,
+      },
+      {
+        path: '/rolling-paper/create',
+        element: <RollingPaperCreatePage />,
+      },
+      {
+        path: '/rolling-paper/:classId',
+        element: <RollingPaperClassPage />,
+      },
+      {
+        path: '/rolling-paper/:classId/settings',
+        element: <RollingPaperSettingsPage />,
+      },
+      {
+        path: '/rolling-paper/:classId/share',
+        element: <RollingPaperSharePage />,
+      },
+      {
+        path: '/rolling-paper/:classId/join',
+        element: <RollingPaperJoinPage />,
+      },
+      {
+        path: '/rolling-paper/:classId/paper/:lockerId',
+        element: <RollingPaperPage />,
       },
       {
         path: '/classroom',

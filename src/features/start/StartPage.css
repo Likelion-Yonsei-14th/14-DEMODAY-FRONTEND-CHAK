@@ -212,6 +212,10 @@
   background: #c9573f;
 }
 
+.home-page__door--rolling {
+  background: #5d7a5d;
+}
+
 .home-page__door--class {
   background: #5d7a5d;
 }
@@ -295,4 +299,9 @@
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.start-page__paper {
+  margin-top: 10px;
+  padding: 0 6px;
 }

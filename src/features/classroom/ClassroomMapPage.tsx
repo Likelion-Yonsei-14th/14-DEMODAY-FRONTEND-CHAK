@@ -1,9 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import {
   ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
-  LayoutGrid,
   MessageCircleMore,
   Settings,
   Sparkles,
@@ -23,19 +20,11 @@ import { AppShell } from '@/layout/AppShell'
 import { useHomePath } from '@/app/homePath'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import { getTodaysBoardQuotes } from './boardQuotes'
-import { CABINET_CELLS, cabinetCells } from './classroomCabinet'
+import { classroomZoneLabels } from './classroomCabinet'
+import { ClassroomScene } from './ClassroomScene'
 import { getLockerPaint } from './lockerDecor'
 import { LockerMiniDoor } from './LockerScene'
-import { useDeskDaypart } from '@/features/desk/useDeskDaypart'
 import './Classroom.css'
-
-/** classroom-day/night.webp are 1344 × 576. */
-const CLASSROOM_PHOTO_RATIO = 1344 / 576
-
-/** One locker per door of the cabinet drawn on the right wall; the rest are empty seats. */
-const MAP_LOCKER_MAX = CABINET_CELLS
-
-const zoneLabels = ['창가', '칠판', '사물함'] as const
 
 export function ClassroomMapPage() {
   const navigate = useNavigate()
@@ -46,33 +35,7 @@ export function ClassroomMapPage() {
   const [allLockersOpen, setAllLockersOpen] = useState(false)
   const lockerDecor = usePrototypeStore((state) => state.lockerDecor)
   const { showToast } = useFeedback()
-  const daypart = useDeskDaypart()
-  const viewportRef = useRef<HTMLElement>(null)
   const homePath = useHomePath()
-  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 })
-
-  // The world keeps the photo's aspect ratio; the three camera stops are its
-  // left edge, centre and right edge.
-  useEffect(() => {
-    const viewport = viewportRef.current
-    if (!viewport) return
-    const observer = new ResizeObserver(([entry]) => {
-      if (!entry) return
-      setViewportSize({
-        width: entry.contentRect.width,
-        height: entry.contentRect.height,
-      })
-    })
-    observer.observe(viewport)
-    return () => observer.disconnect()
-  }, [])
-
-  const worldWidth = Math.max(
-    viewportSize.height * CLASSROOM_PHOTO_RATIO,
-    viewportSize.width,
-  )
-  const cameraOffset =
-    (camera * Math.max(0, worldWidth - viewportSize.width)) / 2
   const wrappedAvailable =
     getCsatDdayLabel() === '수능이 끝났어요'
 
@@ -94,11 +57,7 @@ export function ClassroomMapPage() {
   const myLocker = classroom.lockers.find(
     (locker) => locker.id === member.lockerId,
   )
-  const bankLockers = [
-    ...(myLocker ? [myLocker] : []),
-    ...otherLockers,
-  ].slice(0, MAP_LOCKER_MAX)
-  const hiddenLockerCount = classroom.lockers.length - bankLockers.length
+  const orderedLockers = [...(myLocker ? [myLocker] : []), ...otherLockers]
 
   const inviteFriends = async () => {
     const url = buildPrototypeShareUrl(`/classroom/${id}/join`)
@@ -120,7 +79,7 @@ export function ClassroomMapPage() {
       appBar={
         <AppBar
           title={classroom.name}
-          subtitle={`${member.displayName} · ${zoneLabels[camera]}`}
+          subtitle={`${member.displayName} · ${classroomZoneLabels[camera]}`}
           transparent
           leading={
             <IconButton
@@ -161,22 +120,26 @@ export function ClassroomMapPage() {
           좌우로 둘러보고, 가까이 있는 공간을 눌러보세요.
         </p>
 
-        <section
-          ref={viewportRef}
-          className={`classroom-map__viewport classroom-map__viewport--${daypart}`}
-          aria-label="응원 교실"
-        >
-          <div
-            className="classroom-map__world"
-            style={{
-              width: worldWidth || undefined,
-              transform: `translateX(-${cameraOffset}px)`,
-            }}
-          >
-            <div className="classroom-map__photo classroom-map__photo--day" />
-            <div className="classroom-map__photo classroom-map__photo--night" />
-
-            {/* Overlays use the photo's own coordinates (% of the world) */}
+        <ClassroomScene
+          ariaLabel="응원 교실"
+          camera={camera}
+          onCameraChange={setCamera}
+          lockers={orderedLockers.map((locker) => {
+            const paint = lockerDecor[locker.id]?.outside
+            return {
+              id: locker.id,
+              name: locker.studentName,
+              mine: locker.id === member.lockerId,
+              paintSwatch: paint ? getLockerPaint(paint).swatch : undefined,
+            }
+          })}
+          onLockerClick={(lockerId) =>
+            navigate(`/classroom/${id}/locker/${lockerId}`)
+          }
+          emptyLockerLabel="빈 사물함 · 친구 초대하기"
+          onEmptyLockerClick={inviteFriends}
+          onShowAllLockers={() => setAllLockersOpen(true)}
+          blackboard={
             <button
               type="button"
               className="classroom-map__blackboard"
@@ -232,96 +195,8 @@ export function ClassroomMapPage() {
                 칠판 보기
               </span>
             </button>
-
-            {/* Doors of the cubby cabinet drawn on the right wall */}
-            <div className="classroom-map__cabinet">
-              {cabinetCells.map((cell, index) => {
-                const locker = bankLockers[index]
-                const mine = locker?.id === member.lockerId
-                const paint = locker ? lockerDecor[locker.id]?.outside : undefined
-
-                return (
-                  <button
-                    type="button"
-                    key={locker?.id ?? `empty-${index}`}
-                    className={[
-                      'classroom-map__cubby',
-                      locker ? '' : 'classroom-map__cubby--empty',
-                      mine ? 'classroom-map__cubby--mine' : '',
-                    ].filter(Boolean).join(' ')}
-                    style={{
-                      clipPath: cell.clipPath,
-                      '--cubby-paint': paint ? getLockerPaint(paint).swatch : undefined,
-                    } as React.CSSProperties}
-                    aria-label={
-                      locker
-                        ? `${locker.studentName}의 사물함`
-                        : '빈 사물함 · 친구 초대하기'
-                    }
-                    onClick={() =>
-                      locker
-                        ? navigate(`/classroom/${id}/locker/${locker.id}`)
-                        : inviteFriends()
-                    }
-                  />
-                )
-              })}
-              {cabinetCells.map((cell, index) => {
-                const locker = bankLockers[index]
-                if (!locker) return null
-                const mine = locker.id === member.lockerId
-
-                return (
-                  <span
-                    key={`label-${locker.id}`}
-                    className={[
-                      'classroom-map__cubby-name',
-                      mine ? 'classroom-map__cubby-name--mine' : '',
-                    ].filter(Boolean).join(' ')}
-                    style={{
-                      left: cell.labelLeft,
-                      top: cell.labelTop,
-                      transform: `translate(-50%, -50%) rotate(${cell.labelAngle}deg)`,
-                    }}
-                    aria-hidden
-                  >
-                    {mine ? `★ ${locker.studentName}` : locker.studentName}
-                  </span>
-                )
-              })}
-            </div>
-
-            <button
-              type="button"
-              className="classroom-map__all-lockers"
-              onClick={() => setAllLockersOpen(true)}
-            >
-              <LayoutGrid size={14} aria-hidden />
-              사물함 전체 보기
-              {hiddenLockerCount > 0 && ` (+${hiddenLockerCount})`}
-            </button>
-          </div>
-
-          <button
-            type="button"
-            className="classroom-map__move classroom-map__move--left"
-            aria-label="교실 왼쪽으로 이동"
-            disabled={camera === 0}
-            onClick={() => setCamera((value) => Math.max(0, value - 1))}
-          >
-            <ChevronLeft size={24} aria-hidden />
-          </button>
-
-          <button
-            type="button"
-            className="classroom-map__move classroom-map__move--right"
-            aria-label="교실 오른쪽으로 이동"
-            disabled={camera === 2}
-            onClick={() => setCamera((value) => Math.min(2, value + 1))}
-          >
-            <ChevronRight size={24} aria-hidden />
-          </button>
-        </section>
+          }
+        />
 
         <BottomSheet
           open={allLockersOpen}
@@ -331,7 +206,7 @@ export function ClassroomMapPage() {
         >
           <div className="classroom-lockers-sheet">
             <div className="classroom-lockers-sheet__grid">
-              {[...(myLocker ? [myLocker] : []), ...otherLockers].map((locker) => (
+              {orderedLockers.map((locker) => (
                 <button
                   type="button"
                   key={locker.id}
@@ -357,19 +232,6 @@ export function ClassroomMapPage() {
             </Button>
           </div>
         </BottomSheet>
-
-        <div className="classroom-map__position" aria-hidden>
-          {zoneLabels.map((label, index) => (
-            <span
-              key={label}
-              className={
-                index === camera
-                  ? 'classroom-map__position-dot classroom-map__position-dot--active'
-                  : 'classroom-map__position-dot'
-              }
-            />
-          ))}
-        </div>
       </main>
     </AppShell>
   )

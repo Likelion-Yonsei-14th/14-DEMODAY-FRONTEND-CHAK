@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import { gateRoutes } from '@/app/router'
+import { setPrototypeUnlocked } from '@/lib/featureFlags'
 import { ComingSoonDialog, ComingSoonPage } from './ComingSoon'
 
 function Where() {
@@ -43,7 +44,7 @@ describe('production route gating', () => {
     { path: '/classroom/:classroomId/join', element: <p>가입</p> },
     { path: '/wrapped/intro', element: <p>wrapped</p> },
     { path: '/offers/:offerId', element: <p>offer</p> },
-    { path: '/prototype', element: <p>목차</p> },
+    { path: '/rolling-paper/create', element: <p>롤링페이퍼 만들기</p> },
     { path: '/composer', element: <p>placeholder</p> },
     { path: '/system', element: <p>디자인</p> },
     { path: '/my/desk', element: <p>내 책상</p> },
@@ -74,10 +75,27 @@ describe('production route gating', () => {
   })
 
   it('sends internal pages back to the start in production', () => {
-    for (const path of ['/prototype', '/composer', '/system']) {
+    for (const path of ['/composer', '/system']) {
       open(path, true)
       expect(screen.getByText('처음 화면')).toBeInTheDocument()
       document.body.innerHTML = ''
+    }
+  })
+
+  it('opens the rolling paper in production only for a browser in test mode', () => {
+    vi.stubEnv('PROD', true)
+    try {
+      window.localStorage.removeItem('chak:prototype')
+      open('/rolling-paper/create', true)
+      expect(screen.queryByText('롤링페이퍼 만들기')).not.toBeInTheDocument()
+      document.body.innerHTML = ''
+
+      setPrototypeUnlocked(true)
+      open('/rolling-paper/create', true)
+      expect(screen.getByText('롤링페이퍼 만들기')).toBeInTheDocument()
+    } finally {
+      setPrototypeUnlocked(false)
+      vi.unstubAllEnvs()
     }
   })
 
