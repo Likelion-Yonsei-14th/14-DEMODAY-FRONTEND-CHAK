@@ -121,8 +121,8 @@ export function StartPage() {
         <section className="start-page__choices" aria-label="응원을 모으는 방법">
           {rollingPaperFirst && (
             <ChoiceCard
-              title="우리 반 롤링페이퍼 만들기"
-              description="반 이름을 정하고, 내 사물함에 롤링페이퍼를 걸어요."
+              title="연말 롤링페이퍼 만들기"
+              description="반 친구들과 서로 채우거나, 내 롤링페이퍼를 링크로 받아요."
               icon={<ScrollText size={22} aria-hidden />}
               onClick={() => navigate('/rolling-paper')}
             />
