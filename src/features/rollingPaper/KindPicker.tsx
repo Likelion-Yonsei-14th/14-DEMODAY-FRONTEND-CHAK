@@ -5,7 +5,7 @@ const kindOptions = [
   {
     id: 'class',
     title: '우리 반 롤링페이퍼',
-    description: '반 친구마다 사물함에 종이를 걸고, 서로의 종이에 한마디씩 남겨요.',
+    description: '반 친구마다 사물함에 종이를 걸고, 서로의 종이에 한마디씩 남겨요. 친구 종이의 다른 글은 그 친구만 볼 수 있어요.',
   },
   {
     id: 'personal',

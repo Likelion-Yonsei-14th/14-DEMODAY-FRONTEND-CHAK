@@ -685,7 +685,7 @@ export function RollingPaperPage() {
                 showToast('다른 친구 글 위에는 쓸 수 없어요. 빈 곳을 눌러 주세요.')
               }
             />
-            {!mine && personal && (
+            {!mine && notes.some((note) => note.hidden) && (
               <p className="rolling-paper-page__hint">
                 흐리게 보이는 글은 다른 사람이 남긴 한마디예요. {locker.studentName}만 읽을 수 있어요.
               </p>
