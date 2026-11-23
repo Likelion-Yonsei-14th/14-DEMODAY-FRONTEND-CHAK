@@ -44,13 +44,16 @@
   transform: rotate(-3deg);
 }
 
+/* masking tape, like the friends' paper cards */
 .rolling-paper-mine__paper::after {
   content: '';
   position: absolute;
-  inset: auto -4px 12px;
-  height: 8px;
-  background: var(--color-brand);
-  opacity: .82;
+  top: -6px;
+  left: 50%;
+  width: 34px;
+  height: 11px;
+  background: rgb(255 194 26 / 55%);
+  transform: translateX(-50%) rotate(-4deg);
 }
 
 .rolling-paper-mine__paper span {
@@ -206,9 +209,10 @@
   cursor: crosshair;
 }
 
+/* The class name or title, small at the foot of the paper. */
 .rolling-paper__caption {
   position: absolute;
-  top: var(--paper-top, 2%);
+  bottom: 3%;
   color: var(--color-content-tertiary);
   font-family: var(--font-hand);
   font-size: 15px;
@@ -218,19 +222,18 @@
 .rolling-paper__caption--left { left: calc(var(--paper-left, 2%) + 8px); }
 .rolling-paper__caption--right { right: calc(var(--paper-right, 2%) + 8px); }
 
+/* "To. 이름" heads the paper like a letter, leaving the body free for notes. */
 .rolling-paper__name {
   position: absolute;
-  top: 50%;
+  top: calc(var(--paper-top, 2%) + 3%);
   left: 50%;
   display: grid;
   justify-items: center;
-  gap: 2px;
-  padding: 16px 26px 12px;
-  border: 2.5px solid var(--color-brand);
-  border-radius: 48% 52% 46% 54% / 55% 48% 52% 45%;
+  gap: 0;
   font-family: var(--font-hand);
   text-align: center;
-  transform: translate(-50%, -50%) rotate(-2deg);
+  white-space: nowrap;
+  transform: translateX(-50%);
   pointer-events: none;
 }
 
@@ -240,16 +243,20 @@
 }
 
 .rolling-paper__name strong {
-  max-width: 180px;
-  overflow-wrap: anywhere;
+  max-width: 220px;
+  overflow: hidden;
+  padding: 0 10px 2px;
+  border-bottom: 2.5px solid var(--color-brand);
   color: var(--color-content-primary);
-  font-size: 36px;
-  line-height: 1;
+  font-size: 34px;
+  line-height: 1.05;
+  text-overflow: ellipsis;
 }
 
 .rolling-paper__name span {
+  margin-top: 4px;
   color: var(--color-brand);
-  font-size: 18px;
+  font-size: 17px;
 }
 
 .rolling-note {

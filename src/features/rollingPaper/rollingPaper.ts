@@ -34,6 +34,8 @@ export const rollingPaperStamps = [
 /** A note is 40% of the paper wide; its centre keeps half that from the writable edges. */
 const NOTE_HALF_WIDTH = 20
 const NOTE_HALF_HEIGHT = 7
+/** "To. 이름" heads the paper; notes start below it. */
+const NAME_HEADER_HEIGHT = 15
 
 export const DEFAULT_PAPER_DESIGN = 'bg-basic-cream'
 
@@ -52,7 +54,7 @@ export const clampNotePosition = (x: number, y: number, designId?: string) => {
     min > max ? (min + max) / 2 : Math.min(max, Math.max(min, value))
   return {
     x: clamp(x, bounds.left + NOTE_HALF_WIDTH, bounds.right - NOTE_HALF_WIDTH),
-    y: clamp(y, bounds.top + NOTE_HALF_HEIGHT, bounds.bottom - NOTE_HALF_HEIGHT),
+    y: clamp(y, bounds.top + NAME_HEADER_HEIGHT + NOTE_HALF_HEIGHT, bounds.bottom - NOTE_HALF_HEIGHT),
   }
 }
 
