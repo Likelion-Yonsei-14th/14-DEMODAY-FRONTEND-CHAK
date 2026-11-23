@@ -169,9 +169,10 @@ export function WelcomePage() {
         </section>
 
         <div className="welcome-page__games">
+          {/* 첫 화면 안에 보이도록 시작 버튼 바로 아래. */}
+          <AdBanner />
           <DiscountsShortcut />
           <ChatShortcut />
-          <AdBanner />
           <MiniGameSection note="로그인 없이 바로 할 수 있어요. 랭킹에는 로그인하면 올라가요." />
         </div>
       </main>

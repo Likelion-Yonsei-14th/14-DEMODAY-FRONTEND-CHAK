@@ -95,34 +95,17 @@ export function useMyLocation() {
   return { point, state, request }
 }
 
-/** 카드가 화면에 절반 이상 1초 넘게 보이면 노출 한 번. 같은 카드는 화면에 있는 동안 한 번만 보낸다. */
+/**
+ * 카드가 화면(목록·지도)에 실리면 바로 노출 한 번. 스크롤해서 보이는지는 따지지 않아서,
+ * 목록을 열면 그 안의 제휴 카드가 모두 한 번씩 노출로 잡힌다. 같은 카드는 실려 있는 동안 한 번만 보낸다.
+ * (같은 사람이 30분 안에 다시 본 것은 서버가 한 번으로 친다.)
+ */
 export function useSponsoredImpression(ref: RefObject<HTMLElement | null>, id: number | undefined, placement: DiscountPlacement | null) {
   const sent = useRef(false)
   useEffect(() => {
-    const node = ref.current
-    if (!node || id === undefined || placement === null || !isApiEnabled || isAdPreview || sent.current) return
-    if (typeof IntersectionObserver === 'undefined') return
-    let timer: number | undefined
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting && entry.intersectionRatio >= 0.5) {
-          timer ??= window.setTimeout(() => {
-            sent.current = true
-            observer.disconnect()
-            void reportDiscountEvent(id, 'IMPRESSION', placement)
-          }, 1000)
-        } else if (timer !== undefined) {
-          window.clearTimeout(timer)
-          timer = undefined
-        }
-      },
-      { threshold: [0, 0.5, 1] },
-    )
-    observer.observe(node)
-    return () => {
-      observer.disconnect()
-      if (timer !== undefined) window.clearTimeout(timer)
-    }
+    if (!ref.current || id === undefined || placement === null || !isApiEnabled || isAdPreview || sent.current) return
+    sent.current = true
+    void reportDiscountEvent(id, 'IMPRESSION', placement)
   }, [ref, id, placement])
 }
 

@@ -176,6 +176,9 @@ export function HomePage() {
           )}
         </div>
 
+        {/* 앱을 열자마자 첫 화면 안에 보이도록 큰 문 바로 아래. */}
+        <AdBanner />
+
         <nav className="home-page__shortcuts" aria-label="바로가기">
           <button type="button" className="home-page__shortcut" onClick={() => navigate('/letters')}>
             <Mail size={20} aria-hidden />
@@ -205,8 +208,6 @@ export function HomePage() {
         <DiscountsShortcut />
 
         <ChatShortcut />
-
-        <AdBanner />
 
         {rollingPaperFirst && <RecapShortcut />}
 
