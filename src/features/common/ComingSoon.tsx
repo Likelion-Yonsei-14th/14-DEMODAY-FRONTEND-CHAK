@@ -23,6 +23,13 @@ export function ComingSoonDialog({ open, onClose, title, description }: NoticePr
   )
 }
 
+/** 끝 글자에 받침이 있으면 '은', 없으면 '는'(한글이 아니면 '은'). */
+function topicParticle(word: string) {
+  const code = word.charCodeAt(word.length - 1) - 0xac00
+  if (code < 0 || code > 11171) return '은'
+  return code % 28 === 0 ? '는' : '은'
+}
+
 /** 주소로 바로 들어왔을 때 보이는 "개발 중" 화면. */
 export function ComingSoonPage({ title, description }: { title: string; description?: string }) {
   const navigate = useNavigate()
@@ -39,7 +46,7 @@ export function ComingSoonPage({ title, description }: { title: string; descript
       }
     >
       <main style={{ padding: 24, display: 'grid', gap: 14, textAlign: 'center' }}>
-        <h1 style={{ margin: 0, fontSize: 20 }}>{title}은 아직 개발 중이에요</h1>
+        <h1 style={{ margin: 0, fontSize: 20 }}>{title}{topicParticle(title)} 아직 개발 중이에요</h1>
         <p style={{ margin: 0 }}>{description ?? '곧 열릴 예정이에요. 조금만 기다려 주세요.'}</p>
         <Button variant="brand" fullWidth onClick={() => navigate('/', { replace: true })}>
           처음으로 돌아가기

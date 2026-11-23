@@ -69,7 +69,7 @@ describe('production route gating', () => {
   it('shows a coming soon screen for classroom, wrapped and offers in production', () => {
     for (const path of ['/classroom', '/classroom/c1/join', '/wrapped/intro', '/offers/o1']) {
       open(path, true)
-      expect(screen.getByRole('heading', { name: /^(우리 반|응원 결산|혜택)은 아직 개발 중이에요$/ })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /^(우리 반은|응원 결산은|혜택은) 아직 개발 중이에요$/ })).toBeInTheDocument()
       document.body.innerHTML = ''
     }
   })
@@ -88,6 +88,7 @@ describe('production route gating', () => {
       window.localStorage.removeItem('chak:prototype')
       open('/rolling-paper/create', true)
       expect(screen.queryByText('롤링페이퍼 만들기')).not.toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: '연말 롤링페이퍼는 아직 개발 중이에요' })).toBeInTheDocument()
       document.body.innerHTML = ''
 
       setPrototypeUnlocked(true)
