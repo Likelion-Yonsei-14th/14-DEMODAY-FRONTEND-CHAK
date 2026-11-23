@@ -13,6 +13,7 @@ import {
   Settings,
   Share2,
   Trash2,
+  UserPlus,
 } from 'lucide-react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import {
@@ -23,8 +24,6 @@ import {
   useFeedback,
 } from '@/design-system'
 import { useHomePath } from '@/app/homePath'
-import { classroomZoneLabels } from '@/features/classroom/classroomCabinet'
-import { ClassroomScene } from '@/features/classroom/ClassroomScene'
 import { AppShell } from '@/layout/AppShell'
 import { usePrototypeStore } from '@/store/prototypeStore'
 import type {
@@ -84,8 +83,6 @@ export function RollingPaperClassPage() {
   const paperClass = usePrototypeStore((state) => state.rollingPaperClass)
   const member = usePrototypeStore((state) => state.rollingPaperMember)
   const { showToast } = useFeedback()
-  const [camera, setCamera] = useState(2)
-  const [listOpen, setListOpen] = useState(false)
   const [boardOpen, setBoardOpen] = useState(false)
   const load = useRollingPaperLoad(classId)
 
@@ -119,48 +116,22 @@ export function RollingPaperClassPage() {
   const openPaper = (lockerId: string) => navigate(paperPath(id, lockerId))
   const boardEntries = paperClass.boardEntries ?? []
 
-  const boardContent = (
-    <>
-      <span className="classroom-map__chalk-date">
-        {/* Like a real board: today's date in the corner */}
-        {new Intl.DateTimeFormat('ko-KR', {
-          month: 'long',
-          day: 'numeric',
-          weekday: 'short',
-        }).format(new Date())}
-      </span>
-      <span className="classroom-map__chalk">
-        <span className="classroom-map__chalk-title">
-          {paperClass.name}, 올 한 해 수고했어!
-        </span>
-        {boardEntries.slice(-BOARD_VISIBLE_LINES).map((entry) => (
-          <span key={entry.id} className="classroom-map__chalk-note">
-            {entry.text}
-          </span>
-        ))}
-        {paperClass.endedAt && (
-          <span className="classroom-map__chalk-note">
-            롤링페이퍼 종료! 각자 열어 보세요
-          </span>
-        )}
-        {boardEntries.length === 0 && (
-          <span className="classroom-map__chalk-note">
-            칠판을 눌러 반 친구들에게 한마디 적어요
-          </span>
-        )}
-      </span>
-    </>
-  )
+  const today = new Intl.DateTimeFormat('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'short',
+  }).format(new Date())
+  const ownOpen = isOwnPaperOpen(paperClass)
+  const writtenCount = friends.filter((locker) => wrote(locker.id)).length
 
   return (
     <AppShell
-      surface="transparent"
-      contentClassName="classroom-map-shell"
+      surface="base"
+      contentClassName="rolling-class-shell"
       appBar={
         <AppBar
           title={`${paperClass.name} 롤링페이퍼`}
-          subtitle={`${member.displayName} · ${classroomZoneLabels[camera]}`}
-          transparent
+          subtitle={member.displayName}
           leading={
             <IconButton
               label="홈으로 돌아가기"
@@ -185,47 +156,91 @@ export function RollingPaperClassPage() {
         />
       }
     >
-      <main className="classroom-map">
-        <p className="classroom-map__hint">
-          친구 사물함을 누르면 롤링페이퍼가 펼쳐져요.
-        </p>
-
-        <ClassroomScene
-          ariaLabel="롤링페이퍼 교실"
-          camera={camera}
-          onCameraChange={setCamera}
-          lockers={[...(myLocker ? [myLocker] : []), ...friends].map(
-            (locker) => {
-              const mine = locker.id === member.lockerId
-              return {
-                id: locker.id,
-                name: locker.studentName,
-                mine,
-                tag: mine
-                  ? `★ ${locker.studentName}`
-                  : wrote(locker.id)
-                    ? `✓ ${locker.studentName}`
-                    : locker.studentName,
-              }
-            },
+      <main className="rolling-class">
+        {/* Anyone in the class can chalk a line on the board. */}
+        <button
+          type="button"
+          className="rolling-board"
+          aria-label="칠판 보기, 한마디 쓰기"
+          onClick={() => setBoardOpen(true)}
+        >
+          <span className="rolling-board__date">{today}</span>
+          <span className="rolling-board__title">{paperClass.name}, 올 한 해 수고했어!</span>
+          {boardEntries.slice(-BOARD_VISIBLE_LINES).map((entry) => (
+            <span key={entry.id} className="rolling-board__line">
+              {entry.text}
+            </span>
+          ))}
+          {paperClass.endedAt && (
+            <span className="rolling-board__line">롤링페이퍼 종료! 각자 열어 보세요</span>
           )}
-          onLockerClick={openPaper}
-          emptyLockerLabel="빈 사물함 · 친구 초대하기"
-          onEmptyLockerClick={invite}
-          onShowAllLockers={() => setListOpen(true)}
-          showAllLabel="롤링페이퍼 전체 보기"
-          blackboard={
-            // Anyone in the class can chalk a line on the board.
-            <button
-              type="button"
-              className="classroom-map__blackboard"
-              aria-label="칠판 보기, 한마디 쓰기"
-              onClick={() => setBoardOpen(true)}
-            >
-              {boardContent}
+          {boardEntries.length === 0 && (
+            <span className="rolling-board__line rolling-board__line--hint">
+              눌러서 반 친구들에게 한마디 적어요
+            </span>
+          )}
+          <span className="rolling-board__chalk" aria-hidden />
+        </button>
+
+        {myLocker && (
+          <button
+            type="button"
+            className="rolling-paper-mine"
+            onClick={() => openPaper(myLocker.id)}
+          >
+            <MiniPaper className="rolling-paper-mine__paper" designId={myLocker.paperDesign}>
+              <span>To.</span>
+              <strong>{myLocker.studentName}</strong>
+            </MiniPaper>
+            <span className="rolling-paper-mine__body">
+              <small>내 롤링페이퍼</small>
+              <strong>
+                {ownOpen
+                  ? '지금 열어볼 수 있어요'
+                  : (paperClass.myPaperNoteCount ?? 0) > 0
+                    ? `친구 ${paperClass.myPaperNoteCount}명이 남겼어요`
+                    : '친구들이 곧 채워 줄 거예요'}
+              </strong>
+              {!ownOpen && (
+                <span>
+                  <Lock size={12} aria-hidden />
+                  만든 사람이 종료하면 열려요
+                </span>
+              )}
+            </span>
+          </button>
+        )}
+
+        <section className="rolling-class__friends" aria-labelledby="rolling-class-friends">
+          <header className="rolling-class__head">
+            <h2 id="rolling-class-friends">친구들 롤링페이퍼</h2>
+            {friends.length > 0 && (
+              <span>
+                {writtenCount}/{friends.length}명에게 썼어요
+              </span>
+            )}
+          </header>
+          <div className="rolling-paper-list__grid">
+            {friends.map((locker, index) => (
+              <FriendPaperCard
+                key={locker.id}
+                locker={locker}
+                index={index}
+                written={wrote(locker.id)}
+                onClick={() => openPaper(locker.id)}
+              />
+            ))}
+            <button type="button" className="rolling-paper-card rolling-paper-card--invite" onClick={invite}>
+              <UserPlus size={22} aria-hidden />
+              <span>친구 초대하기</span>
             </button>
-          }
-        />
+          </div>
+          {friends.length === 0 && (
+            <p className="rolling-paper-list__empty">
+              링크를 보내면 친구 롤링페이퍼가 여기에 걸려요.
+            </p>
+          )}
+        </section>
 
         {boardOpen && (
           <BoardSheet
@@ -234,72 +249,6 @@ export function RollingPaperClassPage() {
             onClose={() => setBoardOpen(false)}
           />
         )}
-
-        <BottomSheet
-          open={listOpen}
-          onClose={() => setListOpen(false)}
-          title={`${paperClass.name} 롤링페이퍼`}
-          description="친구 롤링페이퍼를 골라 한마디 남겨요."
-        >
-          <div className="rolling-paper-list">
-            {myLocker && (
-              <button
-                type="button"
-                className="rolling-paper-mine"
-                onClick={() => openPaper(myLocker.id)}
-              >
-                <MiniPaper
-                  className="rolling-paper-mine__paper"
-                  designId={myLocker.paperDesign}
-                >
-                  <span>To.</span>
-                  <strong>{myLocker.studentName}</strong>
-                </MiniPaper>
-                <span className="rolling-paper-mine__body">
-                  <small>내 롤링페이퍼</small>
-                  <strong>
-                    {isOwnPaperOpen(paperClass)
-                      ? '지금 열어볼 수 있어요'
-                      : '종료될 때까지 비밀이에요'}
-                  </strong>
-                  {!isOwnPaperOpen(paperClass) && (
-                    <span>
-                      <Lock size={12} aria-hidden />
-                      만든 사람이 종료하면 열려요
-                    </span>
-                  )}
-                </span>
-              </button>
-            )}
-
-            {friends.length === 0 ? (
-              <p className="rolling-paper-list__empty">
-                아직 친구가 없어요. 초대하면 친구 사물함에도 롤링페이퍼가 걸려요.
-              </p>
-            ) : (
-              <div className="rolling-paper-list__grid">
-                {friends.map((locker, index) => (
-                  <FriendPaperCard
-                    key={locker.id}
-                    locker={locker}
-                    index={index}
-                    written={wrote(locker.id)}
-                    onClick={() => openPaper(locker.id)}
-                  />
-                ))}
-              </div>
-            )}
-
-            <Button
-              variant="secondary"
-              fullWidth
-              leadingIcon={<Share2 size={17} aria-hidden />}
-              onClick={invite}
-            >
-              친구 초대하기
-            </Button>
-          </div>
-        </BottomSheet>
       </main>
     </AppShell>
   )
