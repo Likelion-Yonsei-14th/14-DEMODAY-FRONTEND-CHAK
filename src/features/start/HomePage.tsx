@@ -10,7 +10,7 @@ import { DiscountsShortcut } from '@/features/discounts/DiscountsShortcut'
 import { ChatShortcut } from '@/features/chat/ChatShortcut'
 import { RecapShortcut } from '@/features/recap/RecapShortcut'
 import { isRecapOpen, RECAP_OPENS_LABEL } from '@/features/recap/recapSchedule'
-import { isClassroomAvailable, isRollingPaperAvailable } from '@/lib/featureFlags'
+import { isClassroomAvailable, isRollingPaperReleased } from '@/lib/featureFlags'
 import { isRollingPaperSeason } from '@/features/rollingPaper/rollingPaper'
 import { AppShell } from '@/layout/AppShell'
 import { isApiEnabled } from '@/api/config'
@@ -75,7 +75,8 @@ export function HomePage() {
 
   const classroomOpen = isClassroomAvailable()
   // After the exam the rolling paper takes the desk's place as the main door.
-  const rollingPaperFirst = isRollingPaperAvailable() && isRollingPaperSeason()
+  // Only once released (VITE_ROLLING_PAPER=on): test mode (/prototype) never changes the home and start screens.
+  const rollingPaperFirst = isRollingPaperReleased() && isRollingPaperSeason()
   const rollingPaperClass = usePrototypeStore((state) => state.rollingPaperClass)
   const rollingPaperMember = usePrototypeStore((state) => state.rollingPaperMember)
 
