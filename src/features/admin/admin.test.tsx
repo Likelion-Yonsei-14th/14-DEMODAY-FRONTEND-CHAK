@@ -157,7 +157,7 @@ describe('admin console', () => {
     expect(screen.getByText('활성 사용자 (10/21부터)')).toBeTruthy()
   })
 
-  it('shows organizer-corrected totals only for November 21 and 22', async () => {
+  it('shows server totals and estimated member split only for November 21 and 22', async () => {
     auth.fetchMe.mockResolvedValue({ id: 1, displayName: '운영자', admin: true })
     const day = (date: string, visitors: number) => ({
       date, visitors, memberVisitors: 3, guestVisitors: visitors - 3,
@@ -181,21 +181,24 @@ describe('admin console', () => {
     const daily = (await screen.findByRole('heading', { name: '날짜별 접속자' })).closest('section') as HTMLElement
     expect(daily).toHaveTextContent('2,656')
     expect(daily).toHaveTextContent('2,113')
-    expect(daily).toHaveTextContent('회원 3 · 비회원 66')
-    expect(daily).toHaveTextContent('회원 3 · 비회원 8')
+    expect(daily).toHaveTextContent('회원 1,009 · 비회원 1,647')
+    expect(daily).toHaveTextContent('회원 803 · 비회원 1,310')
     expect(daily).toHaveTextContent('회원 3 · 비회원 47')
-    expect(daily).toHaveTextContent('회원·비회원 수는 시스템 원자료')
+    expect(daily).not.toHaveTextContent('주최측 정정')
+    expect(daily).not.toHaveTextContent('서버 집계 자료')
 
     const activity = screen.getByRole('heading', { name: '날짜별 활동' }).closest('section') as HTMLElement
     const rows = within(activity).getAllByRole('row')
     expect(within(rows[1]!).getAllByRole('cell')[1]).toHaveTextContent('50')
     expect(within(rows[2]!).getAllByRole('cell')[1]).toHaveTextContent('2,113 *')
     expect(within(rows[3]!).getAllByRole('cell')[1]).toHaveTextContent('2,656 *')
+    expect(activity).toHaveTextContent('총 접속자는 서버 집계 자료입니다')
+    expect(activity).toHaveTextContent('회원·비회원은 38%·62% 비율의 추정치입니다')
 
     const active = screen.getByRole('heading', { name: /활성 사용자/ }).closest('section') as HTMLElement
-    expect(active).toHaveTextContent('DAU 2,656 (주최측 정정)')
-    expect(active).toHaveTextContent('DAU 2,113 (주최측 정정)')
-    expect(active).toHaveTextContent('WAU·MAU는 시스템 집계')
+    expect(active).toHaveTextContent('DAU 2,656')
+    expect(active).toHaveTextContent('DAU 2,113')
+    expect(active).not.toHaveTextContent('주최측 정정')
   })
 
   describe('region table', () => {

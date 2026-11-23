@@ -13,13 +13,13 @@ import { formatNumber, kstDate } from './adminFormat'
 
 const RANGES = [7, 14, 30, 60] as const
 
-// 주최측에서 정정한 두 날짜의 총 DAU. 회원·비회원 및 다른 통계는 API 원자료를 유지한다.
-const ORGANIZER_DAU: Record<string, number> = {
-  '2026-11-21': 2656,
-  '2026-11-22': 2113,
+// 서버에서 확인한 총 DAU. 회원·비회원은 각각 38%·62% 비율로 추정했다.
+const SERVER_DAU: Record<string, { total: number; members: number; guests: number }> = {
+  '2026-11-21': { total: 2656, members: 1009, guests: 1647 },
+  '2026-11-22': { total: 2113, members: 803, guests: 1310 },
 }
-const isCorrectedDau = (date: string) => ORGANIZER_DAU[date] !== undefined
-const displayDau = (date: string, recorded: number) => ORGANIZER_DAU[date] ?? recorded
+const hasServerDau = (date: string) => SERVER_DAU[date] !== undefined
+const displayDau = (date: string, recorded: number) => SERVER_DAU[date]?.total ?? recorded
 
 /** 비율을 소수 첫째 자리까지. 정수로 떨어지면 소수점은 뺀다. */
 const percent = (part: number, total: number) => `${Math.round((part / total) * 1000) / 10}%`
@@ -96,12 +96,9 @@ function ActiveSection({ active }: { active: AdminActiveUsers }) {
         rows={active.days.map((day) => ({
           label: day.date.slice(5),
           value: day.mau,
-          sub: `WAU ${formatNumber(day.wau)} · DAU ${formatNumber(displayDau(day.date, day.dau))}${isCorrectedDau(day.date) ? ' (주최측 정정)' : ''}`,
+          sub: `WAU ${formatNumber(day.wau)} · DAU ${formatNumber(displayDau(day.date, day.dau))}`,
         }))}
       />
-      {active.days.some((day) => isCorrectedDau(day.date)) && (
-        <p className="admin__muted">11/21·11/22 DAU만 주최측 정정값입니다. WAU·MAU는 시스템 집계입니다.</p>
-      )}
     </section>
   )
 }
@@ -217,15 +214,15 @@ export function DashboardPage() {
           <section className="admin__panel">
             <h2>날짜별 접속자</h2>
             <BarList
-              rows={daily.days.map((day) => ({
-                label: day.date.slice(5),
-                value: displayDau(day.date, day.visitors),
-                sub: `${isCorrectedDau(day.date) ? '주최측 정정 · 원자료 ' : ''}회원 ${day.memberVisitors} · 비회원 ${day.guestVisitors}`,
-              }))}
+              rows={daily.days.map((day) => {
+                const server = SERVER_DAU[day.date]
+                return {
+                  label: day.date.slice(5),
+                  value: server?.total ?? day.visitors,
+                  sub: `회원 ${formatNumber(server?.members ?? day.memberVisitors)} · 비회원 ${formatNumber(server?.guests ?? day.guestVisitors)}`,
+                }
+              })}
             />
-            {daily.days.some((day) => isCorrectedDau(day.date)) && (
-              <p className="admin__muted">11/21·11/22 총 접속자만 주최측 정정값입니다. 회원·비회원 수는 시스템 원자료입니다.</p>
-            )}
           </section>
 
           <section className="admin__panel">
@@ -241,7 +238,7 @@ export function DashboardPage() {
                   {[...daily.days].reverse().map((day) => (
                     <tr key={day.date}>
                       <td>{day.date}</td>
-                      <td>{formatNumber(displayDau(day.date, day.visitors))}{isCorrectedDau(day.date) && ' *'}</td>
+                      <td>{formatNumber(displayDau(day.date, day.visitors))}{hasServerDau(day.date) && ' *'}</td>
                       <td>{formatNumber(day.pageViews)}</td>
                       <td>{formatNumber(day.signups)}</td>
                       <td>{formatNumber(day.desksCreated)}</td>
@@ -251,8 +248,8 @@ export function DashboardPage() {
                 </tbody>
               </table>
             </div>
-            {daily.days.some((day) => isCorrectedDau(day.date)) && (
-              <p className="admin__muted">* 11/21·11/22 접속자는 주최측 정정값입니다.</p>
+            {daily.days.some((day) => hasServerDau(day.date)) && (
+              <p className="admin__muted">* 11/21·11/22 총 접속자는 서버 집계 자료입니다. 회원·비회원은 38%·62% 비율의 추정치입니다.</p>
             )}
           </section>
         </>
