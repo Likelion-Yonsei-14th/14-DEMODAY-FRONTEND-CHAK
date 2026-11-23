@@ -420,9 +420,9 @@ function FriendPaperCard({
 
 /** Spots tried, in order, when the writer uses the button instead of touching the paper. */
 const FALLBACK_SPOTS: Position[] = [
-  { x: 30, y: 16 }, { x: 70, y: 16 }, { x: 30, y: 84 }, { x: 70, y: 84 },
-  { x: 25, y: 36 }, { x: 75, y: 36 }, { x: 25, y: 64 }, { x: 75, y: 64 },
-  { x: 50, y: 10 }, { x: 50, y: 90 },
+  { x: 30, y: 30 }, { x: 70, y: 30 }, { x: 30, y: 82 }, { x: 70, y: 82 },
+  { x: 25, y: 48 }, { x: 75, y: 48 }, { x: 25, y: 65 }, { x: 75, y: 65 },
+  { x: 50, y: 39 }, { x: 50, y: 74 },
 ]
 
 const findFreeSpot = (
@@ -615,6 +615,15 @@ export function RollingPaperPage() {
           />
         ) : (
           <>
+            {mine && (
+              <p className="rolling-paper-page__hint">
+                {notes.length > 0
+                  ? `친구 ${notes.length}명이 한마디를 남겼어요.`
+                  : personal
+                    ? '아직 비어 있어요. 링크를 보내 한마디를 받아 보세요.'
+                    : '아직 비어 있어요. 친구들이 곧 채워 줄 거예요.'}
+              </p>
+            )}
             {writable && (
               <p className="rolling-paper-page__hint">
                 {myNote
