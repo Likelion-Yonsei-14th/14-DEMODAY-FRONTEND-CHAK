@@ -16,7 +16,7 @@ import { ComingSoonDialog, CLASSROOM_NOTICE } from '@/features/common/ComingSoon
 import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { DiscountsShortcut } from '@/features/discounts/DiscountsShortcut'
 import { ChatShortcut } from '@/features/chat/ChatShortcut'
-import { isClassroomAvailable, isRollingPaperAvailable } from '@/lib/featureFlags'
+import { isClassroomAvailable, isRollingPaperReleased } from '@/lib/featureFlags'
 import { isRollingPaperSeason } from '@/features/rollingPaper/rollingPaper'
 import { RollingPaperPreview } from '@/features/rollingPaper/RollingPaperPreview'
 import { AppShell } from '@/layout/AppShell'
@@ -31,7 +31,8 @@ export function StartPage() {
   const authSession = usePrototypeStore((state) => state.authSession)
   const [classroomNotice, setClassroomNotice] = useState(false)
   // After the exam the rolling paper takes the desk's place as the main thing to make.
-  const rollingPaperFirst = isRollingPaperAvailable() && isRollingPaperSeason()
+  // Only once released (VITE_ROLLING_PAPER=on): test mode (/prototype) never changes the home and start screens.
+  const rollingPaperFirst = isRollingPaperReleased() && isRollingPaperSeason()
 
   const messages = useMemo(
     () => mergeSupportMessages([]),

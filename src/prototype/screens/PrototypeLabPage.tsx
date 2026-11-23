@@ -53,7 +53,7 @@ export function PrototypeLabPage() {
             미리 써 보는 곳이에요.
           </h1>
           <p>
-            테스트 모드를 켠 브라우저에서만 열려요. 테스트 중에 보낸 초대 링크로 들어온
+            테스트 모드를 켠 브라우저에서만 열리고, 홈 화면은 정식으로 열 때까지 그대로예요. 테스트 중에 보낸 초대 링크로 들어온
             사람도 함께 테스트할 수 있어요. 여기서 만든 롤링페이퍼와 글은 실제 서버에
             저장돼요.
           </p>
@@ -67,9 +67,6 @@ export function PrototypeLabPage() {
           onClick={() => start('/rolling-paper/create')}
         >
           연말 롤링페이퍼 만들어 보기
-        </Button>
-        <Button variant="secondary" fullWidth onClick={() => start('/home')}>
-          홈 화면에서 보기
         </Button>
         {isRollingPaperReleased() && (
           <p className="rolling-paper-page__hint">연말 롤링페이퍼는 이미 정식으로 열려 있어요.</p>
