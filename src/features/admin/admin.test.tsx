@@ -157,6 +157,47 @@ describe('admin console', () => {
     expect(screen.getByText('활성 사용자 (10/21부터)')).toBeTruthy()
   })
 
+  it('shows organizer-corrected totals only for November 21 and 22', async () => {
+    auth.fetchMe.mockResolvedValue({ id: 1, displayName: '운영자', admin: true })
+    const day = (date: string, visitors: number) => ({
+      date, visitors, memberVisitors: 3, guestVisitors: visitors - 3,
+      pageViews: 20, signups: 0, desksCreated: 0, messagesCreated: 0, chargeAmount: 0,
+    })
+    admin.fetchDailyStats.mockResolvedValue({
+      from: '2026-11-21', to: '2026-11-23', totalUsers: 30, totalDesks: 0, totalMessages: 0,
+      days: [day('2026-11-21', 69), day('2026-11-22', 11), day('2026-11-23', 50)],
+    })
+    admin.fetchRegionStats.mockResolvedValue({ from: '', to: '', items: [], unknownPageViews: 0 })
+    admin.fetchActiveUsers.mockResolvedValue({
+      from: '2026-10-21', to: '2026-11-23', rangeVisitors: 130, rangeMembers: 9, rangeGuests: 121,
+      days: [
+        { date: '2026-11-21', dau: 69, wau: 100, mau: 500, mauMembers: 30, mauGuests: 470 },
+        { date: '2026-11-22', dau: 11, wau: 101, mau: 501, mauMembers: 30, mauGuests: 471 },
+        { date: '2026-11-23', dau: 50, wau: 102, mau: 502, mauMembers: 30, mauGuests: 472 },
+      ],
+    })
+    renderConsole()
+
+    const daily = (await screen.findByRole('heading', { name: '날짜별 접속자' })).closest('section') as HTMLElement
+    expect(daily).toHaveTextContent('2,656')
+    expect(daily).toHaveTextContent('2,113')
+    expect(daily).toHaveTextContent('회원 3 · 비회원 66')
+    expect(daily).toHaveTextContent('회원 3 · 비회원 8')
+    expect(daily).toHaveTextContent('회원 3 · 비회원 47')
+    expect(daily).toHaveTextContent('회원·비회원 수는 시스템 원자료')
+
+    const activity = screen.getByRole('heading', { name: '날짜별 활동' }).closest('section') as HTMLElement
+    const rows = within(activity).getAllByRole('row')
+    expect(within(rows[1]!).getAllByRole('cell')[1]).toHaveTextContent('50')
+    expect(within(rows[2]!).getAllByRole('cell')[1]).toHaveTextContent('2,113 *')
+    expect(within(rows[3]!).getAllByRole('cell')[1]).toHaveTextContent('2,656 *')
+
+    const active = screen.getByRole('heading', { name: /활성 사용자/ }).closest('section') as HTMLElement
+    expect(active).toHaveTextContent('DAU 2,656 (주최측 정정)')
+    expect(active).toHaveTextContent('DAU 2,113 (주최측 정정)')
+    expect(active).toHaveTextContent('WAU·MAU는 시스템 집계')
+  })
+
   describe('region table', () => {
     const region = (extra: Record<string, unknown>) => ({ from: '2026-10-20', to: '2026-10-21', items: [], unknownPageViews: 0, ...extra })
     const open = async (regions: unknown) => {
