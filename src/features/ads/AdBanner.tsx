@@ -74,36 +74,17 @@ function PreviewSlot({ className }: { className?: string }) {
 }
 
 function SponsoredBanner({ ad, className }: { ad: ApiAdvertisement; className?: string }) {
-  const ref = useRef<HTMLAnchorElement>(null)
   const sessionId = useMemo(newSessionId, [ad.id])
 
-  // 절반 이상 화면에 들어왔을 때 한 번만 노출로 센다.
+  // 화면에 실리면 바로 노출 한 번. 스크롤해서 보이는지는 따지지 않는다.
   useEffect(() => {
-    const node = ref.current
-    if (!node) return
-    const report = () => void reportAdEvent(ad.id, 'IMPRESSION', sessionId).catch(() => undefined)
-    if (typeof IntersectionObserver === 'undefined') {
-      report()
-      return
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          report()
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.5 },
-    )
-    observer.observe(node)
-    return () => observer.disconnect()
+    void reportAdEvent(ad.id, 'IMPRESSION', sessionId).catch(() => undefined)
   }, [ad.id, sessionId])
 
   return (
     <AdBannerView
       ad={ad}
       className={className}
-      linkRef={ref}
       onClick={() => void reportAdEvent(ad.id, 'CLICK', sessionId).catch(() => undefined)}
     />
   )

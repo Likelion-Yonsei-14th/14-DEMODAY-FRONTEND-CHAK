@@ -80,7 +80,7 @@ export function AdReportPanel({ ad }: { ad: ApiAdvertisement }) {
         </table>
       </div>
       <p className="admin__muted">
-        노출은 화면에 절반 이상 보인 횟수, 도달은 본 사람 수예요(회원은 계정, 손님은 브라우저 하나를 한 사람으로 세요).
+        노출은 광고가 화면에 실린 횟수(스크롤로 보였는지는 따지지 않아요), 도달은 본 사람 수예요(회원은 계정, 손님은 브라우저 하나를 한 사람으로 세요).
       </p>
     </div>
   )
