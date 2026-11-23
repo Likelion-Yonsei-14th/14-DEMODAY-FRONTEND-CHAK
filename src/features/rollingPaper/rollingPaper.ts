@@ -35,7 +35,7 @@ export const rollingPaperStamps = [
 const NOTE_HALF_WIDTH = 20
 const NOTE_HALF_HEIGHT = 7
 /** "To. 이름" heads the paper; notes start below it. */
-const NAME_HEADER_HEIGHT = 15
+const NAME_HEADER_HEIGHT = 24
 
 export const DEFAULT_PAPER_DESIGN = 'bg-basic-cream'
 

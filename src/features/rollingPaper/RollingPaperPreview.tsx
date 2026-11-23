@@ -2,7 +2,7 @@ import { getPenColor, getStampGlyph, noteTilt } from './rollingPaper'
 import './RollingPaperPages.css'
 
 const sampleNotes = [
-  { id: 'sample-1', text: '3년 동안 고마웠어! 대학 가서도 꼭 보자', author: '민지', pen: 'blue', stamp: 'heart', x: 29, y: 32 },
+  { id: 'sample-1', text: '3년 동안 고마웠어! 대학 가서도 꼭 보자', author: '민지', pen: 'blue', stamp: 'heart', x: 29, y: 38 },
   { id: 'sample-2', text: '야자 끝나고 먹던 컵라면 평생 못 잊어', author: '현우', pen: 'red', stamp: 'star', x: 71, y: 48 },
   { id: 'sample-3', text: '수능 끝났다!! 올해 진짜 수고했어 🎉', author: '서연', pen: 'green', stamp: 'cap', x: 30, y: 66 },
   { id: 'sample-4', text: '우리 반 최고 분위기 메이커', author: '도윤', pen: 'purple', stamp: 'smile', x: 70, y: 82 },
