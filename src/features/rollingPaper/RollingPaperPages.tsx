@@ -420,9 +420,9 @@ function FriendPaperCard({
 
 /** Spots tried, in order, when the writer uses the button instead of touching the paper. */
 const FALLBACK_SPOTS: Position[] = [
-  { x: 30, y: 30 }, { x: 70, y: 30 }, { x: 30, y: 82 }, { x: 70, y: 82 },
+  { x: 30, y: 36 }, { x: 70, y: 36 }, { x: 30, y: 82 }, { x: 70, y: 82 },
   { x: 25, y: 48 }, { x: 75, y: 48 }, { x: 25, y: 65 }, { x: 75, y: 65 },
-  { x: 50, y: 39 }, { x: 50, y: 74 },
+  { x: 50, y: 44 }, { x: 50, y: 74 },
 ]
 
 const findFreeSpot = (
