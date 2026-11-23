@@ -2,19 +2,21 @@ import { apiFetch } from '@/api/client'
 import type {
   RollingPaperBoardEntry,
   RollingPaperClass,
+  RollingPaperKind,
   RollingPaperMember,
   RollingPaperNote,
   RollingPaperRevealMode,
 } from '@/types'
 
 /**
- * Graduation rolling paper on the backend (docs/API.md §13). Everything is under
+ * Year-end rolling paper on the backend (docs/API.md §13). Everything is under
  * /api/public/rolling-papers; members are signed-in users or guests (cookie).
  * A class is found by the invite code, which is also the class id on the page.
  */
 const BASE = '/api/public/rolling-papers'
 
 type ApiRevealMode = 'INSTANT' | 'ON_END'
+type ApiKind = 'CLASS' | 'PERSONAL'
 
 export type ApiRollingMember = {
   id: number
@@ -26,6 +28,7 @@ export type ApiRollingMember = {
 
 export type ApiRollingClassView = {
   code: string
+  kind?: ApiKind
   name: string
   revealMode: ApiRevealMode
   endedAt: string | null
@@ -42,20 +45,25 @@ export type ApiRollingPaperView = {
   noteCount: number
   notes: {
     id: number
-    authorMemberId: number
+    /** Null for a hidden note. */
+    authorMemberId: number | null
     authorName: string
-    text: string
+    /** Null for a hidden note. */
+    text: string | null
     pen: string
     stamp: string
     x: number
     y: number
     mine: boolean
+    /** Personal paper, not the owner: someone else's note, sent without text or name. */
+    hidden?: boolean
     createdAt: string
   }[]
 }
 
 export type ApiMyRollingClass = {
   code: string
+  kind?: ApiKind
   name: string
   endedAt: string | null
   creator: boolean
@@ -66,6 +74,9 @@ const toApiMode = (mode: RollingPaperRevealMode): ApiRevealMode =>
 
 const fromApiMode = (mode: ApiRevealMode): RollingPaperRevealMode =>
   mode === 'INSTANT' ? 'instant' : 'onEnd'
+
+const fromApiKind = (kind?: ApiKind): RollingPaperKind =>
+  kind === 'PERSONAL' ? 'personal' : 'class'
 
 const path = (code: string) => `${BASE}/${encodeURIComponent(code)}`
 
@@ -89,6 +100,7 @@ export function toRollingPaperClass(
   return {
     paperClass: {
       id: view.code,
+      kind: fromApiKind(view.kind),
       name: view.name,
       revealMode: fromApiMode(view.revealMode),
       endedAt: view.endedAt ?? undefined,
@@ -116,9 +128,10 @@ export function mergePaperView(
   const notes: RollingPaperNote[] = view.notes.map((note) => ({
     id: String(note.id),
     paperLockerId,
-    authorLockerId: String(note.authorMemberId),
+    authorLockerId: note.authorMemberId == null ? '' : String(note.authorMemberId),
     authorName: note.authorName,
-    text: note.text,
+    text: note.text ?? '',
+    hidden: note.hidden || undefined,
     pen: note.pen,
     stamp: note.stamp,
     x: Number(note.x),
@@ -155,15 +168,21 @@ export const createRollingPaperClassApi = (input: {
   displayName: string
   paperDesign: string
   revealMode: RollingPaperRevealMode
+  kind?: RollingPaperKind
 }) =>
   apiFetch<ApiRollingClassView>(BASE, {
     method: 'POST',
-    body: { ...input, revealMode: toApiMode(input.revealMode) },
+    body: {
+      ...input,
+      revealMode: toApiMode(input.revealMode),
+      kind: input.kind === 'personal' ? 'PERSONAL' : 'CLASS',
+    },
   })
 
+/** A personal paper's writers send no design (they hang no paper). */
 export const joinRollingPaperClassApi = (
   code: string,
-  input: { displayName: string; paperDesign: string },
+  input: { displayName: string; paperDesign?: string },
 ) => apiFetch<ApiRollingClassView>(`${path(code)}/members`, { method: 'POST', body: input })
 
 export const updateRollingPaperClassApi = (

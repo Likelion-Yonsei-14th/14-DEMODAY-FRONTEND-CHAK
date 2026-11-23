@@ -80,12 +80,12 @@ export function StartPage() {
           <>
             <section className="start-page__hero">
               <h1>
-                졸업 전에 같이 채우는
+                한 해를 마무리하는
                 <br />
-                우리 반 롤링페이퍼
+                연말 롤링페이퍼
               </h1>
               <p>
-                반을 만들어 링크를 보내면, 친구들이 서로의 롤링페이퍼에 한마디씩 남겨요.
+                반을 만들어 서로 채우거나, 내 롤링페이퍼 링크를 보내 한마디씩 받아요.
               </p>
             </section>
 
@@ -121,8 +121,8 @@ export function StartPage() {
         <section className="start-page__choices" aria-label="응원을 모으는 방법">
           {rollingPaperFirst && (
             <ChoiceCard
-              title="우리 반 롤링페이퍼 만들기"
-              description="반 이름을 정하고, 내 사물함에 롤링페이퍼를 걸어요."
+              title="연말 롤링페이퍼 만들기"
+              description="반 친구들과 서로 채우거나, 내 롤링페이퍼를 링크로 받아요."
               icon={<ScrollText size={22} aria-hidden />}
               onClick={() => navigate('/rolling-paper')}
             />

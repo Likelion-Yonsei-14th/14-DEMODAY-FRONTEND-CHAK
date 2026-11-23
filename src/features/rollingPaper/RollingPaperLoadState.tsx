@@ -23,7 +23,7 @@ export function RollingPaperLoadState({
       contentClassName="rolling-paper-shell"
       appBar={
         <AppBar
-          title="졸업 롤링페이퍼"
+          title="연말 롤링페이퍼"
           leading={
             <IconButton
               label="홈으로 돌아가기"

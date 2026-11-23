@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ChevronRight, Gift, LogIn, Mail, Plus, ScrollText, Star, UserRound } from 'lucide-react'
+import { ChevronRight, Gift, LogIn, Mail, Plus, ScrollText, Sparkles, Star, UserRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { ApiError } from '@/api/client'
 import { fetchMyDesk } from '@/api/desks'
@@ -9,6 +9,7 @@ import { MiniGameSection } from '@/features/minigame/MiniGameSection'
 import { DiscountsShortcut } from '@/features/discounts/DiscountsShortcut'
 import { ChatShortcut } from '@/features/chat/ChatShortcut'
 import { RecapShortcut } from '@/features/recap/RecapShortcut'
+import { isRecapOpen, RECAP_OPENS_LABEL } from '@/features/recap/recapSchedule'
 import { isClassroomAvailable, isRollingPaperAvailable } from '@/lib/featureFlags'
 import { isRollingPaperSeason } from '@/features/rollingPaper/rollingPaper'
 import { AppShell } from '@/layout/AppShell'
@@ -120,12 +121,14 @@ export function HomePage() {
                 {rollingPaperMember ? <ScrollText size={14} aria-hidden /> : <Plus size={14} aria-hidden />}
               </span>
               <strong>
-                졸업 롤링페이퍼
+                연말 롤링페이퍼
               </strong>
               <span>
                 {rollingPaperMember
-                  ? `${rollingPaperClass.name} 롤링페이퍼`
-                  : '반 친구들과 서로의 롤링페이퍼를 채워요'}
+                  ? rollingPaperClass.kind === 'personal'
+                    ? rollingPaperClass.name
+                    : `${rollingPaperClass.name} 롤링페이퍼`
+                  : '반 친구들과, 또는 나 혼자 링크로 받아요'}
               </span>
               <ChevronRight size={20} aria-hidden />
             </button>
@@ -154,6 +157,22 @@ export function HomePage() {
             </span>
             <ChevronRight size={20} aria-hidden />
           </button>
+
+          {/* Until the rolling paper opens, the recap keeps its big door. */}
+          {!rollingPaperFirst && (
+            <button
+              type="button"
+              className="home-page__door home-page__door--recap"
+              onClick={() => navigate('/recap')}
+            >
+              <span className="home-page__door-label">
+                <Sparkles size={14} aria-hidden />
+              </span>
+              <strong>나의 수능 리캡</strong>
+              <span>{isRecapOpen() ? '한 해 동안 애쓴 나를 돌아봐요' : `${RECAP_OPENS_LABEL}, 시험이 끝나면 열려요`}</span>
+              <ChevronRight size={20} aria-hidden />
+            </button>
+          )}
         </div>
 
         <nav className="home-page__shortcuts" aria-label="바로가기">
@@ -188,7 +207,7 @@ export function HomePage() {
 
         <AdBanner />
 
-        <RecapShortcut />
+        {rollingPaperFirst && <RecapShortcut />}
 
         <MiniGameSection />
       </main>

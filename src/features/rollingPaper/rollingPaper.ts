@@ -113,7 +113,7 @@ export const revealModeOptions = [
   {
     id: 'onEnd',
     title: '종료하면 보기',
-    description: '반을 만든 사람이 롤링페이퍼를 종료하면 한꺼번에 열려요.',
+    description: '만든 사람이 롤링페이퍼를 종료하면 한꺼번에 열려요.',
   },
 ] as const satisfies ReadonlyArray<{ id: RollingPaperRevealMode; title: string; description: string }>
 
@@ -127,12 +127,22 @@ export const isOwnPaperOpen = (
 
 /** One line telling the owner when they get to read their own paper. */
 export const describeOwnPaperReveal = (
-  paperClass: Pick<RollingPaperClass, 'revealMode' | 'endedAt'>,
+  paperClass: Pick<RollingPaperClass, 'revealMode' | 'endedAt' | 'kind'>,
 ) => {
   if (paperClass.endedAt) return '롤링페이퍼가 종료돼서 내 롤링페이퍼가 열렸어요.'
   if (getRevealMode(paperClass) === 'instant') return '친구들이 쓰는 대로 내 롤링페이퍼를 바로 볼 수 있어요.'
+  if (isPersonalPaper(paperClass)) {
+    return '설정에서 롤링페이퍼를 종료하면 내 롤링페이퍼가 열려요.'
+  }
   return '반을 만든 사람이 롤링페이퍼를 종료하면 내 롤링페이퍼가 열려요.'
 }
+
+/** A personal paper: one paper (the creator's), others only write on it. */
+export const isPersonalPaper = (paperClass: Pick<RollingPaperClass, 'kind'>) =>
+  paperClass.kind === 'personal'
+
+/** Under "To. 이름" on every paper. */
+export const PAPER_GREETING = '올 한 해 고마웠어!'
 
 /** After the creator ends it, nobody writes any more. */
 export const isRollingPaperEnded = (paperClass: Pick<RollingPaperClass, 'endedAt'>) =>
