@@ -14,6 +14,7 @@ import {
   getTextBoxStyle,
   getTextMinHeight,
 } from '@/features/composer/cardRenderStyles'
+import { isSafeCardPhotoSrc } from '@/lib/safeImageSrc'
 import type { CardPage, Message, PhotoElement } from '@/types'
 import './MessageViewerPage.css'
 import '@/features/composer/cardRenderShared.css'
@@ -29,10 +30,14 @@ export function OriginalMessageRenderer({
   const background = getComposerBackground(
     cardPage.backgroundAssetId,
   )
-  const backgroundPhoto = cardPage.photoElements.find(
+  // Only inline images are rendered: a remote src would let the sender track viewers.
+  const photos = cardPage.photoElements.filter((photo) =>
+    isSafeCardPhotoSrc(photo.src),
+  )
+  const backgroundPhoto = photos.find(
     (photo) => photo.role === 'background',
   )
-  const floatingPhotos = cardPage.photoElements.filter(
+  const floatingPhotos = photos.filter(
     (photo) => photo.role === 'floating',
   )
 

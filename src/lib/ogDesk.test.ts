@@ -111,7 +111,7 @@ describe('the personal desk link card', () => {
     const html = await (await call()).text()
 
     expect(html).not.toContain('<script>alert(1)</script>')
-    expect(html).toContain('&quot;>&lt;script>alert(1)&lt;/script>님의 응원 책상')
+    expect(html).toContain('&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;님의 응원 책상')
   })
 
   it('keeps the card out of search results', async () => {

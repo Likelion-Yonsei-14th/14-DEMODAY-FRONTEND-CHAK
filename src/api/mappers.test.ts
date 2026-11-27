@@ -97,6 +97,38 @@ describe('message mapping', () => {
     })
   })
 
+  it('drops non-hex object colors and remote card photos from senders (F15, F16)', () => {
+    const item: ApiPublicMessage = {
+      id: 8,
+      authorDisplayName: '민준',
+      kind: 'CARD',
+      visibility: 'PUBLIC',
+      schemaVersion: 1,
+      card: {
+        pages: [
+          {
+            id: 'p1',
+            photoElements: [
+              { id: 'a', role: 'background', src: 'https://attacker.example/pixel.png' },
+              { id: 'b', role: 'floating', src: 'data:image/webp;base64,UklGRg==' },
+            ],
+          },
+        ],
+      },
+      object: { ...apiObject, color: 'url(https://attacker.example/p)' },
+      unlockAt: '2026-01-01T00:00:00Z',
+      createdAt: '2026-01-01T00:00:00Z',
+    }
+    const { messages, objects } = publicMessagesFromApi([item], '1')
+
+    expect(objects[0]!.color).toBeUndefined()
+    expect(messages[0]!.pages?.[0]?.photoElements.map((photo) => photo.id)).toEqual(['b'])
+    expect(messages[0]!.photoElements.map((photo) => photo.id)).toEqual(['b'])
+
+    const hex = publicMessagesFromApi([{ ...item, object: { ...apiObject, color: '#D8644A' } }], '1')
+    expect(hex.objects[0]!.color).toBe('#D8644A')
+  })
+
   it('maps owner messages: locked card is empty, read and basket ids collected', () => {
     const base = {
       kind: 'CARD',

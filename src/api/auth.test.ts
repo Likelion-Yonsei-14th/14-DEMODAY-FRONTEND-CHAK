@@ -43,4 +43,30 @@ describe('social login redirects', () => {
     expect(url.searchParams.get('client_id')).toBe('kakao-client')
     expect(consumeOAuthState('kakao')).toBe(url.searchParams.get('state'))
   })
+
+  it('falls back to a short-lived cookie when sessionStorage is unavailable', async () => {
+    const { startGoogleLogin, consumeOAuthState } = await import('@/api/auth')
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('denied')
+    })
+    try {
+      startGoogleLogin()
+    } finally {
+      setItem.mockRestore()
+    }
+
+    const url = new URL(String(assign.mock.calls[0]?.[0]))
+    expect(consumeOAuthState('google')).toBe(url.searchParams.get('state'))
+    expect(consumeOAuthState('google')).toBeNull()
+  })
+
+  it('only accepts a callback state that matches a stored one', async () => {
+    const { isExpectedOAuthState } = await import('@/api/auth')
+    expect(isExpectedOAuthState('abc', 'abc')).toBe(true)
+    expect(isExpectedOAuthState(null, 'abc')).toBe(false)
+    expect(isExpectedOAuthState(null, null)).toBe(false)
+    expect(isExpectedOAuthState('', '')).toBe(false)
+    expect(isExpectedOAuthState('abc', null)).toBe(false)
+    expect(isExpectedOAuthState('abc', 'xyz')).toBe(false)
+  })
 })

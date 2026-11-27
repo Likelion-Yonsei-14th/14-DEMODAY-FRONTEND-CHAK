@@ -17,6 +17,7 @@ import {
 import { getGemImage } from '@/features/supporter/gems'
 import { UniversityCharm } from '@/features/classroom/UniversityCharm'
 import { parseUniversityCharmId } from '@/features/classroom/universities'
+import { safeHexColor } from '@/lib/safeColor'
 import { useDeskDaypart } from './useDeskDaypart'
 import { PeperoBox } from './PeperoBox'
 import './DeskObjectLayer.css'
@@ -77,7 +78,9 @@ export function DeskObjectLayer({
         const placement = resolveObjectPlacement(object)
         const message = messageById.get(object.messageId)
         const previewColor =
-          object.color ?? message?.previewColor ?? '#D8644A'
+          safeHexColor(object.color) ??
+          safeHexColor(message?.previewColor) ??
+          '#D8644A'
         const interactive = Boolean(onObjectClick)
         const read =
           message?.status === 'read' ||
@@ -174,7 +177,7 @@ export function DeskObjectLayer({
             left: `${draftObject.placement.x}%`,
             top: `${draftObject.placement.y}%`,
             zIndex: 120,
-            '--desk-object-color': draftObject.previewColor,
+            '--desk-object-color': safeHexColor(draftObject.previewColor) ?? '#D8644A',
             '--desk-object-rotation': `${draftObject.placement.rotation}deg`,
             '--desk-object-scale': draftObject.placement.scale,
           } as React.CSSProperties}

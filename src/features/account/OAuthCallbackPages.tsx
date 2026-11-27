@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { consumeOAuthState, loginWithGoogle, loginWithKakao, type OAuthProvider } from '@/api/auth'
+import {
+  consumeOAuthState,
+  isExpectedOAuthState,
+  loginWithGoogle,
+  loginWithKakao,
+  type OAuthProvider,
+} from '@/api/auth'
 import { ApiError } from '@/api/client'
 import { fetchMyDesk } from '@/api/desks'
 import type { AuthTokenResponse } from '@/api/types'
@@ -53,7 +59,8 @@ function OAuthCallbackPage({ provider }: { provider: OAuthProvider }) {
       setError(`${label} 로그인이 취소되었어요.`)
       return
     }
-    if (expectedState && state !== expectedState) {
+    // Fail closed: no saved state means this tab never started a login.
+    if (!isExpectedOAuthState(expectedState, state)) {
       setError('로그인 요청을 확인할 수 없어요. 다시 시도해주세요.')
       return
     }

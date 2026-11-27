@@ -201,10 +201,12 @@
   right: 8%;
   top: 7%;
   bottom: 26%;
-  background:
+  /* The color goes in background-color, never as an image layer, so a
+     non-color value cannot turn into a url() fetch. */
+  background-color: var(--desk-object-color);
+  background-image:
     radial-gradient(circle at 70% 28%, rgba(255, 246, 228, .55), transparent 42%),
-    linear-gradient(200deg, transparent 50%, rgba(52, 40, 28, .2)),
-    var(--desk-object-color);
+    linear-gradient(200deg, transparent 50%, rgba(52, 40, 28, .2));
 }
 
 .desk-object__frame {

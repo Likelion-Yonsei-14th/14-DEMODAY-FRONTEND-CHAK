@@ -718,4 +718,43 @@ describe('prototype store composer handoff', () => {
     expect(state.currentDesk.ownerId).not.toBe(creatorId)
     expect(state.claimState).toBe('claimed')
   })
+
+  it('clears account-bound data from the store and localStorage on sign out', () => {
+    usePrototypeStore.getState().signIn('a@example.com', 'google')
+    usePrototypeStore.setState({
+      messageReplies: [
+        {
+          id: 'reply-1',
+          scope: 'single',
+          sourceMessageId: 'm1',
+          targetMessageIds: ['m1'],
+          targetSenderNames: ['보낸이'],
+          ownerName: '주인',
+          text: '비밀 답장',
+          createdAt: '2026-11-01T00:00:00Z',
+        },
+      ],
+      messageReactions: { m1: 'heart' } as never,
+      supporterIdentityName: '보낸이',
+      ownerSettings: {
+        ...usePrototypeStore.getState().ownerSettings,
+        blockedSupporters: ['차단된 사람'],
+      },
+    })
+    expect(localStorage.getItem('eun-demoday-prototype')).toContain('비밀 답장')
+
+    usePrototypeStore.getState().signOut()
+
+    const state = usePrototypeStore.getState()
+    expect(state.messageReplies).toEqual([])
+    expect(state.messageReactions).toEqual({})
+    expect(state.supporterIdentityName).toBeNull()
+    expect(state.ownerSettings.blockedSupporters).toEqual([])
+    expect(state.currentUser).toEqual(mockCurrentUser)
+    expect(state.lastLogin).toMatchObject({ provider: 'google' })
+    const stored = localStorage.getItem('eun-demoday-prototype') ?? ''
+    expect(stored).not.toContain('비밀 답장')
+    expect(stored).not.toContain('차단된 사람')
+  })
 })
+

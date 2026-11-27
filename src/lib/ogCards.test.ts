@@ -143,7 +143,21 @@ describe('link cards', () => {
   it('escapes a name that carries markup', () => {
     const html = withOgCard(indexHtml, deskCard({ displayName: '<b>"해커"</b>' }))
     expect(html).not.toContain('<b>"해커"</b>')
-    expect(html).toContain('&lt;b>&quot;해커&quot;&lt;/b>님의 응원 책상')
+    expect(html).toContain('&lt;b&gt;&quot;해커&quot;&lt;/b&gt;님의 응원 책상')
+  })
+
+  it('keeps $ patterns in a name literal instead of expanding them (F29)', () => {
+    const name = '$2>$1https://x.example/i.png$2 property=og:image x=$&$`$\''
+    const html = withOgCard(indexHtml, deskCard({ displayName: name }))
+    const metaTags = html.match(/<meta\b[^>]*>/g) ?? []
+    expect(metaTags.filter((tag) => /name="description"/.test(tag))).toHaveLength(1)
+    expect(html).not.toContain('content=https://x.example')
+    const escaped = name.replace(/&/g, '&amp;').replace(/>/g, '&gt;')
+    expect(/name="description"\s+content="([^"]*)"/.exec(html)?.[1]).toBe(
+      `수능을 앞둔 ${escaped}님에게 응원 한마디를 남겨 주세요.`,
+    )
+    expect(html).toContain(`<title>${escaped}님의 응원 책상</title>`)
+    expect(metaTags.filter((tag) => /property="og:image"/.test(tag))).toHaveLength(1)
   })
 
   it('has a thumbnail file of exactly 1200x630 for every card', () => {

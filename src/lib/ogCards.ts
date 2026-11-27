@@ -222,7 +222,16 @@ export function deskCard(desk: { displayName: string; roomClosed?: boolean } | n
 }
 
 const escapeAttribute = (value: string) =>
-  value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+
+// Every replacement below that carries a value uses a function, never a string:
+// in a replacement string `$1`, `$&` and friends are expanded, so a desk name
+// like `$2>$1...` could rebuild tags out of the page's own markup.
+
 
 /**
  * Puts a card's title and description into index.html. og:url is dropped: one
@@ -245,17 +254,27 @@ export function withOgCard(html: string, card: OgCard): string {
       /<meta property="(og:title|og:description)" content="[^"]*"\s*\/?>/g,
       (_, property: string) => `<meta property="${property}" content="${escapeAttribute(values[property]!)}" />`,
     )
-    .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
-    .replace(/(<meta\s+name="description"\s+content=")[^"]*(")/, `$1${description}$2`)
+    .replace(/<title>[^<]*<\/title>/, () => `<title>${title}</title>`)
+    .replace(
+      /(<meta\s+name="description"\s+content=")[^"]*(")/,
+      (_, open: string, close: string) => `${open}${description}${close}`,
+    )
 
   if (card.image) {
     const url = `${SITE_ORIGIN}${card.image}`
-    result = result.replace(/(<meta property="og:image" content=")[^"]*(")/, `$1${escapeAttribute(url)}$2`)
+    const image = escapeAttribute(url)
+    result = result.replace(
+      /(<meta property="og:image" content=")[^"]*(")/,
+      (_, open: string, close: string) => `${open}${image}${close}`,
+    )
     result = /<meta name="twitter:image" /.test(result)
-      ? result.replace(/(<meta name="twitter:image" content=")[^"]*(")/, `$1${escapeAttribute(url)}$2`)
+      ? result.replace(
+          /(<meta name="twitter:image" content=")[^"]*(")/,
+          (_, open: string, close: string) => `${open}${image}${close}`,
+        )
       : result.replace(
           /(<meta name="twitter:card" content="summary_large_image" \/>)/,
-          `$1\n    <meta name="twitter:image" content="${escapeAttribute(url)}" />`,
+          (tag: string) => `${tag}\n    <meta name="twitter:image" content="${image}" />`,
         )
   }
 
@@ -263,8 +282,14 @@ export function withOgCard(html: string, card: OgCard): string {
     // A page meant to be found keeps its robots tag, and its own address instead of the home page's.
     const address = escapeAttribute(`${SITE_ORIGIN}${card.indexPath}`)
     return result
-      .replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${address}$2`)
-      .replace(/(<meta property="og:title" content="[^"]*" \/>)/, `$1\n    <meta property="og:url" content="${address}" />`)
+      .replace(
+        /(<link rel="canonical" href=")[^"]*(")/,
+        (_, open: string, close: string) => `${open}${address}${close}`,
+      )
+      .replace(
+        /(<meta property="og:title" content="[^"]*" \/>)/,
+        (tag: string) => `${tag}\n    <meta property="og:url" content="${address}" />`,
+      )
       .replace(/[ \t]*<!-- seo:jsonld:start -->[\s\S]*?<!-- seo:jsonld:end -->\r?\n?/, '')
       .replace(/\s*<!-- seo:fallback:start -->[\s\S]*?<!-- seo:fallback:end -->\s*/, '')
   }
