@@ -255,11 +255,36 @@ type PrototypeState = {
   setClaimState: (state: ClaimState) => void
 }
 
+/** The account-bound slice, as it is for someone who is not signed in. */
+function signedOutAccountState(): Pick<
+  PrototypeState,
+  | 'currentUser'
+  | 'ownerSettings'
+  | 'messageReplies'
+  | 'ownerSupporters'
+  | 'messageReactions'
+  | 'supporterIdentityName'
+> {
+  return {
+    currentUser: mockCurrentUser,
+    ownerSettings: {
+      publicFeedEnabled: true,
+      pushEnabled: true,
+      roomClosed: false,
+      blockedSupporters: [],
+      connectedRooms: [],
+    },
+    messageReplies: [],
+    ownerSupporters: [],
+    messageReactions: {},
+    supporterIdentityName: null,
+  }
+}
+
 export const usePrototypeStore = create<PrototypeState>()(
   persist(
     (set, get) => ({
       debugMode: false,
-      currentUser: mockCurrentUser,
       authSession: { status: 'anonymous' },
       lastLogin: null,
       currentDesk: mockDesk,
@@ -275,17 +300,7 @@ export const usePrototypeStore = create<PrototypeState>()(
       classroomMember: null,
       rollingPaperClass: mockRollingPaperClass,
       rollingPaperMember: null,
-      ownerSettings: {
-        publicFeedEnabled: true,
-        pushEnabled: true,
-        roomClosed: false,
-        blockedSupporters: [],
-        connectedRooms: [],
-      },
-      messageReplies: [],
-      ownerSupporters: [],
-      messageReactions: {},
-      supporterIdentityName: null,
+      ...signedOutAccountState(),
       supporterSettings: {
         defaultNickname: '',
         revealAfterExam: false,
@@ -506,13 +521,18 @@ export const usePrototypeStore = create<PrototypeState>()(
             provider: 'password',
           },
         })),
+      // Logging out drops everything tied to the account, which persist then
+      // rewrites in localStorage, so the next person on this browser can't read
+      // the previous user's replies, reactions or blocked supporters.
+      // lastLogin stays for the "continue with ..." welcome prompt.
       signOut: () =>
         set({
+          ...signedOutAccountState(),
           authSession: { status: 'anonymous' },
         }),
       deleteAccount: () =>
         set({
-          currentUser: mockCurrentUser,
+          ...signedOutAccountState(),
           authSession: { status: 'anonymous' },
           lastLogin: null,
         }),
