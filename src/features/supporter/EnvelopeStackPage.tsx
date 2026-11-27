@@ -20,6 +20,7 @@ import {
 import { useReadModeNow } from '@/features/desk/useReadModeNow'
 import type { Message } from '@/types'
 import { isStickerMessage } from './deskStickers'
+import { isSafeCardPhotoSrc } from '@/lib/safeImageSrc'
 import { createEnvelopeTheme } from './envelopeTheme'
 import { mergeSupportMessages } from './seededMessages'
 import './EnvelopeStackPage.css'
@@ -273,10 +274,12 @@ export function EnvelopeStackPage() {
                     firstPage.backgroundAssetId,
                   )
                   const backgroundPhoto = firstPage.photoElements.find(
-                    (photo) => photo.role === 'background',
+                    (photo) =>
+                      photo.role === 'background' && isSafeCardPhotoSrc(photo.src),
                   )
                   const floatingPhoto = firstPage.photoElements.find(
-                    (photo) => photo.role === 'floating',
+                    (photo) =>
+                      photo.role === 'floating' && isSafeCardPhotoSrc(photo.src),
                   )
 
                   return (

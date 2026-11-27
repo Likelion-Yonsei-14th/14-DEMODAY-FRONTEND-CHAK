@@ -8,6 +8,8 @@ import type {
   ApiPublicMessage,
   ApiSendMessageRequest,
 } from '@/api/types'
+import { safeHexColor } from '@/lib/safeColor'
+import { isSafeCardPhotoSrc } from '@/lib/safeImageSrc'
 import { getComposerBackground } from '@/features/composer/backgroundAssets'
 import { getMessagePages } from '@/features/composer/messagePages'
 import { resolveDeskZone } from '@/features/supporter/supporterFlow'
@@ -109,7 +111,7 @@ export function objectFromApi(
     messageId,
     representationType: objectTypeFromApi(object.representationType, meta.objectKind),
     assetId: object.assetId ?? undefined,
-    color: object.color ?? undefined,
+    color: safeHexColor(object.color),
     x: object.x,
     y: object.y,
     rotation: object.rotation,
@@ -137,6 +139,10 @@ function pagesFromApi(card: { pages: unknown[] } | null): CardPage[] {
   return ((card?.pages ?? []) as CardPage[]).map((page) => ({
     ...EMPTY_PAGE_FIELDS,
     ...page,
+    // Drop photos that are not inline images (remote URLs act as tracking pixels).
+    photoElements: (Array.isArray(page.photoElements) ? page.photoElements : []).filter(
+      (photo) => isSafeCardPhotoSrc(photo?.src),
+    ),
   }))
 }
 
