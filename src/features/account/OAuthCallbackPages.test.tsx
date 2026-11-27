@@ -9,7 +9,6 @@ const api = vi.hoisted(() => ({ loginWithKakao: vi.fn(), fetchMyDesk: vi.fn() })
 vi.mock('@/api/auth', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api/auth')>()),
   loginWithKakao: api.loginWithKakao,
-  consumeOAuthState: () => null,
 }))
 vi.mock('@/api/desks', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api/desks')>()),
@@ -23,9 +22,9 @@ const tokens = {
   user: { id: 7, email: 'new@example.com', displayName: '새내기', provider: 'KAKAO' },
 }
 
-function renderCallback() {
+function renderCallback(url = '/auth/kakao/callback?code=abc&state=st-1') {
   return render(
-    <MemoryRouter initialEntries={['/auth/kakao/callback?code=abc']}>
+    <MemoryRouter initialEntries={[url]}>
       <Routes>
         <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
         <Route path="/home" element={<p>홈 화면</p>} />
@@ -40,6 +39,7 @@ describe('OAuth callback landing', () => {
   beforeEach(() => {
     Object.values(api).forEach((fn) => fn.mockReset())
     sessionStorage.clear()
+    sessionStorage.setItem('chak.kakao.state', 'st-1')
     usePrototypeStore.setState({ authSession: { status: 'anonymous' } })
     api.loginWithKakao.mockResolvedValue(tokens)
   })
@@ -71,5 +71,37 @@ describe('OAuth callback landing', () => {
 
     expect(await screen.findByText('부적 화면')).toBeInTheDocument()
     expect(api.fetchMyDesk).not.toHaveBeenCalled()
+  })
+
+  it('refuses a callback when this tab never stored a state (login CSRF)', async () => {
+    sessionStorage.clear()
+    renderCallback()
+
+    expect(await screen.findByText('로그인 요청을 확인할 수 없어요. 다시 시도해주세요.')).toBeInTheDocument()
+    expect(api.loginWithKakao).not.toHaveBeenCalled()
+  })
+
+  it('refuses a callback without a state parameter', async () => {
+    renderCallback('/auth/kakao/callback?code=abc')
+
+    expect(await screen.findByText('로그인 요청을 확인할 수 없어요. 다시 시도해주세요.')).toBeInTheDocument()
+    expect(api.loginWithKakao).not.toHaveBeenCalled()
+  })
+
+  it('refuses a callback whose state does not match', async () => {
+    renderCallback('/auth/kakao/callback?code=abc&state=other')
+
+    expect(await screen.findByText('로그인 요청을 확인할 수 없어요. 다시 시도해주세요.')).toBeInTheDocument()
+    expect(api.loginWithKakao).not.toHaveBeenCalled()
+  })
+
+  it('accepts the state from the cookie fallback when sessionStorage was unavailable', async () => {
+    sessionStorage.clear()
+    document.cookie = 'chak_kakao_state=st-1; Path=/'
+    api.fetchMyDesk.mockResolvedValue({ id: 1 })
+    renderCallback()
+
+    expect(await screen.findByText('홈 화면')).toBeInTheDocument()
+    expect(document.cookie).not.toContain('chak_kakao_state=st-1')
   })
 })
